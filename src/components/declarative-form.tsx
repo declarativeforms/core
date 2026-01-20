@@ -1,20 +1,32 @@
-import yaml from "js-yaml";
 import { useState } from "react";
 import {
   FormProvider,
   useForm,
   type FieldValues,
+  type RegisterOptions,
   type UseFormReturn,
 } from "react-hook-form";
-import { Button } from "./ui/button";
-import { FormControl, FormField, FormItem, FormLabel } from "./ui/form";
-import { Input } from "./ui/input";
+import {
+  Button,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui";
 
 export type IDeclarativeFormField = {
   id: string;
   type: string;
   label: string;
   options?: Array<string>;
+  validators?: Array<"required">;
 };
 
 export type IDeclarativeFormSection = {
@@ -35,7 +47,6 @@ export type IDeclarativeFormSection = {
 export type IDeclarativeForm = {
   version: number;
   title: string;
-
   sections: Array<IDeclarativeFormSection>;
 };
 
@@ -43,18 +54,43 @@ export function DeclarativeFormField(props: {
   field: IDeclarativeFormField;
   form: UseFormReturn<FieldValues, any, FieldValues>;
 }) {
+  const rules: RegisterOptions = {};
+
+  if (props.field.validators?.includes("required")) {
+    rules.required = `${props.field.label} is required.`;
+  }
+
   return (
     <FormField
       control={props.form.control}
       name={props.field.id}
+      rules={rules}
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>{props.field.label}</FormLabel>
-          <FormControl>
-            <Input {...field} />
-          </FormControl>
-          {/* <FormDescription>This is your public display name.</FormDescription>
-          <FormMessage /> */}
+        <FormItem className="mb-6">
+          <FormLabel className="text-neutral-900">
+            {props.field.label}
+          </FormLabel>
+          {props.field.type === "select" ? (
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={`Select a ${props.field.label}`} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {props.field.options?.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <FormControl>
+              <Input {...field} className="text-neutral-900 w-full" />
+            </FormControl>
+          )}
+          <FormMessage />
         </FormItem>
       )}
     />
@@ -62,75 +98,189 @@ export function DeclarativeFormField(props: {
 }
 
 export function DeclarativeFormSection(props: {
+  data: FieldValues;
   section: IDeclarativeFormSection;
+  onSubmit: (data: FieldValues) => void;
 }) {
-  const form = useForm();
+  const form = useForm({
+    defaultValues: props.section.fields.reduce((acc, field) => {
+      acc[field.id] = props.data[field.id];
 
-  const [data, setData] = useState("");
+      return acc;
+    }, {} as FieldValues),
+  });
 
   return (
     <FormProvider {...form}>
-      <form>
+      <form
+        onSubmit={form.handleSubmit((data: FieldValues) =>
+          props.onSubmit(data)
+        )}
+      >
         {props.section.fields.map(
           (field: IDeclarativeFormField, index: number) => (
             <DeclarativeFormField key={index} field={field} form={form} />
           )
         )}
 
-        <Button>Continue</Button>
+        <Button type="submit">Next</Button>
       </form>
     </FormProvider>
   );
 }
 
+const formDef: IDeclarativeForm = {
+  version: 1,
+  title: "Application",
+  sections: [
+    {
+      id: "personal",
+      title: "Personal",
+      fields: [
+        {
+          id: "first_name",
+          type: "text",
+          label: "First Name",
+          validators: ["required"],
+        },
+        {
+          id: "last_name",
+          type: "text",
+          label: "Last Name",
+          validators: ["required"],
+        },
+      ],
+      next: "identity",
+    },
+    {
+      id: "identity",
+      title: "Identity",
+      fields: [
+        {
+          id: "idType",
+          type: "select",
+          label: "ID type",
+          options: ["Passport", "NationalID"],
+          validators: ["required"],
+        },
+      ],
+      next: [
+        { when: 'idType == "Passport"', go: "passport" },
+        { else: "nationalId" },
+      ],
+    },
+    {
+      id: "passport",
+      title: "Passport",
+      fields: [
+        {
+          id: "passport",
+          type: "text",
+          label: "Passport",
+          validators: ["required"],
+        },
+      ],
+      next: "done",
+    },
+    {
+      id: "nationalId",
+      title: "National ID",
+      fields: [
+        {
+          id: "identity_number",
+          type: "text",
+          label: "Identity Number",
+          validators: ["required"],
+        },
+      ],
+      next: "done",
+    },
+  ],
+};
+
 export function DeclarativeForm() {
-  const form: IDeclarativeForm = {
-    version: 1,
-    title: "Application",
-    sections: [
-      {
-        id: "personal",
-        title: "Personal",
-        fields: [
-          { id: "first_name", type: "text", label: "First Name" },
-          { id: "last_name", type: "text", label: "Last Name" },
-        ],
-        next: "identity",
-      },
-      {
-        id: "identity",
-        title: "Identity",
-        fields: [
-          {
-            id: "idType",
-            type: "select",
-            label: "ID type",
-            options: ["Passport", "NationalID"],
-          },
-        ],
-        next: [
-          { when: 'idType == "Passport"', go: "passport" },
-          { else: "nationalId" },
-        ],
-      },
-      {
-        id: "passport",
-        title: "Passport",
-        fields: [{ id: "passport", type: "text", label: "Passport" }],
-        next: "done",
-      },
-      {
-        id: "nationalId",
-        title: "National ID",
-        fields: [
-          { id: "identity_number", type: "text", label: "Identity Number" },
-        ],
-        next: "done",
-      },
-    ],
-  };
+  const [data, setData] = useState<FieldValues>({
+    first_name: "Barend",
+  });
 
-  const [activeSection, setActiveSection] = useState("personal"); // TODO
+  const [activeSectionId, setActiveSectionId] = useState("personal");
 
-  return <DeclarativeFormSection section={form.sections[0]} />;
+  const activeSection = formDef.sections.find(
+    (section) => section.id === activeSectionId
+  );
+
+  if (activeSectionId === "done") {
+    return (
+      <div className="flex h-lvh items-center justify-center max-w-3xl mx-auto">
+        <div className="w-full">
+          <h1 className="text-3xl font-bold mb-4">Application Complete!</h1>
+          <p className="mb-8">Here is the data you submitted:</p>
+          <pre className="p-4 bg-neutral-100 rounded-md">
+            {JSON.stringify(data, null, 2)}
+          </pre>
+          <Button
+            onClick={() => {
+              setData({});
+              setActiveSectionId("personal");
+            }}
+          >
+            Start Over
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!activeSection) {
+    return <></>;
+  }
+
+  return (
+    <div className="flex h-lvh items-center justify-center max-w-lg mx-auto px-4">
+      <div className="w-full">
+        <DeclarativeFormSection
+          key={activeSectionId}
+          data={data}
+          section={activeSection}
+          onSubmit={(sectionData: FieldValues) => {
+            const newData = { ...data, ...sectionData };
+
+            setData(newData);
+
+            const currentSection = formDef.sections.find(
+              (section) => section.id === activeSectionId
+            );
+
+            if (!currentSection) {
+              return;
+            }
+
+            let nextSectionId = "done";
+
+            if (typeof currentSection.next === "string") {
+              nextSectionId = currentSection.next;
+            } else {
+              for (const rule of currentSection.next) {
+                if ("when" in rule) {
+                  const parts = rule.when.split(" == ");
+                  if (parts.length === 2) {
+                    const [field, value] = parts;
+                    const cleanValue = value.replace(/"/g, "");
+                    if (newData[field] === cleanValue) {
+                      nextSectionId = rule.go;
+                      break;
+                    }
+                  }
+                } else if ("else" in rule) {
+                  nextSectionId = rule.else;
+                  break;
+                }
+              }
+            }
+            setActiveSectionId(nextSectionId);
+          }}
+        />
+      </div>
+    </div>
+  );
 }
