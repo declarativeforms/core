@@ -1,0 +1,78 @@
+version: 1
+title: "Application"
+
+sections:
+  - id: personal
+    title: "Personal"
+    fields:
+      - id: first_name
+        type: text
+        label: First Name
+      - id: last_name
+        type: text
+        label: Last Name
+    next: identity
+
+  - id: identity
+    title: "Identity"
+    fields:
+      - id: idType
+        type: select
+        label: "ID type"
+        options: [Passport, NationalID]
+    next:
+      - when: idType == "Passport"
+        go: passport
+      - else: nationalId
+
+  - id: passport
+    title: "Passport"
+    fields:
+      - id: passport
+        type: text
+        label: Passport
+    next: done
+
+  - id: nationalId
+    title: "National ID"
+    fields:
+      - id: identity_number
+        type: text
+        label: Identity Number
+    next: done
+
+# rules:
+#   - on: init
+#     do:
+#       - set: startDate
+#         to: date.addDays(date.today(), 7)
+
+#   - on: change
+#     watch: startDate
+#     when: startDate != null && (endDate == null || meta.endDate.touched == false)
+#     do:
+#       - set: endDate
+#         to: date.addYears(startDate, 1)
+
+# validation:
+#   - field: startDate
+#     validators: [required]
+
+#   - field: endDate
+#     validators:
+#       - required
+#       - when: startDate != null
+#         validator:
+#           afterOrEqual: startDate
+
+#   - field: passportNumber
+#     when: idType == "Passport"
+#     validators:
+#       - required
+#       - match: { pattern: "^[A-Z0-9]{6,9}$" }
+
+#   - field: nationalIdNumber
+#     when: idType == "NationalID"
+#     validators:
+#       - required
+#       - minLength: 6

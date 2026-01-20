@@ -1,0 +1,34 @@
+{
+  "name": "declarativeforms-core",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "Barend Erasmus",
+  "repository": {
+    "type": "git",
+    "url": "git@github-hirebarend:declarativeforms/core.git"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.1"
+  }
+}
