@@ -36,15 +36,15 @@ export function DeclarativeFormField(props: {
       rules={rules}
       render={({ field }) => (
         <FormItem className="mb-6">
-          <FormLabel className="mb-3 text-neutral-900 text-lg">
+          <FormLabel className="text-neutral-900">
             {props.field.label}
           </FormLabel>
           {props.field.type === "select" ? (
             props.field.options && props.field.options.length <= 4 ? (
               <RadioGroup
+                className="flex flex-col space-y-2 mt-2"
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                className="flex flex-col space-y-2"
               >
                 {props.field.options.map((option) => (
                   <div key={option} className="flex items-center space-x-2">
@@ -86,7 +86,7 @@ export function DeclarativeFormField(props: {
               <Input
                 {...field}
                 className="text-neutral-900 w-full"
-                placeholder={props.field.placeholder}
+                placeholder={props.field.placeholder || "Your answer"}
                 type={props.field.type}
               />
             </FormControl>
