@@ -1,4 +1,4 @@
-import { DeclarativeForm } from "./components/declarative-form";
+import { DeclarativeForm } from "./components";
 
 function App() {
   return (

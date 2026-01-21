@@ -1,5 +1,5 @@
 import yaml from "js-yaml";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FormProvider,
   useForm,
@@ -142,11 +142,7 @@ export function DeclarativeFormSection(props: {
 }
 
 export function DeclarativeForm() {
-  const {
-    data: formDef,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: formDef } = useQuery({
     queryKey: ["form"],
     queryFn: async () => {
       const response = await fetch("/form.yaml");
@@ -159,15 +155,13 @@ export function DeclarativeForm() {
     first_name: "Barend",
   });
 
-  const [activeSectionId, setActiveSectionId] = useState("section_1"); // TODO
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
-  if (isLoading) {
-    return <></>;
-  }
-
-  if (error) {
-    return <></>;
-  }
+  useEffect(() => {
+    if (formDef?.sections.length && !activeSectionId) {
+      setActiveSectionId(formDef.sections[0].id);
+    }
+  }, [formDef, activeSectionId]);
 
   if (!formDef) {
     return null;
@@ -200,7 +194,7 @@ export function DeclarativeForm() {
   }
 
   if (!activeSection) {
-    return <></>; // Or a not found component
+    return null;
   }
 
   return (
