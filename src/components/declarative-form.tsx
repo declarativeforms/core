@@ -7,7 +7,10 @@ import {
   type RegisterOptions,
   type UseFormReturn,
 } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
+import {
+  useSearchParams,
+  useNavigate,
+} from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -172,6 +175,14 @@ export function DeclarativeForm() {
     }
   }, [formDef, activeSectionId]);
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (activeSectionId === "done") {
+      navigate("/thank-you");
+    }
+  }, [activeSectionId, navigate]);
+
   if (!formDef) {
     return null;
   }
@@ -179,28 +190,6 @@ export function DeclarativeForm() {
   const activeSection = formDef.sections.find(
     (section) => section.id === activeSectionId
   );
-
-  if (activeSectionId === "done") {
-    return (
-      <div className="flex h-lvh items-center justify-center max-w-3xl mx-auto">
-        <div className="w-full">
-          <h1 className="text-3xl font-bold mb-4">Application Complete!</h1>
-          <p className="mb-8">Here is the data you submitted:</p>
-          <pre className="p-4 bg-neutral-100 rounded-md">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-          <Button
-            onClick={() => {
-              setData({});
-              setActiveSectionId("personal");
-            }}
-          >
-            Start Over
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   if (!activeSection) {
     return null;
