@@ -12,7 +12,7 @@ export function DeclarativeForm(props: { initialData: FieldValues }) {
   const { data: formDef } = useQuery({
     queryKey: ["form"],
     queryFn: async () => {
-      const response = await fetch("/form.yaml");
+      const response = await fetch("/form-002.yaml");
 
       return yaml.load(await response.text()) as IDeclarativeForm;
     },
