@@ -36,7 +36,7 @@ sections:
         validators:
           - required
       - id: question_6
-        type: single_select
+        type: multiple_select
         label:  Why Do You Want This Listing Removed? 
         options:
           - The listing is no longer active

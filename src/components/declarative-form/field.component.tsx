@@ -17,17 +17,31 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Checkbox,
 } from "../ui";
 
 export function DeclarativeFormField(props: {
   field: IDeclarativeFormField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
+  const isRequired = props.field.validators?.includes("required");
+
   const rules: RegisterOptions = {};
 
-  if (props.field.validators?.includes("required")) {
+  if (isRequired) {
     rules.required = `${props.field.label} is required.`;
   }
+
+  const Label = () => (
+    <FormLabel className="block text-sm font-medium text-neutral-900 mb-2">
+      {props.field.label}
+      {isRequired && (
+        <span className="text-red-500 ml-1 font-normal" aria-hidden="true">
+          *
+        </span>
+      )}
+    </FormLabel>
+  );
 
   return (
     <FormField
@@ -35,14 +49,12 @@ export function DeclarativeFormField(props: {
       name={props.field.id}
       rules={rules}
       render={({ field }) => (
-        <FormItem className="mb-6">
-          <FormLabel className="text-sm/5 text-neutral-900">
-            {props.field.label}
-          </FormLabel>
+        <FormItem className="mb-6 group">
+          {Label()}
           {props.field.type === "dropdown" ? (
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm">
                   <SelectValue
                     placeholder={
                       props.field.placeholder || `Select a ${props.field.label}`
@@ -52,63 +64,91 @@ export function DeclarativeFormField(props: {
               </FormControl>
               <SelectContent>
                 {props.field.options?.map((option) => (
-                  <SelectItem key={option} value={option}>
+                  <SelectItem
+                    key={option}
+                    value={option}
+                    className="py-2.5 text-sm cursor-pointer focus:bg-neutral-50 focus:text-neutral-900"
+                  >
                     {option}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           ) : null}
-
           {props.field.type === "email" ? (
             <FormControl>
               <Input
                 {...field}
-                className="text-neutral-900 w-full"
+                className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm"
                 placeholder={props.field.placeholder || "Your answer"}
                 type="email"
               />
             </FormControl>
           ) : null}
-
           {props.field.type === "long_text" ? (
             <FormControl>
               <Input
                 {...field}
-                className="text-neutral-900 w-full"
+                className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm"
                 placeholder={props.field.placeholder || "Your answer"}
                 type="text"
               />
             </FormControl>
           ) : null}
-
           {props.field.type === "multiple_select" ? (
-            <RadioGroup
-              className="flex flex-col space-y-2"
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-            >
+            <div className="flex flex-col space-y-2">
               {props.field.options?.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <FormControl>
-                    <RadioGroupItem id={option} value={option} />
-                  </FormControl>
-                  <FormLabel
-                    className="font-normal text-neutral-700"
-                    htmlFor={option}
-                  >
-                    {option}
-                  </FormLabel>
-                </div>
-              ))}
-            </RadioGroup>
-          ) : null}
+                <FormField
+                  key={option}
+                  control={props.form.control}
+                  name={props.field.id}
+                  render={({ field }) => {
+                    const selectedValues = Array.isArray(field.value)
+                      ? field.value
+                      : [];
+                    const isChecked = selectedValues.includes(option);
 
+                    return (
+                      <FormItem>
+                        <FormLabel
+                          className={`flex items-center space-x-3 w-full border rounded-md p-3 cursor-pointer transition-all duration-200 shadow-sm ${
+                            isChecked
+                              ? "border-neutral-900 ring-1 ring-neutral-900 bg-neutral-50"
+                              : "border-neutral-200 hover:border-neutral-300 bg-white"
+                          }`}
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={(checked: boolean) => {
+                                if (checked) {
+                                  field.onChange([...selectedValues, option]);
+                                } else {
+                                  field.onChange(
+                                    selectedValues.filter(
+                                      (value) => value !== option
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <span className="font-normal text-sm text-neutral-700 select-none flex-1">
+                            {option}
+                          </span>
+                        </FormLabel>
+                      </FormItem>
+                    );
+                  }}
+                />
+              ))}
+            </div>
+          ) : null}
           {props.field.type === "short_text" ? (
             <FormControl>
               <Input
                 {...field}
-                className="text-neutral-900 w-full"
+                className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm"
                 placeholder={props.field.placeholder || "Your answer"}
                 type="text"
               />
@@ -116,28 +156,36 @@ export function DeclarativeFormField(props: {
           ) : null}
 
           {props.field.type === "single_select" ? (
-            <RadioGroup
-              className="flex flex-col space-y-2"
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-            >
-              {props.field.options?.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <FormControl>
-                    <RadioGroupItem id={option} value={option} />
-                  </FormControl>
-                  <FormLabel
-                    className="font-normal text-neutral-700"
-                    htmlFor={option}
-                  >
-                    {option}
-                  </FormLabel>
-                </div>
-              ))}
-            </RadioGroup>
+            <FormControl>
+              <RadioGroup
+                className="flex flex-col space-y-2"
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                {props.field.options?.map((option) => {
+                  const isSelected = field.value === option;
+                  return (
+                    <FormItem key={option}>
+                      <FormLabel
+                        className={`flex items-center space-x-3 w-full border rounded-md p-3 cursor-pointer transition-all duration-200 shadow-sm ${
+                          isSelected
+                            ? "border-neutral-900 ring-1 ring-neutral-900 bg-neutral-50"
+                            : "border-neutral-200 hover:border-neutral-300 bg-white"
+                        }`}
+                      >
+                        <FormControl>
+                          <RadioGroupItem value={option} />
+                        </FormControl>
+                        <span className="font-normal text-sm text-neutral-700 select-none flex-1">
+                          {option}
+                        </span>
+                      </FormLabel>
+                    </FormItem>
+                  );
+                })}
+              </RadioGroup>
+            </FormControl>
           ) : null}
-
-          {/* <FormMessage /> */}
         </FormItem>
       )}
     />

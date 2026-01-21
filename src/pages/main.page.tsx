@@ -20,18 +20,15 @@ export function MainPage() {
     queryKey: ["form"],
     queryFn: async () => {
       const response = await fetch("/findhomes-001.yaml");
-
       return yaml.load(await response.text()) as IDeclarativeForm;
     },
   });
 
   const [data] = useState<FieldValues>(() => {
     const initialData: FieldValues = {};
-
     for (const [key, value] of searchParams.entries()) {
       initialData[key] = value;
     }
-
     return initialData;
   });
 
@@ -40,24 +37,29 @@ export function MainPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-3 py-12">
-      <Card className="mb-6 w-full">
-        <CardHeader>
-          <CardTitle>{form.title}</CardTitle>
+    <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
+      <Card className="mb-8 w-full bg-white border-neutral-200 shadow-sm rounded-xl overflow-hidden">
+        <CardHeader className="p-6 border-b border-neutral-100/50">
+          <CardTitle className="text-xl font-bold tracking-tight text-neutral-900">
+            {form.title}
+          </CardTitle>
           {form.description ? (
-            <CardDescription>{form.description}</CardDescription>
+            <CardDescription className="mt-2 text-base text-neutral-500 leading-normal">
+              {form.description}
+            </CardDescription>
           ) : null}
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="p-6 pt-6">
           <DeclarativeForm form={form} initialData={data} />
         </CardContent>
       </Card>
 
-      <div className="text-center text-muted-foreground text-xs">
+      <div className="text-center text-neutral-400 text-xs tracking-wide">
         Powered by{" "}
         <a
           href="/"
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="font-medium text-neutral-600 underline-offset-4 hover:text-neutral-900 hover:underline transition-colors"
         >
           Declarative Forms
         </a>
