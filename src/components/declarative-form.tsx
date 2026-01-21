@@ -165,7 +165,7 @@ const formDef: IDeclarativeForm = {
         },
       ],
       next: [
-        { when: 'idType == "Passport"', go: "passport" },
+        { when: "data.idType === 'Passport'", go: "passport" },
         { else: "nationalId" },
       ],
     },
@@ -262,17 +262,23 @@ export function DeclarativeForm() {
             } else {
               for (const rule of currentSection.next) {
                 if ("when" in rule) {
-                  const parts = rule.when.split(" == ");
-                  if (parts.length === 2) {
-                    const [field, value] = parts;
-                    const cleanValue = value.replace(/"/g, "");
-                    if (newData[field] === cleanValue) {
+                  try {
+                    const condition = new Function(
+                      "data",
+                      `return ${rule.when}`
+                    );
+
+                    if (condition(newData)) {
                       nextSectionId = rule.go;
                       break;
                     }
+
+                  } catch (e) {
+                    console.error("Error executing when condition:", e);
                   }
                 } else if ("else" in rule) {
                   nextSectionId = rule.else;
+                  
                   break;
                 }
               }
