@@ -1,6 +1,12 @@
 export type IDeclarativeFormField = {
   id: string;
-  type: string;
+  type:
+    | "dropdown"
+    | "email"
+    | "long_text"
+    | "short_text"
+    | "single_select"
+    | "multiple_select";
   label: string;
   options?: Array<string>;
   placeholder?: string;

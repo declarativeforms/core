@@ -7,7 +7,7 @@ sections:
     title: "Section 1"
     fields:
       - id: question_1
-        type: text
+        type: short_text
         label: Full Name
         placeholder: e.g. Angelique da Silva
         validators:
@@ -19,24 +19,24 @@ sections:
         validators:
           - required
       - id: question_3
-        type: text
+        type: short_text
         label: Agency Name
         placeholder: ABC Real Estate
         validators:
           - required
       - id: question_4
-        type: text
+        type: short_text
         label: Agency Website
         placeholder: e.g. abcrealestate.co.za
         validators:
           - required
       - id: question_5
-        type: text
+        type: short_text
         label: Link to the Listing You Want Removed
         validators:
           - required
       - id: question_6
-        type: select
+        type: single_select
         label:  Why Do You Want This Listing Removed? 
         options:
           - The listing is no longer active
@@ -44,59 +44,7 @@ sections:
           - Legal or compliance concerns
           - I do not want it associated with your platform
       - id: question_7
-        type: select
-        label:  Are you open to having your listing corrected or updated instead of removed?
-        options:
-          - Yes, please update it
-          - No, remove it entirely
-          - Legal or compliance concerns
-          - Depends — contact me first
-        validators:
-          - required
-    next: done
-
-  - id: section_1
-    title: "Section 1"
-    fields:
-      - id: question_1
-        type: text
-        label: Full Name
-        placeholder: e.g. Angelique da Silva
-        validators:
-          - required
-      - id: question_2
-        type: email
-        label: Email Address
-        placeholder: e.g. angelique@abcrealestate.co.za
-        validators:
-          - required
-      - id: question_3
-        type: text
-        label: Agency Name
-        placeholder: ABC Real Estate
-        validators:
-          - required
-      - id: question_4
-        type: text
-        label: Agency Website
-        placeholder: e.g. abcrealestate.co.za
-        validators:
-          - required
-      - id: question_5
-        type: text
-        label: Link to the Listing You Want Removed
-        validators:
-          - required
-      - id: question_6
-        type: select
-        label:  Why Do You Want This Listing Removed? 
-        options:
-          - The listing is no longer active
-          - The information is inaccurate
-          - Legal or compliance concerns
-          - I do not want it associated with your platform
-      - id: question_7
-        type: select
+        type: single_select
         label:  Are you open to having your listing corrected or updated instead of removed?
         options:
           - Yes, please update it

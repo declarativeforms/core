@@ -39,58 +39,104 @@ export function DeclarativeFormField(props: {
           <FormLabel className="text-sm/5 text-neutral-900">
             {props.field.label}
           </FormLabel>
-          {props.field.type === "select" ? (
-            props.field.options && props.field.options.length <= 4 ? (
-              <RadioGroup
-                className="flex flex-col space-y-2"
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
-                {props.field.options.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <FormControl>
-                      <RadioGroupItem id={option} value={option} />
-                    </FormControl>
-                    <FormLabel
-                      className="font-normal text-neutral-700"
-                      htmlFor={option}
-                    >
-                      {option}
-                    </FormLabel>
-                  </div>
+          {props.field.type === "dropdown" ? (
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      props.field.placeholder || `Select a ${props.field.label}`
+                    }
+                  />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {props.field.options?.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
                 ))}
-              </RadioGroup>
-            ) : (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={
-                        props.field.placeholder ||
-                        `Select a ${props.field.label}`
-                      }
-                    />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {props.field.options?.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )
-          ) : (
+              </SelectContent>
+            </Select>
+          ) : null}
+
+          {props.field.type === "email" ? (
             <FormControl>
               <Input
                 {...field}
                 className="text-neutral-900 w-full"
                 placeholder={props.field.placeholder || "Your answer"}
-                type={props.field.type}
+                type="email"
               />
             </FormControl>
-          )}
+          ) : null}
+
+          {props.field.type === "long_text" ? (
+            <FormControl>
+              <Input
+                {...field}
+                className="text-neutral-900 w-full"
+                placeholder={props.field.placeholder || "Your answer"}
+                type="text"
+              />
+            </FormControl>
+          ) : null}
+
+          {props.field.type === "multiple_select" ? (
+            <RadioGroup
+              className="flex flex-col space-y-2"
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+            >
+              {props.field.options?.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <FormControl>
+                    <RadioGroupItem id={option} value={option} />
+                  </FormControl>
+                  <FormLabel
+                    className="font-normal text-neutral-700"
+                    htmlFor={option}
+                  >
+                    {option}
+                  </FormLabel>
+                </div>
+              ))}
+            </RadioGroup>
+          ) : null}
+
+          {props.field.type === "short_text" ? (
+            <FormControl>
+              <Input
+                {...field}
+                className="text-neutral-900 w-full"
+                placeholder={props.field.placeholder || "Your answer"}
+                type="text"
+              />
+            </FormControl>
+          ) : null}
+
+          {props.field.type === "single_select" ? (
+            <RadioGroup
+              className="flex flex-col space-y-2"
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+            >
+              {props.field.options?.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <FormControl>
+                    <RadioGroupItem id={option} value={option} />
+                  </FormControl>
+                  <FormLabel
+                    className="font-normal text-neutral-700"
+                    htmlFor={option}
+                  >
+                    {option}
+                  </FormLabel>
+                </div>
+              ))}
+            </RadioGroup>
+          ) : null}
+
           {/* <FormMessage /> */}
         </FormItem>
       )}
