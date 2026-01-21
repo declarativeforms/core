@@ -1,4 +1,4 @@
-export default function ThankYou() {
+export function ThankYouPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
       <div className="p-8 text-center">
