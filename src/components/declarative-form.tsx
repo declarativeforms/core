@@ -50,6 +50,7 @@ export type IDeclarativeFormSection = {
 export type IDeclarativeForm = {
   version: number;
   title: string;
+  description?: string;
   sections: Array<IDeclarativeFormSection>;
 };
 
