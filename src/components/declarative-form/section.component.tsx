@@ -29,7 +29,12 @@ export function DeclarativeFormSection(props: {
           )
         )}
 
-        <Button type="submit">Next</Button>
+        <div className="flex gap-3 justify-end">
+          <Button type="button" variant="outline">
+            Back
+          </Button>
+          <Button type="submit">Next</Button>
+        </div>
       </form>
     </FormProvider>
   );

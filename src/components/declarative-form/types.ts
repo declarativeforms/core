@@ -23,8 +23,10 @@ export type IDeclarativeFormSection = {
 };
 
 export type IDeclarativeForm = {
+  id?: string;
   version: number;
   title: string;
   description?: string;
   sections: Array<IDeclarativeFormSection>;
+  connections: Array<{ type: "webhook"; url: string }>;
 };
