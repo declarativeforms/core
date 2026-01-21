@@ -7,6 +7,7 @@ import {
   type RegisterOptions,
   type UseFormReturn,
 } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Button,
@@ -14,7 +15,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
   Input,
   Select,
   SelectContent,
@@ -102,7 +102,7 @@ export function DeclarativeFormField(props: {
               />
             </FormControl>
           )}
-          <FormMessage />
+          {/* <FormMessage /> */}
         </FormItem>
       )}
     />
@@ -151,8 +151,16 @@ export function DeclarativeForm() {
     },
   });
 
-  const [data, setData] = useState<FieldValues>({
-    first_name: "Barend",
+  const [searchParams] = useSearchParams();
+
+  const [data, setData] = useState<FieldValues>(() => {
+    const initialData: FieldValues = {};
+
+    for (const [key, value] of searchParams.entries()) {
+      initialData[key] = value;
+    }
+
+    return initialData;
   });
 
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
