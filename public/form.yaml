@@ -1,0 +1,112 @@
+version: 1
+title: "Sample"
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: select
+        label: How do you usually build forms today?
+        placeholder: Select a option
+        options:
+          - "Visual tools (Google Forms, Typeform, etc.)"
+          - "Markdown-style tools (Tally, Notion, etc.)"
+          - "Custom code"
+          - "A mix of the above"
+          - "Other"
+        validators:
+          - required
+    next: section_2
+
+  - id: section_2
+    title: "Section 2"
+    fields:
+      - id: question_2
+        type: select
+        label: What’s the most frustrating part of that approach?
+        placeholder: Select a option
+        options:
+          - Hard to keep track once forms get complex
+          - Logic/conditions feel messy
+          - Too much UI / clicking around
+          - Have to rebuild similar forms repeatedly
+          - Data ends up in the wrong place
+          - Nothing major
+          - Other
+        validators:
+          - required
+    next: section_3
+
+  - id: section_3
+    title: "Section 3"
+    fields:
+      - id: question_3
+        type: select
+        label: Would defining forms as simple config in a GitHub repo make sense for you?
+        placeholder: Select a option
+        options:
+          - "Yes, that sounds appealing"
+          - "Maybe, I’d need to see more"
+          - "Probably not"
+        validators:
+          - required
+    next:
+      - when: data.question_3 == "Maybe, I’d need to see more" || data.question_3 == "Probably not"
+        go: section_4
+      - else: section_5
+
+  - id: section_4
+    title: "Section 4"
+    fields:
+      - id: question_4
+        type: text
+        label: If you answered “maybe” or “no”, what feels off?
+        validators:
+          - required
+    next: section_5
+
+  - id: section_5
+    title: "Section 5"
+    fields:
+      - id: email_address
+        type: email
+        label: Want to stay in the loop?
+        placeholder: foo.bar@example.com
+    next: done
+    
+# rules:
+#   - on: init
+#     do:
+#       - set: startDate
+#         to: date.addDays(date.today(), 7)
+
+#   - on: change
+#     watch: startDate
+#     when: startDate != null && (endDate == null || meta.endDate.touched == false)
+#     do:
+#       - set: endDate
+#         to: date.addYears(startDate, 1)
+
+# validation:
+#   - field: startDate
+#     validators: [required]
+
+#   - field: endDate
+#     validators:
+#       - required
+#       - when: startDate != null
+#         validator:
+#           afterOrEqual: startDate
+
+#   - field: passportNumber
+#     when: idType == "Passport"
+#     validators:
+#       - required
+#       - match: { pattern: "^[A-Z0-9]{6,9}$" }
+
+#   - field: nationalIdNumber
+#     when: idType == "NationalID"
+#     validators:
+#       - required
+#       - minLength: 6

@@ -1,3 +1,4 @@
+import yaml from "js-yaml";
 import { useState } from "react";
 import {
   FormProvider,
@@ -6,6 +7,7 @@ import {
   type RegisterOptions,
   type UseFormReturn,
 } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import {
   Button,
   FormControl,
@@ -26,6 +28,7 @@ export type IDeclarativeFormField = {
   type: string;
   label: string;
   options?: Array<string>;
+  placeholder?: string;
   validators?: Array<"required">;
 };
 
@@ -74,7 +77,11 @@ export function DeclarativeFormField(props: {
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={`Select a ${props.field.label}`} />
+                  <SelectValue
+                    placeholder={
+                      props.field.placeholder || `Select a ${props.field.label}`
+                    }
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -87,7 +94,12 @@ export function DeclarativeFormField(props: {
             </Select>
           ) : (
             <FormControl>
-              <Input {...field} className="text-neutral-900 w-full" />
+              <Input
+                {...field}
+                className="text-neutral-900 w-full"
+                placeholder={props.field.placeholder}
+                type={props.field.type}
+              />
             </FormControl>
           )}
           <FormMessage />
@@ -129,81 +141,37 @@ export function DeclarativeFormSection(props: {
   );
 }
 
-const formDef: IDeclarativeForm = {
-  version: 1,
-  title: "Application",
-  sections: [
-    {
-      id: "personal",
-      title: "Personal",
-      fields: [
-        {
-          id: "first_name",
-          type: "text",
-          label: "First Name",
-          validators: ["required"],
-        },
-        {
-          id: "last_name",
-          type: "text",
-          label: "Last Name",
-          validators: ["required"],
-        },
-      ],
-      next: "identity",
-    },
-    {
-      id: "identity",
-      title: "Identity",
-      fields: [
-        {
-          id: "idType",
-          type: "select",
-          label: "ID type",
-          options: ["Passport", "NationalID"],
-          validators: ["required"],
-        },
-      ],
-      next: [
-        { when: "data.idType === 'Passport'", go: "passport" },
-        { else: "nationalId" },
-      ],
-    },
-    {
-      id: "passport",
-      title: "Passport",
-      fields: [
-        {
-          id: "passport",
-          type: "text",
-          label: "Passport",
-          validators: ["required"],
-        },
-      ],
-      next: "done",
-    },
-    {
-      id: "nationalId",
-      title: "National ID",
-      fields: [
-        {
-          id: "identity_number",
-          type: "text",
-          label: "Identity Number",
-          validators: ["required"],
-        },
-      ],
-      next: "done",
-    },
-  ],
-};
-
 export function DeclarativeForm() {
+  const {
+    data: formDef,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["form"],
+    queryFn: async () => {
+      const response = await fetch("/form.yaml");
+
+      return yaml.load(await response.text()) as IDeclarativeForm;
+    },
+  });
+
   const [data, setData] = useState<FieldValues>({
     first_name: "Barend",
   });
 
-  const [activeSectionId, setActiveSectionId] = useState("personal");
+  const [activeSectionId, setActiveSectionId] = useState("section_1"); // TODO
+
+  if (isLoading) {
+    return <></>;
+  }
+
+  if (error) {
+    return <></>;
+  }
+
+  if (!formDef) {
+    return null;
+  }
 
   const activeSection = formDef.sections.find(
     (section) => section.id === activeSectionId
@@ -232,7 +200,7 @@ export function DeclarativeForm() {
   }
 
   if (!activeSection) {
-    return <></>;
+    return <></>; // Or a not found component
   }
 
   return (
@@ -244,7 +212,6 @@ export function DeclarativeForm() {
           section={activeSection}
           onSubmit={(sectionData: FieldValues) => {
             const newData = { ...data, ...sectionData };
-
             setData(newData);
 
             const currentSection = formDef.sections.find(
@@ -256,7 +223,6 @@ export function DeclarativeForm() {
             }
 
             let nextSectionId = "done";
-
             if (typeof currentSection.next === "string") {
               nextSectionId = currentSection.next;
             } else {
@@ -267,18 +233,15 @@ export function DeclarativeForm() {
                       "data",
                       `return ${rule.when}`
                     );
-
                     if (condition(newData)) {
                       nextSectionId = rule.go;
                       break;
                     }
-
                   } catch (e) {
                     console.error("Error executing when condition:", e);
                   }
                 } else if ("else" in rule) {
                   nextSectionId = rule.else;
-                  
                   break;
                 }
               }
