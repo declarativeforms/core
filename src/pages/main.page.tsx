@@ -19,7 +19,9 @@ export function MainPage() {
   const { data: form } = useQuery({
     queryKey: ["form"],
     queryFn: async () => {
-      const response = await fetch("/findhomes-001.yaml");
+      const response = await fetch(
+        `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/declarativeforms/forms/f8h2r0`
+      );
       return yaml.load(await response.text()) as IDeclarativeForm;
     },
   });
