@@ -33,11 +33,16 @@ export function DeclarativeFormSection(props: {
           <Button
             type="button"
             variant="outline"
+            className="h-auto py-3 px-6"
             disabled={form.formState.isSubmitting}
           >
             Back
           </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            className="h-auto py-3 px-6"
+            disabled={form.formState.isSubmitting}
+          >
             Next
           </Button>
         </div>

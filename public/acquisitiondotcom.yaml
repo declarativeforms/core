@@ -1,0 +1,40 @@
+version: 1
+title: "Meet the Acquisition.com Team for a private workshop in Vegas."
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla purus sed odio efficitur sodales. Duis accumsan mattis pulvinar. Nullam sed dolor in ligula viverra scelerisque."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: short_text
+        label: First name
+        validators:
+          - required
+      - id: question_2
+        type: short_text
+        label: Last name
+        validators:
+          - required
+      - id: question_3
+        type: email
+        label: Email
+        validators:
+          - required
+      - id: question_4
+        type: short_text
+        label: Phone number
+        validators:
+          - required
+      - id: question_5
+        type: single_select
+        label: Annual Business Revenue
+        options:
+          - Under $100k
+          - $100k to $250k
+          - $250k to $500k
+          - $500k to $1M
+          - $30 Million +
+        validators:
+          - required
+    next: done
