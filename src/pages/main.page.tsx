@@ -22,6 +22,7 @@ export function MainPage() {
       const response = await fetch(
         `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/declarativeforms/forms/f8h2r0`
       );
+
       return yaml.load(await response.text()) as IDeclarativeForm;
     },
   });
@@ -53,7 +54,22 @@ export function MainPage() {
         </CardHeader>
 
         <CardContent className="p-6 pt-6">
-          <DeclarativeForm form={form} initialData={data} />
+          <DeclarativeForm
+            form={form}
+            initialData={data}
+            onSubmit={async (data) => {
+              await fetch(
+                `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/declarativeforms/forms/f8h2r0/submissions`,
+                {
+                  body: JSON.stringify(data),
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  method: "POST",
+                }
+              );
+            }}
+          />
         </CardContent>
       </Card>
 

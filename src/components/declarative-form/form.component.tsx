@@ -7,6 +7,7 @@ import type { IDeclarativeForm } from "./types";
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
   initialData: FieldValues;
+  onSubmit: (data: FieldValues) => void | Promise<void>;
 }) {
   const navigate = useNavigate();
 
@@ -35,7 +36,7 @@ export function DeclarativeForm(props: {
       key={activeSectionId}
       data={data}
       section={activeSection}
-      onSubmit={(sectionData: FieldValues) => {
+      onSubmit={async (sectionData: FieldValues) => {
         const newData = { ...data, ...sectionData };
         setData(newData);
 
@@ -68,6 +69,11 @@ export function DeclarativeForm(props: {
             }
           }
         }
+
+        if (nextSectionId === "done") {
+          await props.onSubmit(newData);
+        }
+
         setActiveSectionId(nextSectionId);
       }}
     />

@@ -6,7 +6,7 @@ import { Button } from "../ui";
 export function DeclarativeFormSection(props: {
   data: FieldValues;
   section: IDeclarativeFormSection;
-  onSubmit: (data: FieldValues) => void;
+  onSubmit: (data: FieldValues) => void | Promise<void>;
 }) {
   const form = useForm({
     defaultValues: props.section.fields.reduce((acc, field) => {
@@ -30,10 +30,16 @@ export function DeclarativeFormSection(props: {
         )}
 
         <div className="flex gap-4 justify-end mt-2">
-          <Button type="button" variant="outline">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={form.formState.isSubmitting}
+          >
             Back
           </Button>
-          <Button type="submit">Next</Button>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            Next
+          </Button>
         </div>
       </form>
     </FormProvider>
