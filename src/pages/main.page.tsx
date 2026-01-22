@@ -60,7 +60,7 @@ export function MainPage() {
             initialData={data}
             onSubmit={async (data) => {
               await fetch(
-                `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/declarativeforms/forms/f8h2r0/submissions`,
+                `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}/submissions`,
                 {
                   body: JSON.stringify(data),
                   headers: {
