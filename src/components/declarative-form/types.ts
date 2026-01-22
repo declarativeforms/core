@@ -3,6 +3,7 @@ export type IDeclarativeFormField = {
   type:
     | "dropdown"
     | "email"
+    | "hidden"
     | "long_text"
     | "short_text"
     | "single_select"
