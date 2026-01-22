@@ -1,73 +1,47 @@
-# React + TypeScript + Vite
+# Declarative Forms
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Git-native forms and surveys
 
-Currently, two official plugins are available:
+Declarative Forms is a developer-first alternative to traditional form platforms. Instead of building forms through visual editors, forms are defined as declarative configuration in a GitHub repository.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This approach lets forms evolve alongside your codebase, using the same workflows teams already rely on for collaboration, review, and change management. It’s designed for developers who want a more predictable, maintainable way to create and manage forms—without being constrained by opaque UIs.
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Transform any GitHub repository into a form engine in under 60 seconds.
 
-## Expanding the ESLint configuration
+### 1. Add a config file
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Create a file named `feedback.yaml` in the root of your repository:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```yaml
+title: "Quick Feedback"
+sections:
+  - id: main
+    fields:
+      - id: feedback
+        type: long_text
+        label: "What can we improve?"
+    next: done
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+connections:
+  - type: webhook
+    url: https://your-api.com/hooks/form
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Push to GitHub
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Commit and push the file to your repository.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 3. Open your form
+
+Your form is live immediately at:
+`https://declarativeforms.com/<owner>/<repository>/feedback`
+
+## The problem with form builders
+
+Form platforms work well when forms are simple. But as soon as forms become part of real workflows—changing over time, reused across contexts, or shared across teams—they start to feel limiting.
+
+Most tools force you to manage forms through visual interfaces that hide structure and logic behind layers of UI. This makes it hard to see what’s actually going on, hard to track changes over time, and hard to treat forms as something that can be maintained with the same discipline as the rest of a system.
+
+At some point, you either live with the constraints, or you start wishing forms could be defined the same way you define everything else: explicitly, in one place, and under version control.

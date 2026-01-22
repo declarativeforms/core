@@ -54,20 +54,25 @@ export function DeclarativeForm(props: {
         } else {
           for (const rule of currentSection.next) {
             if ("when" in rule) {
-              try {
-                const condition = new Function("data", `return ${rule.when}`);
-                if (condition(newData)) {
-                  nextSectionId = rule.go;
-                  break;
-                }
-              } catch (e) {
-                console.error("Error executing when condition:", e);
+              const condition = new Function("data", `return ${rule.when}`);
+              if (condition(newData)) {
+                nextSectionId = rule.go;
+
+                break;
               }
             } else if ("else" in rule) {
               nextSectionId = rule.else;
               break;
             }
           }
+        }
+
+        if (nextSectionId.startsWith("https://")) {
+          await props.onSubmit(newData);
+
+          window.location.href = nextSectionId;
+
+          return;
         }
 
         if (nextSectionId === "done") {

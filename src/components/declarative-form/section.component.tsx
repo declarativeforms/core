@@ -10,7 +10,7 @@ export function DeclarativeFormSection(props: {
 }) {
   const form = useForm({
     defaultValues: props.section.fields.reduce((acc, field) => {
-      acc[field.id] = props.data[field.id];
+      acc[field.id] = props.data[field.id] || "";
 
       return acc;
     }, {} as FieldValues),
