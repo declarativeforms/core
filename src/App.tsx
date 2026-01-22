@@ -5,6 +5,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
+      <Route path="/:id" element={<MainPage />} />
+      <Route path="/:owner/:repository/:file" element={<MainPage />} />
       <Route path="/thank-you" element={<ThankYouPage />} />
       <Route path="/oauth/github" element={<OAuthGitHubPage />} />
     </Routes>

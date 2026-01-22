@@ -1,7 +1,7 @@
 import yaml from "js-yaml";
 import { useState } from "react";
 import type { FieldValues } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -14,13 +14,14 @@ import {
 } from "@/components";
 
 export function MainPage() {
+  const params = useParams();
   const [searchParams] = useSearchParams();
 
   const { data: form } = useQuery({
     queryKey: ["form"],
     queryFn: async () => {
       const response = await fetch(
-        `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/declarativeforms/forms/f8h2r0`
+        `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
       );
 
       return yaml.load(await response.text()) as IDeclarativeForm;
@@ -53,7 +54,7 @@ export function MainPage() {
           ) : null}
         </CardHeader>
 
-        <CardContent className="p-6 pt-6">
+        <CardContent className="p-6 pt-3">
           <DeclarativeForm
             form={form}
             initialData={data}

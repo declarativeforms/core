@@ -15,7 +15,9 @@ Transform any GitHub repository into a form engine in under 60 seconds.
 Create a file named `feedback.yaml` in the root of your repository:
 
 ```yaml
+version: 1
 title: "Quick Feedback"
+description: ""
 sections:
   - id: main
     fields:
