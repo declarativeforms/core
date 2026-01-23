@@ -38,7 +38,7 @@ Commit and push the file to your repository.
 ### 3. Open your form
 
 Your form is live immediately at:
-`https://declarativeforms.com/<owner>/<repository>/feedback`
+`https://app.declarativeforms.com/<owner>/<repository>/feedback`
 
 ## The problem with form builders
 
@@ -47,3 +47,9 @@ Form platforms work well when forms are simple. But as soon as forms become part
 Most tools force you to manage forms through visual interfaces that hide structure and logic behind layers of UI. This makes it hard to see what’s actually going on, hard to track changes over time, and hard to treat forms as something that can be maintained with the same discipline as the rest of a system.
 
 At some point, you either live with the constraints, or you start wishing forms could be defined the same way you define everything else: explicitly, in one place, and under version control.
+
+## Feedback & Feature Requests
+
+Have an idea for a new feature or found something that could be improved? We'd love to hear from you.
+
+You can submit and vote on feature requests here: [Submit a Feature Request](https://declarative-forms.canny.io)

@@ -12,6 +12,7 @@ export type IDeclarativeFormField = {
   options?: Array<string>;
   placeholder?: string;
   validators?: Array<"required">;
+  visible_when?: string;
 };
 
 export type IDeclarativeFormSection = {

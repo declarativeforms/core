@@ -1,7 +1,8 @@
-import type {
-  FieldValues,
-  RegisterOptions,
-  UseFormReturn,
+import {
+  useWatch,
+  type FieldValues,
+  type RegisterOptions,
+  type UseFormReturn,
 } from "react-hook-form";
 import type { IDeclarativeFormField } from "./types";
 import {
@@ -25,6 +26,25 @@ export function DeclarativeFormField(props: {
   field: IDeclarativeFormField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
+  const formData = useWatch({ control: props.form.control });
+
+  const isVisible = (() => {
+    if (!props.field.visible_when) {
+      return true;
+    }
+
+    const condition = new Function(
+      "data",
+      `return ${props.field.visible_when}`
+    );
+
+    return condition(formData);
+  })();
+
+  if (!isVisible) {
+    return null;
+  }
+
   const isRequired = props.field.validators?.includes("required");
 
   const rules: RegisterOptions = {};
@@ -55,7 +75,7 @@ export function DeclarativeFormField(props: {
           {props.field.type === "dropdown" ? (
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm">
+                <SelectTrigger className="w-full !h-auto !py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm">
                   <SelectValue
                     placeholder={
                       props.field.placeholder || `Select a ${props.field.label}`
@@ -158,7 +178,7 @@ export function DeclarativeFormField(props: {
           {props.field.type === "single_select" ? (
             <FormControl>
               <RadioGroup
-                className="flex flex-col space-y-2"
+                className="flex flex-col space-y-2 gap-0"
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
