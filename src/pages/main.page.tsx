@@ -18,10 +18,14 @@ export function MainPage() {
   const [searchParams] = useSearchParams();
 
   const { data: form } = useQuery({
-    queryKey: ["form"],
+    queryKey: ["form", params.id, params.owner, params.repository, params.file],
     queryFn: async () => {
       const response = await fetch(
-        `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
+        params.id
+          ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.id}`
+          : params.owner && params.repository && params.file
+          ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
+          : "/test.yaml"
       );
 
       return yaml.load(await response.text()) as IDeclarativeForm;
@@ -60,7 +64,9 @@ export function MainPage() {
             initialData={data}
             onSubmit={async (data) => {
               await fetch(
-                `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}/submissions`,
+                `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${
+                  form.id || ""
+                }/submissions`,
                 {
                   body: JSON.stringify(data),
                   headers: {

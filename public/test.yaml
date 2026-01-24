@@ -1,5 +1,5 @@
 version: 1
-title: "Stitch Money"
+title: "Quick research — how engineers work with forms"
 description: "One API integration for enterprise online payments across South Africa. Accept Pay by bank, debit + credit card, cash, manual EFT, debit order and crypto."
 
 sections:
@@ -7,51 +7,26 @@ sections:
     title: "Section 1"
     fields:
       - id: question_1
-        type: multiple_select
-        label: What type of payments are you looking for?
-        options:
-          - Online payments
-          - In person payments
-        validators:
-          - required
-      - id: question_2
         type: single_select
-        label: Does your company use an e-commerce platform like Shopify or WooCommerce?
+        label: Are you a South Africa Citizen?
+        placeholder: Select an option
         options:
           - Yes
           - No
         validators:
           - required
+      - id: question_2
+        type: short_text
+        label: South African ID Number
+        placeholder: Your answer
+        visible_when: data.question_1 === 'Yes'
+        validators:
+          - required
       - id: question_3
-        type: multiple_select
-        label: Which of the following e-commerce platforms do you use?
-        options:
-          - Shopify
-          - WooCommerce
-          - Squarespace
-          - Webflow
-          - Other
-        validators:
-          - required
-        visible_when: data.question_2 === 'Yes'
-    next: section_2
-
-  - id: section_2
-    title: "Section 2"
-    fields:
-      - id: first_name
         type: short_text
-        label: First name
-        validators:
-          - required
-      - id: last_name
-        type: short_text
-        label: Last name
-        validators:
-          - required
-      - id: email_address
-        type: email
-        label: Work email
+        label: Passport Number
+        placeholder: Your answer
+        visible_when: data.question_1 === 'No'
         validators:
           - required
     next: done
