@@ -34,9 +34,11 @@ export function MainPage() {
 
   const [data] = useState<FieldValues>(() => {
     const initialData: FieldValues = {};
+
     for (const [key, value] of searchParams.entries()) {
       initialData[key] = value;
     }
+
     return initialData;
   });
 
