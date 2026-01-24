@@ -18,6 +18,8 @@ export function DeclarativeForm(props: {
   );
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     if (activeSectionId === "done") {
       navigate("/thank-you");
     }
