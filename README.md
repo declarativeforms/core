@@ -62,7 +62,7 @@ At some point, you either live with the constraints, or you start wishing forms 
 
 ### Other
 
-- [Visible When](https://github.com/declarativeforms/examples/blob/main/visible_when.yaml.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/visible_when.yaml))
+- [Visible When](https://github.com/declarativeforms/examples/blob/main/visible_when.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/visible_when))
 
 ## Feedback & Feature Requests
 
