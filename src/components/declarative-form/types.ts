@@ -5,9 +5,9 @@ export type IDeclarativeFormField = {
     | "email"
     | "hidden"
     | "long_text"
+    | "multiple_select"
     | "short_text"
-    | "single_select"
-    | "multiple_select";
+    | "single_select";
   label: string;
   options?: Array<string>;
   placeholder?: string;
