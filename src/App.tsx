@@ -1,5 +1,10 @@
 import { Route, Routes } from "react-router-dom";
-import { MainPage, OAuthGitHubPage, ThankYouPage } from "./pages";
+import {
+  AdminSlugSubmissionsPage,
+  OAuthGitHubPage,
+  MainPage,
+  ThankYouPage,
+} from "./pages";
 
 function App() {
   return (
@@ -9,6 +14,10 @@ function App() {
       <Route path="/:owner/:repository/:file" element={<MainPage />} />
       <Route path="/thank-you" element={<ThankYouPage />} />
       <Route path="/oauth/github" element={<OAuthGitHubPage />} />
+      <Route
+        path="/admin/:owner/:repository/:file/submissions"
+        element={<AdminSlugSubmissionsPage />}
+      />
     </Routes>
   );
 }
