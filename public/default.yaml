@@ -1,0 +1,282 @@
+version: 1
+title: "Declarative Forms: 30-min Interview Screening (with $50 voucher)"
+description: "Help shape a new approach to forms: define forms in a config file (YAML) and manage them like software. This quick form (2–3 min) helps us understand who this is for. If you're a fit and opt in, we’ll invite you to a 30-min call and send a $50 voucher as thanks."
+sections:
+  - id: section_1
+    title: "About you (broad)"
+    fields:
+      - id: role
+        type: single_select
+        label: "What best describes your role?"
+        options:
+          - Founder / entrepreneur
+          - Product manager
+          - Marketing / growth
+          - Operations / RevOps
+          - Data / analytics
+          - Software engineer / developer
+          - Designer
+          - Student
+          - Other
+        validators:
+          - required
+
+      - id: org_type
+        type: single_select
+        label: "What type of organization do you work in?"
+        options:
+          - Startup (0–20)
+          - Scale-up (21–100)
+          - Mid-size (101–500)
+          - Enterprise (500+)
+          - Agency / consultancy
+          - Open source / community
+          - Solo / freelancer
+          - Not currently working
+        validators:
+          - required
+
+      - id: forms_frequency
+        type: single_select
+        label: "How often do you create or manage forms in your work?"
+        options:
+          - Very often (weekly or more)
+          - Sometimes (monthly)
+          - Rarely
+          - Never
+        validators:
+          - required
+
+    next: section_2
+
+  - id: section_2
+    title: "How you use forms (behavior)"
+    fields:
+      - id: forms_use_cases
+        type: multiple_select
+        label: "What do you mainly use forms for? (Select all that apply)"
+        options:
+          - Collecting feedback or surveys
+          - Lead capture
+          - User onboarding
+          - Internal workflows / requests
+          - Community or event management
+          - Research / interviews
+          - Automation / integrations
+          - Education / training
+          - Other
+
+      - id: current_form_tools
+        type: multiple_select
+        label: "Which tools do you currently use for forms? (Select all that apply)"
+        options:
+          - Google Forms
+          - Typeform
+          - Tally
+          - Airtable forms
+          - Notion forms
+          - HubSpot / CRM forms
+          - Microsoft Forms
+          - Custom-built
+          - None
+          - Other
+
+      - id: biggest_frustration
+        type: long_text
+        label: "What do you dislike most about current form tools? (1–3 sentences)"
+        placeholder: "E.g., hard to maintain, poor versioning, ugly UX, limited logic, annoying integrations, inconsistent data, etc."
+
+    next: section_3
+
+  - id: section_3
+    title: "How you like tools to work (preference signals)"
+    fields:
+      - id: preference_statement
+        type: single_select
+        label: "Which statement resonates more with you?"
+        options:
+          - I prefer visual, no-code tools
+          - I prefer structured, system-driven tools
+          - It depends on the use case
+          - I don’t really care
+        validators:
+          - required
+
+      - id: importance_customization
+        type: single_select
+        label: "How important is customization for you?"
+        options:
+          - Not important
+          - Slightly important
+          - Moderately important
+          - Very important
+          - Extremely important
+        validators:
+          - required
+
+      - id: importance_automation
+        type: single_select
+        label: "How important is automation/integrations for you?"
+        options:
+          - Not important
+          - Slightly important
+          - Moderately important
+          - Very important
+          - Extremely important
+        validators:
+          - required
+
+      - id: importance_structured_data
+        type: single_select
+        label: "How important is getting clean/structured data out of forms?"
+        options:
+          - Not important
+          - Slightly important
+          - Moderately important
+          - Very important
+          - Extremely important
+        validators:
+          - required
+
+      - id: importance_collaboration
+        type: single_select
+        label: "How important is collaboration (comments, review, audit trail) on form changes?"
+        options:
+          - Not important
+          - Slightly important
+          - Moderately important
+          - Very important
+          - Extremely important
+        validators:
+          - required
+
+    next: section_4
+
+  - id: section_4
+    title: "Reaction to the idea (product pull)"
+    fields:
+      - id: idea_appeal
+        type: single_select
+        label: "How appealing is this idea?"
+        placeholder: ""
+        options:
+          - Not appealing
+          - Slightly interesting
+          - Interesting
+          - Very appealing
+          - This feels perfect for me
+        validators:
+          - required
+
+      - id: idea_description_ack
+        type: single_select
+        label: "Quick check: the idea is to define forms in a config file (YAML/JSON) and manage them like software (versioning, reviews, deployments). Does that make sense?"
+        options:
+          - Yes
+          - Mostly
+          - Not really
+        validators:
+          - required
+
+      - id: most_exciting_benefits
+        type: multiple_select
+        label: "What excites you most about that approach? (Select all that apply)"
+        options:
+          - Version control for forms
+          - Reusability (templates/components)
+          - Collaboration via reviews/approvals
+          - Automation (pipelines, CI/CD, webhooks)
+          - Structured schemas / cleaner data
+          - Transparency / audit trail
+          - Keeping everything in one place (repo)
+          - Nothing in particular
+
+      - id: main_concern
+        type: long_text
+        label: "What would be your biggest concern or reason not to use this?"
+        placeholder: "E.g., too technical, takes longer than a UI builder, team adoption, needs better design, etc."
+
+    next: section_5
+
+  - id: section_5
+    title: "Technical & workflow fit (for segmentation)"
+    fields:
+      - id: technical_comfort
+        type: single_select
+        label: "How comfortable are you with technical tools?"
+        options:
+          - I write production code
+          - I can read/write basic code or config
+          - I mainly use no-code tools
+          - I’m not technical
+        validators:
+          - required
+
+      - id: tools_used
+        type: multiple_select
+        label: "Which of these do you actively use today? (Select all that apply)"
+        options:
+          - GitHub / GitLab
+          - YAML / JSON / config files
+          - APIs
+          - CI/CD (GitHub Actions, GitLab CI, etc.)
+          - No-code automation (Zapier, Make, n8n)
+          - None of the above
+
+      - id: icp_context
+        type: single_select
+        label: "Which context best matches where you’d use forms most?"
+        options:
+          - SaaS / tech product (internal workflows, onboarding, support)
+          - Developer tools company
+          - Open source project / community workflows
+          - Ops / RevOps / internal process automation
+          - Marketing / growth workflows
+          - Education / training
+          - Personal projects
+          - Not sure yet
+        validators:
+          - required
+
+    next: section_6
+
+  - id: section_6
+    title: "Interview invite (optional)"
+    fields:
+      - id: interview_opt_in
+        type: single_select
+        label: "Would you be open to a 30-min interview? (We’ll send a $10 voucher as thanks.)"
+        options:
+          - Yes
+          - Maybe
+          - No
+        validators:
+          - required
+
+      - id: contact_email
+        type: email
+        label: "Email (so we can reach you)"
+        placeholder: "name@company.com"
+        visible_when: data.interview_opt_in === 'Yes' || data.interview_opt_in === 'Maybe'
+        validators:
+          - required
+
+      - id: profile_link
+        type: short_text
+        label: "LinkedIn or GitHub profile (optional, helps us prep)"
+        placeholder: "https://linkedin.com/in/... or https://github.com/..."
+        visible_when: data.interview_opt_in === 'Yes' || data.interview_opt_in === 'Maybe'
+
+      - id: availability
+        type: short_text
+        label: "What timezone are you in, and what times usually work?"
+        placeholder: "e.g., CET, weekdays 9–12"
+        visible_when: data.interview_opt_in === 'Yes' || data.interview_opt_in === 'Maybe'
+
+      - id: final_notes
+        type: long_text
+        label: "Anything else you want to share? (optional)"
+        placeholder: "If you have a specific workflow, pain point, or example, drop it here."
+        visible_when: data.interview_opt_in === 'Yes' || data.interview_opt_in === 'Maybe'
+
+    next: done

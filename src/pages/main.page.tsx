@@ -25,7 +25,7 @@ export function MainPage() {
           ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.id}`
           : params.owner && params.repository && params.file
           ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
-          : "/test.yaml"
+          : "/default.yaml"
       );
 
       return yaml.load(await response.text()) as IDeclarativeForm;
