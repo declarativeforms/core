@@ -100,6 +100,9 @@ export function DeclarativeFormField(props: {
           {props.field.type === "single_select" ? (
             <SingleSelectField field={props.field} formField={field} />
           ) : null}
+          {props.field.type === "url" ? (
+            <InputField field={props.field} formField={field} type="url" />
+          ) : null}
         </FormItem>
       )}
     />

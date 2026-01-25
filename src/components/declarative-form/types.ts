@@ -8,7 +8,8 @@ export type IDeclarativeFormField = {
     | "long_text"
     | "multiple_select"
     | "short_text"
-    | "single_select";
+    | "single_select"
+    | "url";
   label: string;
   options?: Array<string>;
   placeholder?: string;
