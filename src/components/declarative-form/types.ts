@@ -53,5 +53,6 @@ export type ISubmission = {
   data: Record<string, any>;
   form_id: string;
   id: string;
+  status: "partial" | "completed";
   updated_at: string;
 };
