@@ -82,13 +82,22 @@ export function MainPage() {
         </CardContent>
       </Card>
 
-      <div className="text-center text-neutral-400 text-xs tracking-wide">
-        Powered by{" "}
+      <div className="text-center text-neutral-400 text-xs tracking-wide space-x-2">
+        <span>
+          Powered by{" "}
+          <a
+            href="/"
+            className="font-medium text-neutral-600 underline-offset-4 hover:text-neutral-900 hover:underline transition-colors"
+          >
+            Declarative Forms
+          </a>
+        </span>
+        <span>•</span>
         <a
-          href="/"
+          href="/privacy-policy"
           className="font-medium text-neutral-600 underline-offset-4 hover:text-neutral-900 hover:underline transition-colors"
         >
-          Declarative Forms
+          Privacy Policy
         </a>
       </div>
     </div>

@@ -36,5 +36,21 @@ export type IDeclarativeForm = {
   title: string;
   description?: string;
   sections: Array<IDeclarativeFormSection>;
-  connections: Array<{ type: "webhook"; url: string }>;
+  connections: Array<
+    | {
+        type: "airtable";
+        connection_id: string;
+        base_id: string;
+        table_id_or_name: string;
+      }
+    | { type: "webhook"; url: string }
+  >;
+};
+
+export type ISubmission = {
+  created_at: string;
+  data: Record<string, any>;
+  form_id: string;
+  id: string;
+  updated_at: string;
 };
