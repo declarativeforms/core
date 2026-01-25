@@ -12,7 +12,14 @@ export type IDeclarativeFormField = {
   label: string;
   options?: Array<string>;
   placeholder?: string;
-  validators?: Array<"required">;
+  validators?: Array<
+    | "required"
+    | {
+        type: "pattern";
+        regex: string;
+        message?: string;
+      }
+  >;
   visible_when?: string;
 };
 

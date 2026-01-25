@@ -37,12 +37,24 @@ export function DeclarativeFormField(props: {
     return null;
   }
 
-  const isRequired = props.field.validators?.includes("required");
+  const isRequired = props.field.validators?.some((v) => v === "required");
 
   const rules: RegisterOptions = {};
 
-  if (isRequired) {
-    rules.required = `${props.field.label} is required.`;
+  if (props.field.validators) {
+    for (const validator of props.field.validators) {
+      if (validator === "required") {
+        rules.required = `${props.field.label} is required.`;
+      } else if (
+        typeof validator === "object" &&
+        validator.type === "pattern"
+      ) {
+        rules.pattern = {
+          value: new RegExp(validator.regex),
+          message: validator.message || `${props.field.label} is invalid.`,
+        };
+      }
+    }
   }
 
   const Label = () => (
