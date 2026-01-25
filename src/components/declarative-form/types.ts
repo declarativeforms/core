@@ -1,6 +1,7 @@
 export type IDeclarativeFormField = {
   id: string;
   type:
+    | "date"
     | "dropdown"
     | "email"
     | "hidden"

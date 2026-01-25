@@ -73,6 +73,9 @@ export function DeclarativeFormField(props: {
       render={({ field }) => (
         <FormItem className="mb-6 group">
           {Label()}
+          {props.field.type === "date" ? (
+            <DateField field={props.field} formField={field} />
+          ) : null}
           {props.field.type === "dropdown" ? (
             <DropdownField field={props.field} formField={field} />
           ) : null}
@@ -259,6 +262,7 @@ function SingleSelectField({
       >
         {field.options?.map((option) => {
           const isSelected = formField.value === option;
+
           return (
             <FormItem key={option}>
               <FormLabel
@@ -279,6 +283,25 @@ function SingleSelectField({
           );
         })}
       </RadioGroup>
+    </FormControl>
+  );
+}
+
+function DateField({
+  field,
+  formField,
+}: {
+  field: IDeclarativeFormField;
+  formField: ControllerRenderProps<FieldValues, string>;
+}) {
+  return (
+    <FormControl>
+      <Input
+        {...formField}
+        className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm"
+        placeholder={field.placeholder}
+        type="date"
+      />
     </FormControl>
   );
 }
