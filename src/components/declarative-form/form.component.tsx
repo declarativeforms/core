@@ -7,7 +7,7 @@ import type { IDeclarativeForm } from "./types";
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
   initialData: FieldValues;
-  onSubmit: (data: FieldValues) => void | Promise<void>;
+  onSubmit: (data: FieldValues, isPartial: boolean) => Promise<void>;
 }) {
   const navigate = useNavigate();
 
@@ -38,9 +38,9 @@ export function DeclarativeForm(props: {
       key={activeSectionId}
       data={data}
       section={activeSection}
-      onSubmit={async (sectionData: FieldValues) => {
-        const newData = { ...data, ...sectionData };
-        setData(newData);
+      onSubmit={async (x: FieldValues) => {
+        const result = { ...data, ...x };
+        setData(result);
 
         const currentSection = props.form.sections.find(
           (section) => section.id === activeSectionId
@@ -57,7 +57,7 @@ export function DeclarativeForm(props: {
           for (const rule of currentSection.next) {
             if ("when" in rule) {
               const condition = new Function("data", `return ${rule.when}`);
-              if (condition(newData)) {
+              if (condition(result)) {
                 nextSectionId = rule.go;
 
                 break;
@@ -70,7 +70,7 @@ export function DeclarativeForm(props: {
         }
 
         if (nextSectionId.startsWith("https://")) {
-          await props.onSubmit(newData);
+          await props.onSubmit(result, false);
 
           window.location.href = nextSectionId;
 
@@ -78,7 +78,9 @@ export function DeclarativeForm(props: {
         }
 
         if (nextSectionId === "done") {
-          await props.onSubmit(newData);
+          await props.onSubmit(result, false);
+        } else {
+          await props.onSubmit(result, true);
         }
 
         setActiveSectionId(nextSectionId);

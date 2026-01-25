@@ -10,6 +10,8 @@ export function MainPage() {
   const params = useParams();
   const [searchParams] = useSearchParams();
 
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+
   const { data: form } = useQuery({
     queryKey: ["form", params.id, params.owner, params.repository, params.file],
     queryFn: async () => {
@@ -44,19 +46,33 @@ export function MainPage() {
       <DeclarativeForm
         form={form}
         initialData={data}
-        onSubmit={async (data) => {
-          await fetch(
+        onSubmit={async (data, isPartial) => {
+          const url = new URL(
             `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${
               form.id || ""
-            }/submissions`,
-            {
-              body: JSON.stringify(data),
-              headers: {
-                "Content-Type": "application/json",
-              },
-              method: "POST",
-            }
+            }/submissions`
           );
+
+          if (isPartial) {
+            url.searchParams.set("partial", "true");
+          }
+
+          if (submissionId) {
+            url.searchParams.set("id", submissionId);
+          }
+
+          const response = await fetch(url.toString(), {
+            body: JSON.stringify(data),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+          });
+
+          const result = await response.json();
+          if (result && result.id) {
+            setSubmissionId(result.id);
+          }
         }}
       />
     </BasePage>
