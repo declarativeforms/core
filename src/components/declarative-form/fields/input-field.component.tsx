@@ -15,7 +15,7 @@ export function InputField({
     <FormControl>
       <Input
         {...formField}
-        className="w-full h-auto py-3 px-3 bg-white border-neutral-200 hover:border-neutral-300 focus-visible:ring-neutral-900 focus-visible:ring-1 text-sm text-neutral-900 placeholder:text-neutral-400 rounded-md transition-colors duration-200 shadow-sm"
+        className="bg-gray-50 h-14 leading-tight px-4 shadow-none text-gray-900 w-full placeholder:leading-tight placeholder:text-gray-400"
         placeholder={field.placeholder || "Your answer"}
         type={type}
       />

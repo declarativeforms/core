@@ -6,6 +6,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import type { IDeclarativeFormField } from "../types";
 
 export function MultipleSelectField({
@@ -31,11 +32,12 @@ export function MultipleSelectField({
             return (
               <FormItem>
                 <FormLabel
-                  className={`flex items-center space-x-3 w-full border rounded-md p-3 cursor-pointer transition-all duration-200 shadow-sm ${
-                    isChecked
-                      ? "border-neutral-900 ring-1 ring-neutral-900 bg-neutral-50"
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }`}
+                  className={cn(
+                    "bg-gray-50 border-1 border-gray-200 flex font-normal gap-3 h-14 leading-tight px-4 rounded-md text-base text-gray-900",
+                    {
+                      "border-gray-900": isChecked,
+                    }
+                  )}
                 >
                   <FormControl>
                     <Checkbox

@@ -58,10 +58,10 @@ export function DeclarativeFormField(props: {
   }
 
   const Label = () => (
-    <FormLabel className="block text-sm font-medium text-neutral-900 mb-2">
+    <FormLabel className="block font-medium text-base text-black tracking-tight">
       {props.field.label}
       {isRequired && (
-        <span className="text-red-500 ml-1 font-normal" aria-hidden="true">
+        <span className="font-normal ml-1 text-red-500" aria-hidden="true">
           *
         </span>
       )}
