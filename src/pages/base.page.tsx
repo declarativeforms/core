@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
+import { CookieConsent } from "@/components/cookie-consent";
 
 export function BasePage(props: {
   title: string;
@@ -33,7 +34,7 @@ export function BasePage(props: {
         <span>
           Powered by{" "}
           <a
-            href="/"
+            href="/declarativeforms/examples/advanced"
             className="font-medium text-neutral-600 underline-offset-4 hover:text-neutral-900 hover:underline transition-colors"
           >
             Declarative Forms
@@ -47,6 +48,8 @@ export function BasePage(props: {
           Privacy Policy
         </a>
       </div>
+
+      <CookieConsent />
     </div>
   );
 }
