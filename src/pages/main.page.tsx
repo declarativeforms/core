@@ -16,7 +16,7 @@ export function MainPage() {
 
   const [submissionId, setSubmissionId] = useState<string | null>(null);
 
-  const { data: form } = useQuery({
+  const { data: form, error } = useQuery({
     queryKey: ["form", params.id, params.owner, params.repository, params.file],
     queryFn: async () => {
       const response = await fetch(
@@ -26,6 +26,10 @@ export function MainPage() {
           ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
           : "/default.yaml"
       );
+
+      if (!response.ok) {
+        throw new Error(`Form not found: ${response.status}`);
+      }
 
       return yaml.load(await response.text()) as IDeclarativeForm;
     },
@@ -40,6 +44,15 @@ export function MainPage() {
 
     return initialData;
   });
+
+  if (error) {
+    return (
+      <HeroSection
+        title="Form Not Found"
+        description="The form you're looking for doesn't exist or has been removed."
+      />
+    );
+  }
 
   if (!form) {
     return null;
