@@ -1,6 +1,5 @@
 import yaml from "js-yaml";
-import mixpanel from "mixpanel-browser";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -37,14 +36,6 @@ export function MainPage() {
 
     return initialData;
   });
-
-  useEffect(() => {
-    mixpanel.init("6e8d95f7f929db16431813f3eb3f9c89", {
-      api_host: "https://api-eu.mixpanel.com",
-    });
-
-    mixpanel.track("Page View");
-  }, []);
 
   if (!form) {
     return null;

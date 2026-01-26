@@ -54,6 +54,7 @@ export type IDeclarativeForm = {
       }
     | { type: "webhook"; url: string }
   >;
+  mixpanel?: string;
 };
 
 export type ISubmission = {

@@ -1,3 +1,4 @@
+import mixpanel from "mixpanel-browser";
 import { useEffect, useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,15 @@ export function DeclarativeForm(props: {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(
     props.form.sections[0].id
   );
+
+  useEffect(() => {
+    if (props.form.mixpanel) {
+      mixpanel.init(props.form.mixpanel);
+      mixpanel.track("page_view", {
+        form_id: props.form.id,
+      });
+    }
+  }, [props.form.mixpanel, props.form.id, props.form.title]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -41,6 +51,13 @@ export function DeclarativeForm(props: {
       onSubmit={async (x: FieldValues) => {
         const result = { ...data, ...x };
         setData(result);
+
+        if (props.form.mixpanel) {
+          mixpanel.track("section_completed", {
+            form_id: props.form.id,
+            section_id: activeSectionId,
+          });
+        }
 
         const currentSection = props.form.sections.find(
           (section) => section.id === activeSectionId
