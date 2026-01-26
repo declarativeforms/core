@@ -54,6 +54,7 @@ export type IDeclarativeForm = {
       }
     | { type: "webhook"; url: string }
   >;
+  end_date?: string;
   mixpanel?: string;
 };
 
@@ -62,6 +63,10 @@ export type ISubmission = {
   data: Record<string, any>;
   form_id: string;
   id: string;
+  metadata: {
+    ip_address: string;
+    user_agent: string;
+  };
   status: "partial" | "completed";
   updated_at: string;
 };

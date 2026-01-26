@@ -3,7 +3,11 @@ import { useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { DeclarativeForm, type IDeclarativeForm } from "@/components";
+import {
+  DeclarativeForm,
+  HeroSection,
+  type IDeclarativeForm,
+} from "@/components";
 import { BasePage } from "./base.page";
 
 export function MainPage() {
@@ -39,6 +43,15 @@ export function MainPage() {
 
   if (!form) {
     return null;
+  }
+
+  if (form.end_date && new Date(form.end_date) < new Date()) {
+    return (
+      <HeroSection
+        title="Form Closed"
+        description=" This form is no longer accepting submissions."
+      />
+    );
   }
 
   return (
