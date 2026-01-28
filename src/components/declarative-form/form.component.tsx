@@ -20,7 +20,9 @@ export function DeclarativeForm(props: {
 
   useEffect(() => {
     if (props.form.mixpanel) {
-      mixpanel.init(props.form.mixpanel);
+      mixpanel.init(props.form.mixpanel, {
+        api_host: "https://api-eu.mixpanel.com",
+      });
       mixpanel.track("page_view", {
         form_id: props.form.id,
       });

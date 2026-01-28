@@ -1,29 +1,18 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "./ui";
 
-const COOKIE_CONSENT_KEY = "cookie-consent-accepted-1";
+const COOKIE_CONSENT_KEY = "cookie-consent";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const hasAccepted = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (!hasAccepted) {
+    const value = localStorage.getItem(COOKIE_CONSENT_KEY);
+
+    if (!value || value === "false") {
       setIsVisible(true);
     }
   }, []);
-
-  const handleAccept = () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "true");
-    setIsVisible(false);
-  };
-
-  const handleDecline = () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "false");
-    setIsVisible(false);
-  };
 
   if (!isVisible) return null;
 
@@ -41,14 +30,20 @@ export function CookieConsent() {
         </p>
         <div className="flex gap-2 shrink-0">
           <Button
-            onClick={handleDecline}
+            onClick={() => {
+              localStorage.setItem(COOKIE_CONSENT_KEY, "false");
+              setIsVisible(false);
+            }}
             size="sm"
             variant="outline"
           >
             Decline
           </Button>
           <Button
-            onClick={handleAccept}
+            onClick={() => {
+              localStorage.setItem(COOKIE_CONSENT_KEY, "true");
+              setIsVisible(false);
+            }}
             size="sm"
           >
             Accept
