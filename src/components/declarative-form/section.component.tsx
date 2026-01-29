@@ -29,18 +29,18 @@ export function DeclarativeFormSection(props: {
           )
         )}
 
-        <div className="flex gap-4 justify-end mt-8">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:gap-4 sm:justify-end mt-8">
           <Button
             type="button"
             variant="outline"
-            className="text-base h-14 px-6"
+            className="w-full sm:w-auto text-base h-14 px-6"
             disabled={form.formState.isSubmitting}
           >
             Back
           </Button>
           <Button
             type="submit"
-            className="text-base h-14 px-6"
+            className="w-full sm:w-auto text-base h-14 px-6"
             disabled={form.formState.isSubmitting}
           >
             Next

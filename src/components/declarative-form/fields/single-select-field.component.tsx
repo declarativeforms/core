@@ -38,7 +38,7 @@ export function SingleSelectField({
                 <FormControl>
                   <RadioGroupItem value={option} />
                 </FormControl>
-                <span className="">{option}</span>
+                <span>{option}</span>
               </FormLabel>
             </FormItem>
           );

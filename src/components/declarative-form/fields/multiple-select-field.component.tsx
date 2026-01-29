@@ -53,7 +53,7 @@ export function MultipleSelectField({
                       }}
                     />
                   </FormControl>
-                  <span className="font-normal text-sm text-neutral-700 select-none flex-1">
+                  <span className="flex-1">
                     {option}
                   </span>
                 </FormLabel>

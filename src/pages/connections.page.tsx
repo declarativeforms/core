@@ -29,18 +29,18 @@ export function ConnectionsPage() {
       description=" Your connection has been successfully created. Use the ID below in your YAML configuration."
     >
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-neutral-700">
+        <label className="text-sm font-medium text-gray-900">
           Connection ID
         </label>
-        <div className="flex items-center gap-2 p-3 bg-neutral-50 border border-neutral-200 rounded-lg group">
-          <code className="flex-1 font-mono text-sm text-neutral-800 break-all">
+        <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg group">
+          <code className="flex-1 font-mono text-sm text-gray-800 break-all">
             {id}
           </code>
           <Button
             variant="ghost"
             size="icon"
             onClick={copyToClipboard}
-            className="h-8 w-8 text-neutral-500 hover:text-neutral-900"
+            className="h-10 w-10 text-gray-500 hover:text-gray-900"
           >
             {copied ? (
               <Check className="h-4 w-4 text-green-600" />
@@ -50,7 +50,7 @@ export function ConnectionsPage() {
           </Button>
         </div>
       </div>
-      <p className="text-xs text-neutral-400">
+      <p className="mt-3 text-xs text-gray-400">
         This ID connects your form to Airtable, GitHub, or Google Sheets.
       </p>
     </BasePage>
