@@ -29,7 +29,7 @@ export function DeclarativeFormSection(props: {
           )
         )}
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:gap-4 sm:justify-end mt-8">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:gap-4 sm:justify-end mt-10">
           <Button
             type="button"
             variant="outline"

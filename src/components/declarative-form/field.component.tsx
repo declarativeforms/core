@@ -74,7 +74,7 @@ export function DeclarativeFormField(props: {
       name={props.field.id}
       rules={rules}
       render={({ field }) => (
-        <FormItem className="mb-4 sm:mb-6 group">
+        <FormItem className="mb-6 gap-3 group">
           {Label()}
           {props.field.type === "date" ? (
             <InputField field={props.field} formField={field} type="date" />

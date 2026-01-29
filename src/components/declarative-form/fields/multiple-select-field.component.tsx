@@ -17,7 +17,7 @@ export function MultipleSelectField({
   formControl: UseFormReturn<FieldValues>["control"];
 }) {
   return (
-    <div className="flex flex-col space-y-2">
+    <div className="flex flex-col space-y-3">
       {field.options?.map((option) => (
         <FormField
           key={option}

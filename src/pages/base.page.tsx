@@ -15,19 +15,19 @@ export function BasePage(props: {
 }) {
   return (
     <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
-      <Card className="mb-8 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
+      <Card className="mb-10 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
         <CardHeader className="p-6 border-b border-gray-100/50">
           <CardTitle className="text-xl font-bold tracking-tight text-gray-900">
             {props.title}
           </CardTitle>
           {props.description ? (
-            <CardDescription className="mt-1 text-base text-gray-500 leading-normal">
+            <CardDescription className="mt-1.5 text-base text-gray-500 leading-relaxed">
               {props.description}
             </CardDescription>
           ) : null}
         </CardHeader>
 
-        <CardContent className="p-6 pt-3">{props.children}</CardContent>
+        <CardContent className="p-6 pt-5">{props.children}</CardContent>
       </Card>
 
       <div className="text-center text-gray-400 text-xs tracking-wide space-x-2">

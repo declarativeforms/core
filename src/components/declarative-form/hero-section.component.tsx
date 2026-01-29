@@ -8,12 +8,12 @@ export function HeroSection(props: {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
       <div className="w-full max-w-[480px] mx-auto text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-6">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-8">
           {props.title}
         </h1>
 
         {props.description ? (
-          <p className="text-base text-gray-500 leading-relaxed mb-12">
+          <p className="text-base text-gray-500 leading-relaxed mb-10">
             {props.description}
           </p>
         ) : null}
