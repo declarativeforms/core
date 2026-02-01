@@ -33,7 +33,7 @@ export function MultipleSelectField({
               <FormItem>
                 <FormLabel
                   className={cn(
-                    "bg-gray-50 border-1 border-gray-200 flex font-normal gap-3 h-14 leading-tight px-4 rounded-md text-base text-gray-900",
+                    "bg-gray-50 border-1 border-gray-200 flex font-normal gap-3 h-11 leading-6 px-3.5 rounded-md text-base text-gray-900",
                     {
                       "border-gray-900": isChecked,
                     }

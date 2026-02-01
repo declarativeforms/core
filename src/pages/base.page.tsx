@@ -17,7 +17,7 @@ export function BasePage(props: {
     <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
       <Card className="mb-10 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
         <CardHeader className="p-6 border-b border-gray-100/50">
-          <CardTitle className="text-xl font-bold tracking-tight text-gray-900">
+          <CardTitle className="text-2xl font-bold tracking-tight text-gray-900">
             {props.title}
           </CardTitle>
           {props.description ? (

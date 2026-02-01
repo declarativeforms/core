@@ -19,7 +19,7 @@ export function DropdownField({
   return (
     <Select onValueChange={formField.onChange} defaultValue={formField.value}>
       <FormControl>
-        <SelectTrigger className="bg-gray-50 !h-14 !px-4 shadow-none text-gray-900 text-base w-full">
+        <SelectTrigger className="bg-gray-50 !h-11 leading-6 !px-3.5 shadow-none text-gray-900 text-base w-full">
           <SelectValue
             placeholder={field.placeholder || `Select a ${field.label}`}
           />
