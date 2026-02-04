@@ -23,24 +23,26 @@ export function DeclarativeFormSection(props: {
           props.onSubmit(data)
         )}
       >
-        {props.section.fields.map(
-          (field: IDeclarativeFormField, index: number) => (
-            <DeclarativeFormField key={index} field={field} form={form} />
-          )
-        )}
+        <div className="space-y-6">
+          {props.section.fields.map(
+            (field: IDeclarativeFormField, index: number) => (
+              <DeclarativeFormField key={index} field={field} form={form} />
+            )
+          )}
+        </div>
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:gap-4 sm:justify-end mt-8">
+        <div className="mt-8 flex justify-between items-center">
           <Button
             type="button"
             variant="outline"
-            className="w-full sm:w-auto text-base px-4 py-3"
+            className="h-12 px-6 text-base font-semibold leading-none"
             disabled={form.formState.isSubmitting}
           >
             Back
           </Button>
           <Button
             type="submit"
-            className="w-full sm:w-auto text-base px-4 py-3"
+            className="h-12 px-6 text-base font-semibold leading-none"
             disabled={form.formState.isSubmitting}
           >
             Next

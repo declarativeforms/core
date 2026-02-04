@@ -61,7 +61,7 @@ export function DeclarativeFormField(props: {
     <FormLabel className="block font-medium text-base text-gray-900 tracking-tight">
       {props.field.label}
       {isRequired && (
-        <span className="font-normal ml-1 text-red-500" aria-hidden="true">
+        <span className="font-medium text-sm ml-1 text-red-500" aria-hidden="true">
           *
         </span>
       )}
@@ -74,7 +74,7 @@ export function DeclarativeFormField(props: {
       name={props.field.id}
       rules={rules}
       render={({ field }) => (
-        <FormItem className="mb-6 gap-3 group">
+        <FormItem className="gap-3 group">
           {Label()}
           {props.field.type === "date" ? (
             <InputField field={props.field} formField={field} type="date" />

@@ -21,6 +21,7 @@ export function SingleSelectField({
       <RadioGroup
         onValueChange={formField.onChange}
         defaultValue={formField.value}
+        className="gap-2"
       >
         {field.options?.map((option) => {
           const isSelected = formField.value === option;
@@ -29,7 +30,7 @@ export function SingleSelectField({
             <FormItem key={option}>
               <FormLabel
                 className={cn(
-                  "bg-gray-50 border-1 border-gray-200 flex font-normal gap-3 h-11 leading-6 px-3.5 rounded-md text-base text-gray-900",
+                  "bg-gray-50 border border-gray-200 flex font-normal gap-3 items-center min-h-[48px] leading-normal px-4 py-3 rounded-md text-base text-gray-900",
                   {
                     "border-gray-900": isSelected,
                   }

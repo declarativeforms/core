@@ -7,20 +7,20 @@ export function HeroSection(props: {
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
-      <div className="w-full max-w-[480px] mx-auto text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-8">
+      <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
+        <h1 className="text-3xl md:text-4xl font-bold leading-tight text-gray-900 mb-8">
           {props.title}
         </h1>
 
         {props.description ? (
-          <p className="text-base text-gray-500 leading-relaxed mb-10">
+          <p className="text-lg md:text-xl font-normal leading-relaxed text-gray-600 mb-10">
             {props.description}
           </p>
         ) : null}
 
         {props.onAction ? (
           <Button
-            className="w-full h-14 text-base font-semibold"
+            className="w-full h-12 px-6 text-base font-semibold leading-none"
             onClick={() => props.onAction?.()}
           >
             Continue

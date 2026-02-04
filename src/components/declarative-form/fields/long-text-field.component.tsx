@@ -13,7 +13,7 @@ export function LongTextField({
     <FormControl>
       <Textarea
         {...formField}
-        className="bg-gray-50 h-32 sm:h-50 leading-6 px-3.5 py-3 sm:py-4 shadow-none text-base text-gray-900 w-full placeholder:leading-6 placeholder:text-gray-400"
+        className="bg-gray-50 border border-gray-200 focus:border-gray-300 h-32 md:h-50 leading-normal px-4 py-3 shadow-none text-base text-gray-900 w-full placeholder:text-gray-400"
         placeholder={field.placeholder || "Your answer"}
       />
     </FormControl>
