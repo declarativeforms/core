@@ -8,6 +8,7 @@ export type IDeclarativeFormField = {
     | "date"
     | "dropdown"
     | "email"
+    | "file_upload"
     | "hidden"
     | "long_text"
     | "multiple_select"
@@ -27,6 +28,8 @@ export type IDeclarativeFormField = {
   >;
   visible_when?: string;
   outputFormat?: "string" | "structured";
+  min?: number;
+  max?: number;
 };
 
 export type IDeclarativeFormSection = {

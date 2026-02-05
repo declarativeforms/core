@@ -7,6 +7,7 @@ import {
 import {
   AddressField,
   DropdownField,
+  FileUploadField,
   InputField,
   LongTextField,
   MultipleSelectField,
@@ -58,6 +59,18 @@ export function DeclarativeFormField(props: {
     }
   }
 
+  if (props.field.type === "file_upload") {
+    rules.validate = (value) => {
+      if (
+        isRequired &&
+        (!value || (Array.isArray(value) && value.length === 0))
+      ) {
+        return `${props.field.label} is required.`;
+      }
+      return true;
+    };
+  }
+
   const Label = () => (
     <FormLabel className="block font-medium text-base text-gray-900 tracking-tight">
       {props.field.label}
@@ -91,6 +104,9 @@ export function DeclarativeFormField(props: {
           ) : null}
           {props.field.type === "email" ? (
             <InputField field={props.field} formField={field} type="email" />
+          ) : null}
+          {props.field.type === "file_upload" ? (
+            <FileUploadField field={props.field} formField={field} />
           ) : null}
           {props.field.type === "long_text" ? (
             <LongTextField field={props.field} formField={field} />
