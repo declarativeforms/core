@@ -5,6 +5,7 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 import {
+  AddressField,
   DropdownField,
   InputField,
   LongTextField,
@@ -76,6 +77,12 @@ export function DeclarativeFormField(props: {
       render={({ field }) => (
         <FormItem className="gap-3 group">
           {Label()}
+          {(props.field.type === "address" ||
+            props.field.type === "address_locality" ||
+            props.field.type === "address_region" ||
+            props.field.type === "address_country") ? (
+            <AddressField field={props.field} formField={field} />
+          ) : null}
           {props.field.type === "date" ? (
             <InputField field={props.field} formField={field} type="date" />
           ) : null}

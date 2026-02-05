@@ -1,6 +1,10 @@
 export type IDeclarativeFormField = {
   id: string;
   type:
+    | "address"
+    | "address_locality"
+    | "address_region"
+    | "address_country"
     | "date"
     | "dropdown"
     | "email"
@@ -22,6 +26,7 @@ export type IDeclarativeFormField = {
       }
   >;
   visible_when?: string;
+  outputFormat?: "string" | "structured";
 };
 
 export type IDeclarativeFormSection = {
@@ -70,3 +75,14 @@ export type ISubmission = {
   status: "partial" | "completed";
   updated_at: string;
 };
+
+export interface IStructuredAddress {
+  formatted_address: string;
+  street_number?: string;
+  route?: string;
+  locality?: string;
+  administrative_area_level_1?: string;
+  country?: string;
+  postal_code?: string;
+  place_id: string;
+}
