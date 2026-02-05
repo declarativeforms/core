@@ -41,6 +41,15 @@ export function DeclarativeFormField(props: {
 
   const isRequired = props.field.validators?.some((v) => v === "required");
 
+  // Extract min/max validators
+  const minValidator = props.field.validators?.find(
+    (v) => typeof v === "object" && v.type === "min"
+  ) as { type: "min"; value: number | string; message?: string } | undefined;
+
+  const maxValidator = props.field.validators?.find(
+    (v) => typeof v === "object" && v.type === "max"
+  ) as { type: "max"; value: number | string; message?: string } | undefined;
+
   const rules: RegisterOptions = {};
 
   if (props.field.validators) {
@@ -59,14 +68,114 @@ export function DeclarativeFormField(props: {
     }
   }
 
+  // Add min/max validation based on field type
+  if (
+    props.field.type === "short_text" ||
+    props.field.type === "long_text" ||
+    props.field.type === "email" ||
+    props.field.type === "url"
+  ) {
+    if (minValidator && typeof minValidator.value === "number") {
+      rules.minLength = {
+        value: minValidator.value,
+        message:
+          minValidator.message ||
+          `${props.field.label} must be at least ${minValidator.value} characters.`,
+      };
+    }
+    if (maxValidator && typeof maxValidator.value === "number") {
+      rules.maxLength = {
+        value: maxValidator.value,
+        message:
+          maxValidator.message ||
+          `${props.field.label} must be at most ${maxValidator.value} characters.`,
+      };
+    }
+  }
+
+  if (props.field.type === "date") {
+    if (minValidator) {
+      rules.min = {
+        value: minValidator.value,
+        message:
+          minValidator.message ||
+          `${props.field.label} must be on or after ${minValidator.value}.`,
+      };
+    }
+    if (maxValidator) {
+      rules.max = {
+        value: maxValidator.value,
+        message:
+          maxValidator.message ||
+          `${props.field.label} must be on or before ${maxValidator.value}.`,
+      };
+    }
+  }
+
   if (props.field.type === "file_upload") {
     rules.validate = (value) => {
-      if (
-        isRequired &&
-        (!value || (Array.isArray(value) && value.length === 0))
-      ) {
+      const fileCount = Array.isArray(value) ? value.length : value ? 1 : 0;
+
+      if (isRequired && fileCount === 0) {
         return `${props.field.label} is required.`;
       }
+
+      if (
+        minValidator &&
+        typeof minValidator.value === "number" &&
+        fileCount < minValidator.value
+      ) {
+        return (
+          minValidator.message ||
+          `${props.field.label} requires at least ${minValidator.value} file${minValidator.value > 1 ? "s" : ""}.`
+        );
+      }
+
+      if (
+        maxValidator &&
+        typeof maxValidator.value === "number" &&
+        fileCount > maxValidator.value
+      ) {
+        return (
+          maxValidator.message ||
+          `${props.field.label} allows at most ${maxValidator.value} file${maxValidator.value > 1 ? "s" : ""}.`
+        );
+      }
+
+      return true;
+    };
+  }
+
+  if (props.field.type === "multiple_select") {
+    rules.validate = (value) => {
+      const selections = Array.isArray(value) ? value.length : 0;
+
+      if (isRequired && selections === 0) {
+        return `${props.field.label} is required.`;
+      }
+
+      if (
+        minValidator &&
+        typeof minValidator.value === "number" &&
+        selections < minValidator.value
+      ) {
+        return (
+          minValidator.message ||
+          `${props.field.label} requires at least ${minValidator.value} selection${minValidator.value > 1 ? "s" : ""}.`
+        );
+      }
+
+      if (
+        maxValidator &&
+        typeof maxValidator.value === "number" &&
+        selections > maxValidator.value
+      ) {
+        return (
+          maxValidator.message ||
+          `${props.field.label} allows at most ${maxValidator.value} selection${maxValidator.value > 1 ? "s" : ""}.`
+        );
+      }
+
       return true;
     };
   }

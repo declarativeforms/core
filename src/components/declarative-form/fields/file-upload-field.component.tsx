@@ -36,7 +36,16 @@ export function FileUploadField({
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const maxFiles = field.max ?? 1;
+  const minValidator = field.validators?.find(
+    (v) => typeof v === "object" && v.type === "min"
+  ) as { type: "min"; value: number | string } | undefined;
+
+  const maxValidator = field.validators?.find(
+    (v) => typeof v === "object" && v.type === "max"
+  ) as { type: "max"; value: number | string } | undefined;
+
+  const maxFiles =
+    typeof maxValidator?.value === "number" ? maxValidator.value : 1;
 
   const currentUrls: string[] =
     maxFiles === 1
@@ -175,10 +184,19 @@ export function FileUploadField({
   const canAddMore = fileMetadata.length < maxFiles;
 
   const getFileRequirements = () => {
-    if (maxFiles > 1) {
-      return `Up to ${maxFiles} files`;
+    const requirements: string[] = [];
+    const minFiles =
+      typeof minValidator?.value === "number" ? minValidator.value : 0;
+
+    if (minFiles > 0 && maxFiles > minFiles) {
+      requirements.push(`${minFiles}-${maxFiles} files`);
+    } else if (minFiles > 0) {
+      requirements.push(`At least ${minFiles} file${minFiles > 1 ? "s" : ""}`);
+    } else if (maxFiles > 1) {
+      requirements.push(`Up to ${maxFiles} files`);
     }
-    return "";
+
+    return requirements.join(" • ");
   };
 
   return (

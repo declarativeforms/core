@@ -25,11 +25,19 @@ export type IDeclarativeFormField = {
         regex: string;
         message?: string;
       }
+    | {
+        type: "min";
+        value: number | string;
+        message?: string;
+      }
+    | {
+        type: "max";
+        value: number | string;
+        message?: string;
+      }
   >;
   visible_when?: string;
   outputFormat?: "string" | "structured";
-  min?: number;
-  max?: number;
 };
 
 export type IDeclarativeFormSection = {

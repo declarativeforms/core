@@ -6,13 +6,11 @@
 - Numeric
     - Min
     - Max
-- URL
 - Multiple Select
     - Min
     - Max
 - Signature
-- File Upload (Single/Multiple)
-    - Limit File Type
+
 
 
 - FORM
