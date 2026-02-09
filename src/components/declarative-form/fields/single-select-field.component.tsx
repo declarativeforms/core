@@ -1,4 +1,7 @@
 import type { ControllerRenderProps, FieldValues } from "react-hook-form";
+
+import { fieldOptionClass } from "../field-styles";
+import type { IDeclarativeFormField } from "../types";
 import {
   FormControl,
   FormItem,
@@ -7,7 +10,6 @@ import {
   RadioGroupItem,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { IDeclarativeFormField } from "../types";
 
 export function SingleSelectField({
   field,
@@ -16,12 +18,15 @@ export function SingleSelectField({
   field: IDeclarativeFormField;
   formField: ControllerRenderProps<FieldValues, string>;
 }) {
+  const isRequired = field.validators?.some((v) => v === "required");
+
   return (
     <FormControl>
       <RadioGroup
         onValueChange={formField.onChange}
         defaultValue={formField.value}
         className="gap-2"
+        aria-required={!!isRequired}
       >
         {field.options?.map((option) => {
           const isSelected = formField.value === option;
@@ -30,9 +35,9 @@ export function SingleSelectField({
             <FormItem key={option}>
               <FormLabel
                 className={cn(
-                  "bg-gray-50 border border-gray-200 flex font-normal gap-3 items-center min-h-[48px] leading-normal px-4 py-3 rounded-md text-base text-gray-900",
+                  fieldOptionClass,
                   {
-                    "border-gray-900": isSelected,
+                    "border-ring": isSelected,
                   }
                 )}
               >

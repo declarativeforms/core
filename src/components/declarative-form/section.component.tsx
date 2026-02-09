@@ -1,7 +1,8 @@
 import { FormProvider, useForm, type FieldValues } from "react-hook-form";
+
+import { Button } from "../ui";
 import { DeclarativeFormField } from "./field.component";
 import type { IDeclarativeFormField, IDeclarativeFormSection } from "./types";
-import { Button } from "../ui";
 
 export function DeclarativeFormSection(props: {
   data: FieldValues;

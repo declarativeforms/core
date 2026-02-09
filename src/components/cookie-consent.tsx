@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { Button } from "./ui";
 
 const COOKIE_CONSENT_KEY = "cookie-consent-001";

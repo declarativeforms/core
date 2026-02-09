@@ -1,5 +1,8 @@
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 import { useWatch } from "react-hook-form";
+
+import { fieldHelperClass, fieldOptionClass } from "../field-styles";
+import type { IDeclarativeFormField } from "../types";
 import {
   Checkbox,
   FormControl,
@@ -8,7 +11,6 @@ import {
   FormLabel,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { IDeclarativeFormField } from "../types";
 
 export function MultipleSelectField({
   field,
@@ -37,6 +39,7 @@ export function MultipleSelectField({
   });
 
   const currentSelections = Array.isArray(currentValue) ? currentValue.length : 0;
+  const isRequired = field.validators?.some((v) => v === "required");
 
   const getHelperText = () => {
     if (minSelections > 0 && maxSelections) {
@@ -50,9 +53,9 @@ export function MultipleSelectField({
   };
 
   return (
-    <div className="flex flex-col space-y-2">
-      {getHelperText() && (
-        <p className="text-sm text-gray-500">{getHelperText()}</p>
+    <div className="flex flex-col space-y-2" role="group" aria-required={!!isRequired}>
+        {getHelperText() && (
+        <p className={fieldHelperClass}>{getHelperText()}</p>
       )}
       {field.options?.map((option) => (
         <FormField
@@ -70,9 +73,9 @@ export function MultipleSelectField({
               <FormItem>
                 <FormLabel
                   className={cn(
-                    "bg-gray-50 border border-gray-200 flex font-normal gap-3 items-center min-h-[48px] leading-normal px-4 py-3 rounded-md text-base text-gray-900",
+                    fieldOptionClass,
                     {
-                      "border-gray-900": isChecked,
+                      "border-ring": isChecked,
                     }
                   )}
                 >
@@ -113,7 +116,7 @@ export function MultipleSelectField({
         />
       ))}
       {currentSelections > 0 && (
-        <p className="text-sm text-gray-500">{currentSelections} selected</p>
+        <p className={fieldHelperClass}>{currentSelections} selected</p>
       )}
     </div>
   );

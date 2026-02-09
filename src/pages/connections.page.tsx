@@ -1,8 +1,9 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button } from "@/components";
+
 import { BasePage } from "./base.page";
+import { Button } from "@/components";
 
 export function ConnectionsPage() {
   const [searchParams] = useSearchParams();

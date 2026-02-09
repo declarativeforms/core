@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import type { ControllerRenderProps, FieldValues } from "react-hook-form";
+
+import { fieldHelperClass } from "../field-styles";
+import type { IDeclarativeFormField } from "../types";
 import { FormControl } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { IDeclarativeFormField } from "../types";
 
 interface FileMetadata {
   url: string;
@@ -43,6 +45,8 @@ export function FileUploadField({
   const maxValidator = field.validators?.find(
     (v) => typeof v === "object" && v.type === "max"
   ) as { type: "max"; value: number | string } | undefined;
+
+  const isRequired = field.validators?.some((v) => v === "required");
 
   const maxFiles =
     typeof maxValidator?.value === "number" ? maxValidator.value : 1;
@@ -210,6 +214,8 @@ export function FileUploadField({
           className="sr-only"
           id={formField.name}
           aria-label={field.label}
+          required={!!isRequired}
+          aria-required={!!isRequired}
         />
 
         {canAddMore && (
@@ -230,24 +236,24 @@ export function FileUploadField({
             className={cn(
               "border-2 border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors",
               "flex flex-col items-center justify-center gap-2 p-6",
-              "focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2",
+              "focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2",
               isDragging
-                ? "border-gray-900 bg-gray-100"
-                : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100"
+                ? "border-ring bg-muted/60"
+                : "border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50"
             )}
           >
-            <Upload className="w-8 h-8 text-gray-400" aria-hidden="true" />
+            <Upload className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
             <div className="text-center">
-              <p className="text-base text-gray-900">
+              <p className="text-base text-foreground">
                 Click to upload or drag and drop
               </p>
               {getFileRequirements() && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className={`${fieldHelperClass} mt-1`}>
                   {getFileRequirements()}
                 </p>
               )}
               {field.placeholder && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className={`${fieldHelperClass} mt-1`}>
                   {field.placeholder}
                 </p>
               )}
@@ -320,8 +326,8 @@ function FilePreview({
       className={cn(
         "rounded-md flex items-center gap-3 p-3 min-h-[48px]",
         isError
-          ? "border border-red-500 bg-red-50"
-          : "bg-gray-50 border border-gray-200"
+          ? "border border-destructive/60 bg-destructive/10"
+          : "bg-muted/40 border border-border"
       )}
     >
       {isImage && metadata.url && !metadata.url.startsWith("temp-") ? (
@@ -335,13 +341,13 @@ function FilePreview({
         <div
           className={cn(
             "w-10 h-10 rounded flex-shrink-0 flex items-center justify-center",
-            isError ? "bg-red-100" : "bg-gray-100"
+            isError ? "bg-destructive/15" : "bg-muted"
           )}
         >
           <Icon
             className={cn(
               "w-5 h-5",
-              isError ? "text-red-500" : "text-gray-500"
+              isError ? "text-destructive" : "text-muted-foreground"
             )}
             aria-hidden="true"
           />
@@ -352,28 +358,28 @@ function FilePreview({
         <p
           className={cn(
             "text-sm font-medium truncate",
-            isError ? "text-red-900" : "text-gray-900"
+            isError ? "text-destructive" : "text-foreground"
           )}
         >
           {metadata.name}
         </p>
         {isError && metadata.error ? (
-          <p className="text-sm text-red-600">{metadata.error}</p>
+          <p className="text-sm text-destructive">{metadata.error}</p>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {formatFileSize(metadata.size)}
           </p>
         )}
         {isUploading && (
           <div className="mt-1">
-            <div className="w-full bg-gray-200 rounded-full h-1">
-              <div
-                className="bg-gray-900 h-1 rounded-full transition-all duration-300"
-                style={{ width: `${metadata.progress || 0}%` }}
-                role="progressbar"
-                aria-valuenow={metadata.progress || 0}
-                aria-valuemin={0}
-                aria-valuemax={100}
+          <div className="w-full bg-muted rounded-full h-1">
+            <div
+              className="bg-foreground h-1 rounded-full transition-all duration-300"
+              style={{ width: `${metadata.progress || 0}%` }}
+              role="progressbar"
+              aria-valuenow={metadata.progress || 0}
+              aria-valuemin={0}
+              aria-valuemax={100}
               />
             </div>
           </div>
@@ -391,12 +397,12 @@ function FilePreview({
           onClick={onRemove}
           className={cn(
             "w-8 h-8 rounded flex items-center justify-center flex-shrink-0",
-            "hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2",
+            "hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2",
             "transition-colors"
           )}
           aria-label={`Remove ${metadata.name}`}
         >
-          <X className="w-4 h-4 text-gray-500" aria-hidden="true" />
+          <X className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         </button>
       )}
     </div>

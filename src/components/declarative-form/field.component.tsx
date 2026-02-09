@@ -4,6 +4,12 @@ import {
   type RegisterOptions,
   type UseFormReturn,
 } from "react-hook-form";
+
+import { FormField, FormItem, FormLabel, FormMessage } from "../ui";
+import {
+  fieldContainerClass,
+  fieldLabelClass,
+} from "./field-styles";
 import {
   AddressField,
   DropdownField,
@@ -14,7 +20,6 @@ import {
   SingleSelectField,
 } from "./fields";
 import type { IDeclarativeFormField } from "./types";
-import { FormField, FormItem, FormLabel } from "../ui";
 
 export function DeclarativeFormField(props: {
   field: IDeclarativeFormField;
@@ -181,7 +186,7 @@ export function DeclarativeFormField(props: {
   }
 
   const Label = () => (
-    <FormLabel className="block font-medium text-base text-gray-900 tracking-tight">
+    <FormLabel className={fieldLabelClass}>
       {props.field.label}
       {isRequired && (
         <span className="font-medium text-sm ml-1 text-red-500" aria-hidden="true">
@@ -197,7 +202,7 @@ export function DeclarativeFormField(props: {
       name={props.field.id}
       rules={rules}
       render={({ field }) => (
-        <FormItem className="gap-3 group">
+        <FormItem className={`${fieldContainerClass} group`}>
           {Label()}
           {(props.field.type === "address" ||
             props.field.type === "address_locality" ||
@@ -235,6 +240,7 @@ export function DeclarativeFormField(props: {
           {props.field.type === "url" ? (
             <InputField field={props.field} formField={field} type="url" />
           ) : null}
+          <FormMessage />
         </FormItem>
       )}
     />

@@ -1,6 +1,8 @@
 import type { ControllerRenderProps, FieldValues } from "react-hook-form";
-import { FormControl, Input } from "@/components/ui";
+
+import { fieldControlClass } from "../field-styles";
 import type { IDeclarativeFormField } from "../types";
+import { FormControl, Input } from "@/components/ui";
 
 export function InputField({
   field,
@@ -19,13 +21,17 @@ export function InputField({
     (v) => typeof v === "object" && v.type === "max"
   ) as { type: "max"; value: number | string } | undefined;
 
+  const isRequired = field.validators?.some((v) => v === "required");
+
   return (
     <FormControl>
       <Input
         {...formField}
-        className="bg-gray-50 border border-gray-200 focus:border-gray-300 h-auto leading-normal py-3 px-4 shadow-none text-base text-gray-900 w-full placeholder:text-gray-400"
+        className={fieldControlClass}
         placeholder={field.placeholder || "Your answer"}
         type={type}
+        required={!!isRequired}
+        aria-required={!!isRequired}
         minLength={
           type !== "date" && typeof minValidator?.value === "number"
             ? minValidator.value

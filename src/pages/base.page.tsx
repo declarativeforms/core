@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import {
   Card,
   CardContent,
@@ -6,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
-import { CookieConsent } from "@/components/cookie-consent";
 
 export function BasePage(props: {
   title: string;
@@ -48,8 +48,6 @@ export function BasePage(props: {
           Privacy Policy
         </a>
       </div>
-
-      <CookieConsent />
     </div>
   );
 }

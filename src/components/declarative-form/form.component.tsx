@@ -2,6 +2,7 @@ import mixpanel from "mixpanel-browser";
 import { useEffect, useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+
 import { DeclarativeFormSection } from "./section.component";
 import type { IDeclarativeForm } from "./types";
 

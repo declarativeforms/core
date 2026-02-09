@@ -1,14 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
 import yaml from "js-yaml";
 import { useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+
+import { BasePage } from "./base.page";
 import {
   DeclarativeForm,
   HeroSection,
   type IDeclarativeForm,
 } from "@/components";
-import { BasePage } from "./base.page";
 
 export function MainPage() {
   const params = useParams();
