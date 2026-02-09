@@ -1,3 +1,4 @@
+import type { HTMLAttributes } from "react";
 import type { ControllerRenderProps, FieldValues } from "react-hook-form";
 
 import { fieldControlClass } from "../field-styles";
@@ -8,10 +9,14 @@ export function InputField({
   field,
   formField,
   type,
+  inputMode,
+  pattern,
 }: {
   field: IDeclarativeFormField;
   formField: ControllerRenderProps<FieldValues, string>;
   type: string;
+  inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
+  pattern?: string;
 }) {
   const minValidator = field.validators?.find(
     (v) => typeof v === "object" && v.type === "min"
@@ -30,6 +35,8 @@ export function InputField({
         className={fieldControlClass}
         placeholder={field.placeholder || "Your answer"}
         type={type}
+        inputMode={inputMode}
+        pattern={pattern}
         required={!!isRequired}
         aria-required={!!isRequired}
         minLength={

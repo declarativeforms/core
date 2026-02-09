@@ -55,6 +55,10 @@ export function DeclarativeFormField(props: {
     (v) => typeof v === "object" && v.type === "max"
   ) as { type: "max"; value: number | string; message?: string } | undefined;
 
+  const hasPatternValidator = props.field.validators?.some(
+    (v) => typeof v === "object" && v.type === "pattern"
+  );
+
   const rules: RegisterOptions = {};
 
   if (props.field.validators) {
@@ -115,6 +119,51 @@ export function DeclarativeFormField(props: {
           `${props.field.label} must be on or before ${maxValidator.value}.`,
       };
     }
+  }
+
+  if (props.field.type === "number") {
+    if (!hasPatternValidator) {
+      rules.pattern = {
+        value: /^\d+$/,
+        message: `${props.field.label} must be a whole number.`,
+      };
+    }
+
+    rules.validate = (value) => {
+      if (value === undefined || value === null || value === "") {
+        return true;
+      }
+
+      const numericValue = Number(value);
+
+      if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
+        return `${props.field.label} must be a whole number.`;
+      }
+
+      if (
+        minValidator &&
+        typeof minValidator.value === "number" &&
+        numericValue < minValidator.value
+      ) {
+        return (
+          minValidator.message ||
+          `${props.field.label} must be at least ${minValidator.value}.`
+        );
+      }
+
+      if (
+        maxValidator &&
+        typeof maxValidator.value === "number" &&
+        numericValue > maxValidator.value
+      ) {
+        return (
+          maxValidator.message ||
+          `${props.field.label} must be at most ${maxValidator.value}.`
+        );
+      }
+
+      return true;
+    };
   }
 
   if (props.field.type === "file_upload") {
@@ -227,6 +276,15 @@ export function DeclarativeFormField(props: {
           ) : null}
           {props.field.type === "mobile_number" ? (
             <InputField field={props.field} formField={field} type="tel" />
+          ) : null}
+          {props.field.type === "number" ? (
+            <InputField
+              field={props.field}
+              formField={field}
+              type="text"
+              inputMode="numeric"
+              pattern={hasPatternValidator ? undefined : "^[0-9]+$"}
+            />
           ) : null}
           {props.field.type === "multiple_select" ? (
             <MultipleSelectField

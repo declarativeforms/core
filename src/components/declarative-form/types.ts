@@ -13,6 +13,7 @@ export type IDeclarativeFormField = {
     | "long_text"
     | "mobile_number"
     | "multiple_select"
+    | "number"
     | "short_text"
     | "single_select"
     | "url";
