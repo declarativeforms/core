@@ -225,6 +225,9 @@ export function DeclarativeFormField(props: {
           {props.field.type === "long_text" ? (
             <LongTextField field={props.field} formField={field} />
           ) : null}
+          {props.field.type === "mobile_number" ? (
+            <InputField field={props.field} formField={field} type="tel" />
+          ) : null}
           {props.field.type === "multiple_select" ? (
             <MultipleSelectField
               field={props.field}

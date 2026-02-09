@@ -11,6 +11,7 @@ export type IDeclarativeFormField = {
     | "file_upload"
     | "hidden"
     | "long_text"
+    | "mobile_number"
     | "multiple_select"
     | "short_text"
     | "single_select"
