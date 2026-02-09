@@ -6,10 +6,7 @@ import {
 } from "react-hook-form";
 
 import { FormField, FormItem, FormLabel, FormMessage } from "../ui";
-import {
-  fieldContainerClass,
-  fieldLabelClass,
-} from "./field-styles";
+import { fieldContainerClass, fieldLabelClass } from "./field-styles";
 import {
   AddressField,
   DropdownField,
@@ -17,6 +14,7 @@ import {
   InputField,
   LongTextField,
   MultipleSelectField,
+  SignatureField,
   SingleSelectField,
 } from "./fields";
 import type { IDeclarativeFormField } from "./types";
@@ -285,6 +283,9 @@ export function DeclarativeFormField(props: {
               inputMode="numeric"
               pattern={hasPatternValidator ? undefined : "^[0-9]+$"}
             />
+          ) : null}
+          {props.field.type === "signature" ? (
+            <SignatureField field={props.field} formField={field} />
           ) : null}
           {props.field.type === "multiple_select" ? (
             <MultipleSelectField

@@ -14,6 +14,7 @@ export type IDeclarativeFormField = {
     | "mobile_number"
     | "multiple_select"
     | "number"
+    | "signature"
     | "short_text"
     | "single_select"
     | "url";
