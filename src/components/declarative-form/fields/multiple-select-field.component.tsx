@@ -1,8 +1,7 @@
-import type { FieldValues, UseFormReturn } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 
 import { fieldHelperClass, fieldOptionClass } from "../field-styles";
-import type { IDeclarativeFormField } from "../types";
+import type { DeclarativeFieldComponentProps } from "../field-contract";
 import {
   Checkbox,
   FormControl,
@@ -14,32 +13,23 @@ import { cn } from "@/lib/utils";
 
 export function MultipleSelectField({
   field,
-  formControl,
-}: {
-  field: IDeclarativeFormField;
-  formControl: UseFormReturn<FieldValues>["control"];
-}) {
-  const minValidator = field.validators?.find(
-    (v) => typeof v === "object" && v.type === "min"
-  ) as { type: "min"; value: number | string } | undefined;
-
-  const maxValidator = field.validators?.find(
-    (v) => typeof v === "object" && v.type === "max"
-  ) as { type: "max"; value: number | string } | undefined;
-
+  form,
+  meta,
+}: DeclarativeFieldComponentProps) {
   const minSelections =
-    typeof minValidator?.value === "number" ? minValidator.value : 0;
+    typeof meta.minValidator?.value === "number" ? meta.minValidator.value : 0;
   const maxSelections =
-    typeof maxValidator?.value === "number" ? maxValidator.value : undefined;
+    typeof meta.maxValidator?.value === "number"
+      ? meta.maxValidator.value
+      : undefined;
 
   // Watch the current value to show selection count
   const currentValue = useWatch({
-    control: formControl,
+    control: form.control,
     name: field.id,
   });
 
   const currentSelections = Array.isArray(currentValue) ? currentValue.length : 0;
-  const isRequired = field.validators?.some((v) => v === "required");
 
   const getHelperText = () => {
     if (minSelections > 0 && maxSelections) {
@@ -53,14 +43,14 @@ export function MultipleSelectField({
   };
 
   return (
-    <div className="flex flex-col space-y-2" role="group" aria-required={!!isRequired}>
+    <div className="flex flex-col space-y-2" role="group" aria-required={meta.isRequired}>
         {getHelperText() && (
         <p className={fieldHelperClass}>{getHelperText()}</p>
       )}
       {field.options?.map((option) => (
         <FormField
           key={option}
-          control={formControl}
+          control={form.control}
           name={field.id}
           render={({ field: formField }) => {
             const selectedValues = Array.isArray(formField.value)

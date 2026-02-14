@@ -1,7 +1,5 @@
-import type { ControllerRenderProps, FieldValues } from "react-hook-form";
-
 import { fieldSelectTriggerClass } from "../field-styles";
-import type { IDeclarativeFormField } from "../types";
+import type { DeclarativeFieldComponentProps } from "../field-contract";
 import {
   FormControl,
   Select,
@@ -13,17 +11,18 @@ import {
 
 export function DropdownField({
   field,
-  formField,
-}: {
-  field: IDeclarativeFormField;
-  formField: ControllerRenderProps<FieldValues, string>;
-}) {
+  controllerField,
+  meta,
+}: DeclarativeFieldComponentProps) {
   return (
-    <Select onValueChange={formField.onChange} defaultValue={formField.value}>
+    <Select
+      onValueChange={controllerField.onChange}
+      defaultValue={controllerField.value}
+    >
       <FormControl>
         <SelectTrigger
           className={fieldSelectTriggerClass}
-          aria-required={field.validators?.some((v) => v === "required")}
+          aria-required={meta.isRequired}
         >
           <SelectValue
             placeholder={field.placeholder || `Select a ${field.label}`}

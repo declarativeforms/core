@@ -10,10 +10,9 @@ import {
   FileArchiveIcon,
 } from "lucide-react";
 import { useState, useRef } from "react";
-import type { ControllerRenderProps, FieldValues } from "react-hook-form";
 
 import { fieldHelperClass } from "../field-styles";
-import type { IDeclarativeFormField } from "../types";
+import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -29,34 +28,22 @@ interface FileMetadata {
 
 export function FileUploadField({
   field,
-  formField,
-}: {
-  field: IDeclarativeFormField;
-  formField: ControllerRenderProps<FieldValues, string>;
-}) {
+  controllerField,
+  meta,
+}: DeclarativeFieldComponentProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const minValidator = field.validators?.find(
-    (v) => typeof v === "object" && v.type === "min"
-  ) as { type: "min"; value: number | string } | undefined;
-
-  const maxValidator = field.validators?.find(
-    (v) => typeof v === "object" && v.type === "max"
-  ) as { type: "max"; value: number | string } | undefined;
-
-  const isRequired = field.validators?.some((v) => v === "required");
-
   const maxFiles =
-    typeof maxValidator?.value === "number" ? maxValidator.value : 1;
+    typeof meta.maxValidator?.value === "number" ? meta.maxValidator.value : 1;
 
   const currentUrls: string[] =
     maxFiles === 1
-      ? formField.value
-        ? [formField.value]
+      ? controllerField.value
+        ? [controllerField.value]
         : []
-      : formField.value || [];
+      : controllerField.value || [];
 
   const validateFile = (): string | null => {
     // Check max files
@@ -132,7 +119,7 @@ export function FileUploadField({
         );
 
         const newUrls = maxFiles === 1 ? url : [...currentUrls, url];
-        formField.onChange(newUrls);
+        controllerField.onChange(newUrls);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Upload failed";
@@ -170,7 +157,7 @@ export function FileUploadField({
 
     const newUrls =
       maxFiles === 1 ? null : currentUrls.filter((u) => u !== url);
-    formField.onChange(newUrls);
+    controllerField.onChange(newUrls);
   };
 
   const handleClick = () => {
@@ -190,7 +177,7 @@ export function FileUploadField({
   const getFileRequirements = () => {
     const requirements: string[] = [];
     const minFiles =
-      typeof minValidator?.value === "number" ? minValidator.value : 0;
+      typeof meta.minValidator?.value === "number" ? meta.minValidator.value : 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
       requirements.push(`${minFiles}-${maxFiles} files`);
@@ -212,10 +199,10 @@ export function FileUploadField({
           multiple={maxFiles > 1}
           onChange={handleInputChange}
           className="sr-only"
-          id={formField.name}
+          id={controllerField.name}
           aria-label={field.label}
-          required={!!isRequired}
-          aria-required={!!isRequired}
+          required={meta.isRequired}
+          aria-required={meta.isRequired}
         />
 
         {canAddMore && (

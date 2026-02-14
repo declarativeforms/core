@@ -1,9 +1,8 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { ControllerRenderProps, FieldValues } from "react-hook-form";
 
 import { fieldControlClass } from "../field-styles";
-import type { IDeclarativeFormField } from "../types";
+import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   getPlacePredictions,
@@ -20,18 +19,13 @@ import {
 } from "@/components/ui/command";
 import { FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-interface AddressFieldProps {
-  field: IDeclarativeFormField;
-  formField: ControllerRenderProps<FieldValues, string>;
-}
-
-export function AddressField({ field, formField }: AddressFieldProps) {
+export function AddressField({
+  field,
+  controllerField,
+  meta,
+}: DeclarativeFieldComponentProps) {
   // Extract autocomplete type from field type
   const autocompleteType = (() => {
     switch (field.type) {
@@ -48,8 +42,6 @@ export function AddressField({ field, formField }: AddressFieldProps) {
   })();
 
   const outputFormat = field.outputFormat || "string";
-  const isRequired = field.validators?.some((v) => v === "required");
-
   // State management
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -127,7 +119,7 @@ export function AddressField({ field, formField }: AddressFieldProps) {
           ? formatStructuredAddress(place)
           : formatAddressString(place);
 
-      formField.onChange(value);
+      controllerField.onChange(value);
       setInputValue(place.formatted_address || "");
       setOpen(false);
     } catch (err) {
@@ -140,11 +132,11 @@ export function AddressField({ field, formField }: AddressFieldProps) {
     return (
       <FormControl>
         <Input
-          {...formField}
+          {...controllerField}
           className={fieldControlClass}
           placeholder={field.placeholder || "Enter address"}
-          required={!!isRequired}
-          aria-required={!!isRequired}
+          required={meta.isRequired}
+          aria-required={meta.isRequired}
         />
       </FormControl>
     );
@@ -164,11 +156,11 @@ export function AddressField({ field, formField }: AddressFieldProps) {
                   setOpen(true);
                 }
               }}
-              onBlur={formField.onBlur}
+              onBlur={controllerField.onBlur}
               className={fieldControlClass}
               placeholder={field.placeholder || "Enter address"}
-              required={!!isRequired}
-              aria-required={!!isRequired}
+              required={meta.isRequired}
+              aria-required={meta.isRequired}
             />
             {loading && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">

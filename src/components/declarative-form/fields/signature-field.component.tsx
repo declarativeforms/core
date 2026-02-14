@@ -1,9 +1,8 @@
 import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ControllerRenderProps, FieldValues } from "react-hook-form";
 
 import { fieldHelperClass } from "../field-styles";
-import type { IDeclarativeFormField } from "../types";
+import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +16,8 @@ const UPLOAD_DEBOUNCE_MS = 500;
 
 export function SignatureField({
   field,
-  formField,
-}: {
-  field: IDeclarativeFormField;
-  formField: ControllerRenderProps<FieldValues, string>;
-}) {
+  controllerField,
+}: DeclarativeFieldComponentProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointsRef = useRef<Point[]>([]);
   const isDrawingRef = useRef(false);
@@ -185,7 +181,7 @@ export function SignatureField({
       }
 
       const data = await response.json();
-      formField.onChange(data.url);
+      controllerField.onChange(data.url);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Upload failed";
       setErrorMessage(message);
@@ -203,7 +199,7 @@ export function SignatureField({
     pointsRef.current = [];
     setHasSignature(false);
     setErrorMessage(null);
-    formField.onChange(null);
+    controllerField.onChange(null);
     redrawSignature();
   };
 

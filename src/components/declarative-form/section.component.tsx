@@ -25,11 +25,9 @@ export function DeclarativeFormSection(props: {
         )}
       >
         <div className="space-y-6">
-          {props.section.fields.map(
-            (field: IDeclarativeFormField, index: number) => (
-              <DeclarativeFormField key={index} field={field} form={form} />
-            )
-          )}
+          {props.section.fields.map((field: IDeclarativeFormField) => (
+            <DeclarativeFormField key={field.id} field={field} form={form} />
+          ))}
         </div>
 
         <div className="mt-8 flex justify-between items-center">
