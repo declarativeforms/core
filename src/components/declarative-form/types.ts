@@ -58,11 +58,18 @@ export type IDeclarativeFormSection = {
       >;
 };
 
+export type ICompletion = {
+  title?: string;
+  message?: string;
+  button?: { label: string; url: string };
+};
+
 export type IDeclarativeForm = {
   id?: string;
   version: number;
   title: string;
   description?: string;
+  completion?: ICompletion;
   sections: Array<IDeclarativeFormSection>;
   connections: Array<
     | {

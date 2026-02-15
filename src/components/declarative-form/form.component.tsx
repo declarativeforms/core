@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+import { HeroSection } from "./hero-section.component";
 import { DeclarativeFormSection } from "./section.component";
 import type { IDeclarativeForm } from "./types";
 
@@ -33,10 +34,32 @@ export function DeclarativeForm(props: {
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    if (activeSectionId === "done") {
+    if (activeSectionId === "done" && !props.form.completion) {
       navigate("/thank-you");
     }
-  }, [activeSectionId, navigate]);
+  }, [activeSectionId, navigate, props.form.completion]);
+
+  if (activeSectionId === "done" && props.form.completion) {
+    const interpolate = (template: string) =>
+      template.replace(/\{\{data\.(\w+)\}\}/g, (_, key) => data[key] ?? "");
+
+    const { completion } = props.form;
+
+    return (
+      <HeroSection
+        title={interpolate(completion.title ?? "Thank You!")}
+        description={
+          completion.message ? interpolate(completion.message) : undefined
+        }
+        buttonLabel={completion.button?.label}
+        buttonHref={
+          completion.button?.url
+            ? interpolate(completion.button.url)
+            : undefined
+        }
+      />
+    );
+  }
 
   const activeSection = props.form.sections.find(
     (section) => section.id === activeSectionId

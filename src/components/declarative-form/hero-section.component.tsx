@@ -4,6 +4,8 @@ export function HeroSection(props: {
   title: string;
   description?: string;
   onAction?: () => void;
+  buttonLabel?: string;
+  buttonHref?: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
@@ -18,7 +20,14 @@ export function HeroSection(props: {
           </p>
         ) : null}
 
-        {props.onAction ? (
+        {props.buttonHref ? (
+          <a
+            href={props.buttonHref}
+            className="inline-flex items-center justify-center w-full h-12 px-6 text-base font-semibold leading-none rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {props.buttonLabel ?? "Continue"}
+          </a>
+        ) : props.onAction ? (
           <Button
             className="w-full h-12 px-6 text-base font-semibold leading-none"
             onClick={() => props.onAction?.()}
