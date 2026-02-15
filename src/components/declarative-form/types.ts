@@ -72,6 +72,13 @@ export type IDeclarativeForm = {
         table_id_or_name: string;
       }
     | { type: "webhook"; url: string }
+    | {
+        type: "email";
+        to: string;
+        subject: string;
+        body?: string;
+        include_responses?: boolean;
+      }
   >;
   end_date?: string;
   mixpanel?: string;
@@ -100,3 +107,8 @@ export interface IStructuredAddress {
   postal_code?: string;
   place_id: string;
 }
+
+export type IConnection = IDeclarativeForm["connections"][number];
+export type IWebhookConnection = Extract<IConnection, { type: "webhook" }>;
+export type IAirtableConnection = Extract<IConnection, { type: "airtable" }>;
+export type IEmailConnection = Extract<IConnection, { type: "email" }>;
