@@ -10,7 +10,7 @@ export function LongTextField({
     <FormControl>
       <Textarea
         {...controllerField}
-        className="h-32 md:h-50"
+        className="h-32 md:h-50 text-sm/4"
         placeholder={field.placeholder || "Your answer"}
         required={meta.isRequired}
         aria-required={meta.isRequired}

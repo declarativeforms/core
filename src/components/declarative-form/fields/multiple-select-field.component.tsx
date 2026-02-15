@@ -51,7 +51,7 @@ export function MultipleSelectField({
       role="group"
       aria-required={meta.isRequired}
     >
-      {getHelperText() && <p>{getHelperText()}</p>}
+      {getHelperText() && <p className="text-sm text-muted-foreground">{getHelperText()}</p>}
       {field.options?.map((option) => (
         <FormField
           key={option}
@@ -67,9 +67,10 @@ export function MultipleSelectField({
             return (
               <FormItem>
                 <FormLabel
-                  className={cn({
-                    "border-ring": isChecked,
-                  })}
+                  className={cn(
+                    "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
+                    { "border-ring": isChecked }
+                  )}
                 >
                   <FormControl>
                     <Checkbox
@@ -107,7 +108,7 @@ export function MultipleSelectField({
           }}
         />
       ))}
-      {currentSelections > 0 && <p>{currentSelections} selected</p>}
+      {currentSelections > 0 && <p className="text-sm text-muted-foreground">{currentSelections} selected</p>}
     </div>
   );
 }

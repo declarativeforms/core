@@ -207,9 +207,9 @@ export function SignatureField({
       <div className="space-y-2">
         <div
           className={cn(
-            "border-2 border-dashed rounded-md min-h-[160px] transition-colors",
+            "border border-dashed rounded-md min-h-[160px] transition-colors",
             "bg-muted/40 border-border",
-            "focus-within:ring-2 focus-within:ring-ring/50 focus-within:border-ring"
+            "focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring"
           )}
         >
           <div className="relative">
@@ -225,12 +225,12 @@ export function SignatureField({
             />
             {!hasSignature && !isUploading && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span>Draw your signature</span>
+                <span className="text-sm text-muted-foreground">Draw your signature</span>
               </div>
             )}
             {isUploading && (
               <div className="absolute bottom-2 right-3">
-                <span>Uploading...</span>
+                <span className="text-sm text-muted-foreground">Uploading...</span>
               </div>
             )}
           </div>

@@ -222,9 +222,9 @@ export function FileUploadField({
             role="button"
             aria-label="Upload files"
             className={cn(
-              "border-2 border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors",
+              "border border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors",
               "flex flex-col items-center justify-center gap-2 p-6",
-              "focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2",
+              "focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring",
               isDragging
                 ? "border-ring bg-muted/60"
                 : "border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50"
@@ -235,13 +235,13 @@ export function FileUploadField({
               aria-hidden="true"
             />
             <div className="text-center">
-              <p className="text-base text-foreground">
+              <p className="text-sm text-foreground">
                 Click to upload or drag and drop
               </p>
               {getFileRequirements() && (
-                <p className="mt-1">{getFileRequirements()}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{getFileRequirements()}</p>
               )}
-              {field.placeholder && <p className="mt-1">{field.placeholder}</p>}
+              {field.placeholder && <p className="mt-1 text-sm text-muted-foreground">{field.placeholder}</p>}
             </div>
           </div>
         )}
@@ -317,7 +317,7 @@ function FilePreview({
     >
       {isImage && metadata.url && !metadata.url.startsWith("temp-") ? (
         <div
-          className="w-10 h-10 rounded flex-shrink-0 bg-gray-200 bg-cover bg-center"
+          className="w-10 h-10 rounded flex-shrink-0 bg-muted bg-cover bg-center"
           style={{ backgroundImage: `url(${metadata.url})` }}
           role="img"
           aria-label={metadata.name}
@@ -373,7 +373,7 @@ function FilePreview({
 
       {isUploading ? (
         <Loader2
-          className="w-5 h-5 text-gray-400 animate-spin flex-shrink-0"
+          className="w-5 h-5 text-muted-foreground animate-spin flex-shrink-0"
           aria-label="Uploading"
         />
       ) : (

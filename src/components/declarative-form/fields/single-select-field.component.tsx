@@ -27,9 +27,10 @@ export function SingleSelectField({
           return (
             <FormItem key={option}>
               <FormLabel
-                className={cn({
-                  "border-ring": isSelected,
-                })}
+                className={cn(
+                  "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
+                  { "border-ring": isSelected }
+                )}
               >
                 <FormControl>
                   <RadioGroupItem value={option} />

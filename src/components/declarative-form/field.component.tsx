@@ -43,7 +43,7 @@ export function DeclarativeFormField(props: {
       {props.field.label}
       {meta.isRequired && (
         <span
-          className="font-medium ml-1 text-red-500"
+          className="font-medium text-red-500"
           aria-hidden="true"
         >
           *

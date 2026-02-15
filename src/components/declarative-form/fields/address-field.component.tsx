@@ -142,6 +142,7 @@ export function AddressField({
       <FormControl>
         <Input
           {...controllerField}
+          className="text-sm/4"
           placeholder={field.placeholder || "Enter address"}
           required={meta.isRequired}
           aria-required={meta.isRequired}
@@ -158,6 +159,7 @@ export function AddressField({
           <div className="relative w-full">
             <Input
               value={inputValue}
+              className="text-sm/4"
               onChange={(e) => {
                 setInputValue(e.target.value);
                 if (e.target.value.trim()) {
@@ -171,7 +173,7 @@ export function AddressField({
             />
             {loading && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               </div>
             )}
           </div>
@@ -197,7 +199,7 @@ export function AddressField({
                       {suggestion.structured_formatting.main_text}
                     </span>
                     {suggestion.structured_formatting.secondary_text && (
-                      <span className="text-sm text-gray-500 break-words">
+                      <span className="text-sm text-muted-foreground break-words">
                         {suggestion.structured_formatting.secondary_text}
                       </span>
                     )}

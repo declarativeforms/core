@@ -19,7 +19,7 @@ export function DropdownField({
       defaultValue={controllerField.value}
     >
       <FormControl>
-        <SelectTrigger aria-required={meta.isRequired}>
+        <SelectTrigger className="w-full text-sm/4" aria-required={meta.isRequired}>
           <SelectValue
             placeholder={field.placeholder || `Select a ${field.label}`}
           />
