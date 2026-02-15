@@ -1,6 +1,5 @@
 import { useWatch } from "react-hook-form";
 
-import { fieldHelperClass, fieldOptionClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import {
   Checkbox,
@@ -29,13 +28,17 @@ export function MultipleSelectField({
     name: field.id,
   });
 
-  const currentSelections = Array.isArray(currentValue) ? currentValue.length : 0;
+  const currentSelections = Array.isArray(currentValue)
+    ? currentValue.length
+    : 0;
 
   const getHelperText = () => {
     if (minSelections > 0 && maxSelections) {
       return `Select ${minSelections}-${maxSelections} options`;
     } else if (minSelections > 0) {
-      return `Select at least ${minSelections} option${minSelections > 1 ? "s" : ""}`;
+      return `Select at least ${minSelections} option${
+        minSelections > 1 ? "s" : ""
+      }`;
     } else if (maxSelections) {
       return `Select up to ${maxSelections} options`;
     }
@@ -43,10 +46,12 @@ export function MultipleSelectField({
   };
 
   return (
-    <div className="flex flex-col space-y-2" role="group" aria-required={meta.isRequired}>
-        {getHelperText() && (
-        <p className={fieldHelperClass}>{getHelperText()}</p>
-      )}
+    <div
+      className="flex flex-col space-y-2"
+      role="group"
+      aria-required={meta.isRequired}
+    >
+      {getHelperText() && <p>{getHelperText()}</p>}
       {field.options?.map((option) => (
         <FormField
           key={option}
@@ -62,12 +67,9 @@ export function MultipleSelectField({
             return (
               <FormItem>
                 <FormLabel
-                  className={cn(
-                    fieldOptionClass,
-                    {
-                      "border-ring": isChecked,
-                    }
-                  )}
+                  className={cn({
+                    "border-ring": isChecked,
+                  })}
                 >
                   <FormControl>
                     <Checkbox
@@ -105,9 +107,7 @@ export function MultipleSelectField({
           }}
         />
       ))}
-      {currentSelections > 0 && (
-        <p className={fieldHelperClass}>{currentSelections} selected</p>
-      )}
+      {currentSelections > 0 && <p>{currentSelections} selected</p>}
     </div>
   );
 }

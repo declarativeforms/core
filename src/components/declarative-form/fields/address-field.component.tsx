@@ -1,7 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { fieldControlClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
@@ -19,7 +18,11 @@ import {
 } from "@/components/ui/command";
 import { FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export function AddressField({
   field,
@@ -55,7 +58,10 @@ export function AddressField({
   // Check if Google Places API is loaded
   useEffect(() => {
     const checkApiLoaded = () => {
-      if (typeof window !== "undefined" && (window as any).google?.maps?.places) {
+      if (
+        typeof window !== "undefined" &&
+        (window as any).google?.maps?.places
+      ) {
         setIsApiLoaded(true);
         return true;
       }
@@ -95,7 +101,10 @@ export function AddressField({
     }
 
     setLoading(true);
-    const types = autocompleteType === "region" ? ["administrative_area_level_1"] : [autocompleteType];
+    const types =
+      autocompleteType === "region"
+        ? ["administrative_area_level_1"]
+        : [autocompleteType];
 
     getPlacePredictions(debouncedInput, types)
       .then((predictions) => {
@@ -133,7 +142,6 @@ export function AddressField({
       <FormControl>
         <Input
           {...controllerField}
-          className={fieldControlClass}
           placeholder={field.placeholder || "Enter address"}
           required={meta.isRequired}
           aria-required={meta.isRequired}
@@ -157,7 +165,6 @@ export function AddressField({
                 }
               }}
               onBlur={controllerField.onBlur}
-              className={fieldControlClass}
               placeholder={field.placeholder || "Enter address"}
               required={meta.isRequired}
               aria-required={meta.isRequired}
@@ -171,7 +178,7 @@ export function AddressField({
         </PopoverTrigger>
         <PopoverContent
           className="p-0"
-          style={{ width: 'var(--radix-popover-trigger-width)' }}
+          style={{ width: "var(--radix-popover-trigger-width)" }}
           align="start"
           side="bottom"
           onOpenAutoFocus={(e) => e.preventDefault()}

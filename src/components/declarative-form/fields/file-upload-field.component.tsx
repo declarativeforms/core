@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 
-import { fieldHelperClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -177,7 +176,9 @@ export function FileUploadField({
   const getFileRequirements = () => {
     const requirements: string[] = [];
     const minFiles =
-      typeof meta.minValidator?.value === "number" ? meta.minValidator.value : 0;
+      typeof meta.minValidator?.value === "number"
+        ? meta.minValidator.value
+        : 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
       requirements.push(`${minFiles}-${maxFiles} files`);
@@ -229,21 +230,18 @@ export function FileUploadField({
                 : "border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50"
             )}
           >
-            <Upload className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
+            <Upload
+              className="w-8 h-8 text-muted-foreground"
+              aria-hidden="true"
+            />
             <div className="text-center">
               <p className="text-base text-foreground">
                 Click to upload or drag and drop
               </p>
               {getFileRequirements() && (
-                <p className={`${fieldHelperClass} mt-1`}>
-                  {getFileRequirements()}
-                </p>
+                <p className="mt-1">{getFileRequirements()}</p>
               )}
-              {field.placeholder && (
-                <p className={`${fieldHelperClass} mt-1`}>
-                  {field.placeholder}
-                </p>
-              )}
+              {field.placeholder && <p className="mt-1">{field.placeholder}</p>}
             </div>
           </div>
         )}
@@ -359,14 +357,14 @@ function FilePreview({
         )}
         {isUploading && (
           <div className="mt-1">
-          <div className="w-full bg-muted rounded-full h-1">
-            <div
-              className="bg-foreground h-1 rounded-full transition-all duration-300"
-              style={{ width: `${metadata.progress || 0}%` }}
-              role="progressbar"
-              aria-valuenow={metadata.progress || 0}
-              aria-valuemin={0}
-              aria-valuemax={100}
+            <div className="w-full bg-muted rounded-full h-1">
+              <div
+                className="bg-foreground h-1 rounded-full transition-all duration-300"
+                style={{ width: `${metadata.progress || 0}%` }}
+                role="progressbar"
+                aria-valuenow={metadata.progress || 0}
+                aria-valuemin={0}
+                aria-valuemax={100}
               />
             </div>
           </div>

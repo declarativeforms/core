@@ -5,7 +5,6 @@ import {
 } from "react-hook-form";
 
 import { FormField, FormItem, FormLabel, FormMessage } from "../ui";
-import { fieldContainerClass, fieldLabelClass } from "./field-styles";
 import { getFieldMeta } from "./field-contract";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { buildFieldRules } from "./field-validation";
@@ -40,10 +39,13 @@ export function DeclarativeFormField(props: {
   const isHiddenField = props.field.type === "hidden";
 
   const Label = () => (
-    <FormLabel className={fieldLabelClass}>
+    <FormLabel className="text-sm/4.5">
       {props.field.label}
       {meta.isRequired && (
-        <span className="font-medium text-sm ml-1 text-red-500" aria-hidden="true">
+        <span
+          className="font-medium ml-1 text-red-500"
+          aria-hidden="true"
+        >
           *
         </span>
       )}
@@ -64,7 +66,7 @@ export function DeclarativeFormField(props: {
             meta={meta}
           />
         ) : (
-          <FormItem className={`${fieldContainerClass} group`}>
+          <FormItem>
             {Label()}
             <Renderer
               controllerField={field}

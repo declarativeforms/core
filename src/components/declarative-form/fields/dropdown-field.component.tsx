@@ -1,4 +1,3 @@
-import { fieldSelectTriggerClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import {
   FormControl,
@@ -20,10 +19,7 @@ export function DropdownField({
       defaultValue={controllerField.value}
     >
       <FormControl>
-        <SelectTrigger
-          className={fieldSelectTriggerClass}
-          aria-required={meta.isRequired}
-        >
+        <SelectTrigger aria-required={meta.isRequired}>
           <SelectValue
             placeholder={field.placeholder || `Select a ${field.label}`}
           />

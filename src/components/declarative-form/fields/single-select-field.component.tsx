@@ -1,4 +1,3 @@
-import { fieldOptionClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import {
   FormControl,
@@ -14,7 +13,6 @@ export function SingleSelectField({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
-
   return (
     <FormControl>
       <RadioGroup
@@ -29,12 +27,9 @@ export function SingleSelectField({
           return (
             <FormItem key={option}>
               <FormLabel
-                className={cn(
-                  fieldOptionClass,
-                  {
-                    "border-ring": isSelected,
-                  }
-                )}
+                className={cn({
+                  "border-ring": isSelected,
+                })}
               >
                 <FormControl>
                   <RadioGroupItem value={option} />

@@ -1,4 +1,3 @@
-import { fieldControlClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl, Textarea } from "@/components/ui";
 
@@ -7,12 +6,11 @@ export function LongTextField({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
-
   return (
     <FormControl>
       <Textarea
         {...controllerField}
-        className={`${fieldControlClass} h-32 md:h-50`}
+        className="h-32 md:h-50"
         placeholder={field.placeholder || "Your answer"}
         required={meta.isRequired}
         aria-required={meta.isRequired}

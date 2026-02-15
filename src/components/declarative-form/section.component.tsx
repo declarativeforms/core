@@ -34,16 +34,11 @@ export function DeclarativeFormSection(props: {
           <Button
             type="button"
             variant="outline"
-            className="h-12 px-6 text-base font-semibold leading-none"
             disabled={form.formState.isSubmitting}
           >
             Back
           </Button>
-          <Button
-            type="submit"
-            className="h-12 px-6 text-base font-semibold leading-none"
-            disabled={form.formState.isSubmitting}
-          >
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             Next
           </Button>
         </div>

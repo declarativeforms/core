@@ -1,4 +1,3 @@
-import { fieldControlClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl, Input } from "@/components/ui";
 
@@ -11,20 +10,20 @@ export function InputField({
     field.type === "date"
       ? "date"
       : field.type === "email"
-        ? "email"
-        : field.type === "mobile_number"
-          ? "tel"
-          : field.type === "number"
-            ? "text"
-            : field.type === "url"
-              ? "url"
-              : "text";
+      ? "email"
+      : field.type === "mobile_number"
+      ? "tel"
+      : field.type === "number"
+      ? "text"
+      : field.type === "url"
+      ? "url"
+      : "text";
 
   return (
     <FormControl>
       <Input
         {...controllerField}
-        className={fieldControlClass}
+        className="text-sm/4"
         placeholder={field.placeholder || "Your answer"}
         type={inputType}
         inputMode={field.type === "number" ? "numeric" : undefined}

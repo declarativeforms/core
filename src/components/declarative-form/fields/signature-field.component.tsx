@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { fieldHelperClass } from "../field-styles";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -226,12 +225,12 @@ export function SignatureField({
             />
             {!hasSignature && !isUploading && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className={fieldHelperClass}>Draw your signature</span>
+                <span>Draw your signature</span>
               </div>
             )}
             {isUploading && (
               <div className="absolute bottom-2 right-3">
-                <span className={fieldHelperClass}>Uploading...</span>
+                <span>Uploading...</span>
               </div>
             )}
           </div>
