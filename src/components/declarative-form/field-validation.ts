@@ -3,6 +3,26 @@ import type { RegisterOptions } from "react-hook-form";
 import type { DeclarativeFieldMeta } from "./field-contract";
 import type { IDeclarativeFormField } from "./types";
 
+function getRatingRange(meta: DeclarativeFieldMeta): {
+  max: number;
+  min: number;
+} {
+  const min =
+    typeof meta.minValidator?.value === "number"
+      ? Math.trunc(meta.minValidator.value)
+      : 1;
+  const max =
+    typeof meta.maxValidator?.value === "number"
+      ? Math.trunc(meta.maxValidator.value)
+      : 5;
+
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max < min) {
+    return { max: 5, min: 1 };
+  }
+
+  return { max, min };
+}
+
 export function buildFieldRules(
   field: IDeclarativeFormField,
   meta: DeclarativeFieldMeta
@@ -104,6 +124,32 @@ export function buildFieldRules(
           meta.maxValidator.message ||
           `${field.label} must be at most ${meta.maxValidator.value}.`
         );
+      }
+
+      return true;
+    };
+  }
+
+  if (field.type === "rating") {
+    const { min, max } = getRatingRange(meta);
+
+    rules.validate = (value) => {
+      if (value === undefined || value === null || value === "") {
+        return true;
+      }
+
+      const numericValue = Number(value);
+
+      if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
+        return `${field.label} must be a whole number.`;
+      }
+
+      if (numericValue < min) {
+        return meta.minValidator?.message || `${field.label} must be at least ${min}.`;
+      }
+
+      if (numericValue > max) {
+        return meta.maxValidator?.message || `${field.label} must be at most ${max}.`;
       }
 
       return true;

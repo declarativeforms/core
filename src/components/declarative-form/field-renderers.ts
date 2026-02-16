@@ -8,6 +8,7 @@ import {
   InputField,
   LongTextField,
   MultipleSelectField,
+  RatingField,
   SignatureField,
   SingleSelectField,
 } from "./fields";
@@ -33,6 +34,7 @@ export const declarativeFieldRenderers: Record<
   mobile_number: InputField,
   multiple_select: MultipleSelectField,
   number: InputField,
+  rating: RatingField,
   short_text: InputField,
   signature: SignatureField,
   single_select: SingleSelectField,

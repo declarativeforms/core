@@ -14,11 +14,14 @@ export type IDeclarativeFormField = {
     | "mobile_number"
     | "multiple_select"
     | "number"
+    | "rating"
     | "signature"
     | "short_text"
     | "single_select"
     | "url";
   label: string;
+  max_label?: string;
+  min_label?: string;
   options?: Array<string>;
   placeholder?: string;
   validators?: Array<
