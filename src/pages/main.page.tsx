@@ -17,16 +17,36 @@ export function MainPage() {
 
   const [submissionId, setSubmissionId] = useState<string | null>(null);
 
+  const connectionId = searchParams.get("connection_id");
+
   const { data: form, error } = useQuery({
-    queryKey: ["form", params.id, params.owner, params.repository, params.file],
+    queryKey: [
+      "form",
+      params.id,
+      params.owner,
+      params.repository,
+      params.file,
+      connectionId,
+    ],
     queryFn: async () => {
-      const response = await fetch(
-        params.id
-          ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.id}`
-          : params.owner && params.repository && params.file
-          ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
-          : "/default.yaml"
-      );
+      const url = params.id
+        ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.id}`
+        : params.owner && params.repository && params.file
+        ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
+        : "/default.yaml";
+
+      const fetchUrl = new URL(url, window.location.origin);
+      if (connectionId) {
+        fetchUrl.searchParams.set("connection_id", connectionId);
+      }
+
+      const response = await fetch(fetchUrl.toString());
+
+      if (response.status === 403) {
+        const state = encodeURIComponent(window.location.pathname);
+        window.location.href = `${window.location.origin}/oauth/github?state=${state}`;
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`Form not found: ${response.status}`);
