@@ -66,6 +66,28 @@ export function buildFieldRules(
     }
   }
 
+  if (field.type === "email" && field.otp) {
+    rules.validate = (value, formValues) => {
+      if (value === undefined || value === null || value === "") {
+        return true;
+      }
+
+      const values =
+        formValues && typeof formValues === "object"
+          ? (formValues as Record<string, unknown>)
+          : {};
+      const otpVerified =
+        values[`${field.id}__otp_verified`] === true ||
+        values[`${field.id}__otp_verified`] === "true";
+
+      if (!otpVerified) {
+        return "Please verify your email address with OTP.";
+      }
+
+      return true;
+    };
+  }
+
   if (field.type === "date") {
     if (meta.minValidator) {
       rules.min = {

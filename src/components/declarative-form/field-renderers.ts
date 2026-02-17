@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import {
   AddressField,
   DropdownField,
+  EmailField,
   FileUploadField,
   HiddenField,
   InputField,
@@ -27,7 +28,7 @@ export const declarativeFieldRenderers: Record<
   address_region: AddressField,
   date: InputField,
   dropdown: DropdownField,
-  email: InputField,
+  email: EmailField,
   file_upload: FileUploadField,
   hidden: HiddenField,
   long_text: LongTextField,

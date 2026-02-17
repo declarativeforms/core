@@ -1,5 +1,6 @@
 export * from "./address-field.component";
 export * from "./dropdown-field.component";
+export * from "./email-field.component";
 export * from "./file-upload-field.component";
 export * from "./hidden-field.component";
 export * from "./input-field.component";
