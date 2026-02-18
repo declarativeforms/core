@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { getOtpFieldNames, isOtpVerifiedValue } from "../otp-field-names";
-import { Button, FormControl, Input } from "@/components/ui";
+import { FormControl, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { sendEmailOtp, verifyEmailOtp } from "./email/api";
 import { OTP_MESSAGES } from "./email/constants";
@@ -163,8 +163,6 @@ export function EmailField({
       setOtpCode("");
       setResendAvailableAt(Date.now() + Math.max(1, resendAfterSeconds) * 1000);
       setClockMs(Date.now());
-      setStatusType("success");
-      setStatusMessage(OTP_MESSAGES.sentSuccess);
     } catch (error) {
       setStatusType("error");
       setStatusMessage(
@@ -210,8 +208,6 @@ export function EmailField({
         { requestId: otpRequestId, token: verificationToken, verified: true },
         options
       );
-      setStatusType("success");
-      setStatusMessage(OTP_MESSAGES.verifiedSuccess);
       setOtpCode("");
       form.trigger(field.id);
     } catch {
@@ -250,45 +246,44 @@ export function EmailField({
   return (
     <FormControl>
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Input
-              {...controllerField}
-              className={cn("text-sm/4", {
-                "bg-muted/60 border-muted-foreground/30 text-muted-foreground pr-10 cursor-not-allowed":
-                  isVerified,
-              })}
-              placeholder={field.placeholder || "your@email.com"}
-              type="email"
-              value={emailValue}
-              onChange={(event) => onEmailChange(event.target.value)}
-              required={meta.isRequired}
-              aria-required={meta.isRequired}
-              aria-readonly={isVerified}
-              readOnly={isVerified}
-              minLength={
-                typeof meta.minValidator?.value === "number"
-                  ? meta.minValidator.value
-                  : undefined
-              }
-              maxLength={
-                typeof meta.maxValidator?.value === "number"
-                  ? meta.maxValidator.value
-                  : undefined
-              }
-            />
+        <div className="relative">
+          <Input
+            {...controllerField}
+            className={cn("text-sm/4", {
+              "bg-muted/60 border-muted-foreground/30 text-muted-foreground pr-10 cursor-not-allowed":
+                isVerified,
+              "pr-20": !isVerified,
+            })}
+            placeholder={field.placeholder || "your@email.com"}
+            type="email"
+            value={emailValue}
+            onChange={(event) => onEmailChange(event.target.value)}
+            required={meta.isRequired}
+            aria-required={meta.isRequired}
+            aria-readonly={isVerified}
+            readOnly={isVerified}
+            minLength={
+              typeof meta.minValidator?.value === "number"
+                ? meta.minValidator.value
+                : undefined
+            }
+            maxLength={
+              typeof meta.maxValidator?.value === "number"
+                ? meta.maxValidator.value
+                : undefined
+            }
+          />
 
-            {isVerified && (
-              <span className="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center">
-                <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
-              </span>
-            )}
-          </div>
+          {isVerified && (
+            <span className="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center">
+              <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
+            </span>
+          )}
 
           {!isVerified && (
-            <Button
+            <button
               type="button"
-              variant="outline"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
               disabled={
                 isSending ||
                 !isEmailValid(emailValue) ||
@@ -301,44 +296,38 @@ export function EmailField({
               {otpRequestId
                 ? secondsUntilResend > 0
                   ? `Resend in ${secondsUntilResend}s`
-                  : "Resend code"
+                  : "Resend"
                 : "Send code"}
-            </Button>
+            </button>
           )}
         </div>
 
         {!isVerified && otpRequestId ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Input
-                value={otpCode}
-                onChange={(event) => setOtpCode(sanitizeOtpCode(event.target.value))}
-                placeholder="Enter 6-digit code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                className="text-sm/4"
-                aria-label="Verification code"
-              />
-              <Button
-                type="button"
-                disabled={isVerifying || otpCode.length === 0}
-                onClick={() => {
-                  void verifyOtp();
-                }}
-              >
-                Verify
-              </Button>
-            </div>
+          <div className="relative">
+            <Input
+              value={otpCode}
+              onChange={(event) => setOtpCode(sanitizeOtpCode(event.target.value))}
+              placeholder="Enter 6-digit code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              className="pr-10 text-sm/4"
+              aria-label="Verification code"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
+              disabled={isVerifying || otpCode.length === 0}
+              onClick={() => {
+                void verifyOtp();
+              }}
+            >
+              <Check className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         ) : null}
 
         {statusMessage && (
-          <p
-            className={cn("text-sm", {
-              "text-destructive": statusType === "error",
-              "text-muted-foreground": statusType === "success",
-            })}
-          >
+          <p className="text-sm text-destructive">
             {statusMessage}
           </p>
         )}

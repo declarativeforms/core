@@ -11,7 +11,5 @@ export const OTP_MESSAGES = {
   invalidEmailBeforeSend: "Enter a valid email address before requesting a code.",
   requestCodeFirst: "Request a verification code first.",
   sendFailed: "Failed to send verification code.",
-  sentSuccess: "Verification code sent to your email.",
   tokenMissing: "OTP verification token is missing from response.",
-  verifiedSuccess: "Email address verified.",
 } as const;
