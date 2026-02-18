@@ -3,7 +3,7 @@ import {
   EMAIL_OTP_VERIFY_ENDPOINT,
   OTP_DEFAULT_RESEND_COOLDOWN_SECONDS,
   OTP_MESSAGES,
-} from "./email-otp.constants";
+} from "./constants";
 
 type OtpSendResponse = {
   request_id?: string;

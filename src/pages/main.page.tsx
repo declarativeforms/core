@@ -107,6 +107,15 @@ export function MainPage() {
     return null;
   }
 
+  if (form.start_date && new Date(form.start_date) > new Date()) {
+    return (
+      <HeroSection
+        title="Form Not Yet Open"
+        description="This form is not yet accepting submissions."
+      />
+    );
+  }
+
   if (form.end_date && new Date(form.end_date) < new Date()) {
     return (
       <HeroSection

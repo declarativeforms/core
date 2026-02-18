@@ -91,6 +91,7 @@ export type IDeclarativeForm = {
         include_responses?: boolean;
       }
   >;
+  start_date?: string;
   end_date?: string;
   mixpanel?: string;
 };

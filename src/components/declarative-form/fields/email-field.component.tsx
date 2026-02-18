@@ -6,9 +6,9 @@ import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { getOtpFieldNames, isOtpVerifiedValue } from "../otp-field-names";
 import { Button, FormControl, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { sendEmailOtp, verifyEmailOtp } from "./email-otp.api";
-import { OTP_MESSAGES } from "./email-otp.constants";
-import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email-otp.utils";
+import { sendEmailOtp, verifyEmailOtp } from "./email/api";
+import { OTP_MESSAGES } from "./email/constants";
+import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email/utils";
 
 export function EmailField({
   field,
