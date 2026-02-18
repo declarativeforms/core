@@ -1,5 +1,7 @@
 export * from "./button";
 export * from "./card";
+export * from "./command";
+export * from "./popover";
 export * from "./checkbox";
 export * from "./collapsible";
 export * from "./dialog";

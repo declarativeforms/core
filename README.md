@@ -71,6 +71,7 @@ At some point, you either live with the constraints, or you start wishing forms 
 #### Selection
 
 - [Dropdown](https://github.com/declarativeforms/examples/blob/main/dropdown.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/dropdown))
+- [Searchable Dropdown](https://github.com/declarativeforms/examples/blob/main/dropdown_searchable.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/dropdown_searchable))
 - [Single Select](https://github.com/declarativeforms/examples/blob/main/single_select.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/single_select))
 - [Multiple Select](https://github.com/declarativeforms/examples/blob/main/multiple_select.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/multiple_select))
 - [Rating](https://github.com/declarativeforms/examples/blob/main/rating.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/rating))
@@ -102,8 +103,10 @@ At some point, you either live with the constraints, or you start wishing forms 
 - [End Date](https://github.com/declarativeforms/examples/blob/main/end_date.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/end_date))
 - [Mixpanel](https://github.com/declarativeforms/examples/blob/main/mixpanel.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/mixpanel))
 
-## Feedback & Feature Requests
+## The 48-Hour Promise
 
-Have an idea for a new feature or found something that could be improved? We'd love to hear from you.
+Most form platforms have feature request boards where ideas go to die. Hundreds of requests, some over 18 months old, sitting in a backlog that never moves.
 
-You can submit and vote on feature requests here: [Submit a Feature Request](https://declarative-forms.canny.io)
+We do things differently. Open a [GitHub Issue](https://github.com/declarativeforms/examples/issues) with your feature request — if it genuinely improves the product, we'll ship it within 48 hours.
+
+No waitlists. No roadmap purgatory. No "we'll consider it." Just open an issue and watch it get built.

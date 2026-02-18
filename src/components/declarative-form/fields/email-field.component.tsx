@@ -72,7 +72,6 @@ export function EmailField({
 
   const [otpCode, setOtpCode] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [statusType, setStatusType] = useState<"success" | "error" | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [resendAvailableAt, setResendAvailableAt] = useState(0);
@@ -97,7 +96,11 @@ export function EmailField({
 
   const setOtpFieldValues = (
     values: { requestId: string; token: string; verified: boolean },
-    options: { shouldDirty: boolean; shouldTouch: boolean; shouldValidate: boolean }
+    options: {
+      shouldDirty: boolean;
+      shouldTouch: boolean;
+      shouldValidate: boolean;
+    }
   ) => {
     form.setValue(otpFieldNames.verified, values.verified, options);
     form.setValue(otpFieldNames.token, values.token, options);
@@ -120,7 +123,6 @@ export function EmailField({
     setOtpCode("");
     setResendAvailableAt(0);
     setStatusMessage(null);
-    setStatusType(null);
   };
 
   const onEmailChange = (nextValue: string) => {
@@ -137,14 +139,12 @@ export function EmailField({
 
   const sendOtp = async () => {
     if (!isEmailValid(emailValue)) {
-      setStatusType("error");
       setStatusMessage(OTP_MESSAGES.invalidEmailBeforeSend);
       return;
     }
 
     setIsSending(true);
     setStatusMessage(null);
-    setStatusType(null);
 
     try {
       const { requestId, resendAfterSeconds } = await sendEmailOtp({
@@ -164,7 +164,6 @@ export function EmailField({
       setResendAvailableAt(Date.now() + Math.max(1, resendAfterSeconds) * 1000);
       setClockMs(Date.now());
     } catch (error) {
-      setStatusType("error");
       setStatusMessage(
         error instanceof Error ? error.message : OTP_MESSAGES.sendFailed
       );
@@ -175,20 +174,17 @@ export function EmailField({
 
   const verifyOtp = async () => {
     if (!otpRequestId) {
-      setStatusType("error");
       setStatusMessage(OTP_MESSAGES.requestCodeFirst);
       return;
     }
 
     if (!otpCode.trim()) {
-      setStatusType("error");
       setStatusMessage(OTP_MESSAGES.enterCode);
       return;
     }
 
     setIsVerifying(true);
     setStatusMessage(null);
-    setStatusType(null);
 
     try {
       const { verificationToken } = await verifyEmailOtp({
@@ -211,7 +207,6 @@ export function EmailField({
       setOtpCode("");
       form.trigger(field.id);
     } catch {
-      setStatusType("error");
       setStatusMessage(OTP_MESSAGES.invalidCode);
     } finally {
       setIsVerifying(false);
@@ -306,7 +301,9 @@ export function EmailField({
           <div className="relative">
             <Input
               value={otpCode}
-              onChange={(event) => setOtpCode(sanitizeOtpCode(event.target.value))}
+              onChange={(event) =>
+                setOtpCode(sanitizeOtpCode(event.target.value))
+              }
               placeholder="Enter 6-digit code"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -327,9 +324,7 @@ export function EmailField({
         ) : null}
 
         {statusMessage && (
-          <p className="text-sm text-destructive">
-            {statusMessage}
-          </p>
+          <p className="text-sm text-destructive">{statusMessage}</p>
         )}
       </div>
     </FormControl>

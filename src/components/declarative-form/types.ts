@@ -23,6 +23,7 @@ export type IDeclarativeFormField = {
   max_label?: string;
   min_label?: string;
   otp?: boolean;
+  searchable?: boolean;
   options?: Array<string>;
   placeholder?: string;
   validators?: Array<
