@@ -1,4 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../field-contract";
+import { getRatingRange } from "../rating-range";
 import {
   FormControl,
   FormItem,
@@ -7,23 +8,6 @@ import {
   RadioGroupItem,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
-
-function getRatingRange(meta: DeclarativeFieldComponentProps["meta"]) {
-  const min =
-    typeof meta.minValidator?.value === "number"
-      ? Math.trunc(meta.minValidator.value)
-      : 1;
-  const max =
-    typeof meta.maxValidator?.value === "number"
-      ? Math.trunc(meta.maxValidator.value)
-      : 5;
-
-  if (!Number.isFinite(min) || !Number.isFinite(max) || max < min) {
-    return { max: 5, min: 1 };
-  }
-
-  return { max, min };
-}
 
 export function RatingField({
   field,

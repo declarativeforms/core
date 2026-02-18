@@ -3,50 +3,12 @@ import { useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../field-contract";
+import { getOtpFieldNames, isOtpVerifiedValue } from "../otp-field-names";
 import { Button, FormControl, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
-
-const EMAIL_OTP_SEND_ENDPOINT =
-  "https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/otp/email/send";
-const EMAIL_OTP_VERIFY_ENDPOINT =
-  "https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/otp/email/verify";
-const OTP_DEFAULT_RESEND_COOLDOWN_SECONDS = 30;
-
-type OtpSendResponse = {
-  request_id?: string;
-  requestId?: string;
-  resend_after_seconds?: number;
-  resendAfterSeconds?: number;
-};
-
-type OtpVerifyResponse = {
-  verification_token?: string;
-  verificationToken?: string;
-};
-
-function isEmailValid(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function toBoolean(value: unknown): boolean {
-  return value === true || value === "true" || value === 1 || value === "1";
-}
-
-async function getErrorMessage(response: Response): Promise<string> {
-  try {
-    const payload = (await response.json()) as { error?: string; message?: string };
-    if (typeof payload.error === "string" && payload.error.trim()) {
-      return payload.error;
-    }
-    if (typeof payload.message === "string" && payload.message.trim()) {
-      return payload.message;
-    }
-  } catch {
-    // no-op; fall back to default message below
-  }
-
-  return "Request failed. Please try again.";
-}
+import { sendEmailOtp, verifyEmailOtp } from "./email-otp.api";
+import { OTP_MESSAGES } from "./email-otp.constants";
+import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email-otp.utils";
 
 export function EmailField({
   field,
@@ -55,19 +17,16 @@ export function EmailField({
   meta,
 }: DeclarativeFieldComponentProps) {
   const otpEnabled = field.type === "email" && field.otp === true;
-
-  const otpVerifiedFieldName = `${field.id}__otp_verified`;
-  const otpTokenFieldName = `${field.id}__otp_token`;
-  const otpRequestIdFieldName = `${field.id}__otp_request_id`;
+  const otpFieldNames = useMemo(() => getOtpFieldNames(field.id), [field.id]);
 
   useEffect(() => {
     if (!otpEnabled) {
       return;
     }
 
-    form.register(otpVerifiedFieldName);
-    form.register(otpTokenFieldName);
-    form.register(otpRequestIdFieldName);
+    form.register(otpFieldNames.verified);
+    form.register(otpFieldNames.token);
+    form.register(otpFieldNames.requestId);
 
     const options = {
       shouldDirty: false,
@@ -75,52 +34,41 @@ export function EmailField({
       shouldValidate: false,
     } as const;
 
-    if (form.getValues(otpVerifiedFieldName) === undefined) {
-      form.setValue(otpVerifiedFieldName, false, options);
+    if (form.getValues(otpFieldNames.verified) === undefined) {
+      form.setValue(otpFieldNames.verified, false, options);
     }
 
-    if (form.getValues(otpTokenFieldName) === undefined) {
-      form.setValue(otpTokenFieldName, "", options);
+    if (form.getValues(otpFieldNames.token) === undefined) {
+      form.setValue(otpFieldNames.token, "", options);
     }
 
-    if (form.getValues(otpRequestIdFieldName) === undefined) {
-      form.setValue(otpRequestIdFieldName, "", options);
+    if (form.getValues(otpFieldNames.requestId) === undefined) {
+      form.setValue(otpFieldNames.requestId, "", options);
     }
-  }, [
-    form,
-    otpEnabled,
-    otpRequestIdFieldName,
-    otpTokenFieldName,
-    otpVerifiedFieldName,
-  ]);
+  }, [form, otpEnabled, otpFieldNames]);
 
   const watchedVerified = useWatch({
     control: form.control,
-    name: otpVerifiedFieldName,
+    name: otpFieldNames.verified,
   });
   const watchedToken = useWatch({
     control: form.control,
-    name: otpTokenFieldName,
+    name: otpFieldNames.token,
   });
   const watchedRequestId = useWatch({
     control: form.control,
-    name: otpRequestIdFieldName,
+    name: otpFieldNames.requestId,
   });
 
-  const isVerified = toBoolean(watchedVerified);
+  const isVerified = isOtpVerifiedValue(watchedVerified);
   const otpRequestId =
     typeof watchedRequestId === "string" ? watchedRequestId : "";
   const otpToken = typeof watchedToken === "string" ? watchedToken : "";
 
-  const emailValue = useMemo(() => {
-    if (typeof controllerField.value === "string") {
-      return controllerField.value;
-    }
-    if (controllerField.value === undefined || controllerField.value === null) {
-      return "";
-    }
-    return String(controllerField.value);
-  }, [controllerField.value]);
+  const emailValue = useMemo(
+    () => toFieldString(controllerField.value),
+    [controllerField.value]
+  );
 
   const [otpCode, setOtpCode] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -147,6 +95,15 @@ export function EmailField({
     Math.ceil((resendAvailableAt - clockMs) / 1000)
   );
 
+  const setOtpFieldValues = (
+    values: { requestId: string; token: string; verified: boolean },
+    options: { shouldDirty: boolean; shouldTouch: boolean; shouldValidate: boolean }
+  ) => {
+    form.setValue(otpFieldNames.verified, values.verified, options);
+    form.setValue(otpFieldNames.token, values.token, options);
+    form.setValue(otpFieldNames.requestId, values.requestId, options);
+  };
+
   const clearOtpState = () => {
     if (!otpEnabled) {
       return;
@@ -158,9 +115,7 @@ export function EmailField({
       shouldValidate: false,
     } as const;
 
-    form.setValue(otpVerifiedFieldName, false, options);
-    form.setValue(otpTokenFieldName, "", options);
-    form.setValue(otpRequestIdFieldName, "", options);
+    setOtpFieldValues({ requestId: "", token: "", verified: false }, options);
 
     setOtpCode("");
     setResendAvailableAt(0);
@@ -183,7 +138,7 @@ export function EmailField({
   const sendOtp = async () => {
     if (!isEmailValid(emailValue)) {
       setStatusType("error");
-      setStatusMessage("Enter a valid email address before requesting a code.");
+      setStatusMessage(OTP_MESSAGES.invalidEmailBeforeSend);
       return;
     }
 
@@ -192,40 +147,10 @@ export function EmailField({
     setStatusType(null);
 
     try {
-      const response = await fetch(EMAIL_OTP_SEND_ENDPOINT, {
-        body: JSON.stringify({
-          email: emailValue,
-          field_id: field.id,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
+      const { requestId, resendAfterSeconds } = await sendEmailOtp({
+        email: emailValue,
+        fieldId: field.id,
       });
-
-      if (!response.ok) {
-        throw new Error(await getErrorMessage(response));
-      }
-
-      const payload = (await response.json()) as OtpSendResponse;
-
-      const requestId =
-        typeof payload.request_id === "string"
-          ? payload.request_id
-          : typeof payload.requestId === "string"
-          ? payload.requestId
-          : "";
-
-      if (!requestId) {
-        throw new Error("Could not start OTP verification.");
-      }
-
-      const resendAfterSeconds =
-        typeof payload.resend_after_seconds === "number"
-          ? payload.resend_after_seconds
-          : typeof payload.resendAfterSeconds === "number"
-          ? payload.resendAfterSeconds
-          : OTP_DEFAULT_RESEND_COOLDOWN_SECONDS;
 
       const options = {
         shouldDirty: true,
@@ -233,19 +158,17 @@ export function EmailField({
         shouldValidate: false,
       } as const;
 
-      form.setValue(otpVerifiedFieldName, false, options);
-      form.setValue(otpTokenFieldName, "", options);
-      form.setValue(otpRequestIdFieldName, requestId, options);
+      setOtpFieldValues({ requestId, token: "", verified: false }, options);
 
       setOtpCode("");
       setResendAvailableAt(Date.now() + Math.max(1, resendAfterSeconds) * 1000);
       setClockMs(Date.now());
       setStatusType("success");
-      setStatusMessage("Verification code sent to your email.");
+      setStatusMessage(OTP_MESSAGES.sentSuccess);
     } catch (error) {
       setStatusType("error");
       setStatusMessage(
-        error instanceof Error ? error.message : "Failed to send verification code."
+        error instanceof Error ? error.message : OTP_MESSAGES.sendFailed
       );
     } finally {
       setIsSending(false);
@@ -255,13 +178,13 @@ export function EmailField({
   const verifyOtp = async () => {
     if (!otpRequestId) {
       setStatusType("error");
-      setStatusMessage("Request a verification code first.");
+      setStatusMessage(OTP_MESSAGES.requestCodeFirst);
       return;
     }
 
     if (!otpCode.trim()) {
       setStatusType("error");
-      setStatusMessage("Enter the verification code.");
+      setStatusMessage(OTP_MESSAGES.enterCode);
       return;
     }
 
@@ -270,34 +193,12 @@ export function EmailField({
     setStatusType(null);
 
     try {
-      const response = await fetch(EMAIL_OTP_VERIFY_ENDPOINT, {
-        body: JSON.stringify({
-          email: emailValue,
-          field_id: field.id,
-          otp: otpCode.trim(),
-          request_id: otpRequestId,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
+      const { verificationToken } = await verifyEmailOtp({
+        email: emailValue,
+        fieldId: field.id,
+        otp: otpCode.trim(),
+        requestId: otpRequestId,
       });
-
-      if (!response.ok) {
-        throw new Error(await getErrorMessage(response));
-      }
-
-      const payload = (await response.json()) as OtpVerifyResponse;
-      const verificationToken =
-        typeof payload.verification_token === "string"
-          ? payload.verification_token
-          : typeof payload.verificationToken === "string"
-          ? payload.verificationToken
-          : "";
-
-      if (!verificationToken) {
-        throw new Error("OTP verification token is missing from response.");
-      }
 
       const options = {
         shouldDirty: true,
@@ -305,15 +206,17 @@ export function EmailField({
         shouldValidate: true,
       } as const;
 
-      form.setValue(otpVerifiedFieldName, true, options);
-      form.setValue(otpTokenFieldName, verificationToken, options);
+      setOtpFieldValues(
+        { requestId: otpRequestId, token: verificationToken, verified: true },
+        options
+      );
       setStatusType("success");
-      setStatusMessage("Email address verified.");
+      setStatusMessage(OTP_MESSAGES.verifiedSuccess);
       setOtpCode("");
       form.trigger(field.id);
     } catch {
       setStatusType("error");
-      setStatusMessage("Invalid verification code.");
+      setStatusMessage(OTP_MESSAGES.invalidCode);
     } finally {
       setIsVerifying(false);
     }
@@ -409,9 +312,7 @@ export function EmailField({
             <div className="flex items-center gap-2">
               <Input
                 value={otpCode}
-                onChange={(event) =>
-                  setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-                }
+                onChange={(event) => setOtpCode(sanitizeOtpCode(event.target.value))}
                 placeholder="Enter 6-digit code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
