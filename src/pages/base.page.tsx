@@ -7,12 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
+import { useI18n } from "@/i18n";
 
 export function BasePage(props: {
   title: string;
   description?: string;
   children: ReactNode;
 }) {
+  const { t, withLang } = useI18n();
+
   useEffect(() => {
     document.title = `${props.title} — Declarative Forms`;
   }, [props.title]);
@@ -36,9 +39,9 @@ export function BasePage(props: {
 
       <div className="text-center text-gray-500 text-xs tracking-wide space-x-2">
         <span>
-          Powered by{" "}
+          {t("base.powered_by")}{" "}
           <a
-            href="/declarativeforms/examples/advanced"
+            href={withLang("/declarativeforms/examples/advanced")}
             className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
           >
             Declarative Forms
@@ -46,10 +49,10 @@ export function BasePage(props: {
         </span>
         <span>•</span>
         <a
-          href="/privacy-policy"
+          href={withLang("/privacy-policy")}
           className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
         >
-          Privacy Policy
+          {t("base.privacy_policy")}
         </a>
       </div>
     </div>

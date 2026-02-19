@@ -5,9 +5,9 @@ import { Check } from "lucide-react";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { getOtpFieldNames, isOtpVerifiedValue } from "../otp-field-names";
 import { FormControl, Input } from "@/components/ui";
+import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { sendEmailOtp, verifyEmailOtp } from "./email/api";
-import { OTP_MESSAGES } from "./email/constants";
 import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email/utils";
 
 export function EmailField({
@@ -16,8 +16,22 @@ export function EmailField({
   form,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
   const otpEnabled = field.type === "email" && field.otp === true;
   const otpFieldNames = useMemo(() => getOtpFieldNames(field.id), [field.id]);
+  const otpMessages = useMemo(
+    () => ({
+      enterCode: t("email.otp.enter_code"),
+      invalidCode: t("email.otp.invalid_code"),
+      invalidEmailBeforeSend: t("email.otp.invalid_email_before_send"),
+      requestCodeFirst: t("email.otp.request_code_first"),
+      requestFailed: t("email.otp.request_failed"),
+      sendFailed: t("email.otp.send_failed"),
+      startFailed: t("email.otp.start_failed"),
+      tokenMissing: t("email.otp.token_missing"),
+    }),
+    [t]
+  );
 
   useEffect(() => {
     if (!otpEnabled) {
@@ -139,7 +153,7 @@ export function EmailField({
 
   const sendOtp = async () => {
     if (!isEmailValid(emailValue)) {
-      setStatusMessage(OTP_MESSAGES.invalidEmailBeforeSend);
+      setStatusMessage(otpMessages.invalidEmailBeforeSend);
       return;
     }
 
@@ -150,6 +164,11 @@ export function EmailField({
       const { requestId, resendAfterSeconds } = await sendEmailOtp({
         email: emailValue,
         fieldId: field.id,
+        messages: {
+          requestFailed: otpMessages.requestFailed,
+          startFailed: otpMessages.startFailed,
+          tokenMissing: otpMessages.tokenMissing,
+        },
       });
 
       const options = {
@@ -165,7 +184,7 @@ export function EmailField({
       setClockMs(Date.now());
     } catch (error) {
       setStatusMessage(
-        error instanceof Error ? error.message : OTP_MESSAGES.sendFailed
+        error instanceof Error ? error.message : otpMessages.sendFailed
       );
     } finally {
       setIsSending(false);
@@ -174,12 +193,12 @@ export function EmailField({
 
   const verifyOtp = async () => {
     if (!otpRequestId) {
-      setStatusMessage(OTP_MESSAGES.requestCodeFirst);
+      setStatusMessage(otpMessages.requestCodeFirst);
       return;
     }
 
     if (!otpCode.trim()) {
-      setStatusMessage(OTP_MESSAGES.enterCode);
+      setStatusMessage(otpMessages.enterCode);
       return;
     }
 
@@ -192,6 +211,11 @@ export function EmailField({
         fieldId: field.id,
         otp: otpCode.trim(),
         requestId: otpRequestId,
+        messages: {
+          requestFailed: otpMessages.requestFailed,
+          startFailed: otpMessages.startFailed,
+          tokenMissing: otpMessages.tokenMissing,
+        },
       });
 
       const options = {
@@ -207,7 +231,7 @@ export function EmailField({
       setOtpCode("");
       form.trigger(field.id);
     } catch {
-      setStatusMessage(OTP_MESSAGES.invalidCode);
+      setStatusMessage(otpMessages.invalidCode);
     } finally {
       setIsVerifying(false);
     }
@@ -219,7 +243,7 @@ export function EmailField({
         <Input
           {...controllerField}
           className="text-sm/4"
-          placeholder={field.placeholder || "Your answer"}
+          placeholder={field.placeholder || t("email.placeholder_default")}
           type="email"
           required={meta.isRequired}
           aria-required={meta.isRequired}
@@ -249,7 +273,7 @@ export function EmailField({
                 isVerified,
               "pr-20": !isVerified,
             })}
-            placeholder={field.placeholder || "your@email.com"}
+            placeholder={field.placeholder || t("email.placeholder_otp")}
             type="email"
             value={emailValue}
             onChange={(event) => onEmailChange(event.target.value)}
@@ -290,9 +314,11 @@ export function EmailField({
             >
               {otpRequestId
                 ? secondsUntilResend > 0
-                  ? `Resend in ${secondsUntilResend}s`
-                  : "Resend"
-                : "Send code"}
+                  ? t("email.otp.resend_in_seconds", {
+                      seconds: secondsUntilResend,
+                    })
+                  : t("email.otp.resend")
+                : t("email.otp.send_code")}
             </button>
           )}
         </div>
@@ -304,16 +330,17 @@ export function EmailField({
               onChange={(event) =>
                 setOtpCode(sanitizeOtpCode(event.target.value))
               }
-              placeholder="Enter 6-digit code"
+              placeholder={t("email.otp.verification_code_placeholder")}
               inputMode="numeric"
               autoComplete="one-time-code"
               className="pr-10 text-sm/4"
-              aria-label="Verification code"
+              aria-label={t("email.otp.verification_code_aria_label")}
             />
             <button
               type="button"
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
               disabled={isVerifying || otpCode.length === 0}
+              aria-label={t("email.otp.verify")}
               onClick={() => {
                 void verifyOtp();
               }}

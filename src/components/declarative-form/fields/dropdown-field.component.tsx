@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
+import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 export function DropdownField({
@@ -27,6 +28,8 @@ export function DropdownField({
   form,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
+
   if (field.searchable) {
     return (
       <SearchableDropdown
@@ -39,21 +42,23 @@ export function DropdownField({
   }
 
   return (
-    <Select
+      <Select
       onValueChange={controllerField.onChange}
-      defaultValue={controllerField.value}
+      value={controllerField.value}
     >
       <FormControl>
         <SelectTrigger className="w-full text-sm/4" aria-required={meta.isRequired}>
           <SelectValue
-            placeholder={field.placeholder || `Select a ${field.label}`}
+            placeholder={
+              field.placeholder || t("dropdown.select_a", { label: field.label })
+            }
           />
         </SelectTrigger>
       </FormControl>
       <SelectContent>
         {field.options?.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -66,7 +71,11 @@ function SearchableDropdown({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const selectedOption = field.options?.find(
+    (option) => option.value === controllerField.value
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -82,33 +91,33 @@ function SearchableDropdown({
               !controllerField.value && "text-muted-foreground"
             )}
           >
-            {controllerField.value ||
+            {selectedOption?.label ||
               field.placeholder ||
-              `Select a ${field.label}`}
+              t("dropdown.select_a", { label: field.label })}
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
       </FormControl>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search..." />
+          <CommandInput placeholder={t("dropdown.search")} />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>{t("dropdown.no_results")}</CommandEmpty>
             <CommandGroup>
               {field.options?.map((option) => (
                 <CommandItem
-                  key={option}
-                  value={option}
+                  key={option.value}
+                  value={option.label}
                   onSelect={() => {
-                    controllerField.onChange(option);
+                    controllerField.onChange(option.value);
                     setOpen(false);
                   }}
                 >
-                  {option}
+                  {option.label}
                   <Check
                     className={cn(
                       "ml-auto size-4",
-                      controllerField.value === option
+                      controllerField.value === option.value
                         ? "opacity-100"
                         : "opacity-0"
                     )}

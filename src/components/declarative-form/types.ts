@@ -1,3 +1,30 @@
+export type ILocalizedText = Record<string, string> | string;
+
+export type IDeclarativeFormOption =
+  | string
+  | {
+      label: ILocalizedText;
+      value: string;
+    };
+
+export type IDeclarativeFormValidator =
+  | "required"
+  | {
+      type: "pattern";
+      regex: string;
+      message?: ILocalizedText;
+    }
+  | {
+      type: "min";
+      value: number | string;
+      message?: ILocalizedText;
+    }
+  | {
+      type: "max";
+      value: number | string;
+      message?: ILocalizedText;
+    };
+
 export type IDeclarativeFormField = {
   id: string;
   type:
@@ -19,38 +46,21 @@ export type IDeclarativeFormField = {
     | "short_text"
     | "single_select"
     | "url";
-  label: string;
-  max_label?: string;
-  min_label?: string;
+  label: ILocalizedText;
+  max_label?: ILocalizedText;
+  min_label?: ILocalizedText;
   otp?: boolean;
   searchable?: boolean;
-  options?: Array<string>;
-  placeholder?: string;
-  validators?: Array<
-    | "required"
-    | {
-        type: "pattern";
-        regex: string;
-        message?: string;
-      }
-    | {
-        type: "min";
-        value: number | string;
-        message?: string;
-      }
-    | {
-        type: "max";
-        value: number | string;
-        message?: string;
-      }
-  >;
+  options?: Array<IDeclarativeFormOption>;
+  placeholder?: ILocalizedText;
+  validators?: Array<IDeclarativeFormValidator>;
   visible_when?: string;
   outputFormat?: "string" | "structured";
 };
 
 export type IDeclarativeFormSection = {
   id: string;
-  title: string;
+  title: ILocalizedText;
   fields: Array<IDeclarativeFormField>;
   next:
     | string
@@ -64,16 +74,16 @@ export type IDeclarativeFormSection = {
 };
 
 export type ICompletion = {
-  title?: string;
-  message?: string;
-  button?: { label: string; url: string };
+  title?: ILocalizedText;
+  message?: ILocalizedText;
+  button?: { label: ILocalizedText; url: ILocalizedText };
 };
 
 export type IDeclarativeForm = {
   id?: string;
   version: number;
-  title: string;
-  description?: string;
+  title: ILocalizedText;
+  description?: ILocalizedText;
   completion?: ICompletion;
   sections: Array<IDeclarativeFormSection>;
   connections: Array<
@@ -87,19 +97,20 @@ export type IDeclarativeForm = {
     | {
         type: "email";
         to: string;
-        subject: string;
-        body?: string;
+        subject: ILocalizedText;
+        body?: ILocalizedText;
         include_responses?: boolean;
       }
   >;
   start_date?: string;
   end_date?: string;
+  locale?: string;
   mixpanel?: string;
 };
 
 export type ISubmission = {
   created_at: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   form_id: string;
   id: string;
   metadata: {

@@ -8,10 +8,10 @@ import { FormField, FormItem, FormLabel, FormMessage } from "../ui";
 import { getFieldMeta } from "./field-contract";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { buildFieldRules } from "./field-validation";
-import type { IDeclarativeFormField } from "./types";
+import type { IResolvedDeclarativeFormField } from "./localized-content";
 
 export function DeclarativeFormField(props: {
-  field: IDeclarativeFormField;
+  field: IResolvedDeclarativeFormField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
   const formData = useWatch({ control: props.form.control });
@@ -33,14 +33,15 @@ export function DeclarativeFormField(props: {
     return null;
   }
 
-  const meta = getFieldMeta(props.field);
-  const rules = buildFieldRules(props.field, meta);
-  const Renderer = declarativeFieldRenderers[props.field.type];
-  const isHiddenField = props.field.type === "hidden";
+  const resolvedField = props.field;
+  const meta = getFieldMeta(resolvedField);
+  const rules = buildFieldRules(resolvedField, meta);
+  const Renderer = declarativeFieldRenderers[resolvedField.type];
+  const isHiddenField = resolvedField.type === "hidden";
 
   const Label = () => (
     <FormLabel className="text-sm/4.5">
-      {props.field.label}
+      {resolvedField.label}
       {meta.isRequired && (
         <span
           className="font-medium text-red-500"
@@ -55,13 +56,13 @@ export function DeclarativeFormField(props: {
   return (
     <FormField
       control={props.form.control}
-      name={props.field.id}
+      name={resolvedField.id}
       rules={rules}
       render={({ field }) =>
         isHiddenField ? (
           <Renderer
             controllerField={field}
-            field={props.field}
+            field={resolvedField}
             form={props.form}
             meta={meta}
           />
@@ -70,7 +71,7 @@ export function DeclarativeFormField(props: {
             {Label()}
             <Renderer
               controllerField={field}
-              field={props.field}
+              field={resolvedField}
               form={props.form}
               meta={meta}
             />

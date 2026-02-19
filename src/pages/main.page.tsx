@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -9,16 +9,25 @@ import {
   HeroSection,
   type IDeclarativeForm,
 } from "@/components";
+import { resolveLocalizedText } from "@/components/declarative-form/localized-content";
+import { useI18n } from "@/i18n";
 
-const RESERVED_QUERY_KEYS = new Set(["connection_id", "submission_id", "step"]);
+const RESERVED_QUERY_KEYS = new Set([
+  "connection_id",
+  "lang",
+  "submission_id",
+  "step",
+]);
 
 export function MainPage() {
+  const { locale, t } = useI18n();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const connectionId = searchParams.get("connection_id");
   const submissionId = searchParams.get("submission_id");
   const stepParam = searchParams.get("step");
+  const langParam = searchParams.get("lang");
 
   const { data: form, error } = useQuery({
     queryKey: [
@@ -94,11 +103,21 @@ export function MainPage() {
     [searchParams, setSearchParams]
   );
 
+  useEffect(() => {
+    if (!form?.locale || langParam === form.locale) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("lang", form.locale);
+    setSearchParams(nextParams, { replace: true });
+  }, [form?.locale, langParam, searchParams, setSearchParams]);
+
   if (error) {
     return (
       <HeroSection
-        title="Form Not Found"
-        description="The form you're looking for doesn't exist or has been removed."
+        title={t("main.form_not_found.title")}
+        description={t("main.form_not_found.description")}
       />
     );
   }
@@ -110,8 +129,8 @@ export function MainPage() {
   if (form.start_date && new Date(form.start_date) > new Date()) {
     return (
       <HeroSection
-        title="Form Not Yet Open"
-        description="This form is not yet accepting submissions."
+        title={t("main.form_not_yet_open.title")}
+        description={t("main.form_not_yet_open.description")}
       />
     );
   }
@@ -119,8 +138,8 @@ export function MainPage() {
   if (form.end_date && new Date(form.end_date) < new Date()) {
     return (
       <HeroSection
-        title="Form Closed"
-        description=" This form is no longer accepting submissions."
+        title={t("main.form_closed.title")}
+        description={t("main.form_closed.description")}
       />
     );
   }
@@ -130,8 +149,13 @@ export function MainPage() {
       ? stepParam
       : form.sections[0].id;
 
+  const resolvedTitle = resolveLocalizedText(form.title, locale);
+  const resolvedDescription = form.description
+    ? resolveLocalizedText(form.description, locale)
+    : undefined;
+
   return (
-    <BasePage title={form.title} description={form.description}>
+    <BasePage title={resolvedTitle} description={resolvedDescription}>
       <DeclarativeForm
         form={form}
         initialData={data}

@@ -3,14 +3,19 @@ import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
 import { Button } from "../ui";
 import { DeclarativeFormField } from "./field.component";
-import type { IDeclarativeFormField, IDeclarativeFormSection } from "./types";
+import type {
+  IResolvedDeclarativeFormField,
+  IResolvedDeclarativeFormSection,
+} from "./localized-content";
+import { useI18n } from "@/i18n";
 
 export function DeclarativeFormSection(props: {
   ref?: Ref<HTMLFormElement>;
   data: FieldValues;
-  section: IDeclarativeFormSection;
+  section: IResolvedDeclarativeFormSection;
   onSubmit: (data: FieldValues) => void | Promise<void>;
 }) {
+  const { t } = useI18n();
   const form = useForm({
     defaultValues: props.section.fields.reduce((acc, field) => {
       acc[field.id] = props.data[field.id] || "";
@@ -39,7 +44,7 @@ export function DeclarativeFormSection(props: {
         className="outline-none"
       >
         <div className="space-y-6">
-          {props.section.fields.map((field: IDeclarativeFormField) => (
+          {props.section.fields.map((field: IResolvedDeclarativeFormField) => (
             <DeclarativeFormField key={field.id} field={field} form={form} />
           ))}
         </div>
@@ -50,10 +55,10 @@ export function DeclarativeFormSection(props: {
             variant="outline"
             disabled={form.formState.isSubmitting}
           >
-            Back
+            {t("section.back")}
           </Button>
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            Next
+            {t("section.next")}
           </Button>
         </div>
       </form>

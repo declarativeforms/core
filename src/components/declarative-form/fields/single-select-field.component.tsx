@@ -17,15 +17,15 @@ export function SingleSelectField({
     <FormControl>
       <RadioGroup
         onValueChange={controllerField.onChange}
-        defaultValue={controllerField.value}
+        value={controllerField.value}
         className="gap-2"
         aria-required={meta.isRequired}
       >
         {field.options?.map((option) => {
-          const isSelected = controllerField.value === option;
+          const isSelected = controllerField.value === option.value;
 
           return (
-            <FormItem key={option}>
+            <FormItem key={option.value}>
               <FormLabel
                 className={cn(
                   "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
@@ -33,9 +33,9 @@ export function SingleSelectField({
                 )}
               >
                 <FormControl>
-                  <RadioGroupItem value={option} />
+                  <RadioGroupItem value={option.value} />
                 </FormControl>
-                <span>{option}</span>
+                <span>{option.label}</span>
               </FormLabel>
             </FormItem>
           );

@@ -75,10 +75,12 @@ At some point, you either live with the constraints, or you start wishing forms 
 - [Single Select](https://github.com/declarativeforms/examples/blob/main/single_select.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/single_select))
 - [Multiple Select](https://github.com/declarativeforms/examples/blob/main/multiple_select.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/multiple_select))
 - [Rating](https://github.com/declarativeforms/examples/blob/main/rating.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/rating))
+- [Options with Label/Value](https://github.com/declarativeforms/examples/blob/main/options_label_value.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/options_label_value))
 
 #### Advanced
 
 - [Address](https://github.com/declarativeforms/examples/blob/main/address.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/address))
+- [Address (Structured Output)](https://github.com/declarativeforms/examples/blob/main/address_structured.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/address_structured))
 - [File Upload](https://github.com/declarativeforms/examples/blob/main/file_upload.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/file_upload))
 - [Signature](https://github.com/declarativeforms/examples/blob/main/signature.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/signature))
 - [Hidden](https://github.com/declarativeforms/examples/blob/main/hidden.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/hidden))
@@ -101,7 +103,105 @@ At some point, you either live with the constraints, or you start wishing forms 
 - [Custom Completion Page](https://github.com/declarativeforms/examples/blob/main/completion.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/completion))
 - [Start Date](https://github.com/declarativeforms/examples/blob/main/start_date.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/start_date))
 - [End Date](https://github.com/declarativeforms/examples/blob/main/end_date.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/end_date))
+- [Localization](https://github.com/declarativeforms/examples/blob/main/localization.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/localization))
 - [Mixpanel](https://github.com/declarativeforms/examples/blob/main/mixpanel.yaml) ([Demo](https://app.declarativeforms.com/declarativeforms/examples/mixpanel))
+
+## Localization (Platform Strings)
+
+Platform-owned UI strings support browser locale detection with an optional query override:
+
+- Browser locale fallback (for example `en-US` -> `en`).
+- Force locale with `?lang=<code>` (for example `?lang=es`).
+- Current supported locales: `en`, `es`.
+- Optional form-level lock: set `locale` in the form config to force platform locale for that form.
+
+## Form Content Localization
+
+Form-authored strings can now be either:
+
+- A plain string (default behavior)
+- A locale map object (for example `{ en: "...", es: "..." }`)
+
+Locale map fallback order:
+
+1. Active locale (`?lang`, browser locale, or form `locale` lock)
+2. `en`
+3. First available translation value
+
+### Example: Localized labels and placeholders
+
+```yaml
+title:
+  en: "Customer Feedback"
+  es: "Opinión del cliente"
+
+sections:
+  - id: main
+    title:
+      en: "Contact"
+      es: "Contacto"
+    fields:
+      - id: name
+        type: short_text
+        label:
+          en: "Your name"
+          es: "Tu nombre"
+        placeholder:
+          en: "Type your name"
+          es: "Escribe tu nombre"
+    next: done
+```
+
+### Example: Localized options with stable values
+
+Use option objects when translating selectable labels, so submission values remain stable:
+
+```yaml
+- id: consent
+  type: single_select
+  label:
+    en: "Would you like to continue?"
+    es: "¿Quieres continuar?"
+  options:
+    - value: yes
+      label:
+        en: "Yes"
+        es: "Sí"
+    - value: no
+      label:
+        en: "No"
+        es: "No"
+```
+
+## Options with Label/Value
+
+By default, option values in `dropdown`, `single_select`, and `multiple_select` fields use the display string as both the label and the stored value. To decouple them, use the `{ label, value }` object syntax:
+
+```yaml
+- id: country
+  type: dropdown
+  label: Country
+  options:
+    - value: us
+      label: "United States"
+    - value: gb
+      label: "United Kingdom"
+```
+
+The `label` is shown to the user; the `value` is what gets stored in submissions. This is useful when display text may change or when you need stable identifiers for downstream processing.
+
+## Address Structured Output
+
+By default, address fields store a plain formatted string. Set `outputFormat: "structured"` to receive a structured object with individual address components:
+
+```yaml
+- id: home_address
+  type: address
+  label: Home address
+  outputFormat: structured
+```
+
+The structured output includes: `formatted_address`, `street_number`, `route`, `locality`, `administrative_area_level_1`, `country`, `postal_code`, and `place_id`.
 
 ## The 48-Hour Promise
 

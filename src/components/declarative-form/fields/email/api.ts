@@ -2,7 +2,6 @@ import {
   EMAIL_OTP_SEND_ENDPOINT,
   EMAIL_OTP_VERIFY_ENDPOINT,
   OTP_DEFAULT_RESEND_COOLDOWN_SECONDS,
-  OTP_MESSAGES,
 } from "./constants";
 
 type OtpSendResponse = {
@@ -17,7 +16,16 @@ type OtpVerifyResponse = {
   verificationToken?: string;
 };
 
-async function getErrorMessage(response: Response): Promise<string> {
+type OtpApiMessages = {
+  requestFailed: string;
+  startFailed: string;
+  tokenMissing: string;
+};
+
+async function getErrorMessage(
+  response: Response,
+  messages: OtpApiMessages
+): Promise<string> {
   try {
     const payload = (await response.json()) as { error?: string; message?: string };
     if (typeof payload.error === "string" && payload.error.trim()) {
@@ -30,12 +38,13 @@ async function getErrorMessage(response: Response): Promise<string> {
     // no-op; fall back to default message below
   }
 
-  return "Request failed. Please try again.";
+  return messages.requestFailed;
 }
 
 export async function sendEmailOtp(args: {
   email: string;
   fieldId: string;
+  messages: OtpApiMessages;
 }): Promise<{ requestId: string; resendAfterSeconds: number }> {
   const response = await fetch(EMAIL_OTP_SEND_ENDPOINT, {
     body: JSON.stringify({
@@ -49,7 +58,7 @@ export async function sendEmailOtp(args: {
   });
 
   if (!response.ok) {
-    throw new Error(await getErrorMessage(response));
+    throw new Error(await getErrorMessage(response, args.messages));
   }
 
   const payload = (await response.json()) as OtpSendResponse;
@@ -62,7 +71,7 @@ export async function sendEmailOtp(args: {
       : "";
 
   if (!requestId) {
-    throw new Error("Could not start OTP verification.");
+    throw new Error(args.messages.startFailed);
   }
 
   const resendAfterSeconds =
@@ -80,6 +89,7 @@ export async function verifyEmailOtp(args: {
   fieldId: string;
   otp: string;
   requestId: string;
+  messages: OtpApiMessages;
 }): Promise<{ verificationToken: string }> {
   const response = await fetch(EMAIL_OTP_VERIFY_ENDPOINT, {
     body: JSON.stringify({
@@ -95,7 +105,7 @@ export async function verifyEmailOtp(args: {
   });
 
   if (!response.ok) {
-    throw new Error(await getErrorMessage(response));
+    throw new Error(await getErrorMessage(response, args.messages));
   }
 
   const payload = (await response.json()) as OtpVerifyResponse;
@@ -107,7 +117,7 @@ export async function verifyEmailOtp(args: {
       : "";
 
   if (!verificationToken) {
-    throw new Error(OTP_MESSAGES.tokenMissing);
+    throw new Error(args.messages.tokenMissing);
   }
 
   return { verificationToken };

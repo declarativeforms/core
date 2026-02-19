@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components";
+import { useI18n } from "@/i18n";
 
 export function HeroSection(props: {
   title: string;
@@ -9,6 +10,8 @@ export function HeroSection(props: {
   buttonLabel?: string;
   buttonHref?: string;
 }) {
+  const { t, withLang } = useI18n();
+
   useEffect(() => {
     document.title = `${props.title} — Declarative Forms`;
   }, [props.title]);
@@ -31,23 +34,23 @@ export function HeroSection(props: {
             href={props.buttonHref}
             className="inline-flex items-center justify-center w-full h-12 px-6 text-base font-semibold leading-none rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {props.buttonLabel ?? "Continue"}
+            {props.buttonLabel ?? t("hero.continue")}
           </a>
         ) : props.onAction ? (
           <Button
             className="w-full h-12 px-6 text-base font-semibold leading-none"
             onClick={() => props.onAction?.()}
           >
-            Continue
+            {t("hero.continue")}
           </Button>
         ) : null}
       </div>
 
       <div className="absolute bottom-8 text-center w-full px-4">
         <p className="text-xs text-gray-500">
-          Powered by{" "}
+          {t("base.powered_by")}{" "}
           <a
-            href="/"
+            href={withLang("/")}
             className="font-medium text-gray-900 hover:underline underline-offset-4"
           >
             Declarative Forms

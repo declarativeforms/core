@@ -23,12 +23,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useI18n } from "@/i18n";
 
 export function AddressField({
   field,
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
+
   // Extract autocomplete type from field type
   const autocompleteType = (() => {
     switch (field.type) {
@@ -143,7 +146,7 @@ export function AddressField({
         <Input
           {...controllerField}
           className="text-sm/4"
-          placeholder={field.placeholder || "Enter address"}
+          placeholder={field.placeholder || t("address.placeholder")}
           required={meta.isRequired}
           aria-required={meta.isRequired}
         />
@@ -167,7 +170,7 @@ export function AddressField({
                 }
               }}
               onBlur={controllerField.onBlur}
-              placeholder={field.placeholder || "Enter address"}
+              placeholder={field.placeholder || t("address.placeholder")}
               required={meta.isRequired}
               aria-required={meta.isRequired}
               role="combobox"
@@ -181,7 +184,7 @@ export function AddressField({
               </div>
             )}
             <span className="sr-only" aria-live="polite">
-              {loading ? "Loading suggestions" : ""}
+              {loading ? t("address.loading_suggestions") : ""}
             </span>
           </div>
         </PopoverTrigger>
@@ -193,7 +196,7 @@ export function AddressField({
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <Command className="w-full" id={`address-suggestions-${field.id}`}>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>{t("address.no_results")}</CommandEmpty>
             <CommandGroup>
               {suggestions.map((suggestion) => (
                 <CommandItem

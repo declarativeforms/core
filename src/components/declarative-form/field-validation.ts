@@ -1,12 +1,12 @@
 import type { RegisterOptions } from "react-hook-form";
 
 import type { DeclarativeFieldMeta } from "./field-contract";
+import type { IResolvedDeclarativeFormField } from "./localized-content";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
 import { getRatingRange } from "./rating-range";
-import type { IDeclarativeFormField } from "./types";
 
 function applyRequiredAndPatternRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   rules: RegisterOptions
 ) {
   if (!field.validators) {
@@ -26,7 +26,7 @@ function applyRequiredAndPatternRules(
 }
 
 function applyTextLengthRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
   rules: RegisterOptions
 ) {
@@ -59,7 +59,7 @@ function applyTextLengthRules(
 }
 
 function applyEmailOtpRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   rules: RegisterOptions
 ) {
   if (!(field.type === "email" && field.otp)) {
@@ -86,7 +86,7 @@ function applyEmailOtpRules(
 }
 
 function applyDateRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
   rules: RegisterOptions
 ) {
@@ -113,7 +113,7 @@ function applyDateRules(
 }
 
 function applyNumberRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
   rules: RegisterOptions
 ) {
@@ -166,7 +166,7 @@ function applyNumberRules(
 }
 
 function applyRatingRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
   rules: RegisterOptions
 ) {
@@ -199,7 +199,7 @@ function applyRatingRules(
 }
 
 function applyFileUploadRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
   rules: RegisterOptions
 ) {
@@ -241,7 +241,7 @@ function applyFileUploadRules(
 }
 
 function applyMultipleSelectRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
   rules: RegisterOptions
 ) {
@@ -283,7 +283,7 @@ function applyMultipleSelectRules(
 }
 
 export function buildFieldRules(
-  field: IDeclarativeFormField,
+  field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta
 ): RegisterOptions {
   const rules: RegisterOptions = {};

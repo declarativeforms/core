@@ -4,11 +4,19 @@ import { useParams, useSearchParams } from "react-router-dom";
 
 import { HeroSection, type IDeclarativeForm } from "@/components";
 import { interpolateTemplate } from "@/components/declarative-form/form-helpers";
+import { resolveCompletionContent } from "@/components/declarative-form/localized-content";
+import { useI18n } from "@/i18n";
+
+type SubmissionPayload = {
+  data: Record<string, unknown>;
+};
 
 export function ThankYouPage() {
+  const { locale, t } = useI18n();
   const params = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const submissionId = searchParams.get("submission_id");
+  const langParam = searchParams.get("lang");
 
   const { data: form } = useQuery({
     queryKey: ["form", params.id, params.owner, params.repository, params.file],
@@ -52,29 +60,39 @@ export function ThankYouPage() {
         }/submissions/${submissionId}`
       );
       if (!response.ok) return null;
-      return response.json() as Promise<{ data: Record<string, any> }>;
+      return response.json() as Promise<SubmissionPayload>;
     },
     enabled: !!form?.id && !!submissionId,
   });
 
   useEffect(() => {
-    document.title = "Thank You — Declarative Forms";
-  }, []);
+    document.title = t("thank_you.page_title");
+  }, [t]);
 
-  const completion = form?.completion;
+  useEffect(() => {
+    if (!form?.locale || langParam === form.locale) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("lang", form.locale);
+    setSearchParams(nextParams, { replace: true });
+  }, [form?.locale, langParam, searchParams, setSearchParams]);
+
+  const completion = resolveCompletionContent(form?.completion, locale);
   const submissionData = submission?.data ?? {};
 
   if (completion) {
     return (
       <HeroSection
         title={interpolateTemplate(
-          completion.title ?? "Thank You!",
+          completion.title ?? t("thank_you.default_title"),
           submissionData
         )}
         description={
           completion.message
             ? interpolateTemplate(completion.message, submissionData)
-            : "Your submission has been received."
+            : t("thank_you.default_description")
         }
         buttonLabel={completion.button?.label}
         buttonHref={
@@ -88,8 +106,8 @@ export function ThankYouPage() {
 
   return (
     <HeroSection
-      title="Thank You!"
-      description="Your submission has been received."
+      title={t("thank_you.default_title")}
+      description={t("thank_you.default_description")}
     />
   );
 }

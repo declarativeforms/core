@@ -1,8 +1,8 @@
 import type { ControllerRenderProps, FieldValues, UseFormReturn } from "react-hook-form";
 
-import type { IDeclarativeFormField } from "./types";
+import type { IResolvedDeclarativeFormField } from "./localized-content";
 
-type FieldValidator = NonNullable<IDeclarativeFormField["validators"]>[number];
+type FieldValidator = NonNullable<IResolvedDeclarativeFormField["validators"]>[number];
 type FieldValidatorObject = Extract<FieldValidator, { type: string }>;
 
 export type FieldMinValidator = Extract<FieldValidatorObject, { type: "min" }>;
@@ -17,12 +17,14 @@ export type DeclarativeFieldMeta = {
 
 export type DeclarativeFieldComponentProps = {
   controllerField: ControllerRenderProps<FieldValues, string>;
-  field: IDeclarativeFormField;
+  field: IResolvedDeclarativeFormField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
   meta: DeclarativeFieldMeta;
 };
 
-export function getFieldMeta(field: IDeclarativeFormField): DeclarativeFieldMeta {
+export function getFieldMeta(
+  field: IResolvedDeclarativeFormField
+): DeclarativeFieldMeta {
   return {
     hasPatternValidator: !!field.validators?.some(
       (validator) => typeof validator === "object" && validator.type === "pattern"

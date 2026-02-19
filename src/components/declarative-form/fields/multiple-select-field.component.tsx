@@ -60,14 +60,14 @@ export function MultipleSelectField({
       {helperText && <p id={helperTextId} className="text-sm text-muted-foreground">{helperText}</p>}
       {field.options?.map((option) => (
         <FormField
-          key={option}
+          key={option.value}
           control={form.control}
           name={field.id}
           render={({ field: formField }) => {
             const selectedValues = Array.isArray(formField.value)
               ? formField.value
               : [];
-            const isChecked = selectedValues.includes(option);
+            const isChecked = selectedValues.includes(option.value);
             const selections = selectedValues.length;
 
             return (
@@ -83,7 +83,7 @@ export function MultipleSelectField({
                       checked={isChecked}
                       onCheckedChange={(checked: boolean) => {
                         if (checked) {
-                          const newValue = [...selectedValues, option];
+                          const newValue = [...selectedValues, option.value];
                           // Prevent exceeding max selections
                           if (
                             maxSelections &&
@@ -94,7 +94,9 @@ export function MultipleSelectField({
                           formField.onChange(newValue);
                         } else {
                           formField.onChange(
-                            selectedValues.filter((value) => value !== option)
+                            selectedValues.filter(
+                              (value) => value !== option.value
+                            )
                           );
                         }
                       }}
@@ -107,7 +109,7 @@ export function MultipleSelectField({
                       }
                     />
                   </FormControl>
-                  <span className="flex-1">{option}</span>
+                  <span className="flex-1">{option.label}</span>
                 </FormLabel>
               </FormItem>
             );

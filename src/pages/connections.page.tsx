@@ -4,8 +4,10 @@ import { useSearchParams } from "react-router-dom";
 
 import { BasePage } from "./base.page";
 import { Button } from "@/components";
+import { useI18n } from "@/i18n";
 
 export function ConnectionsPage() {
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
 
   const id = searchParams.get("id");
@@ -26,12 +28,12 @@ export function ConnectionsPage() {
 
   return (
     <BasePage
-      title="Success"
-      description=" Your connection has been successfully created. Use the ID below in your YAML configuration."
+      title={t("connections.success_title")}
+      description={t("connections.success_description")}
     >
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-900">
-          Connection ID
+          {t("connections.connection_id")}
         </label>
         <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg group">
           <code className="flex-1 font-mono text-sm text-gray-800 break-all">
@@ -52,7 +54,7 @@ export function ConnectionsPage() {
         </div>
       </div>
       <p className="mt-3 text-xs text-gray-400">
-        This ID connects your form to Airtable, GitHub, or Google Sheets.
+        {t("connections.helper")}
       </p>
     </BasePage>
   );

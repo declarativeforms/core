@@ -1,11 +1,14 @@
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl, Input } from "@/components/ui";
+import { useI18n } from "@/i18n";
 
 export function InputField({
   field,
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
+
   const inputType =
     field.type === "date"
       ? "date"
@@ -24,7 +27,7 @@ export function InputField({
       <Input
         {...controllerField}
         className="text-sm/4"
-        placeholder={field.placeholder || "Your answer"}
+        placeholder={field.placeholder || t("input.placeholder")}
         type={inputType}
         inputMode={field.type === "number" ? "numeric" : undefined}
         pattern={

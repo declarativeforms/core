@@ -4,8 +4,10 @@ import type { FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { isExternalNextSectionId, resolveNextSectionId } from "./form-helpers";
+import { resolveSectionContent } from "./localized-content";
 import { DeclarativeFormSection } from "./section.component";
 import type { IDeclarativeForm } from "./types";
+import { useI18n } from "@/i18n";
 
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
@@ -16,6 +18,7 @@ export function DeclarativeForm(props: {
   onSubmit: (data: FieldValues, isPartial: boolean) => Promise<string | void>;
 }) {
   const navigate = useNavigate();
+  const { locale, withLang } = useI18n();
   const sectionRef = useRef<HTMLFormElement>(null);
   const [state, setState] = useState<{
     activeSectionId: string;
@@ -50,12 +53,14 @@ export function DeclarativeForm(props: {
     return null;
   }
 
+  const resolvedActiveSection = resolveSectionContent(activeSection, locale);
+
   return (
     <DeclarativeFormSection
       ref={sectionRef}
       key={state.activeSectionId}
       data={state.data}
-      section={activeSection}
+      section={resolvedActiveSection}
       onSubmit={async (x: FieldValues) => {
         const result = { ...state.data, ...x };
         setState((currentState) => ({
@@ -102,9 +107,11 @@ export function DeclarativeForm(props: {
           });
 
           navigate(
-            submissionId
-              ? `thank-you?submission_id=${submissionId}`
-              : "thank-you"
+            withLang(
+              submissionId
+                ? `thank-you?submission_id=${submissionId}`
+                : "thank-you"
+            )
           );
 
           return;
