@@ -247,7 +247,7 @@ export function FileUploadField({
         )}
 
         {fileMetadata.length > 0 && (
-          <div className="space-y-2" role="list" aria-label="Uploaded files">
+          <div className="space-y-2" role="list" aria-label="Uploaded files" aria-live="polite" aria-busy={fileMetadata.some((m) => m.status === "uploading")}>
             {fileMetadata.map((metadata, index) => (
               <FilePreview
                 key={metadata.url || index}
@@ -349,7 +349,7 @@ function FilePreview({
           {metadata.name}
         </p>
         {isError && metadata.error ? (
-          <p className="text-sm text-destructive">{metadata.error}</p>
+          <p className="text-sm text-destructive" aria-live="polite">{metadata.error}</p>
         ) : (
           <p className="text-sm text-muted-foreground">
             {formatFileSize(metadata.size)}

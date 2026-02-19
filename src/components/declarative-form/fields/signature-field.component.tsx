@@ -228,11 +228,11 @@ export function SignatureField({
                 <span className="text-sm text-muted-foreground">Draw your signature</span>
               </div>
             )}
-            {isUploading && (
-              <div className="absolute bottom-2 right-3">
+            <div className="absolute bottom-2 right-3" aria-live="polite">
+              {isUploading && (
                 <span className="text-sm text-muted-foreground">Uploading...</span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -252,9 +252,9 @@ export function SignatureField({
           </button>
         </div>
 
-        {errorMessage ? (
-          <p className="text-sm text-destructive">{errorMessage}</p>
-        ) : null}
+        <p className="text-sm text-destructive" aria-live="polite">
+          {errorMessage ?? ""}
+        </p>
       </div>
     </FormControl>
   );

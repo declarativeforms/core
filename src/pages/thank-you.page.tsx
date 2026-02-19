@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 import { HeroSection, type IDeclarativeForm } from "@/components";
@@ -55,6 +56,10 @@ export function ThankYouPage() {
     },
     enabled: !!form?.id && !!submissionId,
   });
+
+  useEffect(() => {
+    document.title = "Thank You — Declarative Forms";
+  }, []);
 
   const completion = form?.completion;
   const submissionData = submission?.data ?? {};

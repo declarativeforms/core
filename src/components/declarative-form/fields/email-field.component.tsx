@@ -323,9 +323,9 @@ export function EmailField({
           </div>
         ) : null}
 
-        {statusMessage && (
-          <p className="text-sm text-destructive">{statusMessage}</p>
-        )}
+        <p className="text-sm text-destructive" aria-live="polite">
+          {statusMessage ?? ""}
+        </p>
       </div>
     </FormControl>
   );

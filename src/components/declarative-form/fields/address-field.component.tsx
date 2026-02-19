@@ -156,7 +156,7 @@ export function AddressField({
     <FormControl>
       <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <div className="relative w-full">
+          <div className="relative w-full" aria-busy={loading}>
             <Input
               value={inputValue}
               className="text-sm/4"
@@ -170,12 +170,19 @@ export function AddressField({
               placeholder={field.placeholder || "Enter address"}
               required={meta.isRequired}
               aria-required={meta.isRequired}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={open && suggestions.length > 0}
+              aria-controls={`address-suggestions-${field.id}`}
             />
             {loading && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               </div>
             )}
+            <span className="sr-only" aria-live="polite">
+              {loading ? "Loading suggestions" : ""}
+            </span>
           </div>
         </PopoverTrigger>
         <PopoverContent
@@ -185,7 +192,7 @@ export function AddressField({
           side="bottom"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <Command className="w-full">
+          <Command className="w-full" id={`address-suggestions-${field.id}`}>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {suggestions.map((suggestion) => (

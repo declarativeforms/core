@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
 import { Button } from "../ui";
@@ -5,6 +6,7 @@ import { DeclarativeFormField } from "./field.component";
 import type { IDeclarativeFormField, IDeclarativeFormSection } from "./types";
 
 export function DeclarativeFormSection(props: {
+  ref?: Ref<HTMLFormElement>;
   data: FieldValues;
   section: IDeclarativeFormSection;
   onSubmit: (data: FieldValues) => void | Promise<void>;
@@ -17,12 +19,24 @@ export function DeclarativeFormSection(props: {
     }, {} as FieldValues),
   });
 
+  const handleSubmit = form.handleSubmit(
+    (data: FieldValues) => props.onSubmit(data),
+    (errors) => {
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        form.setFocus(firstErrorField);
+      }
+    }
+  );
+
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit((data: FieldValues) =>
-          props.onSubmit(data)
-        )}
+        ref={props.ref}
+        tabIndex={-1}
+        aria-label={props.section.title || undefined}
+        onSubmit={handleSubmit}
+        className="outline-none"
       >
         <div className="space-y-6">
           {props.section.fields.map((field: IDeclarativeFormField) => (

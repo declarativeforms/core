@@ -32,6 +32,8 @@ export function MultipleSelectField({
     ? currentValue.length
     : 0;
 
+  const helperTextId = `multiselect-helper-${field.id}`;
+
   const getHelperText = () => {
     if (minSelections > 0 && maxSelections) {
       return `Select ${minSelections}-${maxSelections} options`;
@@ -45,13 +47,17 @@ export function MultipleSelectField({
     return "";
   };
 
+  const helperText = getHelperText();
+
   return (
     <div
       className="flex flex-col space-y-2"
       role="group"
+      aria-label={field.label}
       aria-required={meta.isRequired}
+      aria-describedby={helperText ? helperTextId : undefined}
     >
-      {getHelperText() && <p className="text-sm text-muted-foreground">{getHelperText()}</p>}
+      {helperText && <p id={helperTextId} className="text-sm text-muted-foreground">{helperText}</p>}
       {field.options?.map((option) => (
         <FormField
           key={option}
@@ -108,7 +114,9 @@ export function MultipleSelectField({
           }}
         />
       ))}
-      {currentSelections > 0 && <p className="text-sm text-muted-foreground">{currentSelections} selected</p>}
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {currentSelections > 0 ? `${currentSelections} selected` : ""}
+      </p>
     </div>
   );
 }

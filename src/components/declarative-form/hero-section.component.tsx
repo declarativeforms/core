@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { Button } from "@/components";
 
 export function HeroSection(props: {
@@ -7,6 +9,10 @@ export function HeroSection(props: {
   buttonLabel?: string;
   buttonHref?: string;
 }) {
+  useEffect(() => {
+    document.title = `${props.title} — Declarative Forms`;
+  }, [props.title]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
       <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">

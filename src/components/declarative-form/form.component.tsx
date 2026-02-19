@@ -1,5 +1,5 @@
 import mixpanel from "mixpanel-browser";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -16,6 +16,7 @@ export function DeclarativeForm(props: {
   onSubmit: (data: FieldValues, isPartial: boolean) => Promise<string | void>;
 }) {
   const navigate = useNavigate();
+  const sectionRef = useRef<HTMLFormElement>(null);
   const [state, setState] = useState<{
     activeSectionId: string;
     data: FieldValues;
@@ -38,6 +39,7 @@ export function DeclarativeForm(props: {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    sectionRef.current?.focus();
   }, [state.activeSectionId]);
 
   const activeSection = props.form.sections.find(
@@ -50,6 +52,7 @@ export function DeclarativeForm(props: {
 
   return (
     <DeclarativeFormSection
+      ref={sectionRef}
       key={state.activeSectionId}
       data={state.data}
       section={activeSection}

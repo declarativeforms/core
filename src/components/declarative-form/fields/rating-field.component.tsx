@@ -23,6 +23,9 @@ export function RatingField({
       ? ""
       : String(controllerField.value);
 
+  const hasLabels = !!(field.min_label || field.max_label);
+  const labelsId = `rating-labels-${field.id}`;
+
   return (
     <FormControl>
       <div className="space-y-2">
@@ -33,7 +36,9 @@ export function RatingField({
           style={{
             gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))`,
           }}
+          aria-label={field.label}
           aria-required={meta.isRequired}
+          aria-describedby={hasLabels ? labelsId : undefined}
         >
           {values.map((value) => {
             const isSelected = selectedValue === value;
@@ -56,8 +61,8 @@ export function RatingField({
           })}
         </RadioGroup>
 
-        {(field.min_label || field.max_label) && (
-          <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+        {hasLabels && (
+          <div id={labelsId} className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
             <span>{field.min_label || ""}</span>
             <span className="text-right">{field.max_label || ""}</span>
           </div>

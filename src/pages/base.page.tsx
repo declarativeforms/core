@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import {
   Card,
@@ -13,6 +13,10 @@ export function BasePage(props: {
   description?: string;
   children: ReactNode;
 }) {
+  useEffect(() => {
+    document.title = `${props.title} — Declarative Forms`;
+  }, [props.title]);
+
   return (
     <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
       <Card className="mb-10 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
