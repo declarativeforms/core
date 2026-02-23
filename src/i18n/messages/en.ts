@@ -54,6 +54,24 @@ const enMessageSource = {
   "cookie.accept": "Accept",
   "privacy_policy.title": "Privacy Policy",
   "privacy_policy.back_home": "Back to Home",
+  "geolocation.use_my_location": "Use my location",
+  "geolocation.loading": "Getting location...",
+  "geolocation.clear": "Clear",
+  "geolocation.try_again": "Try again",
+  "geolocation.location_captured": "Location captured successfully.",
+  "geolocation.map_label": "Map showing your captured location",
+  "geolocation.accuracy_very_precise": "Very precise",
+  "geolocation.accuracy_precise": "Precise",
+  "geolocation.accuracy_approximate": "Approximate",
+  "geolocation.accuracy_less_accurate": "Less accurate",
+  "geolocation.error_permission_denied":
+    "Location access was denied. Please enable location permissions in your browser settings.",
+  "geolocation.error_position_unavailable":
+    "Your location could not be determined. Please try again.",
+  "geolocation.error_timeout":
+    "Location request timed out. Please try again.",
+  "geolocation.error_not_supported":
+    "Geolocation is not supported by your browser.",
 } as const;
 
 export type TranslationKey = keyof typeof enMessageSource;

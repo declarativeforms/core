@@ -13,6 +13,8 @@ export function SingleSelectField({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const options = "options" in field ? field.options : undefined;
+
   return (
     <FormControl>
       <RadioGroup
@@ -21,7 +23,7 @@ export function SingleSelectField({
         className="gap-2"
         aria-required={meta.isRequired}
       >
-        {field.options?.map((option) => {
+        {options?.map((option) => {
           const isSelected = controllerField.value === option.value;
 
           return (

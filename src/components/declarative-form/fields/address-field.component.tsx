@@ -47,7 +47,8 @@ export function AddressField({
     }
   })();
 
-  const outputFormat = field.outputFormat || "string";
+  const outputFormat =
+    "outputFormat" in field ? (field.outputFormat || "string") : "string";
   // State management
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");

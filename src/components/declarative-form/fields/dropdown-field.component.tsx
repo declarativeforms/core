@@ -30,7 +30,9 @@ export function DropdownField({
 }: DeclarativeFieldComponentProps) {
   const { t } = useI18n();
 
-  if (field.searchable) {
+  const options = "options" in field ? field.options : undefined;
+
+  if ("searchable" in field && field.searchable) {
     return (
       <SearchableDropdown
         field={field}
@@ -56,7 +58,7 @@ export function DropdownField({
         </SelectTrigger>
       </FormControl>
       <SelectContent>
-        {field.options?.map((option) => (
+        {options?.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>
@@ -73,7 +75,8 @@ function SearchableDropdown({
 }: DeclarativeFieldComponentProps) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const selectedOption = field.options?.find(
+  const options = "options" in field ? field.options : undefined;
+  const selectedOption = options?.find(
     (option) => option.value === controllerField.value
   );
 
@@ -104,7 +107,7 @@ function SearchableDropdown({
           <CommandList>
             <CommandEmpty>{t("dropdown.no_results")}</CommandEmpty>
             <CommandGroup>
-              {field.options?.map((option) => (
+              {options?.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}

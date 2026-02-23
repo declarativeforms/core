@@ -25,38 +25,66 @@ export type IDeclarativeFormValidator =
       message?: ILocalizedText;
     };
 
-export type IDeclarativeFormField = {
+type IDeclarativeFormFieldBase = {
   id: string;
+  label: ILocalizedText;
+  placeholder?: ILocalizedText;
+  validators?: Array<IDeclarativeFormValidator>;
+  visible_when?: string;
+};
+
+type IEmailField = IDeclarativeFormFieldBase & {
+  type: "email";
+  otp?: boolean;
+};
+
+type IDropdownField = IDeclarativeFormFieldBase & {
+  type: "dropdown";
+  searchable?: boolean;
+  options?: Array<IDeclarativeFormOption>;
+};
+
+type IRatingField = IDeclarativeFormFieldBase & {
+  type: "rating";
+  min_label?: ILocalizedText;
+  max_label?: ILocalizedText;
+};
+
+type IAddressField = IDeclarativeFormFieldBase & {
+  type: "address" | "address_locality" | "address_region" | "address_country";
+  outputFormat?: "string" | "structured";
+};
+
+type ISelectField = IDeclarativeFormFieldBase & {
+  type: "single_select" | "multiple_select";
+  options?: Array<IDeclarativeFormOption>;
+};
+
+type IGeolocationField = IDeclarativeFormFieldBase & {
+  type: "geolocation";
+};
+
+type IGenericField = IDeclarativeFormFieldBase & {
   type:
-    | "address"
-    | "address_locality"
-    | "address_region"
-    | "address_country"
     | "date"
-    | "dropdown"
-    | "email"
     | "file_upload"
     | "hidden"
     | "long_text"
     | "mobile_number"
-    | "multiple_select"
     | "number"
-    | "rating"
     | "signature"
     | "short_text"
-    | "single_select"
     | "url";
-  label: ILocalizedText;
-  max_label?: ILocalizedText;
-  min_label?: ILocalizedText;
-  otp?: boolean;
-  searchable?: boolean;
-  options?: Array<IDeclarativeFormOption>;
-  placeholder?: ILocalizedText;
-  validators?: Array<IDeclarativeFormValidator>;
-  visible_when?: string;
-  outputFormat?: "string" | "structured";
 };
+
+export type IDeclarativeFormField =
+  | IEmailField
+  | IDropdownField
+  | IRatingField
+  | IAddressField
+  | ISelectField
+  | IGeolocationField
+  | IGenericField;
 
 export type IDeclarativeFormSection = {
   id: string;

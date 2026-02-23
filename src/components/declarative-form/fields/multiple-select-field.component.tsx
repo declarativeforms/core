@@ -48,6 +48,7 @@ export function MultipleSelectField({
   };
 
   const helperText = getHelperText();
+  const options = "options" in field ? field.options : undefined;
 
   return (
     <div
@@ -58,7 +59,7 @@ export function MultipleSelectField({
       aria-describedby={helperText ? helperTextId : undefined}
     >
       {helperText && <p id={helperTextId} className="text-sm text-muted-foreground">{helperText}</p>}
-      {field.options?.map((option) => (
+      {options?.map((option) => (
         <FormField
           key={option.value}
           control={form.control}

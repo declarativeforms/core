@@ -56,4 +56,22 @@ export const esMessages: TranslationMessages = {
   "cookie.accept": "Aceptar",
   "privacy_policy.title": "Política de privacidad",
   "privacy_policy.back_home": "Volver al inicio",
+  "geolocation.use_my_location": "Usar mi ubicación",
+  "geolocation.loading": "Obteniendo ubicación...",
+  "geolocation.clear": "Borrar",
+  "geolocation.try_again": "Intentar de nuevo",
+  "geolocation.location_captured": "Ubicación capturada exitosamente.",
+  "geolocation.map_label": "Mapa mostrando tu ubicación capturada",
+  "geolocation.accuracy_very_precise": "Muy precisa",
+  "geolocation.accuracy_precise": "Precisa",
+  "geolocation.accuracy_approximate": "Aproximada",
+  "geolocation.accuracy_less_accurate": "Menos precisa",
+  "geolocation.error_permission_denied":
+    "Se denegó el acceso a la ubicación. Habilita los permisos de ubicación en la configuración de tu navegador.",
+  "geolocation.error_position_unavailable":
+    "No se pudo determinar tu ubicación. Inténtalo de nuevo.",
+  "geolocation.error_timeout":
+    "La solicitud de ubicación expiró. Inténtalo de nuevo.",
+  "geolocation.error_not_supported":
+    "La geolocalización no es compatible con tu navegador.",
 };

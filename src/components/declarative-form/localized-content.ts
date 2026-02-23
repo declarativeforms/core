@@ -30,17 +30,26 @@ export type IResolvedDeclarativeFormValidator =
       message?: string;
     };
 
-export type IResolvedDeclarativeFormField = Omit<
-  IDeclarativeFormField,
-  "label" | "max_label" | "min_label" | "options" | "placeholder" | "validators"
-> & {
-  label: string;
-  max_label?: string;
-  min_label?: string;
-  options?: Array<IResolvedDeclarativeFormOption>;
-  placeholder?: string;
-  validators?: Array<IResolvedDeclarativeFormValidator>;
-};
+type ResolveField<T extends IDeclarativeFormField> = T extends any
+  ? Omit<
+      T,
+      | "label"
+      | "max_label"
+      | "min_label"
+      | "options"
+      | "placeholder"
+      | "validators"
+    > & {
+      label: string;
+      max_label?: string;
+      min_label?: string;
+      options?: Array<IResolvedDeclarativeFormOption>;
+      placeholder?: string;
+      validators?: Array<IResolvedDeclarativeFormValidator>;
+    }
+  : never;
+
+export type IResolvedDeclarativeFormField = ResolveField<IDeclarativeFormField>;
 
 export type IResolvedDeclarativeFormSection = Omit<
   IDeclarativeFormSection,
@@ -147,20 +156,28 @@ export function resolveFieldContent(
   return {
     ...field,
     label: resolveLocalizedText(field.label, locale) || field.id,
-    max_label: field.max_label
-      ? resolveLocalizedText(field.max_label, locale)
-      : undefined,
-    min_label: field.min_label
-      ? resolveLocalizedText(field.min_label, locale)
-      : undefined,
-    options: field.options?.map((option) => resolveLocalizedOption(option, locale)),
+    ...("max_label" in field && {
+      max_label: field.max_label
+        ? resolveLocalizedText(field.max_label, locale)
+        : undefined,
+    }),
+    ...("min_label" in field && {
+      min_label: field.min_label
+        ? resolveLocalizedText(field.min_label, locale)
+        : undefined,
+    }),
+    ...("options" in field && {
+      options: field.options?.map((option) =>
+        resolveLocalizedOption(option, locale)
+      ),
+    }),
     placeholder: field.placeholder
       ? resolveLocalizedText(field.placeholder, locale)
       : undefined,
     validators: field.validators?.map((validator) =>
       resolveValidator(validator, locale)
     ),
-  };
+  } as IResolvedDeclarativeFormField;
 }
 
 export function resolveSectionContent(

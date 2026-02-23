@@ -23,7 +23,9 @@ export function RatingField({
       ? ""
       : String(controllerField.value);
 
-  const hasLabels = !!(field.min_label || field.max_label);
+  const minLabel = "min_label" in field ? field.min_label : undefined;
+  const maxLabel = "max_label" in field ? field.max_label : undefined;
+  const hasLabels = !!(minLabel || maxLabel);
   const labelsId = `rating-labels-${field.id}`;
 
   return (
@@ -63,8 +65,8 @@ export function RatingField({
 
         {hasLabels && (
           <div id={labelsId} className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-            <span>{field.min_label || ""}</span>
-            <span className="text-right">{field.max_label || ""}</span>
+            <span>{minLabel || ""}</span>
+            <span className="text-right">{maxLabel || ""}</span>
           </div>
         )}
       </div>

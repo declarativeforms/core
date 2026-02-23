@@ -8,4 +8,5 @@ export * from "./long-text-field.component";
 export * from "./multiple-select-field.component";
 export * from "./rating-field.component";
 export * from "./signature-field.component";
+export * from "./geolocation-field.component";
 export * from "./single-select-field.component";
