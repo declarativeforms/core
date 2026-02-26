@@ -23,14 +23,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useI18n } from "@/i18n";
+import { useFormI18n } from "../use-form-i18n";
 
 export function AddressField({
   field,
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
 
   // Extract autocomplete type from field type
   const autocompleteType = (() => {

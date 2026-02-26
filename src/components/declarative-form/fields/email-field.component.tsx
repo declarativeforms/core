@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { getOtpFieldNames, isOtpVerifiedValue } from "../otp-field-names";
 import { FormControl, Input } from "@/components/ui";
-import { useI18n } from "@/i18n";
+import { useFormI18n } from "../use-form-i18n";
 import { cn } from "@/lib/utils";
 import { sendEmailOtp, verifyEmailOtp } from "./email/api";
 import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email/utils";
@@ -16,7 +16,7 @@ export function EmailField({
   form,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
   const otpEnabled = field.type === "email" && field.otp === true;
   const otpFieldNames = useMemo(() => getOtpFieldNames(field.id), [field.id]);
   const otpMessages = useMemo(

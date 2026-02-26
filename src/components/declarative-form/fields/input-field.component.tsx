@@ -1,13 +1,13 @@
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl, Input } from "@/components/ui";
-import { useI18n } from "@/i18n";
+import { useFormI18n } from "../use-form-i18n";
 
 export function InputField({
   field,
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
 
   const inputType =
     field.type === "date"

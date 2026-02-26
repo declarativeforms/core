@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
-import { useI18n } from "@/i18n/use-i18n";
+import { useFormI18n } from "../use-form-i18n";
 import { cn } from "@/lib/utils";
 
 type Point = {
@@ -18,7 +18,7 @@ export function SignatureField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointsRef = useRef<Point[]>([]);
   const isDrawingRef = useRef(false);

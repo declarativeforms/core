@@ -13,7 +13,7 @@ import { useState, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
-import { useI18n } from "@/i18n/use-i18n";
+import { useFormI18n } from "../use-form-i18n";
 import type { TranslationKey } from "@/i18n/messages/en";
 import type { TranslationValues } from "@/i18n/runtime";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,7 @@ export function FileUploadField({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
-import { useI18n } from "@/i18n";
+import { useFormI18n } from "../use-form-i18n";
 import { cn } from "@/lib/utils";
 
 export function DropdownField({
@@ -28,7 +28,7 @@ export function DropdownField({
   form,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
 
   const options = "options" in field ? field.options : undefined;
 
@@ -73,7 +73,7 @@ function SearchableDropdown({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
   const [open, setOpen] = useState(false);
   const options = "options" in field ? field.options : undefined;
   const selectedOption = options?.find(

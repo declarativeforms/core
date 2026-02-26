@@ -4,7 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { useI18n } from "@/i18n";
+import { useFormI18n } from "../use-form-i18n";
 import type { TranslationKey } from "@/i18n/messages/en";
 
 const GeolocationMapPreview = lazy(() => import("./geolocation-map-preview"));
@@ -50,7 +50,7 @@ const ERROR_MESSAGE_KEYS: Record<ErrorCode, TranslationKey> = {
 export function GeolocationField({
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
 
   const [state, setState] = useState<GeolocationState>(() => {
     if (isGeolocationValue(controllerField.value)) {

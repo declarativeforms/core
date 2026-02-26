@@ -8,7 +8,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui";
-import { useI18n } from "@/i18n/use-i18n";
+import { useFormI18n } from "../use-form-i18n";
 import { cn } from "@/lib/utils";
 
 export function MultipleSelectField({
@@ -16,7 +16,7 @@ export function MultipleSelectField({
   form,
   meta,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useI18n();
+  const { t } = useFormI18n();
   const minSelections =
     typeof meta.minValidator?.value === "number" ? meta.minValidator.value : 0;
   const maxSelections =
