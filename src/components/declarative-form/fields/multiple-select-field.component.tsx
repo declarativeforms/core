@@ -8,6 +8,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui";
+import { useI18n } from "@/i18n/use-i18n";
 import { cn } from "@/lib/utils";
 
 export function MultipleSelectField({
@@ -15,6 +16,7 @@ export function MultipleSelectField({
   form,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
   const minSelections =
     typeof meta.minValidator?.value === "number" ? meta.minValidator.value : 0;
   const maxSelections =
@@ -36,13 +38,18 @@ export function MultipleSelectField({
 
   const getHelperText = () => {
     if (minSelections > 0 && maxSelections) {
-      return `Select ${minSelections}-${maxSelections} options`;
+      return t("multiple_select.range", {
+        min: String(minSelections),
+        max: String(maxSelections),
+      });
     } else if (minSelections > 0) {
-      return `Select at least ${minSelections} option${
-        minSelections > 1 ? "s" : ""
-      }`;
+      return t("multiple_select.at_least", {
+        min: String(minSelections),
+      });
     } else if (maxSelections) {
-      return `Select up to ${maxSelections} options`;
+      return t("multiple_select.up_to", {
+        max: String(maxSelections),
+      });
     }
     return "";
   };
@@ -118,7 +125,11 @@ export function MultipleSelectField({
         />
       ))}
       <p className="text-sm text-muted-foreground" aria-live="polite">
-        {currentSelections > 0 ? `${currentSelections} selected` : ""}
+        {currentSelections > 0
+          ? t("multiple_select.selected_count", {
+              count: String(currentSelections),
+            })
+          : ""}
       </p>
     </div>
   );

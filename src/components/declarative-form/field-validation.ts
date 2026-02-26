@@ -4,10 +4,15 @@ import type { DeclarativeFieldMeta } from "./field-contract";
 import type { IResolvedDeclarativeFormField } from "./localized-content";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
 import { getRatingRange } from "./rating-range";
+import type { TranslationKey } from "@/i18n/messages/en";
+import type { TranslationValues } from "@/i18n/runtime";
+
+type TFn = (key: TranslationKey, values?: TranslationValues) => string;
 
 function applyRequiredAndPatternRules(
   field: IResolvedDeclarativeFormField,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (!field.validators) {
     return;
@@ -15,11 +20,13 @@ function applyRequiredAndPatternRules(
 
   for (const validator of field.validators) {
     if (validator === "required") {
-      rules.required = `${field.label} is required.`;
+      rules.required = t("validation.required", { label: field.label });
     } else if (typeof validator === "object" && validator.type === "pattern") {
       rules.pattern = {
         value: new RegExp(validator.regex),
-        message: validator.message || `${field.label} is invalid.`,
+        message:
+          validator.message ||
+          t("validation.invalid", { label: field.label }),
       };
     }
   }
@@ -28,7 +35,8 @@ function applyRequiredAndPatternRules(
 function applyTextLengthRules(
   field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   const isTextField =
     field.type === "short_text" ||
@@ -45,7 +53,10 @@ function applyTextLengthRules(
       value: meta.minValidator.value,
       message:
         meta.minValidator.message ||
-        `${field.label} must be at least ${meta.minValidator.value} characters.`,
+        t("validation.min_length", {
+          label: field.label,
+          min: String(meta.minValidator.value),
+        }),
     };
   }
   if (meta.maxValidator && typeof meta.maxValidator.value === "number") {
@@ -53,14 +64,18 @@ function applyTextLengthRules(
       value: meta.maxValidator.value,
       message:
         meta.maxValidator.message ||
-        `${field.label} must be at most ${meta.maxValidator.value} characters.`,
+        t("validation.max_length", {
+          label: field.label,
+          max: String(meta.maxValidator.value),
+        }),
     };
   }
 }
 
 function applyEmailOtpRules(
   field: IResolvedDeclarativeFormField,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (!(field.type === "email" && field.otp)) {
     return;
@@ -78,7 +93,7 @@ function applyEmailOtpRules(
         : {};
 
     if (!isOtpVerifiedValue(values[otpFieldNames.verified])) {
-      return "Please verify your email address with OTP.";
+      return t("validation.email_otp_required");
     }
 
     return true;
@@ -88,7 +103,8 @@ function applyEmailOtpRules(
 function applyDateRules(
   field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (field.type !== "date") {
     return;
@@ -99,7 +115,10 @@ function applyDateRules(
       value: meta.minValidator.value,
       message:
         meta.minValidator.message ||
-        `${field.label} must be on or after ${meta.minValidator.value}.`,
+        t("validation.date_min", {
+          label: field.label,
+          min: String(meta.minValidator.value),
+        }),
     };
   }
   if (meta.maxValidator) {
@@ -107,7 +126,10 @@ function applyDateRules(
       value: meta.maxValidator.value,
       message:
         meta.maxValidator.message ||
-        `${field.label} must be on or before ${meta.maxValidator.value}.`,
+        t("validation.date_max", {
+          label: field.label,
+          max: String(meta.maxValidator.value),
+        }),
     };
   }
 }
@@ -115,7 +137,8 @@ function applyDateRules(
 function applyNumberRules(
   field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (field.type !== "number") {
     return;
@@ -124,7 +147,7 @@ function applyNumberRules(
   if (!meta.hasPatternValidator) {
     rules.pattern = {
       value: /^\d+$/,
-      message: `${field.label} must be a whole number.`,
+      message: t("validation.whole_number", { label: field.label }),
     };
   }
 
@@ -136,7 +159,7 @@ function applyNumberRules(
     const numericValue = Number(value);
 
     if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
-      return `${field.label} must be a whole number.`;
+      return t("validation.whole_number", { label: field.label });
     }
 
     if (
@@ -146,7 +169,10 @@ function applyNumberRules(
     ) {
       return (
         meta.minValidator.message ||
-        `${field.label} must be at least ${meta.minValidator.value}.`
+        t("validation.number_min", {
+          label: field.label,
+          min: String(meta.minValidator.value),
+        })
       );
     }
 
@@ -157,7 +183,10 @@ function applyNumberRules(
     ) {
       return (
         meta.maxValidator.message ||
-        `${field.label} must be at most ${meta.maxValidator.value}.`
+        t("validation.number_max", {
+          label: field.label,
+          max: String(meta.maxValidator.value),
+        })
       );
     }
 
@@ -168,7 +197,8 @@ function applyNumberRules(
 function applyRatingRules(
   field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (field.type !== "rating") {
     return;
@@ -183,15 +213,27 @@ function applyRatingRules(
     const numericValue = Number(value);
 
     if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
-      return `${field.label} must be a whole number.`;
+      return t("validation.whole_number", { label: field.label });
     }
 
     if (numericValue < min) {
-      return meta.minValidator?.message || `${field.label} must be at least ${min}.`;
+      return (
+        meta.minValidator?.message ||
+        t("validation.number_min", {
+          label: field.label,
+          min: String(min),
+        })
+      );
     }
 
     if (numericValue > max) {
-      return meta.maxValidator?.message || `${field.label} must be at most ${max}.`;
+      return (
+        meta.maxValidator?.message ||
+        t("validation.number_max", {
+          label: field.label,
+          max: String(max),
+        })
+      );
     }
 
     return true;
@@ -201,7 +243,8 @@ function applyRatingRules(
 function applyFileUploadRules(
   field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (field.type !== "file_upload") {
     return;
@@ -211,7 +254,7 @@ function applyFileUploadRules(
     const fileCount = Array.isArray(value) ? value.length : value ? 1 : 0;
 
     if (meta.isRequired && fileCount === 0) {
-      return `${field.label} is required.`;
+      return t("validation.required", { label: field.label });
     }
 
     if (
@@ -221,7 +264,10 @@ function applyFileUploadRules(
     ) {
       return (
         meta.minValidator.message ||
-        `${field.label} requires at least ${meta.minValidator.value} file${meta.minValidator.value > 1 ? "s" : ""}.`
+        t("validation.file_min", {
+          label: field.label,
+          min: String(meta.minValidator.value),
+        })
       );
     }
 
@@ -232,7 +278,10 @@ function applyFileUploadRules(
     ) {
       return (
         meta.maxValidator.message ||
-        `${field.label} allows at most ${meta.maxValidator.value} file${meta.maxValidator.value > 1 ? "s" : ""}.`
+        t("validation.file_max", {
+          label: field.label,
+          max: String(meta.maxValidator.value),
+        })
       );
     }
 
@@ -243,7 +292,8 @@ function applyFileUploadRules(
 function applyMultipleSelectRules(
   field: IResolvedDeclarativeFormField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions
+  rules: RegisterOptions,
+  t: TFn
 ) {
   if (field.type !== "multiple_select") {
     return;
@@ -253,7 +303,7 @@ function applyMultipleSelectRules(
     const selections = Array.isArray(value) ? value.length : 0;
 
     if (meta.isRequired && selections === 0) {
-      return `${field.label} is required.`;
+      return t("validation.required", { label: field.label });
     }
 
     if (
@@ -263,7 +313,10 @@ function applyMultipleSelectRules(
     ) {
       return (
         meta.minValidator.message ||
-        `${field.label} requires at least ${meta.minValidator.value} selection${meta.minValidator.value > 1 ? "s" : ""}.`
+        t("validation.selection_min", {
+          label: field.label,
+          min: String(meta.minValidator.value),
+        })
       );
     }
 
@@ -274,7 +327,10 @@ function applyMultipleSelectRules(
     ) {
       return (
         meta.maxValidator.message ||
-        `${field.label} allows at most ${meta.maxValidator.value} selection${meta.maxValidator.value > 1 ? "s" : ""}.`
+        t("validation.selection_max", {
+          label: field.label,
+          max: String(meta.maxValidator.value),
+        })
       );
     }
 
@@ -284,18 +340,19 @@ function applyMultipleSelectRules(
 
 export function buildFieldRules(
   field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta
+  meta: DeclarativeFieldMeta,
+  t: TFn
 ): RegisterOptions {
   const rules: RegisterOptions = {};
 
-  applyRequiredAndPatternRules(field, rules);
-  applyTextLengthRules(field, meta, rules);
-  applyEmailOtpRules(field, rules);
-  applyDateRules(field, meta, rules);
-  applyNumberRules(field, meta, rules);
-  applyRatingRules(field, meta, rules);
-  applyFileUploadRules(field, meta, rules);
-  applyMultipleSelectRules(field, meta, rules);
+  applyRequiredAndPatternRules(field, rules, t);
+  applyTextLengthRules(field, meta, rules, t);
+  applyEmailOtpRules(field, rules, t);
+  applyDateRules(field, meta, rules, t);
+  applyNumberRules(field, meta, rules, t);
+  applyRatingRules(field, meta, rules, t);
+  applyFileUploadRules(field, meta, rules, t);
+  applyMultipleSelectRules(field, meta, rules, t);
 
   return rules;
 }

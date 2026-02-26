@@ -13,6 +13,9 @@ import { useState, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
+import { useI18n } from "@/i18n/use-i18n";
+import type { TranslationKey } from "@/i18n/messages/en";
+import type { TranslationValues } from "@/i18n/runtime";
 import { cn } from "@/lib/utils";
 
 interface FileMetadata {
@@ -30,6 +33,7 @@ export function FileUploadField({
   controllerField,
   meta,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +51,7 @@ export function FileUploadField({
   const validateFile = (): string | null => {
     // Check max files
     if (fileMetadata.length >= maxFiles) {
-      return `Maximum number of files (${maxFiles}) reached`;
+      return t("file_upload.max_reached", { max: String(maxFiles) });
     }
 
     return null;
@@ -68,8 +72,8 @@ export function FileUploadField({
     if (!response.ok) {
       const error = await response
         .json()
-        .catch(() => ({ error: "Upload failed" }));
-      throw new Error(error.error || "Upload failed");
+        .catch(() => ({ error: t("file_upload.upload_failed") }));
+      throw new Error(error.error || t("file_upload.upload_failed"));
     }
 
     const data = await response.json();
@@ -121,7 +125,7 @@ export function FileUploadField({
         controllerField.onChange(newUrls);
       } catch (error) {
         const errorMessage =
-          error instanceof Error ? error.message : "Upload failed";
+          error instanceof Error ? error.message : t("file_upload.upload_failed");
         setFileMetadata((prev) =>
           prev.map((m) =>
             m.url === tempId
@@ -181,11 +185,11 @@ export function FileUploadField({
         : 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
-      requirements.push(`${minFiles}-${maxFiles} files`);
+      requirements.push(t("file_upload.range_files", { min: String(minFiles), max: String(maxFiles) }));
     } else if (minFiles > 0) {
-      requirements.push(`At least ${minFiles} file${minFiles > 1 ? "s" : ""}`);
+      requirements.push(t("file_upload.at_least_files", { min: String(minFiles) }));
     } else if (maxFiles > 1) {
-      requirements.push(`Up to ${maxFiles} files`);
+      requirements.push(t("file_upload.up_to_files", { max: String(maxFiles) }));
     }
 
     return requirements.join(" • ");
@@ -220,7 +224,7 @@ export function FileUploadField({
             }}
             tabIndex={0}
             role="button"
-            aria-label="Upload files"
+            aria-label={t("file_upload.upload_files")}
             className={cn(
               "border border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors",
               "flex flex-col items-center justify-center gap-2 p-6",
@@ -236,7 +240,7 @@ export function FileUploadField({
             />
             <div className="text-center">
               <p className="text-sm text-foreground">
-                Click to upload or drag and drop
+                {t("file_upload.click_to_upload")}
               </p>
               {getFileRequirements() && (
                 <p className="mt-1 text-sm text-muted-foreground">{getFileRequirements()}</p>
@@ -247,12 +251,13 @@ export function FileUploadField({
         )}
 
         {fileMetadata.length > 0 && (
-          <div className="space-y-2" role="list" aria-label="Uploaded files" aria-live="polite" aria-busy={fileMetadata.some((m) => m.status === "uploading")}>
+          <div className="space-y-2" role="list" aria-label={t("file_upload.uploaded_files")} aria-live="polite" aria-busy={fileMetadata.some((m) => m.status === "uploading")}>
             {fileMetadata.map((metadata, index) => (
               <FilePreview
                 key={metadata.url || index}
                 metadata={metadata}
                 onRemove={() => handleRemove(metadata.url)}
+                t={t}
               />
             ))}
           </div>
@@ -265,9 +270,11 @@ export function FileUploadField({
 function FilePreview({
   metadata,
   onRemove,
+  t,
 }: {
   metadata: FileMetadata;
   onRemove: () => void;
+  t: (key: TranslationKey, values?: TranslationValues) => string;
 }) {
   const Icon = (() => {
     if (metadata.type.startsWith("image/")) {
@@ -374,7 +381,7 @@ function FilePreview({
       {isUploading ? (
         <Loader2
           className="w-5 h-5 text-muted-foreground animate-spin flex-shrink-0"
-          aria-label="Uploading"
+          aria-label={t("file_upload.uploading")}
         />
       ) : (
         <button
@@ -385,7 +392,7 @@ function FilePreview({
             "hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2",
             "transition-colors"
           )}
-          aria-label={`Remove ${metadata.name}`}
+          aria-label={t("file_upload.remove_file", { name: metadata.name })}
         >
           <X className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         </button>

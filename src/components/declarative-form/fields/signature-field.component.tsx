@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
+import { useI18n } from "@/i18n/use-i18n";
 import { cn } from "@/lib/utils";
 
 type Point = {
@@ -17,6 +18,7 @@ export function SignatureField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointsRef = useRef<Point[]>([]);
   const isDrawingRef = useRef(false);
@@ -155,7 +157,7 @@ export function SignatureField({
     );
 
     if (!blob) {
-      setErrorMessage("Failed to capture signature.");
+      setErrorMessage(t("signature.capture_failed"));
       setIsUploading(false);
       return;
     }
@@ -175,14 +177,15 @@ export function SignatureField({
       if (!response.ok) {
         const error = await response
           .json()
-          .catch(() => ({ error: "Upload failed" }));
-        throw new Error(error.error || "Upload failed");
+          .catch(() => ({ error: t("signature.upload_failed") }));
+        throw new Error(error.error || t("signature.upload_failed"));
       }
 
       const data = await response.json();
       controllerField.onChange(data.url);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Upload failed";
+      const message =
+        error instanceof Error ? error.message : t("signature.upload_failed");
       setErrorMessage(message);
     } finally {
       setIsUploading(false);
@@ -225,12 +228,12 @@ export function SignatureField({
             />
             {!hasSignature && !isUploading && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-sm text-muted-foreground">Draw your signature</span>
+                <span className="text-sm text-muted-foreground">{t("signature.draw")}</span>
               </div>
             )}
             <div className="absolute bottom-2 right-3" aria-live="polite">
               {isUploading && (
-                <span className="text-sm text-muted-foreground">Uploading...</span>
+                <span className="text-sm text-muted-foreground">{t("signature.uploading")}</span>
               )}
             </div>
           </div>
@@ -248,7 +251,7 @@ export function SignatureField({
             disabled={!hasSignature || isUploading}
           >
             <X className="h-4 w-4" aria-hidden="true" />
-            Clear
+            {t("signature.clear")}
           </button>
         </div>
 

@@ -72,6 +72,51 @@ const enMessageSource = {
     "Location request timed out. Please try again.",
   "geolocation.error_not_supported":
     "Geolocation is not supported by your browser.",
+  "validation.required": "{label} is required.",
+  "validation.invalid": "{label} is invalid.",
+  "validation.min_length":
+    "{label} must be at least {min} characters.",
+  "validation.max_length":
+    "{label} must be at most {max} characters.",
+  "validation.email_otp_required":
+    "Please verify your email address with OTP.",
+  "validation.date_min": "{label} must be on or after {min}.",
+  "validation.date_max": "{label} must be on or before {max}.",
+  "validation.whole_number": "{label} must be a whole number.",
+  "validation.number_min": "{label} must be at least {min}.",
+  "validation.number_max": "{label} must be at most {max}.",
+  "validation.file_min":
+    "{label} requires at least {min} file(s).",
+  "validation.file_max":
+    "{label} allows at most {max} file(s).",
+  "validation.selection_min":
+    "{label} requires at least {min} selection(s).",
+  "validation.selection_max":
+    "{label} allows at most {max} selection(s).",
+  "file_upload.click_to_upload": "Click to upload or drag and drop",
+  "file_upload.upload_files": "Upload files",
+  "file_upload.uploaded_files": "Uploaded files",
+  "file_upload.range_files": "{min}-{max} files",
+  "file_upload.at_least_files":
+    "At least {min} file(s)",
+  "file_upload.up_to_files": "Up to {max} files",
+  "file_upload.max_reached":
+    "Maximum number of files ({max}) reached",
+  "file_upload.upload_failed": "Upload failed",
+  "file_upload.uploading": "Uploading",
+  "file_upload.remove_file": "Remove {name}",
+  "signature.draw": "Draw your signature",
+  "signature.uploading": "Uploading...",
+  "signature.capture_failed": "Failed to capture signature.",
+  "signature.upload_failed": "Upload failed",
+  "signature.clear": "Clear",
+  "multiple_select.range":
+    "Select {min}-{max} options",
+  "multiple_select.at_least":
+    "Select at least {min} option(s)",
+  "multiple_select.up_to":
+    "Select up to {max} options",
+  "multiple_select.selected_count": "{count} selected",
 } as const;
 
 export type TranslationKey = keyof typeof enMessageSource;

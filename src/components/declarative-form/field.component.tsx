@@ -9,11 +9,13 @@ import { getFieldMeta } from "./field-contract";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { buildFieldRules } from "./field-validation";
 import type { IResolvedDeclarativeFormField } from "./localized-content";
+import { useI18n } from "@/i18n/use-i18n";
 
 export function DeclarativeFormField(props: {
   field: IResolvedDeclarativeFormField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
+  const { t } = useI18n();
   const formData = useWatch({ control: props.form.control });
 
   const isVisible = (() => {
@@ -35,7 +37,7 @@ export function DeclarativeFormField(props: {
 
   const resolvedField = props.field;
   const meta = getFieldMeta(resolvedField);
-  const rules = buildFieldRules(resolvedField, meta);
+  const rules = buildFieldRules(resolvedField, meta, t);
   const Renderer = declarativeFieldRenderers[resolvedField.type];
   const isHiddenField = resolvedField.type === "hidden";
 
