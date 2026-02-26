@@ -19,12 +19,12 @@ export function HeroSection(props: {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
       <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
-        <h1 className="text-3xl md:text-4xl font-bold leading-tight text-gray-900 mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-4">
           {props.title}
         </h1>
 
         {props.description ? (
-          <p className="text-lg md:text-xl font-normal leading-relaxed text-gray-600 mb-10">
+          <p className="text-sm text-gray-500 mb-8">
             {props.description}
           </p>
         ) : null}
@@ -32,13 +32,13 @@ export function HeroSection(props: {
         {props.buttonHref ? (
           <a
             href={props.buttonHref}
-            className="inline-flex items-center justify-center w-full h-12 px-6 text-base font-semibold leading-none rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+            className="inline-flex items-center justify-center w-full h-10 px-6 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {props.buttonLabel ?? t("hero.continue")}
           </a>
         ) : props.onAction ? (
           <Button
-            className="w-full h-12 px-6 text-base font-semibold leading-none"
+            className="w-full h-10 px-6 text-sm font-medium"
             onClick={() => props.onAction?.()}
           >
             {t("hero.continue")}

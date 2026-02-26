@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import {
   ConnectionsPage,
   MainPage,
+  NotFoundPage,
   OAuthAirtablePage,
   OAuthGitHubPage,
   PrivacyPolicyPage,
@@ -23,7 +24,7 @@ function App() {
       </a>
       <main id="main-content">
         <Routes>
-          <Route path="/" element={<MainPage />} />
+          <Route path="/" element={<NotFoundPage />} />
           <Route path="/:id" element={<MainPage />} />
           <Route path="/:owner/:repository/:file" element={<MainPage />} />
           <Route path="/:id/thank-you" element={<ThankYouPage />} />
@@ -36,6 +37,7 @@ function App() {
           <Route path="/oauth/airtable" element={<OAuthAirtablePage />} />
           <Route path="/oauth/github" element={<OAuthGitHubPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
     </>
