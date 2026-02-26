@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { getBackendUrl } from "@/lib/api";
+
 const GITHUB_CLIENT_ID = "Ov23li4FIOQ5C4JM1EVe";
-const API_BASE = "https://declarativeforms-api-2k4ts.ondigitalocean.app";
 
 export function OAuthGitHubPage() {
   const [searchParams] = useSearchParams();
@@ -24,7 +25,7 @@ export function OAuthGitHubPage() {
 
     (async () => {
       const response = await fetch(
-        `${API_BASE}/api/v1/oauth/github/access_token`,
+        getBackendUrl("oauth/github/access_token"),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

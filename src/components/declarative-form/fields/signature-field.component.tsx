@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DeclarativeFieldComponentProps } from "../field-contract";
 import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../use-form-i18n";
+import { uploadFile } from "@/lib/file-upload";
 import { cn } from "@/lib/utils";
 
 type Point = {
@@ -162,27 +163,9 @@ export function SignatureField({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", blob, "signature.png");
-
     try {
-      const response = await fetch(
-        "https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/files/upload",
-        {
-          body: formData,
-          method: "POST",
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response
-          .json()
-          .catch(() => ({ error: t("signature.upload_failed") }));
-        throw new Error(error.error || t("signature.upload_failed"));
-      }
-
-      const data = await response.json();
-      controllerField.onChange(data.url);
+      const url = await uploadFile(blob, "signature.png");
+      controllerField.onChange(url);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : t("signature.upload_failed");

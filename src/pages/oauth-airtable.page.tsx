@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { getBackendUrl } from "@/lib/api";
+
 function generateRandomString() {
   const array = new Uint8Array(64);
 
@@ -61,7 +63,7 @@ export function OAuthAirtablePage() {
         }
 
         const response = await fetch(
-          "https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/oauth/airtable/access_token",
+          getBackendUrl("oauth/airtable/access_token"),
           {
             method: "POST",
             headers: {

@@ -11,6 +11,7 @@ import {
 } from "@/components";
 import { resolveLocalizedText } from "@/components/declarative-form/localized-content";
 import { useI18n } from "@/i18n";
+import { getBackendUrl } from "@/lib/api";
 
 const RESERVED_QUERY_KEYS = new Set([
   "connection_id",
@@ -40,9 +41,9 @@ export function MainPage() {
     ],
     queryFn: async () => {
       const url = params.id
-        ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.id}`
+        ? getBackendUrl(`forms/${params.id}`)
         : params.owner && params.repository && params.file
-        ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
+        ? getBackendUrl(`forms/${params.owner}/${params.repository}/${params.file}`)
         : "/default.yaml";
 
       const fetchUrl = new URL(url, window.location.origin);
@@ -169,9 +170,7 @@ export function MainPage() {
         }}
         onSubmit={async (data, isPartial) => {
           const url = new URL(
-            `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${
-              form.id || ""
-            }/submissions`
+            getBackendUrl(`forms/${form.id || ""}/submissions`)
           );
 
           if (isPartial) {

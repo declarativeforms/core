@@ -19,11 +19,19 @@ export function resolveNextSectionId(
 
   for (const rule of section.next) {
     if ("when" in rule) {
-      const condition = new Function("data", `return ${rule.when}`) as (
-        value: FieldValues
-      ) => boolean;
-      if (condition(data)) {
-        return rule.go;
+      try {
+        const condition = new Function("data", `return ${rule.when}`) as (
+          value: FieldValues
+        ) => boolean;
+        if (condition(data)) {
+          return rule.go;
+        }
+      } catch (error) {
+        console.warn(
+          `[DeclarativeForms] next.when evaluation failed for section "${section.id}":`,
+          error
+        );
+        continue;
       }
     } else if ("else" in rule) {
       return rule.else;

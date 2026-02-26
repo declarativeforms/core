@@ -6,6 +6,7 @@ import { HeroSection, type IDeclarativeForm } from "@/components";
 import { interpolateTemplate } from "@/components/declarative-form/form-helpers";
 import { resolveCompletionContent } from "@/components/declarative-form/localized-content";
 import { useI18n } from "@/i18n";
+import { getBackendUrl } from "@/lib/api";
 
 type SubmissionPayload = {
   data: Record<string, unknown>;
@@ -22,9 +23,9 @@ export function ThankYouPage() {
     queryKey: ["form", params.id, params.owner, params.repository, params.file],
     queryFn: async () => {
       const url = params.id
-        ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.id}`
+        ? getBackendUrl(`forms/${params.id}`)
         : params.owner && params.repository && params.file
-        ? `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${params.owner}/${params.repository}/${params.file}`
+        ? getBackendUrl(`forms/${params.owner}/${params.repository}/${params.file}`)
         : null;
 
       if (!url) {
@@ -55,9 +56,7 @@ export function ThankYouPage() {
     queryKey: ["submission", form?.id, submissionId],
     queryFn: async () => {
       const response = await fetch(
-        `https://declarativeforms-api-2k4ts.ondigitalocean.app/api/v1/forms/${
-          form!.id
-        }/submissions/${submissionId}`
+        getBackendUrl(`forms/${form!.id}/submissions/${submissionId}`)
       );
       if (!response.ok) return null;
       return response.json() as Promise<SubmissionPayload>;

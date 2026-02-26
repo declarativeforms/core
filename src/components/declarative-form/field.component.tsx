@@ -5,6 +5,7 @@ import {
 } from "react-hook-form";
 
 import { FormField, FormItem, FormLabel, FormMessage } from "../ui";
+import { FieldErrorBoundary } from "./field-error-boundary.component";
 import { getFieldMeta } from "./field-contract";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { buildFieldRules } from "./field-validation";
@@ -23,12 +24,19 @@ export function DeclarativeFormField(props: {
       return true;
     }
 
-    const condition = new Function(
-      "data",
-      `return ${props.field.visible_when}`
-    );
-
-    return condition(formData);
+    try {
+      const condition = new Function(
+        "data",
+        `return ${props.field.visible_when}`
+      );
+      return condition(formData);
+    } catch (error) {
+      console.warn(
+        `[DeclarativeForms] visible_when evaluation failed for field "${props.field.id}":`,
+        error
+      );
+      return true;
+    }
   })();
 
   if (!isVisible) {
@@ -62,21 +70,25 @@ export function DeclarativeFormField(props: {
       rules={rules}
       render={({ field }) =>
         isHiddenField ? (
-          <Renderer
-            controllerField={field}
-            field={resolvedField}
-            form={props.form}
-            meta={meta}
-          />
-        ) : (
-          <FormItem>
-            {Label()}
+          <FieldErrorBoundary fieldId={resolvedField.id}>
             <Renderer
               controllerField={field}
               field={resolvedField}
               form={props.form}
               meta={meta}
             />
+          </FieldErrorBoundary>
+        ) : (
+          <FormItem>
+            {Label()}
+            <FieldErrorBoundary fieldId={resolvedField.id}>
+              <Renderer
+                controllerField={field}
+                field={resolvedField}
+                form={props.form}
+                meta={meta}
+              />
+            </FieldErrorBoundary>
             <FormMessage />
           </FormItem>
         )
