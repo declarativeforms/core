@@ -5,78 +5,11 @@ import type {
   IDeclarativeFormSection,
   IDeclarativeFormValidator,
   ILocalizedText,
+} from "../types";
+import type {
+  CompiledCompletion,
+  CompiledOption,
 } from "./types";
-
-export type IResolvedDeclarativeFormOption = {
-  label: string;
-  value: string;
-};
-
-export type IResolvedDeclarativeFormValidator =
-  | "required"
-  | {
-      type: "pattern";
-      regex: string;
-      message?: string;
-    }
-  | {
-      type: "min";
-      value: number | string;
-      message?: string;
-    }
-  | {
-      type: "max";
-      value: number | string;
-      message?: string;
-    }
-  | {
-      type: "min_length";
-      value: number;
-      message?: string;
-    }
-  | {
-      type: "max_length";
-      value: number;
-      message?: string;
-    };
-
-type ResolveField<T extends IDeclarativeFormField> = T extends any
-  ? Omit<
-      T,
-      | "label"
-      | "max_label"
-      | "min_label"
-      | "options"
-      | "placeholder"
-      | "validators"
-    > & {
-      label: string;
-      max_label?: string;
-      min_label?: string;
-      options?: Array<IResolvedDeclarativeFormOption>;
-      placeholder?: string;
-      validators?: Array<IResolvedDeclarativeFormValidator>;
-    }
-  : never;
-
-export type IResolvedDeclarativeFormField = ResolveField<IDeclarativeFormField>;
-
-export type IResolvedDeclarativeFormSection = Omit<
-  IDeclarativeFormSection,
-  "fields" | "title"
-> & {
-  fields: Array<IResolvedDeclarativeFormField>;
-  title: string;
-};
-
-export type IResolvedCompletion = {
-  title?: string;
-  message?: string;
-  button?: {
-    label: string;
-    url: string;
-  };
-};
 
 function normalizeLocaleKey(locale: string): string {
   return locale.trim().toLowerCase().replace("_", "-");
@@ -129,10 +62,10 @@ export function resolveLocalizedText(
   return getObjectLocalizedValue(input, locale) ?? "";
 }
 
-function resolveLocalizedOption(
+export function resolveLocalizedOption(
   option: IDeclarativeFormOption,
   locale: string
-): IResolvedDeclarativeFormOption {
+): CompiledOption {
   if (typeof option === "string") {
     return { label: option, value: option };
   }
@@ -144,10 +77,18 @@ function resolveLocalizedOption(
   };
 }
 
-function resolveValidator(
+export type LocalizedValidator =
+  | "required"
+  | { type: "pattern"; regex: string; message?: string }
+  | { type: "min"; value: number | string; message?: string }
+  | { type: "max"; value: number | string; message?: string }
+  | { type: "min_length"; value: number; message?: string }
+  | { type: "max_length"; value: number; message?: string };
+
+export function resolveValidator(
   validator: IDeclarativeFormValidator,
   locale: string
-): IResolvedDeclarativeFormValidator {
+): LocalizedValidator {
   if (validator === "required") {
     return validator;
   }
@@ -159,52 +100,52 @@ function resolveValidator(
   };
 }
 
-export function resolveFieldContent(
+export function localizeField(
   field: IDeclarativeFormField,
   locale: string
-): IResolvedDeclarativeFormField {
+): {
+  label: string;
+  placeholder?: string;
+  options?: CompiledOption[];
+  min_label?: string;
+  max_label?: string;
+  validators: LocalizedValidator[];
+} {
   return {
-    ...field,
     label: resolveLocalizedText(field.label, locale) || field.id,
-    ...("max_label" in field && {
-      max_label: field.max_label
-        ? resolveLocalizedText(field.max_label, locale)
-        : undefined,
-    }),
-    ...("min_label" in field && {
-      min_label: field.min_label
-        ? resolveLocalizedText(field.min_label, locale)
-        : undefined,
-    }),
-    ...("options" in field && {
-      options: field.options?.map((option) =>
-        resolveLocalizedOption(option, locale)
-      ),
-    }),
     placeholder: field.placeholder
       ? resolveLocalizedText(field.placeholder, locale)
       : undefined,
-    validators: field.validators?.map((validator) =>
-      resolveValidator(validator, locale)
-    ),
-  } as IResolvedDeclarativeFormField;
-}
-
-export function resolveSectionContent(
-  section: IDeclarativeFormSection,
-  locale: string
-): IResolvedDeclarativeFormSection {
-  return {
-    ...section,
-    title: resolveLocalizedText(section.title, locale),
-    fields: section.fields.map((field) => resolveFieldContent(field, locale)),
+    ...("options" in field && field.options
+      ? {
+          options: field.options.map((option) =>
+            resolveLocalizedOption(option, locale)
+          ),
+        }
+      : {}),
+    ...("min_label" in field && field.min_label
+      ? { min_label: resolveLocalizedText(field.min_label, locale) }
+      : {}),
+    ...("max_label" in field && field.max_label
+      ? { max_label: resolveLocalizedText(field.max_label, locale) }
+      : {}),
+    validators: (field.validators ?? []).map((v) => resolveValidator(v, locale)),
   };
 }
 
-export function resolveCompletionContent(
+export function localizeSection(
+  section: IDeclarativeFormSection,
+  locale: string
+): { title: string } {
+  return {
+    title: resolveLocalizedText(section.title, locale),
+  };
+}
+
+export function localizeCompletion(
   completion: ICompletion | undefined,
   locale: string
-): IResolvedCompletion | undefined {
+): CompiledCompletion | undefined {
   if (!completion) {
     return undefined;
   }

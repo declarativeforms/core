@@ -23,6 +23,16 @@ export type IDeclarativeFormValidator =
       type: "max";
       value: number | string;
       message?: ILocalizedText;
+    }
+  | {
+      type: "min_length";
+      value: number;
+      message?: ILocalizedText;
+    }
+  | {
+      type: "max_length";
+      value: number;
+      message?: ILocalizedText;
     };
 
 type IDeclarativeFormFieldBase = {

@@ -1,87 +1,242 @@
 import type { RegisterOptions } from "react-hook-form";
 
 import type { DeclarativeFieldMeta } from "./field-contract";
-import type { IResolvedDeclarativeFormField } from "./localized-content";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
-import { getRatingRange } from "./rating-range";
-import type { TranslationKey } from "@/i18n/messages/en";
-import type { TranslationValues } from "@/i18n/runtime";
+import type { CompiledField, ValidationRule } from "./runtime/types";
 
-type TFn = (key: TranslationKey, values?: TranslationValues) => string;
+export function validationRulesToRegisterOptions(
+  field: CompiledField,
+  meta: DeclarativeFieldMeta
+): RegisterOptions {
+  const rules: RegisterOptions = {};
 
-function applyRequiredAndPatternRules(
-  field: IResolvedDeclarativeFormField,
-  rules: RegisterOptions,
-  t: TFn
-) {
-  if (!field.validators) {
-    return;
-  }
+  for (const rule of field.validation) {
+    switch (rule.type) {
+      case "required":
+        rules.required = rule.message;
+        break;
 
-  for (const validator of field.validators) {
-    if (validator === "required") {
-      rules.required = t("validation.required", { label: field.label });
-    } else if (typeof validator === "object" && validator.type === "pattern") {
-      rules.pattern = {
-        value: new RegExp(validator.regex),
-        message:
-          validator.message ||
-          t("validation.invalid", { label: field.label }),
-      };
+      case "pattern":
+        rules.pattern = {
+          value: new RegExp(rule.regex),
+          message: rule.message,
+        };
+        break;
+
+      case "min_length":
+        rules.minLength = {
+          value: rule.value,
+          message: rule.message,
+        };
+        break;
+
+      case "max_length":
+        rules.maxLength = {
+          value: rule.value,
+          message: rule.message,
+        };
+        break;
     }
   }
+
+  if (field.type === "date") {
+    applyDateRules(field, rules);
+  }
+
+  if (field.type === "number") {
+    applyNumberRules(field, rules);
+  }
+
+  if (field.type === "rating") {
+    applyRatingRules(field, rules);
+  }
+
+  if (field.type === "file_upload") {
+    applyFileUploadRules(field, meta, rules);
+  }
+
+  if (field.type === "multiple_select") {
+    applyMultipleSelectRules(field, meta, rules);
+  }
+
+  if (field.type === "email" && field.otp) {
+    applyEmailOtpRules(field, rules);
+  }
+
+  return rules;
 }
 
-function applyTextLengthRules(
-  field: IResolvedDeclarativeFormField,
+function findRule(
+  rules: ValidationRule[],
+  type: ValidationRule["type"]
+): ValidationRule | undefined {
+  return rules.find((r) => r.type === type);
+}
+
+function applyDateRules(field: CompiledField, rules: RegisterOptions) {
+  const minRule = findRule(field.validation, "min");
+  const maxRule = findRule(field.validation, "max");
+
+  if (minRule && minRule.type === "min") {
+    rules.min = { value: minRule.value, message: minRule.message };
+  }
+  if (maxRule && maxRule.type === "max") {
+    rules.max = { value: maxRule.value, message: maxRule.message };
+  }
+}
+
+function applyNumberRules(field: CompiledField, rules: RegisterOptions) {
+  const minRule = findRule(field.validation, "min");
+  const maxRule = findRule(field.validation, "max");
+
+  rules.validate = (value) => {
+    if (value === undefined || value === null || value === "") {
+      return true;
+    }
+
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
+      const patternRule = findRule(field.validation, "pattern");
+      return patternRule?.message ?? `${field.label} must be a whole number`;
+    }
+
+    if (
+      minRule &&
+      minRule.type === "min" &&
+      typeof minRule.value === "number" &&
+      numericValue < minRule.value
+    ) {
+      return minRule.message;
+    }
+
+    if (
+      maxRule &&
+      maxRule.type === "max" &&
+      typeof maxRule.value === "number" &&
+      numericValue > maxRule.value
+    ) {
+      return maxRule.message;
+    }
+
+    return true;
+  };
+}
+
+function applyRatingRules(field: CompiledField, rules: RegisterOptions) {
+  const minRule = findRule(field.validation, "min");
+  const maxRule = findRule(field.validation, "max");
+
+  rules.validate = (value) => {
+    if (value === undefined || value === null || value === "") {
+      return true;
+    }
+
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
+      return `${field.label} must be a whole number`;
+    }
+
+    if (
+      minRule &&
+      minRule.type === "min" &&
+      numericValue < Number(minRule.value)
+    ) {
+      return minRule.message;
+    }
+
+    if (
+      maxRule &&
+      maxRule.type === "max" &&
+      numericValue > Number(maxRule.value)
+    ) {
+      return maxRule.message;
+    }
+
+    return true;
+  };
+}
+
+function applyFileUploadRules(
+  field: CompiledField,
   meta: DeclarativeFieldMeta,
-  rules: RegisterOptions,
-  t: TFn
+  rules: RegisterOptions
 ) {
-  const isTextField =
-    field.type === "short_text" ||
-    field.type === "long_text" ||
-    field.type === "email" ||
-    field.type === "url";
+  const minRule = findRule(field.validation, "min");
+  const maxRule = findRule(field.validation, "max");
 
-  if (!isTextField) {
-    return;
-  }
+  rules.validate = (value) => {
+    const fileCount = Array.isArray(value) ? value.length : value ? 1 : 0;
 
-  if (meta.minValidator && typeof meta.minValidator.value === "number") {
-    rules.minLength = {
-      value: meta.minValidator.value,
-      message:
-        meta.minValidator.message ||
-        t("validation.min_length", {
-          label: field.label,
-          min: String(meta.minValidator.value),
-        }),
-    };
-  }
-  if (meta.maxValidator && typeof meta.maxValidator.value === "number") {
-    rules.maxLength = {
-      value: meta.maxValidator.value,
-      message:
-        meta.maxValidator.message ||
-        t("validation.max_length", {
-          label: field.label,
-          max: String(meta.maxValidator.value),
-        }),
-    };
-  }
+    if (meta.isRequired && fileCount === 0) {
+      const requiredRule = findRule(field.validation, "required");
+      return requiredRule?.message ?? `${field.label} is required`;
+    }
+
+    if (
+      minRule &&
+      minRule.type === "min" &&
+      typeof minRule.value === "number" &&
+      fileCount < minRule.value
+    ) {
+      return minRule.message;
+    }
+
+    if (
+      maxRule &&
+      maxRule.type === "max" &&
+      typeof maxRule.value === "number" &&
+      fileCount > maxRule.value
+    ) {
+      return maxRule.message;
+    }
+
+    return true;
+  };
 }
 
-function applyEmailOtpRules(
-  field: IResolvedDeclarativeFormField,
-  rules: RegisterOptions,
-  t: TFn
+function applyMultipleSelectRules(
+  field: CompiledField,
+  meta: DeclarativeFieldMeta,
+  rules: RegisterOptions
 ) {
-  if (!(field.type === "email" && field.otp)) {
-    return;
-  }
+  const minRule = findRule(field.validation, "min");
+  const maxRule = findRule(field.validation, "max");
 
+  rules.validate = (value) => {
+    const selections = Array.isArray(value) ? value.length : 0;
+
+    if (meta.isRequired && selections === 0) {
+      const requiredRule = findRule(field.validation, "required");
+      return requiredRule?.message ?? `${field.label} is required`;
+    }
+
+    if (
+      minRule &&
+      minRule.type === "min" &&
+      typeof minRule.value === "number" &&
+      selections < minRule.value
+    ) {
+      return minRule.message;
+    }
+
+    if (
+      maxRule &&
+      maxRule.type === "max" &&
+      typeof maxRule.value === "number" &&
+      selections > maxRule.value
+    ) {
+      return maxRule.message;
+    }
+
+    return true;
+  };
+}
+
+function applyEmailOtpRules(field: CompiledField, rules: RegisterOptions) {
   const otpFieldNames = getOtpFieldNames(field.id);
+
   rules.validate = (value, formValues) => {
     if (value === undefined || value === null || value === "") {
       return true;
@@ -93,266 +248,9 @@ function applyEmailOtpRules(
         : {};
 
     if (!isOtpVerifiedValue(values[otpFieldNames.verified])) {
-      return t("validation.email_otp_required");
+      return "Email verification is required";
     }
 
     return true;
   };
-}
-
-function applyDateRules(
-  field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta,
-  rules: RegisterOptions,
-  t: TFn
-) {
-  if (field.type !== "date") {
-    return;
-  }
-
-  if (meta.minValidator) {
-    rules.min = {
-      value: meta.minValidator.value,
-      message:
-        meta.minValidator.message ||
-        t("validation.date_min", {
-          label: field.label,
-          min: String(meta.minValidator.value),
-        }),
-    };
-  }
-  if (meta.maxValidator) {
-    rules.max = {
-      value: meta.maxValidator.value,
-      message:
-        meta.maxValidator.message ||
-        t("validation.date_max", {
-          label: field.label,
-          max: String(meta.maxValidator.value),
-        }),
-    };
-  }
-}
-
-function applyNumberRules(
-  field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta,
-  rules: RegisterOptions,
-  t: TFn
-) {
-  if (field.type !== "number") {
-    return;
-  }
-
-  if (!meta.hasPatternValidator) {
-    rules.pattern = {
-      value: /^\d+$/,
-      message: t("validation.whole_number", { label: field.label }),
-    };
-  }
-
-  rules.validate = (value) => {
-    if (value === undefined || value === null || value === "") {
-      return true;
-    }
-
-    const numericValue = Number(value);
-
-    if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
-      return t("validation.whole_number", { label: field.label });
-    }
-
-    if (
-      meta.minValidator &&
-      typeof meta.minValidator.value === "number" &&
-      numericValue < meta.minValidator.value
-    ) {
-      return (
-        meta.minValidator.message ||
-        t("validation.number_min", {
-          label: field.label,
-          min: String(meta.minValidator.value),
-        })
-      );
-    }
-
-    if (
-      meta.maxValidator &&
-      typeof meta.maxValidator.value === "number" &&
-      numericValue > meta.maxValidator.value
-    ) {
-      return (
-        meta.maxValidator.message ||
-        t("validation.number_max", {
-          label: field.label,
-          max: String(meta.maxValidator.value),
-        })
-      );
-    }
-
-    return true;
-  };
-}
-
-function applyRatingRules(
-  field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta,
-  rules: RegisterOptions,
-  t: TFn
-) {
-  if (field.type !== "rating") {
-    return;
-  }
-
-  const { min, max } = getRatingRange(meta);
-  rules.validate = (value) => {
-    if (value === undefined || value === null || value === "") {
-      return true;
-    }
-
-    const numericValue = Number(value);
-
-    if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue)) {
-      return t("validation.whole_number", { label: field.label });
-    }
-
-    if (numericValue < min) {
-      return (
-        meta.minValidator?.message ||
-        t("validation.number_min", {
-          label: field.label,
-          min: String(min),
-        })
-      );
-    }
-
-    if (numericValue > max) {
-      return (
-        meta.maxValidator?.message ||
-        t("validation.number_max", {
-          label: field.label,
-          max: String(max),
-        })
-      );
-    }
-
-    return true;
-  };
-}
-
-function applyFileUploadRules(
-  field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta,
-  rules: RegisterOptions,
-  t: TFn
-) {
-  if (field.type !== "file_upload") {
-    return;
-  }
-
-  rules.validate = (value) => {
-    const fileCount = Array.isArray(value) ? value.length : value ? 1 : 0;
-
-    if (meta.isRequired && fileCount === 0) {
-      return t("validation.required", { label: field.label });
-    }
-
-    if (
-      meta.minValidator &&
-      typeof meta.minValidator.value === "number" &&
-      fileCount < meta.minValidator.value
-    ) {
-      return (
-        meta.minValidator.message ||
-        t("validation.file_min", {
-          label: field.label,
-          min: String(meta.minValidator.value),
-        })
-      );
-    }
-
-    if (
-      meta.maxValidator &&
-      typeof meta.maxValidator.value === "number" &&
-      fileCount > meta.maxValidator.value
-    ) {
-      return (
-        meta.maxValidator.message ||
-        t("validation.file_max", {
-          label: field.label,
-          max: String(meta.maxValidator.value),
-        })
-      );
-    }
-
-    return true;
-  };
-}
-
-function applyMultipleSelectRules(
-  field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta,
-  rules: RegisterOptions,
-  t: TFn
-) {
-  if (field.type !== "multiple_select") {
-    return;
-  }
-
-  rules.validate = (value) => {
-    const selections = Array.isArray(value) ? value.length : 0;
-
-    if (meta.isRequired && selections === 0) {
-      return t("validation.required", { label: field.label });
-    }
-
-    if (
-      meta.minValidator &&
-      typeof meta.minValidator.value === "number" &&
-      selections < meta.minValidator.value
-    ) {
-      return (
-        meta.minValidator.message ||
-        t("validation.selection_min", {
-          label: field.label,
-          min: String(meta.minValidator.value),
-        })
-      );
-    }
-
-    if (
-      meta.maxValidator &&
-      typeof meta.maxValidator.value === "number" &&
-      selections > meta.maxValidator.value
-    ) {
-      return (
-        meta.maxValidator.message ||
-        t("validation.selection_max", {
-          label: field.label,
-          max: String(meta.maxValidator.value),
-        })
-      );
-    }
-
-    return true;
-  };
-}
-
-export function buildFieldRules(
-  field: IResolvedDeclarativeFormField,
-  meta: DeclarativeFieldMeta,
-  t: TFn
-): RegisterOptions {
-  const rules: RegisterOptions = {};
-
-  applyRequiredAndPatternRules(field, rules, t);
-  applyTextLengthRules(field, meta, rules, t);
-  applyEmailOtpRules(field, rules, t);
-  applyDateRules(field, meta, rules, t);
-  applyNumberRules(field, meta, rules, t);
-  applyRatingRules(field, meta, rules, t);
-  applyFileUploadRules(field, meta, rules, t);
-  applyMultipleSelectRules(field, meta, rules, t);
-
-  return rules;
 }

@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "framer-motion": "^12.34.3",
+    "handlebars": "^4.7.8",
     "js-yaml": "^4.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",

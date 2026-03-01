@@ -2,19 +2,17 @@ import type { Ref } from "react";
 import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
 import { Button } from "../ui";
-import { AccumulatedDataContext } from "./accumulated-data-context";
 import { DeclarativeFormField } from "./field.component";
-import type {
-  IResolvedDeclarativeFormField,
-  IResolvedDeclarativeFormSection,
-} from "./localized-content";
+import type { CompiledField, CompiledSection, FormAction } from "./runtime/types";
 import { useI18n } from "@/i18n";
 
 export function DeclarativeFormSection(props: {
   ref?: Ref<HTMLFormElement>;
-  data: FieldValues;
-  section: IResolvedDeclarativeFormSection;
-  onSubmit: (data: FieldValues) => void | Promise<void>;
+  section: CompiledSection;
+  data: Record<string, unknown>;
+  sectionHistory: string[];
+  dispatch: (action: FormAction) => void;
+  onSubmit: (sectionData: FieldValues) => void;
 }) {
   const { t } = useI18n();
   const form = useForm({
@@ -37,34 +35,37 @@ export function DeclarativeFormSection(props: {
 
   return (
     <FormProvider {...form}>
-      <AccumulatedDataContext.Provider value={props.data}>
-        <form
-          ref={props.ref}
-          tabIndex={-1}
-          aria-label={props.section.title || undefined}
-          onSubmit={handleSubmit}
-          className="outline-none"
-        >
-          <div className="space-y-6">
-            {props.section.fields.map((field: IResolvedDeclarativeFormField) => (
-              <DeclarativeFormField key={field.id} field={field} form={form} />
-            ))}
-          </div>
+      <form
+        ref={props.ref}
+        tabIndex={-1}
+        aria-label={props.section.title || undefined}
+        onSubmit={handleSubmit}
+        className="outline-none"
+      >
+        <div className="space-y-6">
+          {props.section.fields.map((field: CompiledField) => (
+            <DeclarativeFormField key={field.id} field={field} form={form} />
+          ))}
+        </div>
 
-          <div className="mt-8 flex justify-between items-center">
+        <div className="mt-8 flex justify-between items-center">
+          {props.sectionHistory.length > 0 ? (
             <Button
               type="button"
               variant="outline"
               disabled={form.formState.isSubmitting}
+              onClick={() => props.dispatch({ type: "go_back" })}
             >
               {t("section.back")}
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {t("section.next")}
-            </Button>
-          </div>
-        </form>
-      </AccumulatedDataContext.Provider>
+          ) : (
+            <div />
+          )}
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {t("section.next")}
+          </Button>
+        </div>
+      </form>
     </FormProvider>
   );
 }

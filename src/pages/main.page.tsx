@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import mixpanel from "mixpanel-browser";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { FieldValues } from "react-hook-form";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BasePage } from "./base.page";
 import {
@@ -9,7 +10,8 @@ import {
   HeroSection,
   type IDeclarativeForm,
 } from "@/components";
-import { resolveLocalizedText } from "@/components/declarative-form/localized-content";
+import { resolveLocalizedText } from "@/components/declarative-form/runtime/localize";
+import type { FormEffect } from "@/components/declarative-form/runtime/types";
 import { useI18n } from "@/i18n";
 import { getBackendUrl } from "@/lib/api";
 
@@ -21,7 +23,8 @@ const RESERVED_QUERY_KEYS = new Set([
 ]);
 
 export function MainPage() {
-  const { locale, t } = useI18n();
+  const navigate = useNavigate();
+  const { locale, t, withLang } = useI18n();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -29,6 +32,12 @@ export function MainPage() {
   const submissionId = searchParams.get("submission_id");
   const stepParam = searchParams.get("step");
   const langParam = searchParams.get("lang");
+
+  const submissionIdRef = useRef(submissionId);
+
+  useEffect(() => {
+    submissionIdRef.current = submissionId;
+  }, [submissionId]);
 
   const { data: form, error } = useQuery({
     queryKey: [
@@ -114,6 +123,98 @@ export function MainPage() {
     setSearchParams(nextParams, { replace: true });
   }, [form?.locale, langParam, searchParams, setSearchParams]);
 
+  useEffect(() => {
+    if (form?.mixpanel) {
+      mixpanel.init(form.mixpanel, {
+        api_host: "https://api-eu.mixpanel.com",
+      });
+
+      mixpanel.track("page_view", {
+        form_id: form.id,
+      });
+    }
+  }, [form?.mixpanel, form?.id]);
+
+  const submitToBackend = useCallback(
+    async (formData: Record<string, unknown>, isPartial: boolean) => {
+      if (!form) return;
+
+      const url = new URL(
+        getBackendUrl(`forms/${form.id || ""}/submissions`)
+      );
+
+      if (isPartial) {
+        url.searchParams.set("partial", "true");
+      }
+
+      const currentSubmissionId = submissionIdRef.current;
+      if (currentSubmissionId) {
+        url.searchParams.set("id", currentSubmissionId);
+      }
+
+      const response = await fetch(url.toString(), {
+        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      const result = await response.json();
+      return result?.id as string | undefined;
+    },
+    [form]
+  );
+
+  const handleEffect = useCallback(
+    async (effect: FormEffect, state: { data: Record<string, unknown> }) => {
+      if (form?.mixpanel) {
+        mixpanel.track("section_completed", {
+          form_id: form.id,
+        });
+      }
+
+      switch (effect.type) {
+        case "submit": {
+          const id = await submitToBackend(state.data, effect.isPartial);
+          updateProgressQuery({
+            submissionId: id ?? submissionIdRef.current,
+            step: "in_progress",
+          });
+          break;
+        }
+
+        case "complete": {
+          const id = await submitToBackend(state.data, false);
+          const finalSubmissionId = id ?? submissionIdRef.current;
+          updateProgressQuery({
+            submissionId: finalSubmissionId,
+            step: "done",
+          });
+          navigate(
+            withLang(
+              finalSubmissionId
+                ? `thank-you?submission_id=${finalSubmissionId}`
+                : "thank-you"
+            )
+          );
+          break;
+        }
+
+        case "redirect": {
+          const id = await submitToBackend(state.data, false);
+          updateProgressQuery({
+            submissionId: id ?? submissionIdRef.current,
+            step: "done",
+          });
+          window.location.href = effect.url;
+          break;
+        }
+      }
+    },
+    [form, submitToBackend, updateProgressQuery, navigate, withLang]
+  );
+
   if (error) {
     return (
       <HeroSection
@@ -159,41 +260,10 @@ export function MainPage() {
     <BasePage title={resolvedTitle} description={resolvedDescription}>
       <DeclarativeForm
         form={form}
+        locale={locale}
         initialData={data}
         initialSectionId={initialSectionId}
-        submissionId={submissionId}
-        onProgress={({ step, submissionId: nextSubmissionId }) => {
-          updateProgressQuery({
-            step,
-            submissionId: nextSubmissionId,
-          });
-        }}
-        onSubmit={async (data, isPartial) => {
-          const url = new URL(
-            getBackendUrl(`forms/${form.id || ""}/submissions`)
-          );
-
-          if (isPartial) {
-            url.searchParams.set("partial", "true");
-          }
-
-          if (submissionId) {
-            url.searchParams.set("id", submissionId);
-          }
-
-          const response = await fetch(url.toString(), {
-            body: JSON.stringify(data),
-            headers: {
-              "Content-Type": "application/json",
-            },
-            method: "POST",
-          });
-
-          const result = await response.json();
-          if (result && result.id) {
-            return result.id;
-          }
-        }}
+        onEffect={handleEffect}
       />
     </BasePage>
   );
