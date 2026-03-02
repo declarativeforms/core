@@ -3,12 +3,11 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 
-import { FormField, FormItem, FormLabel, FormMessage } from "../ui";
+import { FormField, FormItem, FormLabel, FormMessage } from "../../ui";
 import { FieldErrorBoundary } from "./field-error-boundary.component";
-import { getFieldMeta } from "./field-contract";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { validationRulesToRegisterOptions } from "./field-validation";
-import type { CompiledField } from "./runtime/types";
+import type { CompiledField } from "../runtime/types";
 
 export function DeclarativeFormField(props: {
   field: CompiledField;
@@ -19,15 +18,14 @@ export function DeclarativeFormField(props: {
   }
 
   const compiledField = props.field;
-  const meta = getFieldMeta(compiledField);
-  const rules = validationRulesToRegisterOptions(compiledField, meta);
+  const rules = validationRulesToRegisterOptions(compiledField);
   const Renderer = declarativeFieldRenderers[compiledField.type];
   const isHiddenField = compiledField.type === "hidden";
 
   const Label = () => (
     <FormLabel className="text-sm/4.5">
       {compiledField.label}
-      {meta.isRequired && (
+      {compiledField.required && (
         <span
           className="font-medium text-red-500"
           aria-hidden="true"
@@ -50,7 +48,6 @@ export function DeclarativeFormField(props: {
               controllerField={field}
               field={compiledField}
               form={props.form}
-              meta={meta}
             />
           </FieldErrorBoundary>
         ) : (
@@ -61,7 +58,6 @@ export function DeclarativeFormField(props: {
                 controllerField={field}
                 field={compiledField}
                 form={props.form}
-                meta={meta}
               />
             </FieldErrorBoundary>
             <FormMessage />

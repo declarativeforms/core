@@ -13,9 +13,9 @@ import {
   RatingField,
   SignatureField,
   SingleSelectField,
-} from "./fields";
+} from "../fields";
 import type { DeclarativeFieldComponentProps } from "./field-contract";
-import type { IDeclarativeFormField } from "./types";
+import type { IDeclarativeFormField } from "../types";
 
 export type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 

@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
-import type { DeclarativeFieldComponentProps } from "../field-contract";
-import { getOtpFieldNames, isOtpVerifiedValue } from "../otp-field-names";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { findValidationRule } from "../renderer/field-contract";
+import { getOtpFieldNames, isOtpVerifiedValue } from "../renderer/otp-field-names";
 import { FormControl, Input } from "@/components/ui";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 import { cn } from "@/lib/utils";
 import { sendEmailOtp, verifyEmailOtp } from "./email/api";
 import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email/utils";
@@ -14,7 +15,6 @@ export function EmailField({
   field,
   controllerField,
   form,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
   const otpEnabled = field.type === "email" && field.otp === true;
@@ -237,6 +237,9 @@ export function EmailField({
     }
   };
 
+  const minRule = findValidationRule(field.validation, "min_length");
+  const maxRule = findValidationRule(field.validation, "max_length");
+
   if (!otpEnabled) {
     return (
       <FormControl>
@@ -245,16 +248,16 @@ export function EmailField({
           className="text-sm/4"
           placeholder={field.placeholder || t("email.placeholder_default")}
           type="email"
-          required={meta.isRequired}
-          aria-required={meta.isRequired}
+          required={field.required}
+          aria-required={field.required}
           minLength={
-            typeof meta.minValidator?.value === "number"
-              ? meta.minValidator.value
+            minRule && typeof minRule.value === "number"
+              ? minRule.value
               : undefined
           }
           maxLength={
-            typeof meta.maxValidator?.value === "number"
-              ? meta.maxValidator.value
+            maxRule && typeof maxRule.value === "number"
+              ? maxRule.value
               : undefined
           }
         />
@@ -277,18 +280,18 @@ export function EmailField({
             type="email"
             value={emailValue}
             onChange={(event) => onEmailChange(event.target.value)}
-            required={meta.isRequired}
-            aria-required={meta.isRequired}
+            required={field.required}
+            aria-required={field.required}
             aria-readonly={isVerified}
             readOnly={isVerified}
             minLength={
-              typeof meta.minValidator?.value === "number"
-                ? meta.minValidator.value
+              minRule && typeof minRule.value === "number"
+                ? minRule.value
                 : undefined
             }
             maxLength={
-              typeof meta.maxValidator?.value === "number"
-                ? meta.maxValidator.value
+              maxRule && typeof maxRule.value === "number"
+                ? maxRule.value
                 : undefined
             }
           />

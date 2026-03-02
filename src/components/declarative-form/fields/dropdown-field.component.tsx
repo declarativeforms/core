@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import {
   Button,
   Command,
@@ -19,14 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 import { cn } from "@/lib/utils";
 
 export function DropdownField({
   field,
   controllerField,
   form,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
 
@@ -38,7 +37,6 @@ export function DropdownField({
         field={field}
         controllerField={controllerField}
         form={form}
-        meta={meta}
       />
     );
   }
@@ -49,7 +47,7 @@ export function DropdownField({
       value={controllerField.value}
     >
       <FormControl>
-        <SelectTrigger className="w-full text-sm/4" aria-required={meta.isRequired}>
+        <SelectTrigger className="w-full text-sm/4" aria-required={field.required}>
           <SelectValue
             placeholder={
               field.placeholder || t("dropdown.select_a", { label: field.label })
@@ -71,7 +69,6 @@ export function DropdownField({
 function SearchableDropdown({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
   const [open, setOpen] = useState(false);
@@ -88,7 +85,7 @@ function SearchableDropdown({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            aria-required={meta.isRequired}
+            aria-required={field.required}
             className={cn(
               "w-full justify-between text-sm/4 font-normal",
               !controllerField.value && "text-muted-foreground"

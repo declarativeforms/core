@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui";
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 
 export function HiddenField({
   controllerField,

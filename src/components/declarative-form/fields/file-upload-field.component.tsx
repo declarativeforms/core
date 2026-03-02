@@ -11,9 +11,10 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { findValidationRule } from "../renderer/field-contract";
 import { FormControl } from "@/components/ui";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 import type { TranslationKey } from "@/i18n/messages/en";
 import type { TranslationValues } from "@/i18n/runtime";
 import { uploadFile } from "@/lib/file-upload";
@@ -32,15 +33,16 @@ interface FileMetadata {
 export function FileUploadField({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const minRule = findValidationRule(field.validation, "min");
+  const maxRule = findValidationRule(field.validation, "max");
   const maxFiles =
-    typeof meta.maxValidator?.value === "number" ? meta.maxValidator.value : 1;
+    maxRule && typeof maxRule.value === "number" ? maxRule.value : 1;
 
   const currentUrls: string[] =
     maxFiles === 1
@@ -158,9 +160,7 @@ export function FileUploadField({
   const getFileRequirements = () => {
     const requirements: string[] = [];
     const minFiles =
-      typeof meta.minValidator?.value === "number"
-        ? meta.minValidator.value
-        : 0;
+      minRule && typeof minRule.value === "number" ? minRule.value : 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
       requirements.push(t("file_upload.range_files", { min: String(minFiles), max: String(maxFiles) }));
@@ -184,8 +184,8 @@ export function FileUploadField({
           className="sr-only"
           id={controllerField.name}
           aria-label={field.label}
-          required={meta.isRequired}
-          aria-required={meta.isRequired}
+          required={field.required}
+          aria-required={field.required}
         />
 
         {canAddMore && (

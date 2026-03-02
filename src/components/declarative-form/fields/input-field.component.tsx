@@ -1,11 +1,11 @@
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { findValidationRule } from "../renderer/field-contract";
 import { FormControl, Input } from "@/components/ui";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 
 export function InputField({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
 
@@ -22,6 +22,10 @@ export function InputField({
       ? "url"
       : "text";
 
+  const hasPattern = field.validation.some((r) => r.type === "pattern");
+  const minRule = findValidationRule(field.validation, field.type === "date" ? "min" : "min_length");
+  const maxRule = findValidationRule(field.validation, field.type === "date" ? "max" : "max_length");
+
   return (
     <FormControl>
       <Input
@@ -31,30 +35,30 @@ export function InputField({
         type={inputType}
         inputMode={field.type === "number" ? "numeric" : undefined}
         pattern={
-          field.type === "number" && !meta.hasPatternValidator
+          field.type === "number" && !hasPattern
             ? "^[0-9]+$"
             : undefined
         }
-        required={meta.isRequired}
-        aria-required={meta.isRequired}
+        required={field.required}
+        aria-required={field.required}
         minLength={
-          field.type !== "date" && typeof meta.minValidator?.value === "number"
-            ? meta.minValidator.value
+          field.type !== "date" && minRule && typeof minRule.value === "number"
+            ? minRule.value
             : undefined
         }
         maxLength={
-          field.type !== "date" && typeof meta.maxValidator?.value === "number"
-            ? meta.maxValidator.value
+          field.type !== "date" && maxRule && typeof maxRule.value === "number"
+            ? maxRule.value
             : undefined
         }
         min={
-          field.type === "date" && typeof meta.minValidator?.value === "string"
-            ? meta.minValidator.value
+          field.type === "date" && minRule
+            ? String(minRule.value)
             : undefined
         }
         max={
-          field.type === "date" && typeof meta.maxValidator?.value === "string"
-            ? meta.maxValidator.value
+          field.type === "date" && maxRule
+            ? String(maxRule.value)
             : undefined
         }
       />

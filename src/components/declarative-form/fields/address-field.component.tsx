@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   getPlacePredictions,
@@ -23,12 +23,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 
 export function AddressField({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
 
@@ -148,8 +147,8 @@ export function AddressField({
           {...controllerField}
           className="text-sm/4"
           placeholder={field.placeholder || t("address.placeholder")}
-          required={meta.isRequired}
-          aria-required={meta.isRequired}
+          required={field.required}
+          aria-required={field.required}
         />
       </FormControl>
     );
@@ -172,8 +171,8 @@ export function AddressField({
               }}
               onBlur={controllerField.onBlur}
               placeholder={field.placeholder || t("address.placeholder")}
-              required={meta.isRequired}
-              aria-required={meta.isRequired}
+              required={field.required}
+              aria-required={field.required}
               role="combobox"
               aria-autocomplete="list"
               aria-expanded={open && suggestions.length > 0}

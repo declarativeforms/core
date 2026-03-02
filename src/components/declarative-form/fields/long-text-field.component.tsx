@@ -1,13 +1,16 @@
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { findValidationRule } from "../renderer/field-contract";
 import { FormControl, Textarea } from "@/components/ui";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 
 export function LongTextField({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
+
+  const minRule = findValidationRule(field.validation, "min_length");
+  const maxRule = findValidationRule(field.validation, "max_length");
 
   return (
     <FormControl>
@@ -15,16 +18,16 @@ export function LongTextField({
         {...controllerField}
         className="h-32 md:h-50 text-sm/4"
         placeholder={field.placeholder || t("long_text.placeholder")}
-        required={meta.isRequired}
-        aria-required={meta.isRequired}
+        required={field.required}
+        aria-required={field.required}
         minLength={
-          typeof meta.minValidator?.value === "number"
-            ? meta.minValidator.value
+          minRule && typeof minRule.value === "number"
+            ? minRule.value
             : undefined
         }
         maxLength={
-          typeof meta.maxValidator?.value === "number"
-            ? meta.maxValidator.value
+          maxRule && typeof maxRule.value === "number"
+            ? maxRule.value
             : undefined
         }
       />

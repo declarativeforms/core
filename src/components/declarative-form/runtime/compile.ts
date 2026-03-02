@@ -47,6 +47,7 @@ function compileField(
     id: field.id,
     label,
     placeholder,
+    required: validation.some((r) => r.type === "required"),
     visible,
     visible_when: field.visible_when,
     validation,

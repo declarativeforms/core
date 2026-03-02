@@ -1,6 +1,7 @@
 import { useWatch } from "react-hook-form";
 
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { findValidationRule } from "../renderer/field-contract";
 import {
   Checkbox,
   FormControl,
@@ -8,21 +9,20 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui";
-import { useFormI18n } from "../use-form-i18n";
+import { useFormI18n } from "../renderer/use-form-i18n";
 import { cn } from "@/lib/utils";
 
 export function MultipleSelectField({
   field,
   form,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
+  const minRule = findValidationRule(field.validation, "min");
+  const maxRule = findValidationRule(field.validation, "max");
   const minSelections =
-    typeof meta.minValidator?.value === "number" ? meta.minValidator.value : 0;
+    minRule && typeof minRule.value === "number" ? minRule.value : 0;
   const maxSelections =
-    typeof meta.maxValidator?.value === "number"
-      ? meta.maxValidator.value
-      : undefined;
+    maxRule && typeof maxRule.value === "number" ? maxRule.value : undefined;
 
   // Watch the current value to show selection count
   const currentValue = useWatch({
@@ -62,7 +62,7 @@ export function MultipleSelectField({
       className="flex flex-col space-y-2"
       role="group"
       aria-label={field.label}
-      aria-required={meta.isRequired}
+      aria-required={field.required}
       aria-describedby={helperText ? helperTextId : undefined}
     >
       {helperText && <p id={helperTextId} className="text-sm text-muted-foreground">{helperText}</p>}

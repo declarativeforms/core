@@ -21,6 +21,7 @@ type CompiledFieldBase = {
   id: string;
   label: string;
   placeholder?: string;
+  required: boolean;
   visible: boolean;
   visible_when?: string;
   validation: ValidationRule[];

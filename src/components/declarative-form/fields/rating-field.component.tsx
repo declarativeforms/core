@@ -1,5 +1,5 @@
-import type { DeclarativeFieldComponentProps } from "../field-contract";
-import { getRatingRange } from "../rating-range";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { getRatingRange } from "./rating-range";
 import {
   FormControl,
   FormItem,
@@ -12,9 +12,8 @@ import { cn } from "@/lib/utils";
 export function RatingField({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
-  const { min, max } = getRatingRange(meta);
+  const { min, max } = getRatingRange(field.validation);
   const values = Array.from({ length: max - min + 1 }, (_, index) =>
     String(min + index)
   );
@@ -39,7 +38,7 @@ export function RatingField({
             gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))`,
           }}
           aria-label={field.label}
-          aria-required={meta.isRequired}
+          aria-required={field.required}
           aria-describedby={hasLabels ? labelsId : undefined}
         >
           {values.map((value) => {

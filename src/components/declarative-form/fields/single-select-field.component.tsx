@@ -1,4 +1,4 @@
-import type { DeclarativeFieldComponentProps } from "../field-contract";
+import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import {
   FormControl,
   FormItem,
@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 export function SingleSelectField({
   field,
   controllerField,
-  meta,
 }: DeclarativeFieldComponentProps) {
   const options = "options" in field ? field.options : undefined;
 
@@ -21,7 +20,7 @@ export function SingleSelectField({
         onValueChange={controllerField.onChange}
         value={controllerField.value}
         className="gap-2"
-        aria-required={meta.isRequired}
+        aria-required={field.required}
       >
         {options?.map((option) => {
           const isSelected = controllerField.value === option.value;

@@ -1,9 +1,9 @@
 import type { Ref } from "react";
 import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
-import { Button } from "../ui";
+import { Button } from "../../ui";
 import { DeclarativeFormField } from "./field.component";
-import type { CompiledField, CompiledSection, FormAction } from "./runtime/types";
+import type { CompiledField, CompiledSection, FormAction } from "../runtime/types";
 import { useI18n } from "@/i18n";
 
 export function DeclarativeFormSection(props: {
