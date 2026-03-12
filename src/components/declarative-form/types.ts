@@ -143,7 +143,7 @@ export type IDeclarativeForm = {
   start_date?: string;
   end_date?: string;
   locale?: string;
-  mixpanel?: string;
+  measurements?: { mixpanel?: string };
 };
 
 export type ISubmission = {

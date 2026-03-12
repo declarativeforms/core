@@ -1,11 +1,16 @@
 import type { RegisterOptions } from "react-hook-form";
 
 import { findValidationRule } from "./field-contract";
-import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
+import { fieldValidationExtensions } from "./field-validators";
 import type { CompiledField } from "../runtime/types";
+
+export type ValidationMessages = {
+  emailOtpRequired?: string;
+};
 
 export function validationRulesToRegisterOptions(
   field: CompiledField,
+  messages?: ValidationMessages,
 ): RegisterOptions {
   const rules: RegisterOptions = {};
 
@@ -46,8 +51,8 @@ export function validationRulesToRegisterOptions(
         if (value === undefined || value === null || value === "") return true;
 
         const num = Number(value);
-        if (!Number.isFinite(num) || !Number.isInteger(num)) {
-          return patternRule?.message ?? `${field.label} must be a whole number`;
+        if (patternRule && (!Number.isFinite(num) || !Number.isInteger(num))) {
+          return patternRule.message;
         }
         if (minRule && typeof minRule.value === "number" && num < minRule.value) {
           return minRule.message;
@@ -68,9 +73,6 @@ export function validationRulesToRegisterOptions(
         if (value === undefined || value === null || value === "") return true;
 
         const num = Number(value);
-        if (!Number.isFinite(num) || !Number.isInteger(num)) {
-          return `${field.label} must be a whole number`;
-        }
         if (minRule && num < Number(minRule.value)) return minRule.message;
         if (maxRule && num > Number(maxRule.value)) return maxRule.message;
         return true;
@@ -86,8 +88,8 @@ export function validationRulesToRegisterOptions(
       rules.validate = (value) => {
         const count = Array.isArray(value) ? value.length : value ? 1 : 0;
 
-        if (field.required && count === 0) {
-          return requiredRule?.message ?? `${field.label} is required`;
+        if (field.required && count === 0 && requiredRule) {
+          return requiredRule.message;
         }
         if (minRule && typeof minRule.value === "number" && count < minRule.value) {
           return minRule.message;
@@ -108,8 +110,8 @@ export function validationRulesToRegisterOptions(
       rules.validate = (value) => {
         const count = Array.isArray(value) ? value.length : 0;
 
-        if (field.required && count === 0) {
-          return requiredRule?.message ?? `${field.label} is required`;
+        if (field.required && count === 0 && requiredRule) {
+          return requiredRule.message;
         }
         if (minRule && typeof minRule.value === "number" && count < minRule.value) {
           return minRule.message;
@@ -122,23 +124,13 @@ export function validationRulesToRegisterOptions(
       break;
     }
 
-    case "email": {
-      if (field.otp) {
-        const otpFieldNames = getOtpFieldNames(field.id);
-        rules.validate = (value, formValues) => {
-          if (value === undefined || value === null || value === "") return true;
-          const values =
-            formValues && typeof formValues === "object"
-              ? (formValues as Record<string, unknown>)
-              : {};
-          if (!isOtpVerifiedValue(values[otpFieldNames.verified])) {
-            return "Email verification is required";
-          }
-          return true;
-        };
-      }
-      break;
-    }
+  }
+
+  // Apply field-type-specific validation extensions (e.g. email OTP)
+  const extension = fieldValidationExtensions[field.type];
+  if (extension) {
+    const validate = extension(field, messages);
+    if (validate) rules.validate = validate;
   }
 
   return rules;

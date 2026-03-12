@@ -8,6 +8,7 @@ import { FieldErrorBoundary } from "./field-error-boundary.component";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { validationRulesToRegisterOptions } from "./field-validation";
 import type { CompiledField } from "../runtime/types";
+import { useI18n } from "@/i18n";
 
 export function DeclarativeFormField(props: {
   field: CompiledField;
@@ -17,8 +18,11 @@ export function DeclarativeFormField(props: {
     return null;
   }
 
+  const { t } = useI18n();
   const compiledField = props.field;
-  const rules = validationRulesToRegisterOptions(compiledField);
+  const rules = validationRulesToRegisterOptions(compiledField, {
+    emailOtpRequired: t("validation.email_otp_required"),
+  });
   const Renderer = declarativeFieldRenderers[compiledField.type];
   const isHiddenField = compiledField.type === "hidden";
 

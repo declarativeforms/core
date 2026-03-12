@@ -102,7 +102,7 @@ export type CompiledForm = {
   completion?: CompiledCompletion;
   connections: IDeclarativeForm["connections"];
   locale: string;
-  mixpanel?: string;
+  measurements?: { mixpanel?: string };
   start_date?: string;
   end_date?: string;
 };

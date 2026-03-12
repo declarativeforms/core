@@ -55,5 +55,30 @@ Here's a few adjusments i want you to make. Analyze each of them to make sure yo
 
 
 
+Next, I want you to do the following:
+
+- The input schema is misaligned across the core and api project, review the API project here, /Users/barenderasmus/development/examples/api, and align it with the input schema in this core project.
+- Next, research other form platforms such as Tally.so and Youform and identify what submission controls they have implemented such as response limits, close on quota and time-window based controls. Identify which of them would be applicable to this project and then implement them across the core and the api project. Ask questions to clarify which should be included and excluded. 
+
+
+
+Review this core project and the API project here, /Users/barenderasmus/development/examples/api, and help design an approach for implementing payment methods such as Stripe, Paystack, Payfast, etc. Just design the architecture into a document which can be reviewed
+
+
+Next I want you to refine the project files outside of the runtime directory but inside the declarative-form directory. I want you to structure it under a renderer directory for those parts that are specific to the rendering. I still want the fields to be self contained. The objective of this renderer engine is to contain the core rendering logic with the fields being separate so that if we need to put a new design or implementation of the components, we can just swap them out without needing to change the core renderer. I want you to analyse before making changes and design an elegant solution without overengineering and adding unnessary layers.
+
+
+For the renderer engine, I want you to make the following changes:
+
+- the `otp-field-names.ts` file is very specific to an field and thus should not be in the core rendering engine, please find a btter solution for this.
+- there are messages in the `field-validation.ts` file that are not localize, check the runtime implementation to see if it's required still
+- Review the runtime implementation to see if the renderer engine contains any logic that is unnessary.
+
 
 claude --resume c7716445-683f-431d-af35-ded53c2f9fc6
+
+
+
+
+
+I want you analyse this project in depth and write documentation

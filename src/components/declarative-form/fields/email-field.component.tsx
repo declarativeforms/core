@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import { findValidationRule } from "../renderer/field-contract";
-import { getOtpFieldNames, isOtpVerifiedValue } from "../renderer/otp-field-names";
+import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../renderer/use-form-i18n";
 import { cn } from "@/lib/utils";

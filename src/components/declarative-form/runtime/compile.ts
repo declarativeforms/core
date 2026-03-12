@@ -169,7 +169,7 @@ export function compile(
     completion: localizeCompletion(schema.completion, locale),
     connections: schema.connections,
     locale,
-    mixpanel: schema.mixpanel,
+    measurements: schema.measurements,
     start_date: schema.start_date,
     end_date: schema.end_date,
   };

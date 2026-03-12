@@ -124,8 +124,8 @@ export function MainPage() {
   }, [form?.locale, langParam, searchParams, setSearchParams]);
 
   useEffect(() => {
-    if (form?.mixpanel) {
-      mixpanel.init(form.mixpanel, {
+    if (form?.measurements?.mixpanel) {
+      mixpanel.init(form.measurements.mixpanel, {
         api_host: "https://api-eu.mixpanel.com",
       });
 
@@ -133,7 +133,7 @@ export function MainPage() {
         form_id: form.id,
       });
     }
-  }, [form?.mixpanel, form?.id]);
+  }, [form?.measurements?.mixpanel, form?.id]);
 
   const submitToBackend = useCallback(
     async (formData: Record<string, unknown>, isPartial: boolean) => {
@@ -168,7 +168,7 @@ export function MainPage() {
 
   const handleEffect = useCallback(
     async (effect: FormEffect, state: { data: Record<string, unknown> }) => {
-      if (form?.mixpanel) {
+      if (form?.measurements?.mixpanel) {
         mixpanel.track("section_completed", {
           form_id: form.id,
         });
