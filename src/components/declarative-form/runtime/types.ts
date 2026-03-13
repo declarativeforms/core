@@ -31,6 +31,7 @@ type CompiledFieldBase = {
 export type CompiledEmailField = CompiledFieldBase & {
   type: "email";
   otp?: boolean;
+  block_free_email?: boolean;
 };
 
 export type CompiledDropdownField = CompiledFieldBase & {

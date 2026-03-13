@@ -23,6 +23,7 @@ export function DeclarativeFormField(props: {
   const compiledField = props.field;
   const rules = validationRulesToRegisterOptions(compiledField, {
     emailOtpRequired: t("validation.email_otp_required"),
+    emailFreeEmailBlocked: t("validation.email_free_blocked"),
   });
   const Renderer = declarativeFieldRenderers[compiledField.type];
   const isHiddenField = compiledField.type === "hidden";

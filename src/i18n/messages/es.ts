@@ -82,6 +82,8 @@ export const esMessages: TranslationMessages = {
     "{label} debe tener como máximo {max} caracteres.",
   "validation.email_otp_required":
     "Por favor, verifica tu correo electrónico con OTP.",
+  "validation.email_free_blocked":
+    "Por favor, utiliza un correo electrónico de trabajo.",
   "validation.date_min":
     "{label} debe ser en o después de {min}.",
   "validation.date_max":

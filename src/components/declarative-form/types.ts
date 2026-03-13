@@ -51,6 +51,7 @@ type IDeclarativeFormFieldBase = {
 type IEmailField = IDeclarativeFormFieldBase & {
   type: "email";
   otp?: boolean;
+  block_free_email?: boolean;
 };
 
 type IDropdownField = IDeclarativeFormFieldBase & {

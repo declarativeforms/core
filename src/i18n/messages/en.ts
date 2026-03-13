@@ -80,6 +80,8 @@ const enMessageSource = {
     "{label} must be at most {max} characters.",
   "validation.email_otp_required":
     "Please verify your email address with OTP.",
+  "validation.email_free_blocked":
+    "Please use a work email address.",
   "validation.date_min": "{label} must be on or after {min}.",
   "validation.date_max": "{label} must be on or before {max}.",
   "validation.whole_number": "{label} must be a whole number.",

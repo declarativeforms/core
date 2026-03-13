@@ -6,6 +6,7 @@ import type { CompiledField, ValidationRule } from "../runtime/types";
 
 export type ValidationMessages = {
   emailOtpRequired?: string;
+  emailFreeEmailBlocked?: string;
 };
 
 function buildExpressionValidators(
