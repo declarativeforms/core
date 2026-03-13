@@ -20,18 +20,9 @@ export function ThankYouPage() {
   const langParam = searchParams.get("lang");
 
   const { data: form } = useQuery({
-    queryKey: ["form", params.id, params.owner, params.repository, params.file],
+    queryKey: ["form", params.id],
     queryFn: async () => {
-      const url = params.id
-        ? getBackendUrl(`forms/${params.id}`)
-        : params.owner && params.repository && params.file
-        ? getBackendUrl(`forms/${params.owner}/${params.repository}/${params.file}`)
-        : null;
-
-      if (!url) {
-        return null;
-      }
-
+      const url = getBackendUrl(`forms/${params.id}`);
       const response = await fetch(url);
 
       if (response.status === 403) {
@@ -46,17 +37,14 @@ export function ThankYouPage() {
 
       return (await response.json()) as IDeclarativeForm;
     },
-    enabled: !!(
-      params.id ||
-      (params.owner && params.repository && params.file)
-    ),
+    enabled: !!params.id,
   });
 
   const { data: submission } = useQuery({
     queryKey: ["submission", form?.id, submissionId],
     queryFn: async () => {
       const response = await fetch(
-        getBackendUrl(`forms/${form!.id}/submissions/${submissionId}`)
+        getBackendUrl(`forms/${form!.id}/submissions/${submissionId}`),
       );
       if (!response.ok) return null;
       return response.json() as Promise<SubmissionPayload>;
@@ -86,7 +74,7 @@ export function ThankYouPage() {
       <HeroSection
         title={interpolateTemplate(
           completion.title ?? t("thank_you.default_title"),
-          submissionData
+          submissionData,
         )}
         description={
           completion.message

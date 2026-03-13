@@ -42,7 +42,7 @@ export function BasePage(props: {
         <span>
           {t("base.powered_by")}{" "}
           <a
-            href={withLang("/declarativeforms/examples/advanced")}
+            href="https://docs.declarativeforms.com"
             className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
           >
             Declarative Forms

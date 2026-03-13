@@ -24,9 +24,11 @@ const RESERVED_QUERY_KEYS = new Set([
 
 export function MainPage() {
   const navigate = useNavigate();
+
   const { locale, t, withLang } = useI18n();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isSlugRoute = !!(params.owner && params.repository && params.file);
 
   const connectionId = searchParams.get("connection_id");
   const submissionId = searchParams.get("submission_id");
@@ -52,8 +54,10 @@ export function MainPage() {
       const url = params.id
         ? getBackendUrl(`forms/${params.id}`)
         : params.owner && params.repository && params.file
-        ? getBackendUrl(`forms/${params.owner}/${params.repository}/${params.file}`)
-        : "/default.yaml";
+          ? getBackendUrl(
+              `forms/${params.owner}/${params.repository}/${params.file}`,
+            )
+          : "/default.yaml";
 
       const fetchUrl = new URL(url, window.location.origin);
 
@@ -77,6 +81,13 @@ export function MainPage() {
       return (await response.json()) as IDeclarativeForm;
     },
   });
+
+  useEffect(() => {
+    if (!isSlugRoute || !form?.id) return;
+
+    // Redirect to ID path, preserving all query params
+    navigate(`/${form.id}?${searchParams.toString()}`, { replace: true });
+  }, [isSlugRoute, form?.id, form, connectionId, navigate, searchParams]);
 
   const data = useMemo<FieldValues>(() => {
     const initialData: FieldValues = {};
@@ -110,7 +121,7 @@ export function MainPage() {
 
       setSearchParams(nextParams, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   useEffect(() => {
@@ -139,9 +150,7 @@ export function MainPage() {
     async (formData: Record<string, unknown>, isPartial: boolean) => {
       if (!form) return;
 
-      const url = new URL(
-        getBackendUrl(`forms/${form.id || ""}/submissions`)
-      );
+      const url = new URL(getBackendUrl(`forms/${form.id || ""}/submissions`));
 
       if (isPartial) {
         url.searchParams.set("partial", "true");
@@ -163,7 +172,7 @@ export function MainPage() {
       const result = await response.json();
       return result?.id as string | undefined;
     },
-    [form]
+    [form],
   );
 
   const handleEffect = useCallback(
@@ -195,8 +204,8 @@ export function MainPage() {
             withLang(
               finalSubmissionId
                 ? `thank-you?submission_id=${finalSubmissionId}`
-                : "thank-you"
-            )
+                : "thank-you",
+            ),
           );
           break;
         }
@@ -212,7 +221,7 @@ export function MainPage() {
         }
       }
     },
-    [form, submitToBackend, updateProgressQuery, navigate, withLang]
+    [form, submitToBackend, updateProgressQuery, navigate, withLang],
   );
 
   if (error) {
