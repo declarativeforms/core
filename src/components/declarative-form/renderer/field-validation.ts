@@ -16,7 +16,7 @@ function buildExpressionValidators(
   validation.forEach((rule, i) => {
     if (rule.type !== "expression") return;
 
-    validators[`expr_${i}`] = (value: unknown, formValues: Record<string, unknown>) => {
+    validators[`expr_${i}`] = (_value: unknown, formValues: Record<string, unknown>) => {
       const data = formValues && typeof formValues === "object" ? formValues : {};
       try {
         const fn = new Function("data", `return ${rule.expression}`);

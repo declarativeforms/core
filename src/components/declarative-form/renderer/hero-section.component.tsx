@@ -11,7 +11,7 @@ export function HeroSection(props: {
   buttonLabel?: string;
   buttonHref?: string;
 }) {
-  const { t, withLang } = useI18n();
+  const { t } = useI18n();
 
   useEffect(() => {
     document.title = `${stripHtml(props.title)} — Declarative Forms`;
