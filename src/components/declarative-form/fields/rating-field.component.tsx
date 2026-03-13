@@ -1,4 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { HtmlText } from "../renderer/html-text";
 import { getRatingRange } from "./rating-range";
 import {
   FormControl,
@@ -64,8 +65,8 @@ export function RatingField({
 
         {hasLabels && (
           <div id={labelsId} className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-            <span>{minLabel || ""}</span>
-            <span className="text-right">{maxLabel || ""}</span>
+            <HtmlText html={minLabel || ""} />
+            <HtmlText html={maxLabel || ""} className="text-right" />
           </div>
         )}
       </div>

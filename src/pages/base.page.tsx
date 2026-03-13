@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
+import { HtmlText, stripHtml } from "@/components/declarative-form/renderer/html-text";
 import { useI18n } from "@/i18n";
 
 export function BasePage(props: {
@@ -17,7 +18,7 @@ export function BasePage(props: {
   const { t, withLang } = useI18n();
 
   useEffect(() => {
-    document.title = `${props.title} — Declarative Forms`;
+    document.title = `${stripHtml(props.title)} — Declarative Forms`;
   }, [props.title]);
 
   return (
@@ -25,11 +26,11 @@ export function BasePage(props: {
       <Card className="mb-10 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
         <CardHeader className="px-6 !pb-0 border-b border-gray-200">
           <CardTitle className="text-2xl/7.5 font-semibold">
-            {props.title}
+            <HtmlText html={props.title} />
           </CardTitle>
           {props.description ? (
             <CardDescription className="mb-3 mt-2 text-sm text-gray-500">
-              {props.description}
+              <HtmlText html={props.description} />
             </CardDescription>
           ) : null}
         </CardHeader>

@@ -2,6 +2,7 @@ import { useWatch } from "react-hook-form";
 
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import { findValidationRule } from "../renderer/field-contract";
+import { HtmlText, stripHtml } from "../renderer/html-text";
 import {
   Checkbox,
   FormControl,
@@ -61,7 +62,7 @@ export function MultipleSelectField({
     <div
       className="flex flex-col space-y-2"
       role="group"
-      aria-label={field.label}
+      aria-label={stripHtml(field.label)}
       aria-required={field.required}
       aria-describedby={helperText ? helperTextId : undefined}
     >
@@ -117,7 +118,7 @@ export function MultipleSelectField({
                       }
                     />
                   </FormControl>
-                  <span className="flex-1">{option.label}</span>
+                  <HtmlText html={option.label} className="flex-1" />
                 </FormLabel>
               </FormItem>
             );

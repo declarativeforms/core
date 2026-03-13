@@ -7,6 +7,7 @@ import { FormField, FormItem, FormLabel, FormMessage } from "../../ui";
 import { FieldErrorBoundary } from "./field-error-boundary.component";
 import { declarativeFieldRenderers } from "./field-renderers";
 import { validationRulesToRegisterOptions } from "./field-validation";
+import { HtmlText } from "./html-text";
 import type { CompiledField } from "../runtime/types";
 import { useI18n } from "@/i18n";
 
@@ -28,7 +29,7 @@ export function DeclarativeFormField(props: {
 
   const Label = () => (
     <FormLabel className="text-sm/4.5">
-      {compiledField.label}
+      <HtmlText html={compiledField.label} />
       {compiledField.required && (
         <span
           className="font-medium text-red-500"

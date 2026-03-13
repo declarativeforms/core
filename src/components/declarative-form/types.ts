@@ -33,6 +33,11 @@ export type IDeclarativeFormValidator =
       type: "max_length";
       value: number;
       message?: ILocalizedText;
+    }
+  | {
+      type: "expression";
+      expression: string;
+      message: ILocalizedText;
     };
 
 type IDeclarativeFormFieldBase = {

@@ -1,4 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { HtmlText } from "../renderer/html-text";
 import {
   FormControl,
   FormItem,
@@ -36,7 +37,7 @@ export function SingleSelectField({
                 <FormControl>
                   <RadioGroupItem value={option.value} />
                 </FormControl>
-                <span>{option.label}</span>
+                <HtmlText html={option.label} />
               </FormLabel>
             </FormItem>
           );

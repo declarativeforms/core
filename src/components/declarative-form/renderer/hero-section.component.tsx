@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { Button } from "@/components";
 import { useI18n } from "@/i18n";
+import { HtmlText, stripHtml } from "./html-text";
 
 export function HeroSection(props: {
   title: string;
@@ -13,19 +14,19 @@ export function HeroSection(props: {
   const { t, withLang } = useI18n();
 
   useEffect(() => {
-    document.title = `${props.title} — Declarative Forms`;
+    document.title = `${stripHtml(props.title)} — Declarative Forms`;
   }, [props.title]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
       <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
         <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-          {props.title}
+          <HtmlText html={props.title} />
         </h1>
 
         {props.description ? (
           <p className="text-sm text-gray-500 mb-8">
-            {props.description}
+            <HtmlText html={props.description} />
           </p>
         ) : null}
 
@@ -34,7 +35,7 @@ export function HeroSection(props: {
             href={props.buttonHref}
             className="inline-flex items-center justify-center w-full h-10 px-6 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {props.buttonLabel ?? t("hero.continue")}
+            {props.buttonLabel ? <HtmlText html={props.buttonLabel} /> : t("hero.continue")}
           </a>
         ) : props.onAction ? (
           <Button

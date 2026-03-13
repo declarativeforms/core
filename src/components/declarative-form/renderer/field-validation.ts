@@ -1,18 +1,41 @@
-import type { RegisterOptions } from "react-hook-form";
+import type { RegisterOptions, Validate } from "react-hook-form";
 
 import { findValidationRule } from "./field-contract";
 import { fieldValidationExtensions } from "./field-validators";
-import type { CompiledField } from "../runtime/types";
+import type { CompiledField, ValidationRule } from "../runtime/types";
 
 export type ValidationMessages = {
   emailOtpRequired?: string;
 };
+
+function buildExpressionValidators(
+  validation: ValidationRule[]
+): Record<string, Validate<unknown, Record<string, unknown>>> {
+  const validators: Record<string, Validate<unknown, Record<string, unknown>>> = {};
+
+  validation.forEach((rule, i) => {
+    if (rule.type !== "expression") return;
+
+    validators[`expr_${i}`] = (value: unknown, formValues: Record<string, unknown>) => {
+      const data = formValues && typeof formValues === "object" ? formValues : {};
+      try {
+        const fn = new Function("data", `return ${rule.expression}`);
+        return fn(data) ? true : rule.message;
+      } catch {
+        return rule.message;
+      }
+    };
+  });
+
+  return validators;
+}
 
 export function validationRulesToRegisterOptions(
   field: CompiledField,
   messages?: ValidationMessages,
 ): RegisterOptions {
   const rules: RegisterOptions = {};
+  const validateFns: Record<string, Validate<unknown, Record<string, unknown>>> = {};
 
   // Common rules applicable to all field types
   for (const rule of field.validation) {
@@ -47,7 +70,7 @@ export function validationRulesToRegisterOptions(
       const maxRule = findValidationRule(field.validation, "max");
       const patternRule = findValidationRule(field.validation, "pattern");
 
-      rules.validate = (value) => {
+      validateFns.fieldType = (value) => {
         if (value === undefined || value === null || value === "") return true;
 
         const num = Number(value);
@@ -69,7 +92,7 @@ export function validationRulesToRegisterOptions(
       const minRule = findValidationRule(field.validation, "min");
       const maxRule = findValidationRule(field.validation, "max");
 
-      rules.validate = (value) => {
+      validateFns.fieldType = (value) => {
         if (value === undefined || value === null || value === "") return true;
 
         const num = Number(value);
@@ -85,7 +108,7 @@ export function validationRulesToRegisterOptions(
       const maxRule = findValidationRule(field.validation, "max");
       const requiredRule = findValidationRule(field.validation, "required");
 
-      rules.validate = (value) => {
+      validateFns.fieldType = (value) => {
         const count = Array.isArray(value) ? value.length : value ? 1 : 0;
 
         if (field.required && count === 0 && requiredRule) {
@@ -107,7 +130,7 @@ export function validationRulesToRegisterOptions(
       const maxRule = findValidationRule(field.validation, "max");
       const requiredRule = findValidationRule(field.validation, "required");
 
-      rules.validate = (value) => {
+      validateFns.fieldType = (value) => {
         const count = Array.isArray(value) ? value.length : 0;
 
         if (field.required && count === 0 && requiredRule) {
@@ -130,7 +153,21 @@ export function validationRulesToRegisterOptions(
   const extension = fieldValidationExtensions[field.type];
   if (extension) {
     const validate = extension(field, messages);
-    if (validate) rules.validate = validate;
+    if (validate) {
+      if (typeof validate === "function") {
+        validateFns.extension = validate;
+      } else {
+        Object.assign(validateFns, validate);
+      }
+    }
+  }
+
+  // Expression validators
+  const exprValidators = buildExpressionValidators(field.validation);
+  Object.assign(validateFns, exprValidators);
+
+  if (Object.keys(validateFns).length > 0) {
+    rules.validate = validateFns;
   }
 
   return rules;

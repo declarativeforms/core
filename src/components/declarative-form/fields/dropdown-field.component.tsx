@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import { HtmlText } from "../renderer/html-text";
 import {
   Button,
   Command,
@@ -58,7 +59,7 @@ export function DropdownField({
       <SelectContent>
         {options?.map((option) => (
           <SelectItem key={option.value} value={option.value}>
-            {option.label}
+            <HtmlText html={option.label} />
           </SelectItem>
         ))}
       </SelectContent>
@@ -91,9 +92,9 @@ function SearchableDropdown({
               !controllerField.value && "text-muted-foreground"
             )}
           >
-            {selectedOption?.label ||
-              field.placeholder ||
-              t("dropdown.select_a", { label: field.label })}
+            {selectedOption ? <HtmlText html={selectedOption.label} /> :
+              (field.placeholder ||
+              t("dropdown.select_a", { label: field.label }))}
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -113,7 +114,7 @@ function SearchableDropdown({
                     setOpen(false);
                   }}
                 >
-                  {option.label}
+                  <HtmlText html={option.label} />
                   <Check
                     className={cn(
                       "ml-auto size-4",

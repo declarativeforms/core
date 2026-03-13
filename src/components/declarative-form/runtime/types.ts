@@ -8,7 +8,8 @@ export type ValidationRule =
   | { type: "min_length"; value: number; message: string }
   | { type: "max_length"; value: number; message: string }
   | { type: "min"; value: number | string; message: string }
-  | { type: "max"; value: number | string; message: string };
+  | { type: "max"; value: number | string; message: string }
+  | { type: "expression"; expression: string; message: string };
 
 // --- Compiled Form ---
 

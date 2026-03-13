@@ -83,7 +83,8 @@ export type LocalizedValidator =
   | { type: "min"; value: number | string; message?: string }
   | { type: "max"; value: number | string; message?: string }
   | { type: "min_length"; value: number; message?: string }
-  | { type: "max_length"; value: number; message?: string };
+  | { type: "max_length"; value: number; message?: string }
+  | { type: "expression"; expression: string; message?: string };
 
 export function resolveValidator(
   validator: IDeclarativeFormValidator,

@@ -32,7 +32,8 @@ function validateSectionData(
   schema: IDeclarativeForm,
   locale: string,
   sectionId: string,
-  sectionData: Record<string, unknown>
+  sectionData: Record<string, unknown>,
+  formData: Record<string, unknown>
 ): Record<string, string> {
   const section = schema.sections.find((s) => s.id === sectionId);
   if (!section) return {};
@@ -48,7 +49,7 @@ function validateSectionData(
       locale
     );
     const value = sectionData[field.id];
-    const error = validateFieldValue(field.type, value, rules);
+    const error = validateFieldValue(field.type, value, rules, formData);
     if (error) {
       errors[field.id] = error;
     }
@@ -60,7 +61,8 @@ function validateSectionData(
 function validateFieldValue(
   fieldType: string,
   value: unknown,
-  rules: ValidationRule[]
+  rules: ValidationRule[],
+  data: Record<string, unknown>
 ): string | undefined {
   const isEmpty =
     value === undefined || value === null || value === "";
@@ -143,6 +145,16 @@ function validateFieldValue(
         }
         break;
       }
+
+      case "expression": {
+        try {
+          const fn = new Function("data", `return ${rule.expression}`);
+          if (!fn(data)) return rule.message;
+        } catch {
+          return rule.message;
+        }
+        break;
+      }
     }
   }
 
@@ -178,7 +190,8 @@ export function processAction(
         schema,
         locale,
         state.activeSectionId,
-        action.data
+        action.data,
+        mergedData
       );
 
       if (Object.keys(errors).length > 0) {

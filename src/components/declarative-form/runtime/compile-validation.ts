@@ -113,6 +113,16 @@ export function compileFieldValidation(
             }),
         });
         break;
+
+      case "expression":
+        rules.push({
+          type: "expression",
+          expression: validator.expression,
+          message:
+            validator.message ||
+            translate(loc, "validation.invalid", { label }),
+        });
+        break;
     }
   }
 
