@@ -79,6 +79,11 @@ type IGeolocationField = IDeclarativeFormFieldBase & {
   type: "geolocation";
 };
 
+type ICameraField = IDeclarativeFormFieldBase & {
+  type: "camera";
+  facing_mode?: "front" | "rear";
+};
+
 type IGenericField = IDeclarativeFormFieldBase & {
   type:
     | "date"
@@ -99,6 +104,7 @@ export type IDeclarativeFormField =
   | IAddressField
   | ISelectField
   | IGeolocationField
+  | ICameraField
   | IGenericField;
 
 export type IDeclarativeFormSection = {

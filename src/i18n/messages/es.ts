@@ -115,6 +115,16 @@ export const esMessages: TranslationMessages = {
   "signature.capture_failed": "No se pudo capturar la firma.",
   "signature.upload_failed": "Error al subir",
   "signature.clear": "Borrar",
+  "camera.open_camera": "Abrir cámara",
+  "camera.capture": "Capturar",
+  "camera.retake": "Volver a tomar",
+  "camera.uploading": "Subiendo...",
+  "camera.upload_failed": "Error al subir",
+  "camera.permission_denied":
+    "Se denegó el acceso a la cámara. Habilita los permisos de cámara en la configuración de tu navegador.",
+  "camera.not_found": "No se encontró ninguna cámara en este dispositivo.",
+  "camera.access_failed": "No se pudo acceder a la cámara.",
+  "camera.try_again": "Intentar de nuevo",
   "multiple_select.range":
     "Selecciona {min}-{max} opciones",
   "multiple_select.at_least":

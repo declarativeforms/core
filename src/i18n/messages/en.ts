@@ -110,6 +110,16 @@ const enMessageSource = {
   "signature.capture_failed": "Failed to capture signature.",
   "signature.upload_failed": "Upload failed",
   "signature.clear": "Clear",
+  "camera.open_camera": "Open camera",
+  "camera.capture": "Capture",
+  "camera.retake": "Retake",
+  "camera.uploading": "Uploading...",
+  "camera.upload_failed": "Upload failed",
+  "camera.permission_denied":
+    "Camera access was denied. Please enable camera permissions in your browser settings.",
+  "camera.not_found": "No camera was found on this device.",
+  "camera.access_failed": "Could not access the camera.",
+  "camera.try_again": "Try again",
   "multiple_select.range":
     "Select {min}-{max} options",
   "multiple_select.at_least":

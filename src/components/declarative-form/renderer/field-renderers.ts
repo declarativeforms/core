@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import {
   AddressField,
+  CameraField,
   DropdownField,
   EmailField,
   FileUploadField,
@@ -27,6 +28,7 @@ export const declarativeFieldRenderers: Record<
   address_country: AddressField,
   address_locality: AddressField,
   address_region: AddressField,
+  camera: CameraField,
   date: InputField,
   dropdown: DropdownField,
   email: EmailField,

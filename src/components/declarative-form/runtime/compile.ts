@@ -113,6 +113,15 @@ function compileField(
     case "geolocation":
       return { ...base, type: field.type };
 
+    case "camera":
+      return {
+        ...base,
+        type: field.type,
+        ...(field.facing_mode !== undefined && {
+          facing_mode: field.facing_mode,
+        }),
+      };
+
     default:
       return { ...base, type: field.type };
   }

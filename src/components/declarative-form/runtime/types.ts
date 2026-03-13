@@ -59,6 +59,11 @@ export type CompiledGeolocationField = CompiledFieldBase & {
   type: "geolocation";
 };
 
+export type CompiledCameraField = CompiledFieldBase & {
+  type: "camera";
+  facing_mode?: "front" | "rear";
+};
+
 export type CompiledGenericField = CompiledFieldBase & {
   type:
     | "date"
@@ -79,6 +84,7 @@ export type CompiledField =
   | CompiledAddressField
   | CompiledSelectField
   | CompiledGeolocationField
+  | CompiledCameraField
   | CompiledGenericField;
 
 export type CompiledSection = {
