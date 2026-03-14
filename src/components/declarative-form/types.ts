@@ -85,6 +85,10 @@ type ICameraField = IDeclarativeFormFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
+type ITurnstileField = IDeclarativeFormFieldBase & {
+  type: "turnstile";
+};
+
 type IGenericField = IDeclarativeFormFieldBase & {
   type:
     | "date"
@@ -106,6 +110,7 @@ export type IDeclarativeFormField =
   | ISelectField
   | IGeolocationField
   | ICameraField
+  | ITurnstileField
   | IGenericField;
 
 export type IDeclarativeFormSection = {

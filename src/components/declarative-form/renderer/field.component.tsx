@@ -26,6 +26,9 @@ export function DeclarativeFormField(props: {
     emailFreeEmailBlocked: t("validation.email_free_blocked"),
   });
   const Renderer = declarativeFieldRenderers[compiledField.type];
+  if (!Renderer) {
+    return null;
+  }
   const isHiddenField = compiledField.type === "hidden";
 
   const Label = () => (

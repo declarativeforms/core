@@ -262,5 +262,12 @@ export function compileFieldValidation(
     }
   }
 
+  if (fieldType === "turnstile" && !rules.some((r) => r.type === "required")) {
+    rules.push({
+      type: "required",
+      message: translate(loc, "validation.required", { label }),
+    });
+  }
+
   return rules;
 }

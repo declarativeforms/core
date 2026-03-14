@@ -11,23 +11,27 @@ export function useFormRuntime(
   initialSectionId?: string
 ): {
   state: FormState;
-  dispatch: (action: FormAction) => FormEffect;
+  dispatch: (action: FormAction) => FormEffect & { activeSectionId: string };
 } {
   const [state, setState] = useState<FormState>(() =>
     createFormState(schema, locale, initialData, initialSectionId)
   );
 
   const dispatch = useCallback(
-    (action: FormAction): FormEffect => {
+    (action: FormAction): FormEffect & { activeSectionId: string } => {
       let effect: FormEffect = { type: "none" };
+      let activeSectionId = "";
 
       setState((currentState) => {
         const result = processAction(schema, locale, currentState, action);
         effect = result.effect;
+        activeSectionId = result.state.activeSectionId;
         return result.state;
       });
 
-      return effect;
+      return { ...effect, activeSectionId } as FormEffect & {
+        activeSectionId: string;
+      };
     },
     [schema, locale]
   );

@@ -123,6 +123,9 @@ function compileField(
         }),
       };
 
+    case "turnstile":
+      return { ...base, type: field.type };
+
     default:
       return { ...base, type: field.type };
   }

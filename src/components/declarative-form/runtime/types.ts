@@ -65,6 +65,10 @@ export type CompiledCameraField = CompiledFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
+export type CompiledTurnstileField = CompiledFieldBase & {
+  type: "turnstile";
+};
+
 export type CompiledGenericField = CompiledFieldBase & {
   type:
     | "date"
@@ -86,6 +90,7 @@ export type CompiledField =
   | CompiledSelectField
   | CompiledGeolocationField
   | CompiledCameraField
+  | CompiledTurnstileField
   | CompiledGenericField;
 
 export type CompiledSection = {

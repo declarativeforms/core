@@ -14,6 +14,7 @@ import {
   RatingField,
   SignatureField,
   SingleSelectField,
+  TurnstileField,
 } from "../fields";
 import type { DeclarativeFieldComponentProps } from "./field-contract";
 import type { IDeclarativeFormField } from "../types";
@@ -43,5 +44,6 @@ export const declarativeFieldRenderers: Record<
   short_text: InputField,
   signature: SignatureField,
   single_select: SingleSelectField,
+  turnstile: TurnstileField,
   url: InputField,
 };

@@ -176,7 +176,7 @@ export function MainPage() {
   );
 
   const handleEffect = useCallback(
-    async (effect: FormEffect, state: { data: Record<string, unknown> }) => {
+    async (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => {
       if (form?.measurements?.mixpanel) {
         mixpanel.track("section_completed", {
           form_id: form.id,
@@ -188,7 +188,7 @@ export function MainPage() {
           const id = await submitToBackend(state.data, effect.isPartial);
           updateProgressQuery({
             submissionId: id ?? submissionIdRef.current,
-            step: "in_progress",
+            step: state.activeSectionId,
           });
           break;
         }
