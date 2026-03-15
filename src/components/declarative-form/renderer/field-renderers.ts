@@ -17,12 +17,12 @@ import {
   TurnstileField,
 } from "../fields";
 import type { DeclarativeFieldComponentProps } from "./field-contract";
-import type { IDeclarativeFormField } from "../types";
+import type { DeclarativeFieldType } from "../types";
 
 export type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 
 export const declarativeFieldRenderers: Record<
-  IDeclarativeFormField["type"],
+  DeclarativeFieldType,
   DeclarativeFieldRenderer
 > = {
   address: AddressField,

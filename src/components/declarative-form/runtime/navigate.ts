@@ -9,12 +9,12 @@ export function resolveNextSectionId(
     return section.next;
   }
 
-  for (const rule of section.next) {
+  for (const rule of section.next ?? []) {
     if ("when" in rule) {
-      if (evaluateExpression(rule.when, data)) {
+      if (rule.when && rule.go && evaluateExpression(rule.when, data)) {
         return rule.go;
       }
-    } else if ("else" in rule) {
+    } else if ("else" in rule && rule.else) {
       return rule.else;
     }
   }

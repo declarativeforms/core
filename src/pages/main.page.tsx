@@ -82,6 +82,8 @@ export function MainPage() {
     },
   });
 
+  const formId = form?.id ?? params.id ?? "";
+
   useEffect(() => {
     if (!isSlugRoute || !form?.id) return;
 
@@ -141,16 +143,21 @@ export function MainPage() {
       });
 
       mixpanel.track("page_view", {
-        form_id: form.id,
+        form_id: formId || undefined,
       });
     }
-  }, [form?.measurements?.mixpanel, form?.id]);
+  }, [form?.measurements?.mixpanel, formId]);
 
   const submitToBackend = useCallback(
     async (formData: Record<string, unknown>, isPartial: boolean) => {
       if (!form) return;
 
-      const url = new URL(getBackendUrl(`forms/${form.id || ""}/submissions`));
+      const submitFormId = form.id ?? params.id;
+      if (!submitFormId) {
+        return;
+      }
+
+      const url = new URL(getBackendUrl(`forms/${submitFormId}/submissions`));
 
       if (isPartial) {
         url.searchParams.set("partial", "true");
@@ -172,14 +179,14 @@ export function MainPage() {
       const result = await response.json();
       return result?.id as string | undefined;
     },
-    [form],
+    [form, params.id],
   );
 
   const handleEffect = useCallback(
     async (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => {
       if (form?.measurements?.mixpanel) {
         mixpanel.track("section_completed", {
-          form_id: form.id,
+          form_id: formId || undefined,
         });
       }
 
@@ -221,7 +228,7 @@ export function MainPage() {
         }
       }
     },
-    [form, submitToBackend, updateProgressQuery, navigate, withLang],
+    [form, formId, submitToBackend, updateProgressQuery, navigate, withLang],
   );
 
   if (error) {
@@ -256,11 +263,12 @@ export function MainPage() {
   }
 
   const initialSectionId =
-    stepParam && form.sections.some((section) => section.id === stepParam)
+    stepParam && (form.sections ?? []).some((section) => section.id === stepParam)
       ? stepParam
-      : form.sections[0].id;
+      : form.sections?.[0]?.id;
 
-  const resolvedTitle = resolveLocalizedText(form.title, locale);
+  const resolvedTitle =
+    resolveLocalizedText(form.title, locale) || form.id || params.id || "";
   const resolvedDescription = form.description
     ? resolveLocalizedText(form.description, locale)
     : undefined;

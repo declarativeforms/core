@@ -1,7 +1,12 @@
 import type {
   IDeclarativeForm,
   IDeclarativeFormField,
+  IConnection,
   IDeclarativeFormSection,
+} from "../types";
+import {
+  isDeclarativeConnectionType,
+  isDeclarativeFieldType,
 } from "../types";
 import { compileFieldValidation } from "./compile-validation";
 import { evaluateExpression } from "./evaluate";
@@ -22,14 +27,27 @@ function interpolateString(
   return interpolateTemplate(value, data);
 }
 
+function normalizeConnections(
+  connections: IDeclarativeForm["connections"]
+): IConnection[] {
+  return (connections ?? []).flatMap((connection) =>
+    isDeclarativeConnectionType(connection?.type) ? [connection] : []
+  );
+}
+
 function compileField(
   field: IDeclarativeFormField,
   locale: string,
   data: Record<string, unknown>
-): CompiledField {
-  const localized = localizeField(field, locale);
+): CompiledField | null {
+  if (!isDeclarativeFieldType(field.type)) {
+    return null;
+  }
 
-  const label = interpolateTemplate(localized.label, data);
+  const localized = localizeField(field, locale);
+  const label = interpolateTemplate(localized.label || field.id || "", data);
+  const fieldId = field.id ?? "";
+
   const placeholder = interpolateString(localized.placeholder, data);
 
   const visible = field.visible_when
@@ -44,7 +62,7 @@ function compileField(
   );
 
   const base = {
-    id: field.id,
+    id: fieldId,
     label,
     placeholder,
     required: validation.some((r) => r.type === "required"),
@@ -139,9 +157,12 @@ function compileSection(
   const localized = localizeSection(section, locale);
 
   return {
-    id: section.id,
+    id: section.id ?? "",
     title: interpolateTemplate(localized.title, data),
-    fields: section.fields.map((field) => compileField(field, locale, data)),
+    fields: (section.fields ?? []).flatMap((field) => {
+      const compiled = compileField(field, locale, data);
+      return compiled ? [compiled] : [];
+    }),
   };
 }
 
@@ -151,9 +172,13 @@ export function compile(
   data: Record<string, unknown>,
   activeSectionId: string
 ): CompiledForm {
+  const sections = (schema.sections ?? []).map((section) =>
+    compileSection(section, locale, data)
+  );
+
   return {
     id: schema.id,
-    version: schema.version,
+    version: schema.version ?? 1,
     title: interpolateTemplate(
       localizeSection(
         { id: "", title: schema.title, fields: [], next: "done" },
@@ -176,11 +201,9 @@ export function compile(
         )
       : undefined,
     activeSectionId,
-    sections: schema.sections.map((section) =>
-      compileSection(section, locale, data)
-    ),
+    sections,
     completion: localizeCompletion(schema.completion, locale),
-    connections: schema.connections,
+    connections: normalizeConnections(schema.connections),
     locale,
     measurements: schema.measurements,
     start_date: schema.start_date,

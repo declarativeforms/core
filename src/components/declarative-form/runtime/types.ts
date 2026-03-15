@@ -1,4 +1,7 @@
-import type { IDeclarativeForm } from "../types";
+import type {
+  DeclarativeFieldType,
+  IConnection,
+} from "../types";
 
 // --- Validation Rules (extensible discriminated union) ---
 
@@ -70,7 +73,8 @@ export type CompiledTurnstileField = CompiledFieldBase & {
 };
 
 export type CompiledGenericField = CompiledFieldBase & {
-  type:
+  type: Extract<
+    DeclarativeFieldType,
     | "date"
     | "file_upload"
     | "hidden"
@@ -79,7 +83,8 @@ export type CompiledGenericField = CompiledFieldBase & {
     | "number"
     | "signature"
     | "short_text"
-    | "url";
+    | "url"
+  >;
 };
 
 export type CompiledField =
@@ -113,7 +118,7 @@ export type CompiledForm = {
   activeSectionId: string;
   sections: CompiledSection[];
   completion?: CompiledCompletion;
-  connections: IDeclarativeForm["connections"];
+  connections: IConnection[];
   locale: string;
   measurements?: { mixpanel?: string };
   start_date?: string;

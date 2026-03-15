@@ -40,16 +40,22 @@ export function ThankYouPage() {
     enabled: !!params.id,
   });
 
+  const formId = form?.id ?? params.id;
+
   const { data: submission } = useQuery({
-    queryKey: ["submission", form?.id, submissionId],
+    queryKey: ["submission", formId, submissionId],
     queryFn: async () => {
+      if (!formId) {
+        return null;
+      }
+
       const response = await fetch(
-        getBackendUrl(`forms/${form!.id}/submissions/${submissionId}`),
+        getBackendUrl(`forms/${formId}/submissions/${submissionId}`),
       );
       if (!response.ok) return null;
       return response.json() as Promise<SubmissionPayload>;
     },
-    enabled: !!form?.id && !!submissionId,
+    enabled: !!formId && !!submissionId,
   });
 
   useEffect(() => {

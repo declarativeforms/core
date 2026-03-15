@@ -1,4 +1,5 @@
 import type { IDeclarativeForm } from "../types";
+import { isDeclarativeFieldType } from "../types";
 import { compile } from "./compile";
 import { compileFieldValidation } from "./compile-validation";
 import { localizeField } from "./localize";
@@ -10,13 +11,24 @@ import type {
   ValidationRule,
 } from "./types";
 
+function getInitialSectionId(
+  schema: IDeclarativeForm,
+  initialSectionId?: string
+): string {
+  if (initialSectionId) {
+    return initialSectionId;
+  }
+
+  return schema.sections?.[0]?.id ?? "";
+}
+
 export function createFormState(
   schema: IDeclarativeForm,
   locale: string,
   initialData: Record<string, unknown>,
   initialSectionId?: string
 ): FormState {
-  const activeSectionId = initialSectionId ?? schema.sections[0].id;
+  const activeSectionId = getInitialSectionId(schema, initialSectionId);
   const compiled = compile(schema, locale, initialData, activeSectionId);
 
   return {
@@ -35,12 +47,16 @@ function validateSectionData(
   sectionData: Record<string, unknown>,
   formData: Record<string, unknown>
 ): Record<string, string> {
-  const section = schema.sections.find((s) => s.id === sectionId);
+  const section = (schema.sections ?? []).find((s) => s.id === sectionId);
   if (!section) return {};
 
   const errors: Record<string, string> = {};
 
-  for (const field of section.fields) {
+  for (const field of section.fields ?? []) {
+    if (!isDeclarativeFieldType(field.type)) {
+      continue;
+    }
+
     const localized = localizeField(field, locale);
     const rules = compileFieldValidation(
       field.type,
@@ -48,10 +64,11 @@ function validateSectionData(
       localized.label,
       locale
     );
-    const value = sectionData[field.id];
+    const fieldId = field.id ?? "";
+    const value = sectionData[fieldId];
     const error = validateFieldValue(field.type, value, rules, formData);
     if (error) {
-      errors[field.id] = error;
+      errors[fieldId] = error;
     }
   }
 
@@ -201,7 +218,7 @@ export function processAction(
         };
       }
 
-      const section = schema.sections.find(
+      const section = (schema.sections ?? []).find(
         (s) => s.id === state.activeSectionId
       );
       if (!section) {

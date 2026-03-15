@@ -71,9 +71,10 @@ export function resolveLocalizedOption(
   }
 
   const label = resolveLocalizedText(option.label, locale);
+  const value = option.value ?? label;
   return {
-    label: label || option.value,
-    value: option.value,
+    label: label || value || "",
+    value: value || "",
   };
 }
 
@@ -89,16 +90,77 @@ export type LocalizedValidator =
 export function resolveValidator(
   validator: IDeclarativeFormValidator,
   locale: string
-): LocalizedValidator {
+): LocalizedValidator | null {
   if (validator === "required") {
     return validator;
   }
 
+  if (!validator.type) {
+    return null;
+  }
+
   const localizedMessage = resolveLocalizedText(validator.message, locale);
-  return {
-    ...validator,
-    message: localizedMessage || undefined,
-  };
+  switch (validator.type) {
+    case "pattern":
+      if (!validator.regex) {
+        return null;
+      }
+      return {
+        type: "pattern",
+        regex: validator.regex,
+        message: localizedMessage || undefined,
+      };
+
+    case "min":
+      if (validator.value === undefined) {
+        return null;
+      }
+      return {
+        type: "min",
+        value: validator.value,
+        message: localizedMessage || undefined,
+      };
+
+    case "max":
+      if (validator.value === undefined) {
+        return null;
+      }
+      return {
+        type: "max",
+        value: validator.value,
+        message: localizedMessage || undefined,
+      };
+
+    case "min_length":
+      if (typeof validator.value !== "number") {
+        return null;
+      }
+      return {
+        type: "min_length",
+        value: validator.value,
+        message: localizedMessage || undefined,
+      };
+
+    case "max_length":
+      if (typeof validator.value !== "number") {
+        return null;
+      }
+      return {
+        type: "max_length",
+        value: validator.value,
+        message: localizedMessage || undefined,
+      };
+
+    case "expression":
+      if (!validator.expression) {
+        return null;
+      }
+      return {
+        type: "expression",
+        expression: validator.expression,
+        message: localizedMessage || undefined,
+      };
+  }
 }
 
 export function localizeField(
@@ -113,7 +175,7 @@ export function localizeField(
   validators: LocalizedValidator[];
 } {
   return {
-    label: resolveLocalizedText(field.label, locale) || field.id,
+    label: resolveLocalizedText(field.label, locale) || field.id || "",
     placeholder: field.placeholder
       ? resolveLocalizedText(field.placeholder, locale)
       : undefined,
@@ -130,7 +192,10 @@ export function localizeField(
     ...("max_label" in field && field.max_label
       ? { max_label: resolveLocalizedText(field.max_label, locale) }
       : {}),
-    validators: (field.validators ?? []).map((v) => resolveValidator(v, locale)),
+    validators: (field.validators ?? []).flatMap((validator) => {
+      const resolved = resolveValidator(validator, locale);
+      return resolved ? [resolved] : [];
+    }),
   };
 }
 
@@ -160,8 +225,8 @@ export function localizeCompletion(
       : undefined,
     button: completion.button
       ? {
-          label: resolveLocalizedText(completion.button.label, locale),
-          url: resolveLocalizedText(completion.button.url, locale),
+        label: resolveLocalizedText(completion.button.label, locale),
+        url: resolveLocalizedText(completion.button.url, locale),
         }
       : undefined,
   };
