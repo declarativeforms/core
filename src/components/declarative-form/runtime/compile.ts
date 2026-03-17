@@ -10,7 +10,12 @@ import {
 } from "../types";
 import { compileFieldValidation } from "./compile-validation";
 import { evaluateExpression } from "./evaluate";
-import { localizeCompletion, localizeField, localizeSection } from "./localize";
+import {
+  localizeCompletion,
+  localizeField,
+  localizeSection,
+  resolveLocalizedText,
+} from "./localize";
 import { interpolateTemplate } from "./template";
 import type {
   CompiledField,
@@ -18,14 +23,6 @@ import type {
   CompiledOption,
   CompiledSection,
 } from "./types";
-
-function interpolateString(
-  value: string | undefined,
-  data: Record<string, unknown>
-): string | undefined {
-  if (!value) return undefined;
-  return interpolateTemplate(value, data);
-}
 
 function normalizeConnections(
   connections: IDeclarativeForm["connections"]
@@ -48,7 +45,9 @@ function compileField(
   const label = interpolateTemplate(localized.label || field.id || "", data);
   const fieldId = field.id ?? "";
 
-  const placeholder = interpolateString(localized.placeholder, data);
+  const placeholder = localized.placeholder
+    ? interpolateTemplate(localized.placeholder, data)
+    : undefined;
 
   const visible = field.visible_when
     ? evaluateExpression(field.visible_when, data)
@@ -180,25 +179,11 @@ export function compile(
     id: schema.id,
     version: schema.version ?? 1,
     title: interpolateTemplate(
-      localizeSection(
-        { id: "", title: schema.title, fields: [], next: "done" },
-        locale
-      ).title,
+      resolveLocalizedText(schema.title, locale),
       data
     ),
     description: schema.description
-      ? interpolateString(
-          localizeSection(
-            {
-              id: "",
-              title: schema.description,
-              fields: [],
-              next: "done",
-            },
-            locale
-          ).title,
-          data
-        )
+      ? interpolateTemplate(resolveLocalizedText(schema.description, locale), data)
       : undefined,
     activeSectionId,
     sections,

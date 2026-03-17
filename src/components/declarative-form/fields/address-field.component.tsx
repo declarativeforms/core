@@ -24,6 +24,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useFormI18n } from "../renderer/use-form-i18n";
+import type { CompiledField } from "../runtime/types";
+
+declare global {
+  interface Window {
+    google?: { maps?: { places?: unknown } };
+  }
+}
+
+const ADDRESS_AUTOCOMPLETE_TYPES: Partial<Record<CompiledField["type"], string>> = {
+  address_locality: "locality",
+  address_region: "region",
+  address_country: "country",
+};
 
 export function AddressField({
   field,
@@ -31,21 +44,7 @@ export function AddressField({
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
 
-  // Extract autocomplete type from field type
-  const autocompleteType = (() => {
-    switch (field.type) {
-      case "address_locality":
-        return "locality";
-      case "address_region":
-        return "region";
-      case "address_country":
-        return "country";
-      case "address":
-      default:
-        return "address";
-    }
-  })();
-
+  const autocompleteType = ADDRESS_AUTOCOMPLETE_TYPES[field.type] ?? "address";
   const outputFormat =
     "outputFormat" in field ? (field.outputFormat || "string") : "string";
   // State management
@@ -63,7 +62,7 @@ export function AddressField({
     const checkApiLoaded = () => {
       if (
         typeof window !== "undefined" &&
-        (window as any).google?.maps?.places
+        window.google?.maps?.places
       ) {
         setIsApiLoaded(true);
         return true;

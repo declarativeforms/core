@@ -15,11 +15,12 @@ export function DeclarativeFormField(props: {
   field: CompiledField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
+  const { t } = useI18n();
+
   if (!props.field.visible) {
     return null;
   }
 
-  const { t } = useI18n();
   const compiledField = props.field;
   const rules = validationRulesToRegisterOptions(compiledField, {
     emailOtpRequired: t("validation.email_otp_required"),
@@ -30,20 +31,6 @@ export function DeclarativeFormField(props: {
     return null;
   }
   const isHiddenField = compiledField.type === "hidden";
-
-  const Label = () => (
-    <FormLabel className="text-sm/4.5">
-      <HtmlText html={compiledField.label} />
-      {compiledField.required && (
-        <span
-          className="font-medium text-red-500"
-          aria-hidden="true"
-        >
-          *
-        </span>
-      )}
-    </FormLabel>
-  );
 
   return (
     <FormField
@@ -61,7 +48,17 @@ export function DeclarativeFormField(props: {
           </FieldErrorBoundary>
         ) : (
           <FormItem>
-            {Label()}
+            <FormLabel className="text-sm/4.5">
+              <HtmlText html={compiledField.label} />
+              {compiledField.required && (
+                <span
+                  className="font-medium text-red-500"
+                  aria-hidden="true"
+                >
+                  *
+                </span>
+              )}
+            </FormLabel>
             <FieldErrorBoundary fieldId={compiledField.id}>
               <Renderer
                 controllerField={field}

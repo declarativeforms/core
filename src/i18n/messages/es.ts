@@ -134,4 +134,5 @@ export const esMessages: TranslationMessages = {
   "multiple_select.up_to":
     "Selecciona hasta {max} opciones",
   "multiple_select.selected_count": "{count} seleccionados",
+  "turnstile.loading": "Cargando verificación…",
 };

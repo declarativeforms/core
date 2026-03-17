@@ -13,7 +13,3 @@ export function HtmlText<T extends ElementType = "span">({
   const Tag = as || "span";
   return <Tag dangerouslySetInnerHTML={{ __html: html }} {...rest} />;
 }
-
-export function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "");
-}

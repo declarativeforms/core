@@ -6,7 +6,14 @@ import { DeclarativeFormField } from "./field.component";
 import type { CompiledField, CompiledSection, FormAction } from "../runtime/types";
 import { useI18n } from "@/i18n";
 
-export function DeclarativeFormSection(props: {
+export function DeclarativeFormSection({
+  ref,
+  section,
+  data,
+  sectionHistory,
+  dispatch,
+  onSubmit,
+}: {
   ref?: Ref<HTMLFormElement>;
   section: CompiledSection;
   data: Record<string, unknown>;
@@ -16,15 +23,15 @@ export function DeclarativeFormSection(props: {
 }) {
   const { t } = useI18n();
   const form = useForm({
-    defaultValues: props.section.fields.reduce((acc, field) => {
-      acc[field.id] = props.data[field.id] || "";
+    defaultValues: section.fields.reduce((acc, field) => {
+      acc[field.id] = data[field.id] || "";
 
       return acc;
     }, {} as FieldValues),
   });
 
   const handleSubmit = form.handleSubmit(
-    (data: FieldValues) => props.onSubmit(data),
+    (formData: FieldValues) => onSubmit(formData),
     (errors) => {
       const firstErrorField = Object.keys(errors)[0];
       if (firstErrorField) {
@@ -36,25 +43,25 @@ export function DeclarativeFormSection(props: {
   return (
     <FormProvider {...form}>
       <form
-        ref={props.ref}
+        ref={ref}
         tabIndex={-1}
-        aria-label={props.section.title || undefined}
+        aria-label={section.title || undefined}
         onSubmit={handleSubmit}
         className="outline-none"
       >
         <div className="space-y-6">
-          {props.section.fields.map((field: CompiledField) => (
+          {section.fields.map((field: CompiledField) => (
             <DeclarativeFormField key={field.id} field={field} form={form} />
           ))}
         </div>
 
         <div className="mt-8 flex justify-between items-center">
-          {props.sectionHistory.length > 0 ? (
+          {sectionHistory.length > 0 ? (
             <Button
               type="button"
               variant="outline"
               disabled={form.formState.isSubmitting}
-              onClick={() => props.dispatch({ type: "go_back" })}
+              onClick={() => dispatch({ type: "go_back" })}
             >
               {t("section.back")}
             </Button>

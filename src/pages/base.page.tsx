@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
-import { HtmlText, stripHtml } from "@/components/declarative-form/renderer/html-text";
+import { HtmlText } from "@/components/declarative-form/renderer/html-text";
+import { stripHtml } from "@/components/declarative-form/renderer/strip-html";
 import { useI18n } from "@/i18n";
 
 export function BasePage(props: {

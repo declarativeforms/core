@@ -1,5 +1,6 @@
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
 import { translate } from "@/i18n/runtime";
+import type { TranslationKey } from "@/i18n/messages/en";
 
 import type { LocalizedValidator } from "./localize";
 import type { CompiledField, ValidationRule } from "./types";
@@ -57,6 +58,44 @@ function getRatingRange(validators: LocalizedValidator[]): {
       : 5;
 
   return { min, max };
+}
+
+/**
+ * Builds min/max ValidationRule entries for field types that count numeric values
+ * (number inputs, file uploads, multi-select selections). Only numeric validator
+ * values are accepted; string values are ignored for these field types.
+ */
+function buildNumericMinMaxRules(
+  validators: LocalizedValidator[],
+  label: string,
+  loc: Locale,
+  minKey: TranslationKey,
+  maxKey: TranslationKey,
+): ValidationRule[] {
+  const minVal = getMinValidator(validators);
+  const maxVal = getMaxValidator(validators);
+  const rules: ValidationRule[] = [];
+
+  if (minVal && typeof minVal.value === "number") {
+    rules.push({
+      type: "min",
+      value: minVal.value,
+      message:
+        minVal.message ||
+        translate(loc, minKey, { label, min: minVal.value }),
+    });
+  }
+  if (maxVal && typeof maxVal.value === "number") {
+    rules.push({
+      type: "max",
+      value: maxVal.value,
+      message:
+        maxVal.message ||
+        translate(loc, maxKey, { label, max: maxVal.value }),
+    });
+  }
+
+  return rules;
 }
 
 export function compileFieldValidation(
@@ -164,30 +203,15 @@ export function compileFieldValidation(
         message: translate(loc, "validation.whole_number", { label }),
       });
     }
-    if (minVal && typeof minVal.value === "number") {
-      rules.push({
-        type: "min",
-        value: minVal.value,
-        message:
-          minVal.message ||
-          translate(loc, "validation.number_min", {
-            label,
-            min: minVal.value,
-          }),
-      });
-    }
-    if (maxVal && typeof maxVal.value === "number") {
-      rules.push({
-        type: "max",
-        value: maxVal.value,
-        message:
-          maxVal.message ||
-          translate(loc, "validation.number_max", {
-            label,
-            max: maxVal.value,
-          }),
-      });
-    }
+    rules.push(
+      ...buildNumericMinMaxRules(
+        validators,
+        label,
+        loc,
+        "validation.number_min",
+        "validation.number_max",
+      )
+    );
   }
 
   if (fieldType === "rating") {
@@ -209,57 +233,27 @@ export function compileFieldValidation(
   }
 
   if (fieldType === "file_upload") {
-    if (minVal && typeof minVal.value === "number") {
-      rules.push({
-        type: "min",
-        value: minVal.value,
-        message:
-          minVal.message ||
-          translate(loc, "validation.file_min", {
-            label,
-            min: minVal.value,
-          }),
-      });
-    }
-    if (maxVal && typeof maxVal.value === "number") {
-      rules.push({
-        type: "max",
-        value: maxVal.value,
-        message:
-          maxVal.message ||
-          translate(loc, "validation.file_max", {
-            label,
-            max: maxVal.value,
-          }),
-      });
-    }
+    rules.push(
+      ...buildNumericMinMaxRules(
+        validators,
+        label,
+        loc,
+        "validation.file_min",
+        "validation.file_max",
+      )
+    );
   }
 
   if (fieldType === "multiple_select") {
-    if (minVal && typeof minVal.value === "number") {
-      rules.push({
-        type: "min",
-        value: minVal.value,
-        message:
-          minVal.message ||
-          translate(loc, "validation.selection_min", {
-            label,
-            min: minVal.value,
-          }),
-      });
-    }
-    if (maxVal && typeof maxVal.value === "number") {
-      rules.push({
-        type: "max",
-        value: maxVal.value,
-        message:
-          maxVal.message ||
-          translate(loc, "validation.selection_max", {
-            label,
-            max: maxVal.value,
-          }),
-      });
-    }
+    rules.push(
+      ...buildNumericMinMaxRules(
+        validators,
+        label,
+        loc,
+        "validation.selection_min",
+        "validation.selection_max",
+      )
+    );
   }
 
   if (fieldType === "turnstile" && !rules.some((r) => r.type === "required")) {

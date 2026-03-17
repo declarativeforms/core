@@ -157,7 +157,7 @@ export function FileUploadField({
 
   const canAddMore = fileMetadata.length < maxFiles;
 
-  const getFileRequirements = () => {
+  const getFileRequirements = (): string => {
     const requirements: string[] = [];
     const minFiles =
       minRule && typeof minRule.value === "number" ? minRule.value : 0;
@@ -172,6 +172,8 @@ export function FileUploadField({
 
     return requirements.join(" • ");
   };
+
+  const fileRequirements = getFileRequirements();
 
   return (
     <FormControl>
@@ -220,8 +222,8 @@ export function FileUploadField({
               <p className="text-sm text-foreground">
                 {t("file_upload.click_to_upload")}
               </p>
-              {getFileRequirements() && (
-                <p className="mt-1 text-sm text-muted-foreground">{getFileRequirements()}</p>
+              {fileRequirements && (
+                <p className="mt-1 text-sm text-muted-foreground">{fileRequirements}</p>
               )}
               {field.placeholder && <p className="mt-1 text-sm text-muted-foreground">{field.placeholder}</p>}
             </div>

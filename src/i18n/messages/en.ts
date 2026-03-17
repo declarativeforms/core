@@ -129,6 +129,7 @@ const enMessageSource = {
   "multiple_select.up_to":
     "Select up to {max} options",
   "multiple_select.selected_count": "{count} selected",
+  "turnstile.loading": "Loading verification…",
 } as const;
 
 export type TranslationKey = keyof typeof enMessageSource;

@@ -2,7 +2,8 @@ import { useWatch } from "react-hook-form";
 
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import { findValidationRule } from "../renderer/field-contract";
-import { HtmlText, stripHtml } from "../renderer/html-text";
+import { HtmlText } from "../renderer/html-text";
+import { stripHtml } from "../renderer/strip-html";
 import {
   Checkbox,
   FormControl,

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
 import { FormControl } from "@/components/ui/form";
+import { useFormI18n } from "../renderer/use-form-i18n";
 import { cn } from "@/lib/utils";
 
 declare global {
@@ -27,9 +28,9 @@ const SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
 export function TurnstileField({
-  field: _field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
+  const { t } = useFormI18n();
   const sitekey = import.meta.env.VITE_TURNSTILE_SITEKEY as string;
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
@@ -112,7 +113,7 @@ export function TurnstileField({
               aria-hidden="true"
             />
             <span className="text-sm text-muted-foreground">
-              Loading verification…
+              {t("turnstile.loading")}
             </span>
           </div>
         )}
