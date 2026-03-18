@@ -1,9 +1,9 @@
 import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { FormControl } from "@/components/ui";
-import { useFormI18n } from "../renderer/use-form-i18n";
+import { useFormI18n } from "../view-support/use-form-i18n";
 import { uploadFile } from "@/lib/file-upload";
 import { cn } from "@/lib/utils";
 

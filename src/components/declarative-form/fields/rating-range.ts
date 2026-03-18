@@ -1,4 +1,4 @@
-import { findValidationRule } from "../renderer/field-contract";
+import { findValidationRule } from "../view-support/field-support";
 import type { ValidationRule } from "../runtime/types";
 
 export type RatingRange = {

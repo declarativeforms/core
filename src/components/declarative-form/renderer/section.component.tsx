@@ -1,26 +1,36 @@
-import type { Ref } from "react";
+import { forwardRef } from "react";
 import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
 import { Button } from "../../ui";
-import { DeclarativeFormField } from "./field.component";
-import type { CompiledField, CompiledSection, FormAction } from "../runtime/types";
 import { useI18n } from "@/i18n";
+import type { CompiledSection, FormAction } from "../runtime/types";
+import { DeclarativeFormField } from "./field.component";
 
-export function DeclarativeFormSection(props: {
-  ref?: Ref<HTMLFormElement>;
+type DeclarativeFormSectionProps = {
   section: CompiledSection;
   data: Record<string, unknown>;
   sectionHistory: string[];
   dispatch: (action: FormAction) => void;
   onSubmit: (sectionData: FieldValues) => void;
-}) {
+};
+
+function buildDefaultValues(
+  section: CompiledSection,
+  data: Record<string, unknown>
+): FieldValues {
+  return section.fields.reduce((acc, field) => {
+    acc[field.id] = data[field.id] || "";
+    return acc;
+  }, {} as FieldValues);
+}
+
+export const DeclarativeFormSection = forwardRef<
+  HTMLFormElement,
+  DeclarativeFormSectionProps
+>(function DeclarativeFormSection(props, ref) {
   const { t } = useI18n();
   const form = useForm({
-    defaultValues: props.section.fields.reduce((acc, field) => {
-      acc[field.id] = props.data[field.id] || "";
-
-      return acc;
-    }, {} as FieldValues),
+    defaultValues: buildDefaultValues(props.section, props.data),
   });
 
   const handleSubmit = form.handleSubmit(
@@ -36,14 +46,14 @@ export function DeclarativeFormSection(props: {
   return (
     <FormProvider {...form}>
       <form
-        ref={props.ref}
+        ref={ref}
         tabIndex={-1}
         aria-label={props.section.title || undefined}
         onSubmit={handleSubmit}
         className="outline-none"
       >
         <div className="space-y-6">
-          {props.section.fields.map((field: CompiledField) => (
+          {props.section.fields.map((field) => (
             <DeclarativeFormField key={field.id} field={field} form={form} />
           ))}
         </div>
@@ -68,4 +78,4 @@ export function DeclarativeFormSection(props: {
       </form>
     </FormProvider>
   );
-}
+});

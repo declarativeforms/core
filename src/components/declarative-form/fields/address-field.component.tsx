@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   getPlacePredictions,
@@ -23,7 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useFormI18n } from "../renderer/use-form-i18n";
+import { useFormI18n } from "../view-support/use-form-i18n";
 
 export function AddressField({
   field,

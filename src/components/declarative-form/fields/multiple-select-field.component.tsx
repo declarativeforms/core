@@ -1,8 +1,9 @@
 import { useWatch } from "react-hook-form";
 
-import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
-import { findValidationRule } from "../renderer/field-contract";
-import { HtmlText, stripHtml } from "../renderer/html-text";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import { findValidationRule } from "../view-support/field-support";
+import { HtmlText } from "../view-support/html-text";
+import { stripHtml } from "../view-support/strip-html";
 import {
   Checkbox,
   FormControl,
@@ -10,7 +11,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui";
-import { useFormI18n } from "../renderer/use-form-i18n";
+import { useFormI18n } from "../view-support/use-form-i18n";
 import { cn } from "@/lib/utils";
 
 export function MultipleSelectField({

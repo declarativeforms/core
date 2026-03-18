@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 

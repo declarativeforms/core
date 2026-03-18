@@ -2,7 +2,8 @@ import { useEffect } from "react";
 
 import { Button } from "@/components";
 import { useI18n } from "@/i18n";
-import { HtmlText, stripHtml } from "./html-text";
+import { HtmlText } from "../view-support/html-text";
+import { stripHtml } from "../view-support/strip-html";
 
 export function HeroSection(props: {
   title: string;

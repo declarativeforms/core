@@ -1,13 +1,17 @@
 import type { RegisterOptions, Validate } from "react-hook-form";
 
 import type { CompiledField } from "../../runtime/types";
-import type { ValidationMessages } from "../../renderer/field-validation";
 import { FREE_EMAIL_DOMAINS } from "./free-email-domains";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
 
+export type EmailValidationMessages = {
+  emailOtpRequired?: string;
+  emailFreeEmailBlocked?: string;
+};
+
 export function getEmailValidation(
   field: CompiledField,
-  messages?: ValidationMessages,
+  messages?: EmailValidationMessages
 ): RegisterOptions["validate"] | undefined {
   if (field.type !== "email") return undefined;
 

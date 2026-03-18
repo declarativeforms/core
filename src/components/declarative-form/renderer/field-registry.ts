@@ -16,12 +16,12 @@ import {
   SingleSelectField,
   TurnstileField,
 } from "../fields";
-import type { DeclarativeFieldComponentProps } from "./field-contract";
 import type { DeclarativeFieldType } from "../types";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 
-export type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
+type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 
-export const declarativeFieldRenderers: Record<
+export const fieldRegistry: Record<
   DeclarativeFieldType,
   DeclarativeFieldRenderer
 > = {

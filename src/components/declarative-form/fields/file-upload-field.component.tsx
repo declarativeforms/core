@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
-import { findValidationRule } from "../renderer/field-contract";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import { findValidationRule } from "../view-support/field-support";
 import { FormControl } from "@/components/ui";
-import { useFormI18n } from "../renderer/use-form-i18n";
+import { useFormI18n } from "../view-support/use-form-i18n";
 import type { TranslationKey } from "@/i18n/messages/en";
 import type { TranslationValues } from "@/i18n/runtime";
 import { uploadFile } from "@/lib/file-upload";

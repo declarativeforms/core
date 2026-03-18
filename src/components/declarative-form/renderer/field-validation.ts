@@ -1,44 +1,26 @@
 import type { RegisterOptions, Validate } from "react-hook-form";
 
-import { findValidationRule } from "./field-contract";
-import { fieldValidationExtensions } from "./field-validators";
+import { evaluateValidationExpression } from "../runtime/core/expression";
+import { getEmailValidation } from "../fields/email/validation";
 import type { CompiledField, ValidationRule } from "../runtime/types";
+import { findValidationRule } from "../view-support/field-support";
 
 export type ValidationMessages = {
   emailOtpRequired?: string;
   emailFreeEmailBlocked?: string;
 };
 
-function buildExpressionValidators(
-  validation: ValidationRule[]
-): Record<string, Validate<unknown, Record<string, unknown>>> {
-  const validators: Record<string, Validate<unknown, Record<string, unknown>>> = {};
+function getValueCount(value: unknown): number {
+  if (Array.isArray(value)) {
+    return value.length;
+  }
 
-  validation.forEach((rule, i) => {
-    if (rule.type !== "expression") return;
-
-    validators[`expr_${i}`] = (_value: unknown, formValues: Record<string, unknown>) => {
-      const data = formValues && typeof formValues === "object" ? formValues : {};
-      try {
-        const fn = new Function("data", `return ${rule.expression}`);
-        return fn(data) ? true : rule.message;
-      } catch {
-        return rule.message;
-      }
-    };
-  });
-
-  return validators;
+  return value ? 1 : 0;
 }
 
-export function validationRulesToRegisterOptions(
-  field: CompiledField,
-  messages?: ValidationMessages,
-): RegisterOptions {
+function applyCommonRules(field: CompiledField): RegisterOptions {
   const rules: RegisterOptions = {};
-  const validateFns: Record<string, Validate<unknown, Record<string, unknown>>> = {};
 
-  // Common rules applicable to all field types
   for (const rule of field.validation) {
     switch (rule.type) {
       case "required":
@@ -56,13 +38,59 @@ export function validationRulesToRegisterOptions(
     }
   }
 
-  // Field-type-specific validation using discriminated union
+  return rules;
+}
+
+function buildExpressionValidators(
+  validation: ValidationRule[]
+): Record<string, Validate<unknown, Record<string, unknown>>> {
+  const validators: Record<string, Validate<unknown, Record<string, unknown>>> =
+    {};
+
+  validation.forEach((rule, i) => {
+    if (rule.type !== "expression") return;
+
+    validators[`expr_${i}`] = (
+      _value: unknown,
+      formValues: Record<string, unknown>
+    ) => {
+      const data =
+        formValues && typeof formValues === "object" ? formValues : {};
+
+      return evaluateValidationExpression(rule.expression, data)
+        ? true
+        : rule.message;
+    };
+  });
+
+  return validators;
+}
+
+function buildFieldTypeValidators(
+  field: CompiledField
+): Record<string, Validate<unknown, Record<string, unknown>>> {
+  const validateFns: Record<
+    string,
+    Validate<unknown, Record<string, unknown>>
+  > = {};
+
   switch (field.type) {
     case "date": {
       const minRule = findValidationRule(field.validation, "min");
       const maxRule = findValidationRule(field.validation, "max");
-      if (minRule) rules.min = { value: minRule.value, message: minRule.message };
-      if (maxRule) rules.max = { value: maxRule.value, message: maxRule.message };
+
+      if (minRule) {
+        validateFns.minDate = (value) =>
+          value && String(value) < String(minRule.value)
+            ? minRule.message
+            : true;
+      }
+      if (maxRule) {
+        validateFns.maxDate = (value) =>
+          value && String(value) > String(maxRule.value)
+            ? maxRule.message
+            : true;
+      }
       break;
     }
 
@@ -104,35 +132,19 @@ export function validationRulesToRegisterOptions(
       break;
     }
 
-    case "file_upload": {
-      const minRule = findValidationRule(field.validation, "min");
-      const maxRule = findValidationRule(field.validation, "max");
-      const requiredRule = findValidationRule(field.validation, "required");
-
-      validateFns.fieldType = (value) => {
-        const count = Array.isArray(value) ? value.length : value ? 1 : 0;
-
-        if (field.required && count === 0 && requiredRule) {
-          return requiredRule.message;
-        }
-        if (minRule && typeof minRule.value === "number" && count < minRule.value) {
-          return minRule.message;
-        }
-        if (maxRule && typeof maxRule.value === "number" && count > maxRule.value) {
-          return maxRule.message;
-        }
-        return true;
-      };
-      break;
-    }
-
+    case "file_upload":
     case "multiple_select": {
       const minRule = findValidationRule(field.validation, "min");
       const maxRule = findValidationRule(field.validation, "max");
       const requiredRule = findValidationRule(field.validation, "required");
 
       validateFns.fieldType = (value) => {
-        const count = Array.isArray(value) ? value.length : 0;
+        const count =
+          field.type === "multiple_select"
+            ? Array.isArray(value)
+              ? value.length
+              : 0
+            : getValueCount(value);
 
         if (field.required && count === 0 && requiredRule) {
           return requiredRule.message;
@@ -147,25 +159,29 @@ export function validationRulesToRegisterOptions(
       };
       break;
     }
-
   }
 
-  // Apply field-type-specific validation extensions (e.g. email OTP)
-  const extension = fieldValidationExtensions[field.type];
-  if (extension) {
-    const validate = extension(field, messages);
-    if (validate) {
-      if (typeof validate === "function") {
-        validateFns.extension = validate;
-      } else {
-        Object.assign(validateFns, validate);
-      }
+  return validateFns;
+}
+
+export function validationRulesToRegisterOptions(
+  field: CompiledField,
+  messages?: ValidationMessages
+): RegisterOptions {
+  const rules = applyCommonRules(field);
+  const validateFns = {
+    ...buildFieldTypeValidators(field),
+    ...buildExpressionValidators(field.validation),
+  };
+
+  const emailValidation = getEmailValidation(field, messages);
+  if (emailValidation) {
+    if (typeof emailValidation === "function") {
+      validateFns.extension = emailValidation;
+    } else {
+      Object.assign(validateFns, emailValidation);
     }
   }
-
-  // Expression validators
-  const exprValidators = buildExpressionValidators(field.validation);
-  Object.assign(validateFns, exprValidators);
 
   if (Object.keys(validateFns).length > 0) {
     rules.validate = validateFns;

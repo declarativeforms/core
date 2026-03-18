@@ -1,5 +1,5 @@
-import type { DeclarativeFieldComponentProps } from "../renderer/field-contract";
-import { HtmlText } from "../renderer/html-text";
+import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import { HtmlText } from "../view-support/html-text";
 import {
   FormControl,
   FormItem,
