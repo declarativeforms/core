@@ -1,0 +1,61 @@
+import type {
+  IDeclarativeForm,
+  IConnection,
+  IDeclarativeFormSection,
+} from "../../types";
+import { isDeclarativeConnectionType } from "../../types";
+import { interpolateTemplate } from "../core/expression";
+import { localizeCompletion, resolveLocalizedText } from "../localization/text";
+import type { CompiledForm, CompiledSection } from "../types";
+import { compileField } from "./field";
+
+function normalizeConnections(
+  connections: IDeclarativeForm["connections"]
+): IConnection[] {
+  return (connections ?? []).flatMap((connection) =>
+    isDeclarativeConnectionType(connection?.type) ? [connection] : []
+  );
+}
+
+function compileSection(
+  section: IDeclarativeFormSection,
+  locale: string,
+  data: Record<string, unknown>
+): CompiledSection {
+  return {
+    id: section.id ?? "",
+    title: interpolateTemplate(resolveLocalizedText(section.title, locale), data),
+    fields: (section.fields ?? []).flatMap((field) => {
+      const compiled = compileField(field, locale, data);
+      return compiled ? [compiled] : [];
+    }),
+  };
+}
+
+export function compile(
+  schema: IDeclarativeForm,
+  locale: string,
+  data: Record<string, unknown>,
+  activeSectionId: string
+): CompiledForm {
+  const sections = (schema.sections ?? []).map((section) =>
+    compileSection(section, locale, data)
+  );
+
+  return {
+    id: schema.id,
+    version: schema.version ?? 1,
+    title: interpolateTemplate(resolveLocalizedText(schema.title, locale), data),
+    description: schema.description
+      ? interpolateTemplate(resolveLocalizedText(schema.description, locale), data)
+      : undefined,
+    activeSectionId,
+    sections,
+    completion: localizeCompletion(schema.completion, locale),
+    connections: normalizeConnections(schema.connections),
+    locale,
+    measurements: schema.measurements,
+    start_date: schema.start_date,
+    end_date: schema.end_date,
+  };
+}

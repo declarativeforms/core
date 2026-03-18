@@ -10,7 +10,7 @@ import {
   HeroSection,
   type IDeclarativeForm,
 } from "@/components";
-import { resolveLocalizedText } from "@/components/declarative-form/runtime/localize";
+import { resolveLocalizedText } from "@/components/declarative-form/runtime/localization/text";
 import type { FormEffect } from "@/components/declarative-form/runtime/types";
 import { useI18n } from "@/i18n";
 import { getBackendUrl } from "@/lib/api";

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { FieldValues } from "react-hook-form";
 
-import { useFormRuntime } from "../runtime/use-runtime";
+import { useFormRuntime } from "../runtime/core/use-runtime";
 import type { FormEffect } from "../runtime/types";
 import { DeclarativeFormSection } from "./section.component";
 import type { IDeclarativeForm } from "../types";

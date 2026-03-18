@@ -1,8 +1,9 @@
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
 import { translate } from "@/i18n/runtime";
 
-import type { LocalizedValidator } from "./localize";
-import type { CompiledField, ValidationRule } from "./types";
+import type { DeclarativeFieldType } from "../../types";
+import type { LocalizedValidator } from "../localization/validators";
+import type { ValidationRule } from "../types";
 
 type ValidatorWithValue = Extract<
   Exclude<LocalizedValidator, "required">,
@@ -19,7 +20,7 @@ function getMinValidator(
   validators: LocalizedValidator[]
 ): ValidatorWithValue | undefined {
   return validators.find(
-    (v) => typeof v === "object" && v.type === "min"
+    (validator) => typeof validator === "object" && validator.type === "min"
   ) as ValidatorWithValue | undefined;
 }
 
@@ -27,7 +28,7 @@ function getMaxValidator(
   validators: LocalizedValidator[]
 ): ValidatorWithValue | undefined {
   return validators.find(
-    (v) => typeof v === "object" && v.type === "max"
+    (validator) => typeof validator === "object" && validator.type === "max"
   ) as ValidatorWithValue | undefined;
 }
 
@@ -36,7 +37,7 @@ function hasValidator(
   type: string
 ): boolean {
   return validators.some(
-    (v) => typeof v === "object" && v.type === type
+    (validator) => typeof validator === "object" && validator.type === type
   );
 }
 
@@ -59,8 +60,8 @@ function getRatingRange(validators: LocalizedValidator[]): {
   return { min, max };
 }
 
-export function compileFieldValidation(
-  fieldType: CompiledField["type"],
+export function buildValidationRules(
+  fieldType: DeclarativeFieldType,
   validators: LocalizedValidator[],
   label: string,
   locale: string
@@ -262,7 +263,7 @@ export function compileFieldValidation(
     }
   }
 
-  if (fieldType === "turnstile" && !rules.some((r) => r.type === "required")) {
+  if (fieldType === "turnstile" && !rules.some((rule) => rule.type === "required")) {
     rules.push({
       type: "required",
       message: translate(loc, "validation.required", { label }),
