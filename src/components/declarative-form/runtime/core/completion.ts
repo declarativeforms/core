@@ -1,6 +1,11 @@
 import type { ICompletion, ICompletionRule } from "../../types";
 import { evaluateExpression } from "./expression";
 
+/**
+ * Resolves the matching completion from a single or conditional completion config.
+ * Rules are evaluated top-to-bottom; the first matching `when` wins.
+ * An entry without `when` acts as the default and should be placed last.
+ */
 export function resolveCompletion(
   completion: ICompletion | ICompletionRule[] | undefined,
   data: Record<string, unknown>
