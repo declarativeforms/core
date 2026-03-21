@@ -24,19 +24,23 @@ export function SingleSelectField({
   const options = getFieldOptions(field);
   const allowOther = "allow_other" in field && field.allow_other;
 
-  const isOtherSelected =
-    allowOther &&
-    controllerField.value &&
-    !options?.some((o) => o.value === controllerField.value);
+  const [isOtherMode, setIsOtherMode] = useState(
+    () =>
+      allowOther &&
+      !!controllerField.value &&
+      !options?.some((o) => o.value === controllerField.value)
+  );
 
   const [otherText, setOtherText] = useState<string>(
-    isOtherSelected ? String(controllerField.value) : ""
+    isOtherMode ? String(controllerField.value) : ""
   );
 
   const handleValueChange = (value: string) => {
     if (value === OTHER_VALUE) {
+      setIsOtherMode(true);
       controllerField.onChange(otherText || "");
     } else {
+      setIsOtherMode(false);
       controllerField.onChange(value);
     }
   };
@@ -47,7 +51,7 @@ export function SingleSelectField({
     controllerField.onChange(text);
   };
 
-  const radioValue = isOtherSelected ? OTHER_VALUE : controllerField.value;
+  const radioValue = isOtherMode ? OTHER_VALUE : controllerField.value;
 
   return (
     <FormControl>
@@ -81,7 +85,7 @@ export function SingleSelectField({
             <FormLabel
               className={cn(
                 "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
-                { "border-ring": isOtherSelected }
+                { "border-ring": isOtherMode }
               )}
             >
               <FormControl>
@@ -89,7 +93,7 @@ export function SingleSelectField({
               </FormControl>
               <span>{t("select.other")}</span>
             </FormLabel>
-            {isOtherSelected && (
+            {isOtherMode && (
               <Input
                 className="mt-2 text-sm/4"
                 placeholder={t("select.other_placeholder")}
