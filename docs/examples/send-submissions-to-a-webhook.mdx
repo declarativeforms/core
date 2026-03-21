@@ -31,6 +31,11 @@ connections:
   - type: webhook
     # Send the full submission object to this URL as JSON.
     url: "https://example.com/webhooks/form-submissions"
+
+  - type: webhook
+    # Use when to only execute this connection if the expression is true.
+    url: "https://example.com/webhooks/priority"
+    when: "data.question_1 === 'urgent'"
 ```
 
 The webhook receives the full submission object as JSON. The `status` can be `partial` or `completed`.

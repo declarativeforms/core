@@ -104,6 +104,7 @@ export function compileField(
         ...base,
         type: field.type,
         ...(options && { options }),
+        ...(field.allow_other !== undefined && { allow_other: field.allow_other }),
       };
 
     case "camera":

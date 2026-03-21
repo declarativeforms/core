@@ -40,5 +40,16 @@ sections:
             expression: "data.question_2 !== 'option_3'"
             message: "Choose an available option."
 
+      - id: question_3
+        type: single_select
+        label: "Question 3"
+        # When allow_other is true, an "Other" option with a free-form text input is shown.
+        allow_other: true
+        options:
+          - "Option 1"
+          - "Option 2"
+        validators:
+          - required
+
     next: done
 ```

@@ -31,6 +31,7 @@ export const fieldRegistry: Record<
   address_region: AddressField,
   camera: CameraField,
   date: InputField,
+  date_month: InputField,
   dropdown: DropdownField,
   email: EmailField,
   geolocation: GeolocationField,
@@ -44,6 +45,7 @@ export const fieldRegistry: Record<
   short_text: InputField,
   signature: SignatureField,
   single_select: SingleSelectField,
+  time: InputField,
   turnstile: TurnstileField,
   url: InputField,
 };

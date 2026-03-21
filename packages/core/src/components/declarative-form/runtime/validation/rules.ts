@@ -130,7 +130,7 @@ export function buildValidationRules(
   const minVal = getMinValidator(validators);
   const maxVal = getMaxValidator(validators);
 
-  if (fieldType === "date") {
+  if (fieldType === "date" || fieldType === "date_month" || fieldType === "time") {
     if (minVal) {
       rules.push({
         type: "min",
