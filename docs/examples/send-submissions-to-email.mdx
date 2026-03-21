@@ -35,6 +35,13 @@ connections:
     subject: "New submission from {{data.question_1}}"
     body: "Reply to {{data.question_2}}."
     include_responses: true
+
+  - type: email
+    # Use when to only execute this connection if the expression is true.
+    to: "escalations@example.com"
+    subject: "Escalation from {{data.question_1}}"
+    body: "This submission requires follow-up."
+    when: "data.question_1 === 'urgent'"
 ```
 
 Email connections run when the submission is completed.

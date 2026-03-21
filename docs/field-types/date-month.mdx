@@ -1,0 +1,32 @@
+---
+title: "Date month"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive date_month example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: date_month
+        label: "Question 1"
+        validators:
+          - required
+          - type: min
+            value: "2026-01"
+            message: "Use a month on or after January 2026."
+          - type: max
+            value: "2026-12"
+            message: "Use a month on or before December 2026."
+          - type: expression
+            expression: "data.question_1 >= '2026-06'"
+            message: "Choose a month in the second half of the year."
+
+    next: done
+```

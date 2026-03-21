@@ -37,6 +37,8 @@
               "field-types/email",
               "field-types/number",
               "field-types/date",
+              "field-types/date-month",
+              "field-types/time",
               "field-types/url",
               "field-types/mobile-number",
               "field-types/dropdown",
