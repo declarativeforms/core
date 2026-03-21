@@ -1,5 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { findValidationRule } from "../view-support/field-support";
+import { findValidationRule, getNumericRuleValue } from "../view-support/field-support";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 
@@ -22,9 +22,10 @@ export function InputField({
       ? "url"
       : "text";
 
+  const isDate = field.type === "date";
   const hasPattern = field.validation.some((r) => r.type === "pattern");
-  const minRule = findValidationRule(field.validation, field.type === "date" ? "min" : "min_length");
-  const maxRule = findValidationRule(field.validation, field.type === "date" ? "max" : "max_length");
+  const minRule = isDate ? findValidationRule(field.validation, "min") : undefined;
+  const maxRule = isDate ? findValidationRule(field.validation, "max") : undefined;
 
   return (
     <FormControl>
@@ -41,26 +42,10 @@ export function InputField({
         }
         required={field.required}
         aria-required={field.required}
-        minLength={
-          field.type !== "date" && minRule && typeof minRule.value === "number"
-            ? minRule.value
-            : undefined
-        }
-        maxLength={
-          field.type !== "date" && maxRule && typeof maxRule.value === "number"
-            ? maxRule.value
-            : undefined
-        }
-        min={
-          field.type === "date" && minRule
-            ? String(minRule.value)
-            : undefined
-        }
-        max={
-          field.type === "date" && maxRule
-            ? String(maxRule.value)
-            : undefined
-        }
+        minLength={isDate ? undefined : getNumericRuleValue(field.validation, "min_length")}
+        maxLength={isDate ? undefined : getNumericRuleValue(field.validation, "max_length")}
+        min={minRule ? String(minRule.value) : undefined}
+        max={maxRule ? String(maxRule.value) : undefined}
       />
     </FormControl>
   );

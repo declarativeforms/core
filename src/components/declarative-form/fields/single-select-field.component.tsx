@@ -1,4 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import { getFieldOptions } from "../view-support/field-support";
 import { HtmlText } from "../view-support/html-text";
 import {
   FormControl,
@@ -13,7 +14,7 @@ export function SingleSelectField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const options = "options" in field ? field.options : undefined;
+  const options = getFieldOptions(field);
 
   return (
     <FormControl>

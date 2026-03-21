@@ -1,7 +1,8 @@
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import { useWaitForGlobal } from "../view-support/use-wait-for-global";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   getPlacePredictions,
@@ -48,53 +49,21 @@ export function AddressField({
 
   const outputFormat =
     "outputFormat" in field ? (field.outputFormat || "string") : "string";
-  // State management
+
+  const checkGooglePlaces = useCallback(
+    () =>
+      typeof window !== "undefined" &&
+      !!(window as any).google?.maps?.places,
+    []
+  );
+  const isApiLoaded = useWaitForGlobal(checkGooglePlaces, { timeout: 10_000 });
+
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isApiLoaded, setIsApiLoaded] = useState(false);
 
-  // Hooks
   const debouncedInput = useDebounce(inputValue, 300);
-
-  // Check if Google Places API is loaded
-  useEffect(() => {
-    const checkApiLoaded = () => {
-      if (
-        typeof window !== "undefined" &&
-        (window as any).google?.maps?.places
-      ) {
-        setIsApiLoaded(true);
-        return true;
-      }
-      return false;
-    };
-
-    if (checkApiLoaded()) {
-      return;
-    }
-
-    // Poll for API to load (script is loaded with defer attribute)
-    const interval = setInterval(() => {
-      if (checkApiLoaded()) {
-        clearInterval(interval);
-      }
-    }, 100);
-
-    // Timeout after 10 seconds
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-      if (!isApiLoaded) {
-        console.warn("Google Places API failed to load within 10 seconds");
-      }
-    }, 10000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, []);
 
   // Fetch suggestions effect
   useEffect(() => {

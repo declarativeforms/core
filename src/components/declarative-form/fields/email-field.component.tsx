@@ -3,7 +3,7 @@ import { useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { findValidationRule } from "../view-support/field-support";
+import { getNumericRuleValue } from "../view-support/field-support";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
@@ -237,8 +237,8 @@ export function EmailField({
     }
   };
 
-  const minRule = findValidationRule(field.validation, "min_length");
-  const maxRule = findValidationRule(field.validation, "max_length");
+  const minLength = getNumericRuleValue(field.validation, "min_length");
+  const maxLength = getNumericRuleValue(field.validation, "max_length");
 
   if (!otpEnabled) {
     return (
@@ -250,16 +250,8 @@ export function EmailField({
           type="email"
           required={field.required}
           aria-required={field.required}
-          minLength={
-            minRule && typeof minRule.value === "number"
-              ? minRule.value
-              : undefined
-          }
-          maxLength={
-            maxRule && typeof maxRule.value === "number"
-              ? maxRule.value
-              : undefined
-          }
+          minLength={minLength}
+          maxLength={maxLength}
         />
       </FormControl>
     );
@@ -284,16 +276,8 @@ export function EmailField({
             aria-required={field.required}
             aria-readonly={isVerified}
             readOnly={isVerified}
-            minLength={
-              minRule && typeof minRule.value === "number"
-                ? minRule.value
-                : undefined
-            }
-            maxLength={
-              maxRule && typeof maxRule.value === "number"
-                ? maxRule.value
-                : undefined
-            }
+            minLength={minLength}
+            maxLength={maxLength}
           />
 
           {isVerified && (

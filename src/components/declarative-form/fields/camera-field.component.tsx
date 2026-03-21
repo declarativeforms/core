@@ -6,7 +6,7 @@ import type { CompiledCameraField } from "../runtime/types";
 import { Button } from "@/components/ui/button";
 import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
-import { uploadFile } from "@/lib/file-upload";
+import { useUploadBlob } from "../view-support/use-upload-blob";
 import { cn } from "@/lib/utils";
 
 type CameraState = "idle" | "previewing" | "uploading" | "captured" | "error";
@@ -28,7 +28,12 @@ export function CameraField({
   const [capturedUrl, setCapturedUrl] = useState<string | null>(
     (controllerField.value as string) || null
   );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const {
+    upload,
+    errorMessage: uploadErrorMessage,
+  } = useUploadBlob(controllerField.onChange, "camera.upload_failed");
+  const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(null);
+  const errorMessage = state === "error" ? (cameraErrorMessage ?? uploadErrorMessage) : null;
 
   const stopStream = useCallback(() => {
     if (streamRef.current) {
@@ -48,7 +53,7 @@ export function CameraField({
 
   const startCamera = async () => {
     setState("previewing");
-    setErrorMessage(null);
+    setCameraErrorMessage(null);
 
     try {
       let stream: MediaStream;
@@ -91,7 +96,7 @@ export function CameraField({
         }
       }
 
-      setErrorMessage(message);
+      setCameraErrorMessage(message);
       setState("error");
     }
   };
@@ -117,20 +122,16 @@ export function CameraField({
     );
 
     if (!blob) {
-      setErrorMessage(t("camera.upload_failed"));
+      setCameraErrorMessage(t("camera.upload_failed"));
       setState("error");
       return;
     }
 
-    try {
-      const url = await uploadFile(blob, "camera-capture.png");
-      controllerField.onChange(url);
+    const url = await upload(blob, "camera-capture.png");
+    if (url) {
       setCapturedUrl(url);
       setState("captured");
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t("camera.upload_failed");
-      setErrorMessage(message);
+    } else {
       setState("error");
     }
   };
@@ -138,7 +139,7 @@ export function CameraField({
   const retake = () => {
     controllerField.onChange(null);
     setCapturedUrl(null);
-    setErrorMessage(null);
+    setCameraErrorMessage(null);
     startCamera();
   };
 

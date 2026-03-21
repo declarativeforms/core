@@ -1,7 +1,7 @@
 import { useWatch } from "react-hook-form";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { findValidationRule } from "../view-support/field-support";
+import { getFieldOptions, getNumericBound } from "../view-support/field-support";
 import { HtmlText } from "../view-support/html-text";
 import { stripHtml } from "../view-support/strip-html";
 import {
@@ -19,12 +19,8 @@ export function MultipleSelectField({
   form,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
-  const minRule = findValidationRule(field.validation, "min");
-  const maxRule = findValidationRule(field.validation, "max");
-  const minSelections =
-    minRule && typeof minRule.value === "number" ? minRule.value : 0;
-  const maxSelections =
-    maxRule && typeof maxRule.value === "number" ? maxRule.value : undefined;
+  const minSelections = getNumericBound(field.validation, "min") ?? 0;
+  const maxSelections = getNumericBound(field.validation, "max");
 
   // Watch the current value to show selection count
   const currentValue = useWatch({
@@ -57,7 +53,7 @@ export function MultipleSelectField({
   };
 
   const helperText = getHelperText();
-  const options = "options" in field ? field.options : undefined;
+  const options = getFieldOptions(field);
 
   return (
     <div

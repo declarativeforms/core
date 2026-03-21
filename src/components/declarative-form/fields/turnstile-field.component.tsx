@@ -1,7 +1,8 @@
 import { Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import { useWaitForGlobal } from "../view-support/use-wait-for-global";
 import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
@@ -33,42 +34,20 @@ export function TurnstileField({
   const sitekey = import.meta.env.VITE_TURNSTILE_SITEKEY as string;
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(
-    () => !!window.turnstile,
-  );
 
-  // Load the Turnstile script
+  // Inject script tag if not already present
   useEffect(() => {
-    if (window.turnstile) {
-      setScriptLoaded(true);
-      return;
-    }
+    if (window.turnstile || document.getElementById(SCRIPT_ID)) return;
 
-    if (document.getElementById(SCRIPT_ID)) {
-      // Script tag exists but hasn't loaded yet — wait for it
-      const check = setInterval(() => {
-        if (window.turnstile) {
-          setScriptLoaded(true);
-          clearInterval(check);
-        }
-      }, 100);
-      return () => clearInterval(check);
-    }
-
-    let aborted = false;
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
     script.src = SCRIPT_SRC;
     script.async = true;
-    script.onload = () => {
-      if (!aborted) setScriptLoaded(true);
-    };
     document.head.appendChild(script);
-
-    return () => {
-      aborted = true;
-    };
   }, []);
+
+  const checkTurnstile = useCallback(() => !!window.turnstile, []);
+  const scriptLoaded = useWaitForGlobal(checkTurnstile, { timeout: 10_000 });
 
   // Stable ref for onChange to avoid re-rendering the widget when RHF updates
   const onChangeRef = useRef(controllerField.onChange);

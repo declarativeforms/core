@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
-import { uploadFile } from "@/lib/file-upload";
+import { useUploadBlob } from "../view-support/use-upload-blob";
 import { cn } from "@/lib/utils";
 
 type Point = {
@@ -27,8 +27,10 @@ export function SignatureField({
   const uploadTimeoutRef = useRef<number | null>(null);
 
   const [hasSignature, setHasSignature] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { upload, isUploading, errorMessage, setErrorMessage } = useUploadBlob(
+    controllerField.onChange,
+    "signature.upload_failed"
+  );
 
   const redrawSignature = useCallback(() => {
     const canvas = canvasRef.current;
@@ -149,9 +151,6 @@ export function SignatureField({
   const uploadSignature = async () => {
     if (!canvasRef.current || isUploading || !hasSignature) return;
 
-    setIsUploading(true);
-    setErrorMessage(null);
-
     const canvas = canvasRef.current;
     const blob: Blob | null = await new Promise((resolve) =>
       canvas.toBlob((b) => resolve(b), "image/png")
@@ -159,20 +158,10 @@ export function SignatureField({
 
     if (!blob) {
       setErrorMessage(t("signature.capture_failed"));
-      setIsUploading(false);
       return;
     }
 
-    try {
-      const url = await uploadFile(blob, "signature.png");
-      controllerField.onChange(url);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t("signature.upload_failed");
-      setErrorMessage(message);
-    } finally {
-      setIsUploading(false);
-    }
+    await upload(blob, "signature.png");
   };
 
   const clearSignature = () => {
