@@ -1,0 +1,16 @@
+version: 1
+title: "Camera — Rear facing"
+description: "Camera capture using the rear-facing camera."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: camera
+        label: "Take a photo of the document"
+        facing_mode: rear
+        validators:
+          - required
+
+    next: done

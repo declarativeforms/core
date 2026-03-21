@@ -1,0 +1,21 @@
+version: 1
+title: "Rating"
+description: "Star rating with min and max validators."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: rating
+        label: "How would you rate your experience?"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Please select at least 1 star."
+          - type: max
+            value: 5
+            message: "Rating must be at most 5 stars."
+
+    next: done

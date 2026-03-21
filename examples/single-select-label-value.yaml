@@ -1,0 +1,22 @@
+version: 1
+title: "Single select — Label/value options"
+description: "Single select with label/value object options."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: single_select
+        label: "Experience level"
+        options:
+          - label: "Beginner (0–1 years)"
+            value: "beginner"
+          - label: "Intermediate (2–4 years)"
+            value: "intermediate"
+          - label: "Advanced (5+ years)"
+            value: "advanced"
+        validators:
+          - required
+
+    next: done

@@ -1,0 +1,31 @@
+version: 1
+title: "Multiple select — Min/max selections"
+description: "Multiple select with label/value options and selection count limits."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: multiple_select
+        label: "Select your top skills"
+        options:
+          - label: "Frontend development"
+            value: "frontend"
+          - label: "Backend development"
+            value: "backend"
+          - label: "DevOps"
+            value: "devops"
+          - label: "Data science"
+            value: "data_science"
+          - label: "Product management"
+            value: "product"
+        validators:
+          - type: min
+            value: 1
+            message: "Please select at least 1 skill."
+          - type: max
+            value: 3
+            message: "Please select at most 3 skills."
+
+    next: done

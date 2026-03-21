@@ -1,0 +1,21 @@
+version: 1
+title: "Multiple select"
+description: "Checkbox-style selection with string options."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: multiple_select
+        label: "Which tools do you use?"
+        options:
+          - "VS Code"
+          - "Figma"
+          - "Slack"
+          - "Notion"
+          - "Jira"
+        validators:
+          - required
+
+    next: done

@@ -1,0 +1,16 @@
+version: 1
+title: "Camera — Front facing"
+description: "Camera capture using the front-facing (selfie) camera."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: camera
+        label: "Take a selfie"
+        facing_mode: front
+        validators:
+          - required
+
+    next: done

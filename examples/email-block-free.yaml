@@ -1,0 +1,18 @@
+version: 1
+title: "Email — Block free email providers"
+description: "Email field that rejects free email providers like Gmail and Yahoo."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: email
+        label: "Work email"
+        placeholder: "name@company.com"
+        # Blocks free email providers (e.g. gmail.com, yahoo.com).
+        block_free_email: true
+        validators:
+          - required
+
+    next: done

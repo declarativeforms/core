@@ -1,0 +1,18 @@
+version: 1
+title: "Address — Structured output"
+description: "Full address autocomplete returning structured components (street, city, state, etc.)."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: address
+        label: "Shipping address"
+        placeholder: "Start typing your address..."
+        # Returns structured components: street, city, state, postal_code, country.
+        outputFormat: structured
+        validators:
+          - required
+
+    next: done

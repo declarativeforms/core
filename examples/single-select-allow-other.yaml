@@ -1,0 +1,22 @@
+version: 1
+title: "Single select — Allow other"
+description: "Single select with a free-text 'Other' option."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: single_select
+        label: "Preferred programming language"
+        options:
+          - "TypeScript"
+          - "Python"
+          - "Go"
+          - "Rust"
+        # Adds a free-text "Other" option for unlisted choices.
+        allow_other: true
+        validators:
+          - required
+
+    next: done

@@ -1,0 +1,20 @@
+version: 1
+title: "Single select"
+description: "Radio-button style selection with string options."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: single_select
+        label: "How did you hear about us?"
+        options:
+          - "Search engine"
+          - "Social media"
+          - "Friend or colleague"
+          - "Advertisement"
+        validators:
+          - required
+
+    next: done

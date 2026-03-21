@@ -1,0 +1,18 @@
+version: 1
+title: "Address — String output"
+description: "Full address autocomplete returning a single formatted string."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: address
+        label: "Home address"
+        placeholder: "Start typing your address..."
+        # Returns the address as a single formatted string.
+        outputFormat: string
+        validators:
+          - required
+
+    next: done

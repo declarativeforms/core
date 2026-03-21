@@ -1,0 +1,21 @@
+version: 1
+title: "File upload"
+description: "File upload with min and max file count validators."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: file_upload
+        label: "Upload your resume"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Please upload at least 1 file."
+          - type: max
+            value: 3
+            message: "You can upload at most 3 files."
+
+    next: done

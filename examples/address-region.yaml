@@ -1,0 +1,17 @@
+version: 1
+title: "Address region"
+description: "State/province/region autocomplete."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: address_region
+        label: "State or province"
+        placeholder: "Start typing a state or province..."
+        # outputFormat can be set to "structured" to return components instead of a string.
+        validators:
+          - required
+
+    next: done

@@ -1,0 +1,22 @@
+version: 1
+title: "URL"
+description: "URL input with pattern validation."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: url
+        label: "Website"
+        placeholder: "https://example.com"
+        validators:
+          - required
+          - type: pattern
+            regex: "^https?://.+"
+            message: "Please enter a valid URL starting with http:// or https://."
+          - type: max_length
+            value: 2048
+            message: "URL must be at most 2048 characters."
+
+    next: done

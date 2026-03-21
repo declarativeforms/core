@@ -1,0 +1,21 @@
+version: 1
+title: "Date month"
+description: "Month picker with min and max range validators."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: date_month
+        label: "Start month"
+        validators:
+          - required
+          - type: min
+            value: "2024-01"
+            message: "Month must be on or after January 2024."
+          - type: max
+            value: "2025-12"
+            message: "Month must be on or before December 2025."
+
+    next: done
