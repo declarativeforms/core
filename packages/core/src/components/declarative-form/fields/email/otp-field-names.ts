@@ -6,9 +6,9 @@ export type OtpFieldNames = {
 
 export function getOtpFieldNames(fieldId: string): OtpFieldNames {
   return {
-    requestId: `${fieldId}__otp_request_id`,
-    token: `${fieldId}__otp_token`,
-    verified: `${fieldId}__otp_verified`,
+    requestId: `${fieldId}__one_time_pin_request_id`,
+    token: `${fieldId}__one_time_pin_token`,
+    verified: `${fieldId}__one_time_pin_verified`,
   };
 }
 
