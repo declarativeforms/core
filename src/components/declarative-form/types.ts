@@ -191,6 +191,8 @@ export type ICompletion = {
   button?: { label?: ILocalizedText; url?: ILocalizedText };
 };
 
+export type ICompletionRule = ICompletion & { when?: string };
+
 type IRawAirtableConnection = {
   type?: "airtable";
   connection_id?: string;
@@ -213,7 +215,7 @@ export type IDeclarativeForm = {
   version?: number;
   title?: ILocalizedText;
   description?: ILocalizedText;
-  completion?: ICompletion;
+  completion?: ICompletion | ICompletionRule[];
   sections?: Array<IDeclarativeFormSection>;
   connections?: Array<
     IRawAirtableConnection | IRawWebhookConnection | IRawEmailConnection
