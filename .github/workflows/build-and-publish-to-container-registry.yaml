@@ -9,6 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  API_IMAGE_NAME: ${{ github.repository_owner }}/api
 
 jobs:
   build-and-push-image:
@@ -30,7 +31,9 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
      
       - id: push
         uses: docker/build-push-action@v6
@@ -46,3 +49,18 @@ jobs:
       #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
       #     subject-digest: ${{ steps.push.outputs.digest }}
       #     push-to-registry: true
+
+      - name: Wait 30 seconds before triggering DigitalOcean deployment
+        run: sleep 30
+
+      - name: Trigger DigitalOcean App Platform deployment
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" \
+            "https://api.digitalocean.com/v2/apps/${{ secrets.DIGITALOCEAN_APP_ID }}/deployments")
+          echo "DigitalOcean API response status: $HTTP_STATUS"
+          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+            echo "Failed to trigger DigitalOcean deployment (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
