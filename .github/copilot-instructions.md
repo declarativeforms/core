@@ -1,6 +1,6 @@
 # Declarative Forms — GitHub Copilot Instructions
 
-You are an expert at generating YAML form definitions for the **Declarative Forms** framework. When a user asks you to create a form, generate a valid YAML file that follows the schema and conventions described below.
+You are an expert at generating YAML form definitions for the **Declarative Forms** framework. When a user asks you to create a form, generate a valid YAML file that follows the schema and conventions described below. Users may be non-technical (marketing, operations, HR) so translate their business needs into the correct YAML structure.
 
 ## What is Declarative Forms?
 
@@ -31,7 +31,7 @@ measurements:                  # Optional analytics
 
 ### Sections
 
-Each section is a step in a multi-step form. Single-step forms have one section.
+Each section is a step in a multi-step form. Single-step forms have one section. A section without a `next` property is treated as the last step — submitting it completes the form.
 
 ```yaml
 sections:
@@ -81,27 +81,27 @@ Every field has these common properties:
 
 | Type | Description | Extra Properties |
 |---|---|---|
-| `short_text` | Single-line text input | — |
-| `long_text` | Multi-line textarea | — |
-| `email` | Email input | `otp: true/false`, `block_free_email: true/false` |
+| `short_text` | Single-line text input (names, titles) | — |
+| `long_text` | Multi-line textarea (comments, descriptions) | — |
+| `email` | Email input | `otp: true` (send verification code), `block_free_email: true` (block Gmail, Yahoo, etc.) |
 | `url` | URL input | — |
 | `mobile_number` | Phone number input | — |
-| `number` | Numeric input | — |
+| `number` | Numeric input (quantities, ages) | — |
 | `date` | Date picker | — |
-| `dropdown` | Single-select dropdown | `options: []`, `searchable: true/false` |
-| `single_select` | Radio button / card select | `options: []` |
+| `dropdown` | Collapsed dropdown menu; best for long lists (5+ options) | `options: []`, `searchable: true` (adds search for 10+ options) |
+| `single_select` | Radio button / card select; best for short lists (2–5 options) visible at once | `options: []` |
 | `multiple_select` | Checkbox / multi-select | `options: []` |
-| `rating` | 1–5 star rating | `min_label: "Low"`, `max_label: "High"` |
-| `address` | Full address (Google Places) | `outputFormat: "string" or "structured"` |
-| `address_country` | Country only | `outputFormat: "string" or "structured"` |
-| `address_region` | State/region only | `outputFormat: "string" or "structured"` |
-| `address_locality` | City only | `outputFormat: "string" or "structured"` |
-| `geolocation` | GPS location capture | — |
-| `camera` | Camera photo capture | `facing_mode: "front" or "rear"` |
+| `rating` | Numeric rating scale (defaults 1–5, customizable via `min`/`max` validators) | `min_label`, `max_label` |
+| `address` | Full address (Google Places autocomplete) | `outputFormat: "string"` or `"structured"` |
+| `address_country` | Country only | `outputFormat: "string"` or `"structured"` |
+| `address_region` | State/region only | `outputFormat: "string"` or `"structured"` |
+| `address_locality` | City only | `outputFormat: "string"` or `"structured"` |
+| `geolocation` | GPS location capture with map preview | — |
+| `camera` | Camera photo capture | `facing_mode: "front"` or `"rear"` |
 | `file_upload` | File upload with drag-and-drop | — |
 | `signature` | Digital signature pad | — |
-| `turnstile` | Cloudflare CAPTCHA | — |
-| `hidden` | Hidden field (not displayed) | — |
+| `turnstile` | Cloudflare CAPTCHA (automatically required) | — |
+| `hidden` | Hidden field (tracking data, UTM params, internal IDs) | — |
 
 ### Options (for dropdown, single_select, multiple_select)
 
@@ -147,9 +147,19 @@ validators:
 
 For `file_upload` and `multiple_select`, `min`/`max` validators control the number of files or selections.
 
+**How `min`/`max` behave depends on field type:**
+
+| Field type | `min`/`max` controls |
+|---|---|
+| `number` | The numeric value itself |
+| `date` | The date value (e.g., min: "2025-01-01") |
+| `rating` | The rating range (e.g., min: 0, max: 10 for NPS) |
+| `file_upload` | The number of files allowed |
+| `multiple_select` | The number of selections allowed |
+
 ### Conditional Visibility
 
-Show or hide a field based on other field values:
+Show or hide a field based on other field values. The `visible_when` expression is JavaScript with access to the `data` object containing all field values. Required validators on conditionally-visible fields only trigger when the field is visible.
 
 ```yaml
 - id: other_country
@@ -157,8 +167,6 @@ Show or hide a field based on other field values:
   label: "Specify your country"
   visible_when: "data.country === 'Other'"
 ```
-
-The `visible_when` expression is a JavaScript expression with access to the `data` object containing all field values.
 
 ### Dynamic Text (Handlebars Templating)
 
@@ -226,7 +234,7 @@ label:
 ## Guidelines
 
 1. **Always generate valid YAML.** Use proper indentation (2 spaces) and quoting.
-2. **Always include `id`** on every field and section.
+2. **Always include `id`** on every field and section using `snake_case`.
 3. **Always set `version: 1`** at the top level.
 4. **Use `required` validator** for mandatory fields.
 5. **Use localized text objects** when the user requests multi-language support, otherwise use plain strings.
@@ -235,6 +243,9 @@ label:
 8. **Use Handlebars `{{data.field_id}}`** for dynamic text references.
 9. **Match field types** to the data being collected (e.g., `email` for emails, `number` for quantities).
 10. **Include appropriate validators** based on the field type and user requirements.
+11. **Use `dropdown`** for long option lists (5+) and **`single_select`** for short lists (2–5) where all choices should be visible.
+12. **Split long forms** into multiple sections for a better user experience.
+13. **Required validators** on fields with `visible_when` only trigger when the field is visible.
 
 ## Example Prompt and Response
 
