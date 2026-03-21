@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/api/**'
       - 'packages/types/**'
+      - 'packages/core/**'
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -64,3 +65,28 @@ jobs:
             echo "Failed to trigger DigitalOcean deployment (HTTP $HTTP_STATUS)"
             exit 1
           fi
+
+  deploy-firebase-hosting:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: packages/core
+        run: npm install --legacy-peer-deps
+
+      - name: Build UI
+        working-directory: packages/core
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        working-directory: packages/core
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: npx firebase deploy --only hosting
