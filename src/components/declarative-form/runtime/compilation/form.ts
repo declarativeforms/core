@@ -4,6 +4,7 @@ import type {
   IDeclarativeFormSection,
 } from "../../types";
 import { isDeclarativeConnectionType } from "../../types";
+import { resolveCompletion } from "../core/completion";
 import { interpolateTemplate } from "../core/expression";
 import { localizeCompletion, resolveLocalizedText } from "../localization/text";
 import type { CompiledForm, CompiledSection } from "../types";
@@ -51,7 +52,7 @@ export function compile(
       : undefined,
     activeSectionId,
     sections,
-    completion: localizeCompletion(schema.completion, locale),
+    completion: localizeCompletion(resolveCompletion(schema.completion, data), locale),
     connections: normalizeConnections(schema.connections),
     locale,
     measurements: schema.measurements,
