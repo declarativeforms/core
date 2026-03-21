@@ -28,7 +28,8 @@ export function MainPage() {
   const { locale, t, withLang } = useI18n();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const isSlugRoute = !!(params.owner && params.repository && params.file);
+  const slugPath = params["*"];
+  const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
   const connectionId = searchParams.get("connection_id");
   const submissionId = searchParams.get("submission_id");
@@ -47,15 +48,15 @@ export function MainPage() {
       params.id,
       params.owner,
       params.repository,
-      params.file,
+      slugPath,
       connectionId,
     ],
     queryFn: async () => {
       const url = params.id
         ? getBackendUrl(`forms/${params.id}`)
-        : params.owner && params.repository && params.file
+        : params.owner && params.repository && slugPath
           ? getBackendUrl(
-              `forms/${params.owner}/${params.repository}/${params.file}`,
+              `forms/${params.owner}/${params.repository}/${slugPath}`,
             )
           : "/default.yaml";
 
