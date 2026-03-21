@@ -10,7 +10,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  API_IMAGE_NAME: ${{ github.repository_owner }}/api
 
 jobs:
   build-and-push-image:
@@ -34,7 +33,6 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
      
       - id: push
         uses: docker/build-push-action@v6
