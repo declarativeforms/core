@@ -93,7 +93,7 @@ export type IDeclarativeFormValidator =
       message?: ILocalizedText;
     };
 
-type IDeclarativeFormFieldBase = {
+export type IDeclarativeFormFieldBase = {
   id?: string;
   label?: ILocalizedText;
   placeholder?: ILocalizedText;
@@ -101,25 +101,25 @@ type IDeclarativeFormFieldBase = {
   visible_when?: string;
 };
 
-type IEmailField = IDeclarativeFormFieldBase & {
+export type IEmailField = IDeclarativeFormFieldBase & {
   type?: "email";
   otp?: boolean;
   block_free_email?: boolean;
 };
 
-type IDropdownField = IDeclarativeFormFieldBase & {
+export type IDropdownField = IDeclarativeFormFieldBase & {
   type?: "dropdown";
   searchable?: boolean;
   options?: Array<IDeclarativeFormOption>;
 };
 
-type IRatingField = IDeclarativeFormFieldBase & {
+export type IRatingField = IDeclarativeFormFieldBase & {
   type?: "rating";
   min_label?: ILocalizedText;
   max_label?: ILocalizedText;
 };
 
-type IAddressField = IDeclarativeFormFieldBase & {
+export type IAddressField = IDeclarativeFormFieldBase & {
   type?:
     | "address"
     | "address_locality"
@@ -128,25 +128,25 @@ type IAddressField = IDeclarativeFormFieldBase & {
   outputFormat?: "string" | "structured";
 };
 
-type ISelectField = IDeclarativeFormFieldBase & {
+export type ISelectField = IDeclarativeFormFieldBase & {
   type?: "single_select" | "multiple_select";
   options?: Array<IDeclarativeFormOption>;
 };
 
-type IGeolocationField = IDeclarativeFormFieldBase & {
+export type IGeolocationField = IDeclarativeFormFieldBase & {
   type?: "geolocation";
 };
 
-type ICameraField = IDeclarativeFormFieldBase & {
+export type ICameraField = IDeclarativeFormFieldBase & {
   type?: "camera";
   facing_mode?: "front" | "rear";
 };
 
-type ITurnstileField = IDeclarativeFormFieldBase & {
+export type ITurnstileField = IDeclarativeFormFieldBase & {
   type?: "turnstile";
 };
 
-type IGenericField = IDeclarativeFormFieldBase & {
+export type IGenericField = IDeclarativeFormFieldBase & {
   type?:
     | "date"
     | "file_upload"
@@ -193,16 +193,16 @@ export type ICompletion = {
 
 export type ICompletionRule = ICompletion & { when?: string };
 
-type IRawAirtableConnection = {
+export type IRawAirtableConnection = {
   type?: "airtable";
   connection_id?: string;
   base_id?: string;
   table_id_or_name?: string;
 };
 
-type IRawWebhookConnection = { type?: "webhook"; url?: string };
+export type IRawWebhookConnection = { type?: "webhook"; url?: string };
 
-type IRawEmailConnection = {
+export type IRawEmailConnection = {
   type?: "email";
   to?: string;
   subject?: ILocalizedText;
@@ -225,32 +225,3 @@ export type IDeclarativeForm = {
   locale?: string;
   measurements?: { mixpanel?: string };
 };
-
-export type ISubmission = {
-  created_at: string;
-  data: Record<string, unknown>;
-  form_id: string;
-  id: string;
-  metadata: {
-    ip_address: string;
-    user_agent: string;
-  };
-  status: "partial" | "completed";
-  updated_at: string;
-};
-
-export interface IStructuredAddress {
-  formatted_address: string;
-  street_number?: string;
-  route?: string;
-  locality?: string;
-  administrative_area_level_1?: string;
-  country?: string;
-  postal_code?: string;
-  place_id: string;
-}
-
-export type IConnection = NonNullable<IDeclarativeForm["connections"]>[number];
-export type IWebhookConnection = Extract<IConnection, { type?: "webhook" }>;
-export type IAirtableConnection = Extract<IConnection, { type?: "airtable" }>;
-export type IEmailConnection = Extract<IConnection, { type?: "email" }>;
