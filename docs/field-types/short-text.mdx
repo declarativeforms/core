@@ -1,0 +1,36 @@
+---
+title: "Short text"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive short_text example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: short_text
+        label: "Question 1"
+        placeholder: "Type a short answer"
+        validators:
+          - required
+          - type: pattern
+            regex: "^[A-Za-z0-9 ]+$"
+            message: "Use letters, numbers, and spaces only."
+          - type: min_length
+            value: 2
+            message: "Enter at least 2 characters."
+          - type: max_length
+            value: 50
+            message: "Enter no more than 50 characters."
+          - type: expression
+            expression: "data.question_1 !== 'blocked'"
+            message: "Use a different value."
+
+    next: done
+```

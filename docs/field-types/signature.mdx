@@ -1,0 +1,23 @@
+---
+title: "Signature"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive signature example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: signature
+        label: "Question 1"
+        validators:
+          - required
+
+    next: done
+```

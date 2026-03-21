@@ -1,0 +1,51 @@
+---
+title: "Multiple select"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive multiple_select example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: multiple_select
+        label: "Question 1"
+        options:
+          # String options use the same label and value.
+          - "Option 1"
+          - "Option 2"
+          - "Option 3"
+        validators:
+          - required
+
+      - id: question_2
+        type: multiple_select
+        label: "Question 2"
+        options:
+          - label: "Option 1"
+            value: "option_1"
+          - label: "Option 2"
+            value: "option_2"
+          - label: "Option 3"
+            value: "option_3"
+        validators:
+          - required
+          # On multiple_select, min and max control the number of selected options.
+          - type: min
+            value: 1
+            message: "Select at least 1 option."
+          - type: max
+            value: 2
+            message: "Select no more than 2 options."
+          - type: expression
+            expression: "!((data.question_2 || []).includes('option_1') && (data.question_2 || []).includes('option_3'))"
+            message: "Do not combine Option 1 and Option 3."
+
+    next: done
+```

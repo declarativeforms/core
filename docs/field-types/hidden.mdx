@@ -1,0 +1,21 @@
+---
+title: "Hidden"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive hidden example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      # Hidden fields are not shown to the user and do not expose field-specific options.
+      - id: question_1
+        type: hidden
+
+    next: done
+```

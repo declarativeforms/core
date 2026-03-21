@@ -1,0 +1,54 @@
+---
+title: "Send submissions to a webhook"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A simple form that sends submissions to a webhook."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: short_text
+        label: "Question 1"
+        validators:
+          - required
+
+      - id: question_2
+        type: email
+        label: "Question 2"
+        validators:
+          - required
+
+    next: done
+
+connections:
+  - type: webhook
+    # Send the full submission object to this URL as JSON.
+    url: "https://example.com/webhooks/form-submissions"
+```
+
+The webhook receives the full submission object as JSON. The `status` can be `partial` or `completed`.
+
+```json
+{
+  "id": "sub_12345678",
+  "form_id": "form_12345678",
+  "created_at": "2026-03-16T10:00:00.000Z",
+  "updated_at": "2026-03-16T10:00:00.000Z",
+  "status": "completed",
+  "data": {
+    "question_1": "Ada Lovelace",
+    "question_2": "ada@example.com"
+  },
+  "metadata": {
+    "ip_address": "203.0.113.10",
+    "user_agent": "Mozilla/5.0"
+  }
+}
+```

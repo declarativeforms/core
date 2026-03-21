@@ -1,0 +1,44 @@
+---
+title: "Localize a form"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+# Localized text falls back from fr-CA to fr, then to en.
+locale: "fr-CA"
+title:
+  en: "Example form"
+  fr: "Formulaire d'exemple"
+description:
+  en: "A simple localized form."
+  fr: "Un formulaire localise simple."
+
+sections:
+  - id: section_1
+    title:
+      en: "Section 1"
+      fr: "Section 1"
+    fields:
+      - id: question_1
+        type: short_text
+        label:
+          en: "Question 1"
+          fr: "Question 1"
+        placeholder:
+          en: "Type your answer"
+          fr: "Saisissez votre reponse"
+        validators:
+          - required
+
+    next: done
+
+completion:
+  title:
+    en: "Thanks"
+    fr: "Merci"
+  message:
+    en: "Your submission has been received."
+    fr: "Votre soumission a bien ete recue."
+```

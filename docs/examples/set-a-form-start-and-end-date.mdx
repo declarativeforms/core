@@ -1,0 +1,29 @@
+---
+title: "Set a form start and end date"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A simple form with an opening and closing date."
+
+# The form will not open before this date and time.
+start_date: "2026-04-01T09:00:00.000Z"
+
+# The form will close after this date and time.
+end_date: "2026-04-30T17:00:00.000Z"
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: short_text
+        label: "Question 1"
+        validators:
+          - required
+
+    next: done
+```

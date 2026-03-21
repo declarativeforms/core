@@ -1,0 +1,29 @@
+---
+title: "Prefill data using query parameters"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A simple form with fields that can be prefilled from the URL."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      # Prefill this field with ?question_1=...
+      - id: question_1
+        type: short_text
+        label: "Question 1"
+
+      # Prefill this field with ?question_2=...
+      - id: question_2
+        type: email
+        label: "Question 2"
+
+    next: done
+```
+
+Example URL: `https://frms.dev/example-form?question_1=Ada&question_2=ada@example.com`

@@ -1,0 +1,45 @@
+---
+title: "Customize the thank-you page"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A simple form with a customized thank-you page."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: short_text
+        label: "Question 1"
+        validators:
+          - required
+
+      - id: question_2
+        type: email
+        label: "Question 2"
+        validators:
+          - required
+
+    next: done
+
+completion:
+  # Completion text can be plain strings or localized objects.
+  title:
+    en: "Thanks for your submission"
+    fr: "Merci pour votre soumission"
+  message:
+    en: "Thanks, {{data.question_1}}. We will reply to {{data.question_2}}."
+    fr: "Merci, {{data.question_1}}. Nous repondrons a {{data.question_2}}."
+  button:
+    label:
+      en: "Go to example.com"
+      fr: "Aller sur example.com"
+    url:
+      en: "https://example.com/en"
+      fr: "https://example.com/fr"
+```

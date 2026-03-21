@@ -1,0 +1,50 @@
+---
+title: "Address fields"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive address field family example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: address
+        label: "Address"
+        placeholder: "Start typing an address"
+        outputFormat: structured # Can also be string.
+        validators:
+          - required
+
+      - id: question_2
+        type: address_locality
+        label: "Locality"
+        placeholder: "City"
+        validators:
+          - required
+
+      - id: question_3
+        type: address_region
+        label: "Region"
+        placeholder: "State or region"
+        validators:
+          - required
+
+      - id: question_4
+        type: address_country
+        label: "Country"
+        placeholder: "Country"
+        outputFormat: string # Can also be structured.
+        validators:
+          - required
+          - type: expression
+            expression: "data.question_4 !== 'AQ'"
+            message: "Choose a supported country."
+
+    next: done
+```

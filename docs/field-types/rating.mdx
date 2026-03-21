@@ -1,0 +1,31 @@
+---
+title: "Rating"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive rating example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: rating
+        label: "Question 1"
+        min_label: "Low"
+        max_label: "High"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Use a rating of at least 1."
+          - type: max
+            value: 5
+            message: "Use a rating of no more than 5."
+
+    next: done
+```

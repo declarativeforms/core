@@ -1,0 +1,22 @@
+---
+title: "Turnstile"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive turnstile example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: turnstile
+        label: "Question 1"
+        # Turnstile is treated as required automatically.
+
+    next: done
+```

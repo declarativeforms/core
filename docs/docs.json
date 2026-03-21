@@ -1,0 +1,74 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Declarative Forms",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373"
+  },
+  "integrations": {
+    "mixpanel": {
+      "projectToken": "fffd6fab3138c0c0af6609cd986ece5e"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "getting-started/create-a-form"
+            ]
+          },
+          {
+            "group": "Field Types",
+            "pages": [
+              "field-types/index",
+              "field-types/short-text",
+              "field-types/long-text",
+              "field-types/email",
+              "field-types/number",
+              "field-types/date",
+              "field-types/url",
+              "field-types/mobile-number",
+              "field-types/dropdown",
+              "field-types/single-select",
+              "field-types/multiple-select",
+              "field-types/rating",
+              "field-types/address-fields",
+              "field-types/file-upload",
+              "field-types/signature",
+              "field-types/geolocation",
+              "field-types/camera",
+              "field-types/hidden",
+              "field-types/turnstile"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/add-another-section",
+              "examples/add-conditional-navigation",
+              "examples/route-to-an-external-website",
+              "examples/customize-the-thank-you-page",
+              "examples/send-submissions-to-a-webhook",
+              "examples/show-or-hide-a-field",
+              "examples/send-submissions-to-email",
+              "examples/localize-a-form",
+              "examples/set-a-form-start-and-end-date",
+              "examples/prefill-data-using-query-parameters"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

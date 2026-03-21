@@ -1,0 +1,68 @@
+---
+title: "Add conditional navigation"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A simple form with conditional navigation."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: dropdown
+        label: "Question 1"
+        options:
+          - label: "Go to section 2"
+            value: "section_2"
+          - label: "Go to section 3"
+            value: "section_3"
+          - label: "Go to external website"
+            value: "external"
+        validators:
+          - required
+
+    next:
+      # If question_1 is section_2, move to section_2.
+      - when: "data.question_1 === 'section_2'"
+        go: "section_2"
+
+      # If question_1 is section_3, move to section_3.
+      - when: "data.question_1 === 'section_3'"
+        go: "section_3"
+
+      # If question_1 is external, send the user to an external website.
+      - when: "data.question_1 === 'external'"
+        go: "https://example.com"
+
+      # If nothing matches, complete the form.
+      - else: "done"
+
+  - id: section_2
+    title: "Section 2"
+    fields:
+      - id: question_2
+        type: short_text
+        label: "Question 2"
+        validators:
+          - required
+
+    # After this section is submitted, the form is complete.
+    next: done
+
+  - id: section_3
+    title: "Section 3"
+    fields:
+      - id: question_3
+        type: short_text
+        label: "Question 3"
+        validators:
+          - required
+
+    # After this section is submitted, the form is complete.
+    next: done
+```

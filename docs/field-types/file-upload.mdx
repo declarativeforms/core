@@ -1,0 +1,30 @@
+---
+title: "File upload"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A comprehensive file_upload example."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: file_upload
+        label: "Question 1"
+        placeholder: "Upload one or more files"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Upload at least 1 file."
+          - type: max
+            value: 3
+            message: "Upload no more than 3 files."
+
+    next: done
+```

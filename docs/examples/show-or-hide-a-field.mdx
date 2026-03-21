@@ -1,0 +1,32 @@
+---
+title: "Show or hide a field"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A simple form that shows a field only when it is needed."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: question_1
+        type: single_select
+        label: "Question 1"
+        options:
+          - "Yes"
+          - "No"
+        validators:
+          - required
+
+      - id: question_2
+        type: short_text
+        label: "Question 2"
+        # Show this field only when question_1 is Yes.
+        visible_when: "data.question_1 === 'Yes'"
+
+    next: done
+```
