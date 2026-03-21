@@ -75,7 +75,9 @@ function buildFieldTypeValidators(
   > = {};
 
   switch (field.type) {
-    case "date": {
+    case "date":
+    case "date_month":
+    case "time": {
       const minRule = findValidationRule(field.validation, "min");
       const maxRule = findValidationRule(field.validation, "max");
 

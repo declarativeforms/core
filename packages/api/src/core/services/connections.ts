@@ -151,6 +151,20 @@ async function handleAirtable(
   );
 }
 
+function evaluateExpression(
+  expression: string,
+  data: Record<string, unknown>,
+): boolean {
+  try {
+    const fn = new Function('data', `return ${expression}`) as (
+      value: Record<string, unknown>,
+    ) => unknown;
+    return Boolean(fn(data));
+  } catch {
+    return false;
+  }
+}
+
 export async function processConnections(
   form: IDeclarativeForm,
   submission: ISubmission,
@@ -161,6 +175,10 @@ export async function processConnections(
 
   for (const connection of form.connections) {
     if (!isDeclarativeConnectionType(connection.type)) {
+      continue;
+    }
+
+    if (connection.when && !evaluateExpression(connection.when, submission.data)) {
       continue;
     }
 

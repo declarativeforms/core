@@ -7,6 +7,7 @@ export const DECLARATIVE_FIELD_TYPES = [
   "address_region",
   "camera",
   "date",
+  "date_month",
   "dropdown",
   "email",
   "file_upload",
@@ -20,6 +21,7 @@ export const DECLARATIVE_FIELD_TYPES = [
   "short_text",
   "signature",
   "single_select",
+  "time",
   "turnstile",
   "url",
 ] as const;
@@ -131,6 +133,7 @@ export type IAddressField = IDeclarativeFormFieldBase & {
 export type ISelectField = IDeclarativeFormFieldBase & {
   type?: "single_select" | "multiple_select";
   options?: Array<IDeclarativeFormOption>;
+  allow_other?: boolean;
 };
 
 export type IGeolocationField = IDeclarativeFormFieldBase & {
@@ -149,6 +152,7 @@ export type ITurnstileField = IDeclarativeFormFieldBase & {
 export type IGenericField = IDeclarativeFormFieldBase & {
   type?:
     | "date"
+    | "date_month"
     | "file_upload"
     | "hidden"
     | "long_text"
@@ -156,6 +160,7 @@ export type IGenericField = IDeclarativeFormFieldBase & {
     | "number"
     | "signature"
     | "short_text"
+    | "time"
     | "url";
 };
 
@@ -198,9 +203,10 @@ export type IRawAirtableConnection = {
   connection_id?: string;
   base_id?: string;
   table_id_or_name?: string;
+  when?: string;
 };
 
-export type IRawWebhookConnection = { type?: "webhook"; url?: string };
+export type IRawWebhookConnection = { type?: "webhook"; url?: string; when?: string };
 
 export type IRawEmailConnection = {
   type?: "email";
@@ -208,6 +214,7 @@ export type IRawEmailConnection = {
   subject?: ILocalizedText;
   body?: ILocalizedText;
   include_responses?: boolean;
+  when?: string;
 };
 
 export type IDeclarativeForm = {

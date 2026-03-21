@@ -129,6 +129,8 @@ const enMessageSource = {
   "multiple_select.up_to":
     "Select up to {max} options",
   "multiple_select.selected_count": "{count} selected",
+  "select.other": "Other",
+  "select.other_placeholder": "Please specify",
 } as const;
 
 export type TranslationKey = keyof typeof enMessageSource;

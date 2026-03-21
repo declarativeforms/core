@@ -57,6 +57,7 @@ export type CompiledAddressField = CompiledFieldBase & {
 export type CompiledSelectField = CompiledFieldBase & {
   type: "single_select" | "multiple_select";
   options?: CompiledOption[];
+  allow_other?: boolean;
 };
 
 export type CompiledGeolocationField = CompiledFieldBase & {
@@ -76,6 +77,7 @@ export type CompiledGenericField = CompiledFieldBase & {
   type: Extract<
     DeclarativeFieldType,
     | "date"
+    | "date_month"
     | "file_upload"
     | "hidden"
     | "long_text"
@@ -83,6 +85,7 @@ export type CompiledGenericField = CompiledFieldBase & {
     | "number"
     | "signature"
     | "short_text"
+    | "time"
     | "url"
   >;
 };

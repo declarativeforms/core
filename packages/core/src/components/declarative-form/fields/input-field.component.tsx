@@ -12,6 +12,10 @@ export function InputField({
   const inputType =
     field.type === "date"
       ? "date"
+      : field.type === "date_month"
+      ? "month"
+      : field.type === "time"
+      ? "time"
       : field.type === "email"
       ? "email"
       : field.type === "mobile_number"
@@ -22,7 +26,7 @@ export function InputField({
       ? "url"
       : "text";
 
-  const isDate = field.type === "date";
+  const isDate = field.type === "date" || field.type === "date_month" || field.type === "time";
   const hasPattern = field.validation.some((r) => r.type === "pattern");
   const minRule = isDate ? findValidationRule(field.validation, "min") : undefined;
   const maxRule = isDate ? findValidationRule(field.validation, "max") : undefined;
