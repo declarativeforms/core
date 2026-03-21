@@ -25,6 +25,9 @@ sections:
           - type: max
             value: 3
             message: "Upload no more than 3 files."
+          - type: expression
+            expression: "(data.question_1 || []).length <= 3"
+            message: "Upload no more than 3 files."
 
     next: done
 ```

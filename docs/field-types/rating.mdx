@@ -26,6 +26,9 @@ sections:
           - type: max
             value: 5
             message: "Use a rating of no more than 5."
+          - type: expression
+            expression: "data.question_1 >= 3"
+            message: "Please provide a rating of at least 3."
 
     next: done
 ```
