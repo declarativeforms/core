@@ -1,0 +1,135 @@
+# Example: Customer Feedback Survey
+# Demonstrates rating fields, conditional logic, and expression-based validation.
+
+id: "customer_feedback"
+version: 1
+title: "Customer Feedback"
+description: "Help us improve by sharing your experience."
+
+sections:
+  - id: experience
+    title: "Your Experience"
+    fields:
+      - id: overall_rating
+        type: rating
+        label: "How would you rate your overall experience?"
+        min_label: "Terrible"
+        max_label: "Excellent"
+        validators:
+          - required
+
+      - id: categories
+        type: multiple_select
+        label: "What did you interact with?"
+        options:
+          - label: "Product"
+            value: "product"
+          - label: "Customer Support"
+            value: "support"
+          - label: "Website"
+            value: "website"
+          - label: "Billing"
+            value: "billing"
+        validators:
+          - required
+
+      - id: recommend
+        type: single_select
+        label: "Would you recommend us to a friend?"
+        options:
+          - label: "Definitely"
+            value: "yes"
+          - label: "Maybe"
+            value: "maybe"
+          - label: "No"
+            value: "no"
+        validators:
+          - required
+    next:
+      - when: "data.overall_rating <= 2"
+        go: "negative_feedback"
+      - else: "positive_feedback"
+
+  - id: negative_feedback
+    title: "We're Sorry to Hear That"
+    fields:
+      - id: issues
+        type: multiple_select
+        label: "What went wrong? (Select all that apply)"
+        options:
+          - "Slow response time"
+          - "Product quality"
+          - "Difficult to use"
+          - "Poor communication"
+          - "Pricing"
+          - "Other"
+        validators:
+          - required
+
+      - id: issue_details
+        type: long_text
+        label: "Please tell us more so we can improve"
+        placeholder: "Describe your experience..."
+        validators:
+          - required
+          - type: min_length
+            value: 30
+            message: "Please provide at least 30 characters of detail"
+
+      - id: contact_me
+        type: single_select
+        label: "Would you like us to follow up with you?"
+        options:
+          - "Yes, please contact me"
+          - "No, thanks"
+
+      - id: contact_email
+        type: email
+        label: "Your email address"
+        visible_when: "data.contact_me === 'Yes, please contact me'"
+        validators:
+          - required
+    next: "done"
+
+  - id: positive_feedback
+    title: "Glad You Had a Great Experience!"
+    fields:
+      - id: best_part
+        type: long_text
+        label: "What did you enjoy most?"
+        placeholder: "Tell us what stood out..."
+
+      - id: suggestions
+        type: long_text
+        label: "Any suggestions for improvement?"
+        placeholder: "We're always looking to get better..."
+
+      - id: testimonial
+        type: single_select
+        label: "Can we use your feedback as a testimonial?"
+        options:
+          - "Yes"
+          - "No"
+    next: "done"
+
+  - id: done
+    title: "Almost Done"
+    fields:
+      - id: name
+        type: short_text
+        label: "Your name (optional)"
+
+      - id: email
+        type: email
+        label: "Your email (optional)"
+
+completion:
+  title: "Thank You!"
+  message: "Your feedback helps us improve. We appreciate you taking the time!"
+  button:
+    label: "Back to Website"
+    url: "https://example.com"
+
+connections:
+  - type: webhook
+    url: "https://api.example.com/feedback"

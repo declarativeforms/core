@@ -1,0 +1,78 @@
+# Example: Contact Us Form
+# A simple single-section contact form with validation.
+
+id: "contact_us"
+version: 1
+title: "Contact Us"
+description: "We'd love to hear from you. Fill out the form below and we'll get back to you shortly."
+
+sections:
+  - id: contact_info
+    title: "Your Details"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full Name"
+        placeholder: "John Doe"
+        validators:
+          - required
+          - type: min_length
+            value: 2
+            message: "Name must be at least 2 characters"
+
+      - id: email
+        type: email
+        label: "Email Address"
+        placeholder: "you@example.com"
+        validators:
+          - required
+
+      - id: phone
+        type: mobile_number
+        label: "Phone Number (optional)"
+        placeholder: "+1 555 123 4567"
+
+      - id: subject
+        type: dropdown
+        label: "Subject"
+        options:
+          - "General Inquiry"
+          - "Technical Support"
+          - "Billing"
+          - "Partnership"
+          - "Other"
+        validators:
+          - required
+
+      - id: other_subject
+        type: short_text
+        label: "Please specify the subject"
+        visible_when: "data.subject === 'Other'"
+        validators:
+          - required
+
+      - id: message
+        type: long_text
+        label: "Message"
+        placeholder: "Tell us how we can help..."
+        validators:
+          - required
+          - type: min_length
+            value: 20
+            message: "Please provide at least 20 characters"
+          - type: max_length
+            value: 2000
+            message: "Message cannot exceed 2000 characters"
+
+completion:
+  title: "Message Sent!"
+  message: "Thank you, {{data.full_name}}. We'll respond to {{data.email}} within 24 hours."
+  button:
+    label: "Back to Home"
+    url: "https://example.com"
+
+connections:
+  - type: email
+    to: "support@example.com"
+    subject: "Contact Form: {{data.subject}}"
+    include_responses: true

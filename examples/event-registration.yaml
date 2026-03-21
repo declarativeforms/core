@@ -1,0 +1,208 @@
+# Example: Multi-Step Event Registration
+# Demonstrates multi-section forms, conditional navigation, and various field types.
+
+id: "event_registration"
+version: 1
+title:
+  en: "Event Registration"
+  es: "Registro de Evento"
+description:
+  en: "Register for our upcoming conference."
+  es: "Regístrate para nuestra próxima conferencia."
+locale: "en"
+
+sections:
+  - id: personal_info
+    title:
+      en: "Personal Information"
+      es: "Información Personal"
+    fields:
+      - id: first_name
+        type: short_text
+        label:
+          en: "First Name"
+          es: "Nombre"
+        validators:
+          - required
+
+      - id: last_name
+        type: short_text
+        label:
+          en: "Last Name"
+          es: "Apellido"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label:
+          en: "Email"
+          es: "Correo Electrónico"
+        validators:
+          - required
+
+      - id: ticket_type
+        type: single_select
+        label:
+          en: "Ticket Type"
+          es: "Tipo de Entrada"
+        options:
+          - label:
+              en: "General Admission"
+              es: "Admisión General"
+            value: "general"
+          - label:
+              en: "VIP"
+              es: "VIP"
+            value: "vip"
+          - label:
+              en: "Speaker"
+              es: "Ponente"
+            value: "speaker"
+        validators:
+          - required
+    next:
+      - when: "data.ticket_type === 'speaker'"
+        go: "speaker_details"
+      - else: "preferences"
+
+  - id: speaker_details
+    title:
+      en: "Speaker Details"
+      es: "Detalles del Ponente"
+    fields:
+      - id: talk_title
+        type: short_text
+        label:
+          en: "Talk Title"
+          es: "Título de la Charla"
+        validators:
+          - required
+
+      - id: talk_abstract
+        type: long_text
+        label:
+          en: "Abstract"
+          es: "Resumen"
+        placeholder:
+          en: "Describe your talk in 200-500 words"
+          es: "Describe tu charla en 200-500 palabras"
+        validators:
+          - required
+          - type: min_length
+            value: 200
+            message:
+              en: "Abstract must be at least 200 characters"
+              es: "El resumen debe tener al menos 200 caracteres"
+
+      - id: slides
+        type: file_upload
+        label:
+          en: "Upload slides (optional)"
+          es: "Subir presentación (opcional)"
+    next: "preferences"
+
+  - id: preferences
+    title:
+      en: "Preferences"
+      es: "Preferencias"
+    fields:
+      - id: dietary
+        type: dropdown
+        label:
+          en: "Dietary Requirements"
+          es: "Requisitos Dietéticos"
+        options:
+          - label:
+              en: "None"
+              es: "Ninguno"
+            value: "none"
+          - label:
+              en: "Vegetarian"
+              es: "Vegetariano"
+            value: "vegetarian"
+          - label:
+              en: "Vegan"
+              es: "Vegano"
+            value: "vegan"
+          - label:
+              en: "Halal"
+              es: "Halal"
+            value: "halal"
+          - label:
+              en: "Other"
+              es: "Otro"
+            value: "other"
+
+      - id: dietary_other
+        type: short_text
+        label:
+          en: "Please specify"
+          es: "Por favor especifica"
+        visible_when: "data.dietary === 'other'"
+        validators:
+          - required
+
+      - id: sessions
+        type: multiple_select
+        label:
+          en: "Which sessions interest you? (Select at least 2)"
+          es: "¿Qué sesiones te interesan? (Selecciona al menos 2)"
+        options:
+          - label:
+              en: "Keynote"
+              es: "Presentación Principal"
+            value: "keynote"
+          - label:
+              en: "Workshops"
+              es: "Talleres"
+            value: "workshops"
+          - label:
+              en: "Networking"
+              es: "Networking"
+            value: "networking"
+          - label:
+              en: "Panel Discussions"
+              es: "Mesas Redondas"
+            value: "panels"
+        validators:
+          - required
+          - type: min
+            value: 2
+            message:
+              en: "Please select at least 2 sessions"
+              es: "Por favor selecciona al menos 2 sesiones"
+
+      - id: satisfaction
+        type: rating
+        label:
+          en: "How excited are you?"
+          es: "¿Qué tan emocionado estás?"
+        min_label:
+          en: "Not at all"
+          es: "Nada"
+        max_label:
+          en: "Very excited!"
+          es: "¡Muy emocionado!"
+
+completion:
+  title:
+    en: "You're Registered!"
+    es: "¡Estás Registrado!"
+  message:
+    en: "Thank you, {{data.first_name}}! Check {{data.email}} for your confirmation."
+    es: "¡Gracias, {{data.first_name}}! Revisa {{data.email}} para tu confirmación."
+  button:
+    label:
+      en: "View Event Details"
+      es: "Ver Detalles del Evento"
+    url: "https://example.com/event"
+
+connections:
+  - type: webhook
+    url: "https://api.example.com/registrations"
+  - type: email
+    to: "events@example.com"
+    subject:
+      en: "New Registration: {{data.first_name}} {{data.last_name}}"
+    include_responses: true
