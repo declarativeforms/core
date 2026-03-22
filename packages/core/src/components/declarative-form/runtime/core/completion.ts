@@ -1,15 +1,22 @@
-import type { ICompletion, ICompletionRule } from "../../types";
 import { evaluateExpression } from "./expression";
+
+type CompletionLike = {
+  title?: unknown;
+  message?: unknown;
+  button?: unknown;
+};
+
+type CompletionRuleLike<T extends CompletionLike> = T & { when?: string };
 
 /**
  * Resolves the matching completion from a single or conditional completion config.
  * Rules are evaluated top-to-bottom; the first matching `when` wins.
  * An entry without `when` acts as the default and should be placed last.
  */
-export function resolveCompletion(
-  completion: ICompletion | ICompletionRule[] | undefined,
+export function resolveCompletion<T extends CompletionLike>(
+  completion: T | CompletionRuleLike<T>[] | undefined,
   data: Record<string, unknown>
-): ICompletion | undefined {
+): T | undefined {
   if (!completion) {
     return undefined;
   }
