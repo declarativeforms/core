@@ -14,6 +14,7 @@ export function DeclarativeForm(props: {
   onEffect: (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => void;
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
+  const hasMountedRef = useRef(false);
   const { state, dispatch } = useFormRuntime(
     props.form,
     props.locale,
@@ -22,6 +23,10 @@ export function DeclarativeForm(props: {
   );
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
     window.scrollTo(0, 0);
     sectionRef.current?.focus();
   }, [state.activeSectionId]);
