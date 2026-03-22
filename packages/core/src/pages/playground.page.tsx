@@ -4,16 +4,18 @@ import { YamlEditor } from "@/components/yaml-editor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function useIsMobile(breakpoint = 768) {
+  const query = `(max-width: ${breakpoint - 1}px)`;
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < breakpoint
+    () => typeof window !== "undefined" && window.matchMedia(query).matches
   );
 
   useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const mql = window.matchMedia(query);
+    setIsMobile(mql.matches);
     const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mql.addEventListener("change", onChange);
     return () => mql.removeEventListener("change", onChange);
-  }, [breakpoint]);
+  }, [query]);
 
   return isMobile;
 }

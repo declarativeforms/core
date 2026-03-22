@@ -74,7 +74,7 @@ export function YamlEditor({ className }: { className?: string }) {
   const viewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || viewRef.current) return;
 
     const state = EditorState.create({
       doc: defaultYaml,
@@ -118,6 +118,7 @@ export function YamlEditor({ className }: { className?: string }) {
 
     return () => {
       view.destroy();
+      viewRef.current = null;
     };
   }, []);
 
