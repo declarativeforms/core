@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getFieldOptions } from "../view-support/field-support";
+import { buildFieldValidation } from "../validation";
 import { HtmlText } from "../view-support/html-text";
 import {
   FormControl,
@@ -21,7 +21,7 @@ export function SingleSelectField({
   controllerField,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
-  const options = getFieldOptions(field);
+  const { options } = buildFieldValidation(field);
   const allowOther = "allow_other" in field && field.allow_other;
 
   const [isOtherMode, setIsOtherMode] = useState(

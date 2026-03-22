@@ -1,6 +1,6 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { HtmlText } from "../view-support/html-text";
-import { getRatingRange } from "./rating-range";
+import { buildFieldValidation } from "../validation";
 import {
   FormControl,
   FormItem,
@@ -14,7 +14,8 @@ export function RatingField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const { min, max } = getRatingRange(field.validation);
+  const { ratingRange } = buildFieldValidation(field);
+  const { min, max } = ratingRange ?? { min: 1, max: 5 };
   const values = Array.from({ length: max - min + 1 }, (_, index) =>
     String(min + index)
   );

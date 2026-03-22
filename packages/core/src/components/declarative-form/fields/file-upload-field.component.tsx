@@ -2,7 +2,7 @@ import { Upload } from "lucide-react";
 import { useState, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getNumericBound } from "../view-support/field-support";
+import { buildFieldValidation } from "../validation";
 import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 import { uploadFile } from "@/lib/file-upload";
@@ -18,7 +18,8 @@ export function FileUploadField({
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const maxFiles = getNumericBound(field.validation, "max") ?? 1;
+  const { minBound, maxBound } = buildFieldValidation(field);
+  const maxFiles = maxBound ?? 1;
 
   const currentUrls: string[] =
     maxFiles === 1
@@ -132,7 +133,7 @@ export function FileUploadField({
 
   const getFileRequirements = () => {
     const requirements: string[] = [];
-    const minFiles = getNumericBound(field.validation, "min") ?? 0;
+    const minFiles = minBound ?? 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
       requirements.push(t("file_upload.range_files", { min: String(minFiles), max: String(maxFiles) }));
