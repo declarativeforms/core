@@ -1,0 +1,71 @@
+version: 1
+title: "Event registration"
+description: "Register for our upcoming event."
+
+sections:
+  - id: attendee
+    title: "Attendee information"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: company
+        type: short_text
+        label: "Company or organization"
+        placeholder: "Acme Inc."
+
+      - id: dietary
+        type: dropdown
+        label: "Dietary requirements"
+        options:
+          - "None"
+          - "Vegetarian"
+          - "Vegan"
+          - "Gluten-free"
+          - "Halal"
+          - "Kosher"
+
+    next: sessions
+
+  - id: sessions
+    title: "Session preferences"
+    fields:
+      - id: sessions
+        type: multiple_select
+        label: "Which sessions would you like to attend?"
+        options:
+          - "Opening keynote"
+          - "Workshop A"
+          - "Workshop B"
+          - "Panel discussion"
+          - "Networking lunch"
+          - "Closing session"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Please select at least one session."
+
+      - id: notes
+        type: long_text
+        label: "Anything else we should know?"
+        placeholder: "Accessibility needs, questions, etc."
+
+    next: done
+
+connections:
+  - type: email
+    to: "events@example.com"
+    subject: "Registration from {{data.full_name}}"
+    include_responses: true

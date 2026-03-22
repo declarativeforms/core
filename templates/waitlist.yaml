@@ -1,0 +1,59 @@
+version: 1
+title: "Join the waitlist"
+description: "Be the first to know when we launch."
+
+sections:
+  - id: signup
+    title: "Get early access"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Work email address"
+        placeholder: "jane@acme.com"
+        block_free_email: true
+        validators:
+          - required
+
+      - id: company
+        type: short_text
+        label: "Company"
+        placeholder: "Acme Inc."
+        validators:
+          - required
+
+      - id: role
+        type: dropdown
+        label: "Your role"
+        options:
+          - "Founder / CEO"
+          - "Engineering"
+          - "Product"
+          - "Marketing"
+          - "Operations"
+          - "Other"
+
+      - id: use_case
+        type: long_text
+        label: "How do you plan to use the product?"
+        placeholder: "Tell us about your use case."
+
+      - id: captcha
+        type: turnstile
+        label: "Verify you are human"
+
+    next: done
+
+completion:
+  title: "You are on the list!"
+  message: "Thanks, {{data.full_name}}. We will reach out to {{data.email}} when your spot is ready."
+
+connections:
+  - type: webhook
+    url: "https://hooks.zapier.com/hooks/catch/your-hook-id"

@@ -1,0 +1,82 @@
+version: 1
+title: "Bug report"
+description: "Found a bug? Let us know so we can fix it."
+
+sections:
+  - id: bug
+    title: "Describe the bug"
+    fields:
+      - id: title
+        type: short_text
+        label: "Bug title"
+        placeholder: "Brief summary of the issue"
+        validators:
+          - required
+          - type: max_length
+            value: 120
+            message: "Keep the title under 120 characters."
+
+      - id: severity
+        type: single_select
+        label: "Severity"
+        options:
+          - label: "Critical — app is unusable"
+            value: "critical"
+          - label: "High — major feature broken"
+            value: "high"
+          - label: "Medium — something is wrong but I can work around it"
+            value: "medium"
+          - label: "Low — minor issue or visual glitch"
+            value: "low"
+        validators:
+          - required
+
+      - id: description
+        type: long_text
+        label: "Steps to reproduce"
+        placeholder: "1. Go to ...\n2. Click on ...\n3. See error"
+        validators:
+          - required
+
+      - id: expected
+        type: long_text
+        label: "Expected behavior"
+        placeholder: "What did you expect to happen?"
+        validators:
+          - required
+
+      - id: actual
+        type: long_text
+        label: "Actual behavior"
+        placeholder: "What actually happened?"
+        validators:
+          - required
+
+      - id: screenshot
+        type: file_upload
+        label: "Screenshots or recordings"
+        validators:
+          - type: max
+            value: 5
+            message: "You can upload at most 5 files."
+
+      - id: email
+        type: email
+        label: "Your email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+    next: done
+
+connections:
+  # Route critical and high severity bugs to an urgent channel.
+  - type: webhook
+    url: "https://hooks.zapier.com/hooks/catch/your-urgent-hook"
+    when: "data.severity === 'critical' || data.severity === 'high'"
+
+  # Send all bug reports to the team inbox.
+  - type: email
+    to: "bugs@example.com"
+    subject: "[{{data.severity}}] {{data.title}}"
+    include_responses: true

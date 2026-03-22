@@ -1,0 +1,51 @@
+version: 1
+title: "Feedback survey"
+description: "Tell us how we are doing. Your feedback helps us improve."
+
+sections:
+  - id: rating
+    title: "Rate your experience"
+    fields:
+      - id: overall_rating
+        type: rating
+        label: "How would you rate your overall experience?"
+        min_label: "Poor"
+        max_label: "Excellent"
+        validators:
+          - required
+
+      - id: recommend
+        type: single_select
+        label: "Would you recommend us to a friend?"
+        options:
+          - "Yes"
+          - "No"
+          - "Maybe"
+        validators:
+          - required
+
+    next: details
+
+  - id: details
+    title: "Tell us more"
+    fields:
+      - id: liked
+        type: long_text
+        label: "What did you like most?"
+        placeholder: "Tell us what worked well."
+
+      - id: improve
+        type: long_text
+        label: "What could we improve?"
+        placeholder: "Tell us what we can do better."
+
+      - id: email
+        type: email
+        label: "Email address (optional)"
+        placeholder: "jane@example.com"
+
+    next: done
+
+connections:
+  - type: webhook
+    url: "https://hooks.zapier.com/hooks/catch/your-hook-id"

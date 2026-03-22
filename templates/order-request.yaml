@@ -1,0 +1,111 @@
+version: 1
+title: "Request a quote"
+description: "Tell us about your project and we will send you a quote."
+
+sections:
+  - id: contact
+    title: "Contact information"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: company
+        type: short_text
+        label: "Company"
+        placeholder: "Acme Inc."
+
+      - id: phone
+        type: mobile_number
+        label: "Phone number (optional)"
+        placeholder: "+1 555 123 4567"
+
+    next: project
+
+  - id: project
+    title: "Project details"
+    fields:
+      - id: service
+        type: dropdown
+        label: "What service are you interested in?"
+        searchable: true
+        options:
+          - "Web development"
+          - "Mobile app development"
+          - "UI/UX design"
+          - "Branding"
+          - "Consulting"
+          - "Other"
+        validators:
+          - required
+
+      - id: budget
+        type: dropdown
+        label: "Budget range"
+        options:
+          - label: "Under $5,000"
+            value: "under_5k"
+          - label: "$5,000 – $15,000"
+            value: "5k_15k"
+          - label: "$15,000 – $50,000"
+            value: "15k_50k"
+          - label: "Over $50,000"
+            value: "over_50k"
+          - label: "Not sure yet"
+            value: "unsure"
+        validators:
+          - required
+
+      - id: timeline
+        type: single_select
+        label: "When do you need this completed?"
+        options:
+          - "As soon as possible"
+          - "Within 1 month"
+          - "Within 3 months"
+          - "No rush — flexible timeline"
+        validators:
+          - required
+
+      - id: description
+        type: long_text
+        label: "Project description"
+        placeholder: "Tell us about your project, goals, and any specific requirements."
+        validators:
+          - required
+          - type: min_length
+            value: 30
+            message: "Please provide at least 30 characters of detail."
+
+      - id: reference
+        type: file_upload
+        label: "Reference files (optional)"
+        validators:
+          - type: max
+            value: 5
+            message: "You can upload at most 5 files."
+
+    next: done
+
+completion:
+  title: "Quote request received"
+  message: "Thanks, {{data.full_name}}. We will review your request and get back to you at {{data.email}} within 2 business days."
+
+connections:
+  - type: email
+    to: "sales@example.com"
+    subject: "Quote request from {{data.full_name}} — {{data.service}}"
+    include_responses: true
+
+  - type: webhook
+    url: "https://hooks.zapier.com/hooks/catch/your-hook-id"

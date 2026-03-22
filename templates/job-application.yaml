@@ -1,0 +1,75 @@
+version: 1
+title: "Job application"
+description: "Apply for a position on our team."
+
+sections:
+  - id: personal
+    title: "Personal information"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: phone
+        type: mobile_number
+        label: "Phone number"
+        placeholder: "+1 555 123 4567"
+
+      - id: portfolio
+        type: url
+        label: "Portfolio or LinkedIn URL"
+        placeholder: "https://linkedin.com/in/janesmith"
+
+    next: role
+
+  - id: role
+    title: "Role and experience"
+    fields:
+      - id: role
+        type: dropdown
+        label: "Which role are you applying for?"
+        options:
+          - "Software Engineer"
+          - "Product Designer"
+          - "Product Manager"
+          - "Marketing"
+          - "Other"
+        validators:
+          - required
+
+      - id: resume
+        type: file_upload
+        label: "Resume / CV"
+        validators:
+          - required
+          - type: max
+            value: 1
+            message: "Please upload one file."
+
+      - id: cover_letter
+        type: long_text
+        label: "Cover letter"
+        placeholder: "Tell us why you are a great fit for this role."
+        validators:
+          - required
+          - type: min_length
+            value: 50
+            message: "Please write at least 50 characters."
+
+    next: done
+
+connections:
+  - type: email
+    to: "hiring@example.com"
+    subject: "Application from {{data.full_name}} — {{data.role}}"
+    include_responses: true

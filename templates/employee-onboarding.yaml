@@ -1,0 +1,134 @@
+version: 1
+title: "Employee onboarding"
+description: "Welcome to the team! Complete this form before your first day."
+
+sections:
+  - id: personal
+    title: "Personal details"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Personal email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: start_date
+        type: date
+        label: "Start date"
+        validators:
+          - required
+
+      - id: department
+        type: dropdown
+        label: "Department"
+        options:
+          - "Engineering"
+          - "Product"
+          - "Design"
+          - "Marketing"
+          - "Sales"
+          - "Operations"
+          - "Finance"
+          - "People / HR"
+        validators:
+          - required
+
+      - id: address
+        type: address
+        label: "Home address"
+        placeholder: "Start typing your address"
+        validators:
+          - required
+
+    next: equipment
+
+  - id: equipment
+    title: "Equipment and preferences"
+    fields:
+      - id: equipment
+        type: multiple_select
+        label: "What equipment do you need?"
+        options:
+          - "Laptop"
+          - "External monitor"
+          - "Keyboard"
+          - "Mouse"
+          - "Headset"
+          - "Standing desk"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Please select at least one item."
+
+      - id: os_preference
+        type: single_select
+        label: "Operating system preference"
+        options:
+          - "macOS"
+          - "Windows"
+          - "Linux"
+        validators:
+          - required
+
+      - id: tshirt_size
+        type: dropdown
+        label: "T-shirt size"
+        options:
+          - "XS"
+          - "S"
+          - "M"
+          - "L"
+          - "XL"
+          - "XXL"
+
+    next: emergency
+
+  - id: emergency
+    title: "Emergency contact"
+    fields:
+      - id: emergency_name
+        type: short_text
+        label: "Emergency contact name"
+        placeholder: "John Smith"
+        validators:
+          - required
+
+      - id: emergency_phone
+        type: mobile_number
+        label: "Emergency contact phone"
+        placeholder: "+1 555 123 4567"
+        validators:
+          - required
+
+      - id: emergency_relationship
+        type: dropdown
+        label: "Relationship"
+        options:
+          - "Spouse / Partner"
+          - "Parent"
+          - "Sibling"
+          - "Friend"
+          - "Other"
+        validators:
+          - required
+
+    next: done
+
+completion:
+  title: "All set!"
+  message: "Thanks, {{data.full_name}}. We look forward to seeing you on your first day."
+
+connections:
+  - type: email
+    to: "hr@example.com"
+    subject: "Onboarding form completed — {{data.full_name}}"
+    include_responses: true
