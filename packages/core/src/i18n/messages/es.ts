@@ -136,4 +136,7 @@ export const esMessages: TranslationMessages = {
   "multiple_select.selected_count": "{count} seleccionados",
   "select.other": "Otro",
   "select.other_placeholder": "Por favor especifique",
+  "preview.invalid_yaml":
+    "Ingresa YAML válido con un array de sections para previsualizar tu formulario.",
+  "preview.restart": "Reiniciar vista previa",
 };

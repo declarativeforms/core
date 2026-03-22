@@ -10,29 +10,40 @@ import { lintKeymap } from "@codemirror/lint";
 
 import { cn } from "@/lib/utils";
 
-const defaultYaml = `# Welcome to the YAML Playground
+export const defaultYaml = `# Welcome to the YAML Playground
 # Start editing your YAML here
 
 title: My Form
 description: A sample declarative form
 
 sections:
-  - title: Personal Information
+  - id: personal_info
+    title: Personal Information
     fields:
-      - name: first_name
-        type: text
+      - id: first_name
+        type: short_text
         label: First Name
         placeholder: Enter your first name
+        validators:
+          - required
 
-      - name: last_name
-        type: text
+      - id: last_name
+        type: short_text
         label: Last Name
         placeholder: Enter your last name
 
-      - name: email
+      - id: email
         type: email
         label: Email Address
         placeholder: you@example.com
+        validators:
+          - required
+
+    next: done
+
+completion:
+  title: Thank you!
+  message: "Thanks for submitting, {{data.first_name}}."
 `;
 
 const editorTheme = EditorView.theme({
@@ -69,9 +80,14 @@ const editorTheme = EditorView.theme({
   },
 });
 
-export function YamlEditor({ className }: { className?: string }) {
+export function YamlEditor({ className, onChange }: { className?: string; onChange?: (value: string) => void }) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     if (!editorRef.current || viewRef.current) return;
@@ -106,6 +122,11 @@ export function YamlEditor({ className }: { className?: string }) {
         yaml(),
         editorTheme,
         EditorView.lineWrapping,
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            onChangeRef.current?.(update.state.doc.toString());
+          }
+        }),
       ],
     });
 
@@ -115,6 +136,7 @@ export function YamlEditor({ className }: { className?: string }) {
     });
 
     viewRef.current = view;
+    onChangeRef.current?.(defaultYaml);
 
     return () => {
       view.destroy();
