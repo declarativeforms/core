@@ -1,38 +1,40 @@
+import type { IDeclarativeFormField, IDeclarativeFormOption } from "../../types";
 import { isDeclarativeFieldType } from "../../types";
 import { evaluateExpression, interpolateTemplate } from "../core/expression";
-import type {
-  ILocalizedFormField,
-  ILocalizedFormOption,
-} from "../localization/form";
+import { resolveLocalizedText } from "../localization/text";
 import type { CompiledField, CompiledOption } from "../types";
 import { buildValidationRules } from "../../validation";
 
-function interpolateString(
-  value: string | undefined,
+function resolveAndInterpolate(
+  value: IDeclarativeFormField["label"],
+  locale: string,
   data: Record<string, unknown>
 ): string | undefined {
-  if (!value) {
+  const resolved = resolveLocalizedText(value, locale);
+  if (!resolved) {
     return undefined;
   }
-
-  return interpolateTemplate(value, data);
+  return interpolateTemplate(resolved, data);
 }
 
 function compileOption(
-  option: ILocalizedFormOption,
+  option: IDeclarativeFormOption,
+  locale: string,
   data: Record<string, unknown>
 ): CompiledOption {
   if (typeof option === "string") {
     return { label: interpolateTemplate(option, data), value: option };
   }
 
-  const label = option.label ? interpolateTemplate(option.label, data) : "";
+  const label = option.label
+    ? interpolateTemplate(resolveLocalizedText(option.label, locale), data)
+    : "";
   const value = option.value ?? label;
   return { label: label || value || "", value: value || "" };
 }
 
 export function compileField(
-  field: ILocalizedFormField,
+  field: IDeclarativeFormField,
   locale: string,
   data: Record<string, unknown>
 ): CompiledField | null {
@@ -40,7 +42,7 @@ export function compileField(
     return null;
   }
 
-  const label = interpolateTemplate(field.label ?? "", data);
+  const label = interpolateTemplate(resolveLocalizedText(field.label, locale), data);
   const validation = buildValidationRules(
     field.type,
     field.validators ?? [],
@@ -51,7 +53,7 @@ export function compileField(
   const base = {
     id: field.id ?? "",
     label,
-    placeholder: interpolateString(field.placeholder, data),
+    placeholder: resolveAndInterpolate(field.placeholder, locale, data),
     required: validation.some((rule) => rule.type === "required"),
     visible: field.visible_when
       ? evaluateExpression(field.visible_when, data)
@@ -72,7 +74,7 @@ export function compileField(
       };
 
     case "dropdown": {
-      const options = field.options?.map((o) => compileOption(o, data));
+      const options = field.options?.map((o) => compileOption(o, locale, data));
       return {
         ...base,
         type: field.type,
@@ -88,10 +90,10 @@ export function compileField(
         ...base,
         type: field.type,
         ...(field.min_label && {
-          min_label: interpolateTemplate(field.min_label, data),
+          min_label: interpolateTemplate(resolveLocalizedText(field.min_label, locale), data),
         }),
         ...(field.max_label && {
-          max_label: interpolateTemplate(field.max_label, data),
+          max_label: interpolateTemplate(resolveLocalizedText(field.max_label, locale), data),
         }),
       };
 
@@ -109,7 +111,7 @@ export function compileField(
 
     case "single_select":
     case "multiple_select": {
-      const options = field.options?.map((o) => compileOption(o, data));
+      const options = field.options?.map((o) => compileOption(o, locale, data));
       return {
         ...base,
         type: field.type,

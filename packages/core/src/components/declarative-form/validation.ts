@@ -5,9 +5,8 @@ import { translate } from "@/i18n/runtime";
 
 import { evaluateValidationExpression } from "./runtime/core/expression";
 import { getEmailValidation } from "./fields/email/validation";
-import { localizeForm } from "./runtime/localization/form";
-import type { ILocalizedFormValidator } from "./runtime/localization/form";
-import type { IDeclarativeForm } from "./types";
+import { resolveLocalizedText } from "./runtime/localization/text";
+import type { IDeclarativeForm, IDeclarativeFormValidator, ILocalizedText } from "./types";
 import { isDeclarativeFieldType, type DeclarativeFieldType } from "./types";
 import type {
   CompiledField,
@@ -103,13 +102,13 @@ export function getRatingRange(validation: ValidationRule[]): RatingRange {
 }
 
 // ---------------------------------------------------------------------------
-// Rule building — compilation step (ILocalizedFormValidator[] → ValidationRule[])
+// Rule building — compilation step (IDeclarativeFormValidator[] → ValidationRule[])
 // ---------------------------------------------------------------------------
 
 type ValidatorWithValue = {
   type: "min" | "max";
   value: number | string;
-  message?: string;
+  message?: ILocalizedText;
 };
 
 function toLocale(locale: string): Locale {
@@ -119,7 +118,7 @@ function toLocale(locale: string): Locale {
 }
 
 function getMinValidator(
-  validators: ILocalizedFormValidator[],
+  validators: IDeclarativeFormValidator[],
 ): ValidatorWithValue | undefined {
   const found = validators.find(
     (validator) =>
@@ -131,7 +130,7 @@ function getMinValidator(
 }
 
 function getMaxValidator(
-  validators: ILocalizedFormValidator[],
+  validators: IDeclarativeFormValidator[],
 ): ValidatorWithValue | undefined {
   const found = validators.find(
     (validator) =>
@@ -143,7 +142,7 @@ function getMaxValidator(
 }
 
 function hasValidator(
-  validators: ILocalizedFormValidator[],
+  validators: IDeclarativeFormValidator[],
   type: string,
 ): boolean {
   return validators.some(
@@ -151,7 +150,7 @@ function hasValidator(
   );
 }
 
-function getRatingRangeFromValidators(validators: ILocalizedFormValidator[]): {
+function getRatingRangeFromValidators(validators: IDeclarativeFormValidator[]): {
   min: number;
   max: number;
 } {
@@ -172,7 +171,7 @@ function getRatingRangeFromValidators(validators: ILocalizedFormValidator[]): {
 
 export function buildValidationRules(
   fieldType: DeclarativeFieldType,
-  validators: ILocalizedFormValidator[],
+  validators: IDeclarativeFormValidator[],
   label: string,
   locale: string,
 ): ValidationRule[] {
@@ -195,7 +194,7 @@ export function buildValidationRules(
           type: "pattern",
           regex: validator.regex,
           message:
-            validator.message ||
+            resolveLocalizedText(validator.message, locale) ||
             translate(loc, "validation.invalid", { label }),
         });
         break;
@@ -206,7 +205,7 @@ export function buildValidationRules(
           type: "min_length",
           value: validator.value,
           message:
-            validator.message ||
+            resolveLocalizedText(validator.message, locale) ||
             translate(loc, "validation.min_length", {
               label,
               min: validator.value,
@@ -220,7 +219,7 @@ export function buildValidationRules(
           type: "max_length",
           value: validator.value,
           message:
-            validator.message ||
+            resolveLocalizedText(validator.message, locale) ||
             translate(loc, "validation.max_length", {
               label,
               max: validator.value,
@@ -234,7 +233,7 @@ export function buildValidationRules(
           type: "expression",
           expression: validator.expression,
           message:
-            validator.message ||
+            resolveLocalizedText(validator.message, locale) ||
             translate(loc, "validation.invalid", { label }),
         });
         break;
@@ -250,7 +249,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          resolveLocalizedText(minVal.message, locale) ||
           translate(loc, "validation.date_min", {
             label,
             min: String(minVal.value),
@@ -262,7 +261,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          resolveLocalizedText(maxVal.message, locale) ||
           translate(loc, "validation.date_max", {
             label,
             max: String(maxVal.value),
@@ -284,7 +283,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          resolveLocalizedText(minVal.message, locale) ||
           translate(loc, "validation.number_min", {
             label,
             min: minVal.value,
@@ -296,7 +295,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          resolveLocalizedText(maxVal.message, locale) ||
           translate(loc, "validation.number_max", {
             label,
             max: maxVal.value,
@@ -311,14 +310,14 @@ export function buildValidationRules(
       type: "min",
       value: range.min,
       message:
-        minVal?.message ||
+        resolveLocalizedText(minVal?.message, locale) ||
         translate(loc, "validation.number_min", { label, min: range.min }),
     });
     rules.push({
       type: "max",
       value: range.max,
       message:
-        maxVal?.message ||
+        resolveLocalizedText(maxVal?.message, locale) ||
         translate(loc, "validation.number_max", { label, max: range.max }),
     });
   }
@@ -329,7 +328,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          resolveLocalizedText(minVal.message, locale) ||
           translate(loc, "validation.file_min", {
             label,
             min: minVal.value,
@@ -341,7 +340,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          resolveLocalizedText(maxVal.message, locale) ||
           translate(loc, "validation.file_max", {
             label,
             max: maxVal.value,
@@ -356,7 +355,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          resolveLocalizedText(minVal.message, locale) ||
           translate(loc, "validation.selection_min", {
             label,
             min: minVal.value,
@@ -368,7 +367,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          resolveLocalizedText(maxVal.message, locale) ||
           translate(loc, "validation.selection_max", {
             label,
             max: maxVal.value,
@@ -493,8 +492,7 @@ export function validateSectionData(
   sectionData: Record<string, unknown>,
   formData: Record<string, unknown>,
 ): Record<string, string> {
-  const localizedSchema = localizeForm(schema, locale);
-  const section = (localizedSchema.sections ?? []).find(
+  const section = (schema.sections ?? []).find(
     (candidate) => candidate.id === sectionId,
   );
   if (!section) {
@@ -511,7 +509,7 @@ export function validateSectionData(
     const rules = buildValidationRules(
       field.type,
       field.validators ?? [],
-      field.label ?? "",
+      resolveLocalizedText(field.label, locale),
       locale,
     );
     const fieldId = field.id ?? "";
