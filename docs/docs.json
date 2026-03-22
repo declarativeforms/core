@@ -70,7 +70,8 @@
               "examples/build-a-multi-step-form-with-cross-field-validation",
               "examples/protect-a-form-with-cloudflare-turnstile",
               "examples/connect-a-form-to-zapier-n8n-or-make",
-              "examples/customize-the-primary-color"
+              "examples/customize-the-primary-color",
+              "examples/embed-a-form-in-an-iframe"
             ]
           }
         ]
