@@ -13,6 +13,9 @@ import {
   type PaymentStatusResponse,
 } from "./payment/api";
 
+const POLL_INTERVAL_MS = 3_000;
+const DEFAULT_CURRENCY = "USD";
+
 function getPaymentFieldNames(fieldId: string) {
   return {
     paymentId: `${fieldId}__payment_id`,
@@ -61,7 +64,7 @@ export function PaymentField({
   const connectionId =
     field.type === "payment" ? (field.connection_id ?? "") : "";
   const amount = field.type === "payment" ? (field.amount ?? 0) : 0;
-  const currency = field.type === "payment" ? (field.currency ?? "USD") : "USD";
+  const currency = field.type === "payment" ? (field.currency ?? DEFAULT_CURRENCY) : DEFAULT_CURRENCY;
   const description =
     field.type === "payment" ? (field.description ?? "") : "";
 
@@ -155,7 +158,7 @@ export function PaymentField({
           if (!cancelled) {
             void pollStatus();
           }
-        }, 3000);
+        }, POLL_INTERVAL_MS);
       } catch {
         if (!cancelled) {
           setIsPolling(false);
@@ -186,8 +189,17 @@ export function PaymentField({
 
     try {
       const params = new URLSearchParams(window.location.search);
-      const formId = params.get("form_id") || window.location.pathname.split("/")[1] || "";
       const submissionId = params.get("submission_id") || "";
+
+      // Extract form ID from the URL path (e.g., /:formId?...)
+      const pathSegments = window.location.pathname.split("/").filter(Boolean);
+      const formId = pathSegments[0] || "";
+
+      if (!formId) {
+        setIsInitiating(false);
+        setErrorMessage(t("payment.initiate_failed"));
+        return;
+      }
 
       // Build return URL that preserves existing params
       const returnUrl = new URL(window.location.href);

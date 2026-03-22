@@ -1,6 +1,13 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { handlePaymentWebhook } from '../core/services/payments';
 
+const PAYMENT_PROVIDERS = ['stripe', 'paystack', 'payfast'] as const;
+type PaymentProviderParam = (typeof PAYMENT_PROVIDERS)[number];
+
+function isPaymentProvider(value: string): value is PaymentProviderParam {
+  return (PAYMENT_PROVIDERS as readonly string[]).includes(value);
+}
+
 export const PAYMENTS_WEBHOOK_POST: RouteOptions<any, any, any, any> = {
   handler: async (
     request: FastifyRequest<{
@@ -10,8 +17,7 @@ export const PAYMENTS_WEBHOOK_POST: RouteOptions<any, any, any, any> = {
   ) => {
     const { provider } = request.params;
 
-    const validProviders = ['stripe', 'paystack', 'payfast'];
-    if (!validProviders.includes(provider)) {
+    if (!isPaymentProvider(provider)) {
       return reply.status(400).send({ error: 'Unsupported provider.' });
     }
 
@@ -25,7 +31,7 @@ export const PAYMENTS_WEBHOOK_POST: RouteOptions<any, any, any, any> = {
 
     try {
       await handlePaymentWebhook(
-        provider as 'stripe' | 'paystack' | 'payfast',
+        provider,
         payload,
       );
 

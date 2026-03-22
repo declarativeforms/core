@@ -51,7 +51,8 @@
               "field-types/geolocation",
               "field-types/camera",
               "field-types/hidden",
-              "field-types/turnstile"
+              "field-types/turnstile",
+              "field-types/payment"
             ]
           },
           {

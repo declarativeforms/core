@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { findConnection } from '../../repositories';
 import {
   findPayment,
+  findPaymentByProviderSessionId,
   insertPayment,
   updatePaymentStatus,
 } from '../../repositories/payments';
@@ -144,6 +145,15 @@ export async function handlePaymentWebhook(
   }
 
   if (!event) {
+    return;
+  }
+
+  // Verify the payment record exists before updating
+  const payment = await findPaymentByProviderSessionId(
+    event.providerSessionId,
+  );
+
+  if (!payment) {
     return;
   }
 

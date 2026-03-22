@@ -29,7 +29,8 @@ export async function createPayfastSession(
     input.metadata?.payment_id ??
     crypto.randomBytes(8).toString('hex');
 
-  // Amount in ZAR (Payfast expects amount in rands, not cents)
+  // Payfast expects the amount in rands (currency units), not in cents
+  // unlike Stripe and Paystack which use the smallest currency unit.
   const amountInRands = (input.amount / 100).toFixed(2);
 
   const params: Record<string, string> = {
@@ -55,6 +56,7 @@ export async function createPayfastSession(
 
   params.signature = signature;
 
+  // Payfast sandbox merchant IDs start with '1000'
   const isSandbox = merchantId.startsWith('1000');
   const baseUrl = isSandbox
     ? 'https://sandbox.payfast.co.za/eng/process'

@@ -1,0 +1,77 @@
+---
+title: "Payment"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Example form"
+description: "A payment example using Stripe."
+
+sections:
+  - id: section_1
+    title: "Your Details"
+    fields:
+      - id: name
+        type: short_text
+        label: "Full Name"
+        validators:
+          - required
+    next: payment_section
+
+  - id: payment_section
+    title: "Payment"
+    fields:
+      - id: payment
+        type: payment
+        label: "Complete Payment"
+        provider: stripe
+        connection_id: "your_connection_id"
+        amount: 5000
+        currency: USD
+        description: "Order total"
+    next: done
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `provider` | `stripe` \| `paystack` \| `payfast` | The payment provider to use. |
+| `connection_id` | `string` | The ID of the connection containing the provider's API credentials. |
+| `amount` | `number` | The payment amount in the smallest currency unit (e.g., cents). |
+| `currency` | `string` | The ISO 4217 currency code (e.g., `USD`, `ZAR`, `NGN`). |
+| `description` | `string` | A description of the payment shown to the user. |
+
+## Supported Providers
+
+### Stripe
+
+Uses Stripe Checkout Sessions. The connection must contain a Stripe secret key as the `access_token`.
+
+### Paystack
+
+Uses Paystack Transaction Initialize API. The connection must contain a Paystack secret key as the `access_token`.
+
+### Payfast (South Africa)
+
+Uses Payfast redirect-based payments. The connection `access_token` must be a JSON string containing `merchant_id`, `merchant_key`, and optionally `passphrase`.
+
+## Payment Flow
+
+1. The user sees the payment details (amount, description) and clicks "Pay now".
+2. The form initiates a payment session via the API.
+3. The user is redirected to the payment provider to complete payment.
+4. After payment, the user is redirected back to the form.
+5. The form confirms the payment status and allows the user to proceed to the next section.
+
+## Webhooks
+
+Configure your payment provider to send webhook events to:
+
+```
+POST /api/v1/payments/webhook/:provider
+```
+
+Where `:provider` is `stripe`, `paystack`, or `payfast`. This ensures payment status is confirmed even if the user closes the browser during redirect.

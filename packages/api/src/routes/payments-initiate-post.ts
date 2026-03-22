@@ -34,8 +34,9 @@ export const PAYMENTS_INITIATE_POST: RouteOptions<any, any, any, any> = {
       return reply.status(400).send({ error: 'Missing required fields.' });
     }
 
-    const validProviders = ['stripe', 'paystack', 'payfast'];
-    if (!validProviders.includes(provider)) {
+    const validProviders = ['stripe', 'paystack', 'payfast'] as const;
+    type ValidProvider = (typeof validProviders)[number];
+    if (!(validProviders as readonly string[]).includes(provider)) {
       return reply.status(400).send({ error: 'Unsupported payment provider.' });
     }
 
@@ -45,7 +46,7 @@ export const PAYMENTS_INITIATE_POST: RouteOptions<any, any, any, any> = {
         submissionId: submissionId || '',
         fieldId,
         connectionId,
-        provider: provider as 'stripe' | 'paystack' | 'payfast',
+        provider: provider as ValidProvider,
         amount,
         currency,
         description,
