@@ -73,6 +73,7 @@ export const DeclarativeFormSection = forwardRef<
         tabIndex={-1}
         aria-label={props.section.title || undefined}
         onSubmit={handleSubmit}
+        noValidate
         className="outline-none"
       >
         <div className="space-y-6">
