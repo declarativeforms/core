@@ -6,10 +6,10 @@ import {
 import { FormField, FormItem, FormLabel, FormMessage } from "../../ui";
 import { useI18n } from "@/i18n";
 import type { CompiledField } from "../runtime/types";
+import { buildFieldValidation } from "../validation";
 import { HtmlText } from "../view-support/html-text";
 import { FieldErrorBoundary } from "./field-error-boundary.component";
 import { fieldRegistry } from "./field-registry";
-import { validationRulesToRegisterOptions } from "./field-validation";
 
 function FieldLabel({ field }: { field: CompiledField }) {
   return (
@@ -35,7 +35,7 @@ export function DeclarativeFormField(props: {
   }
 
   const compiledField = props.field;
-  const rules = validationRulesToRegisterOptions(compiledField, {
+  const { registerOptions: rules } = buildFieldValidation(compiledField, {
     emailOtpRequired: t("validation.email_otp_required"),
     emailFreeEmailBlocked: t("validation.email_free_blocked"),
   });

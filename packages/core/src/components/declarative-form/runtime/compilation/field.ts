@@ -5,7 +5,7 @@ import type {
   ILocalizedFormOption,
 } from "../localization/form";
 import type { CompiledField, CompiledOption } from "../types";
-import { buildValidationRules } from "../validation/rules";
+import { buildValidationRules } from "../../validation";
 
 function interpolateString(
   value: string | undefined,
