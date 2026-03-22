@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Code, Eye } from "lucide-react"
 import { YamlEditor } from "@/components/yaml-editor"
 import { FormPreview } from "@/components/form-preview"
@@ -78,10 +78,8 @@ function MobileLayout({ yaml, onYamlChange }: { yaml: string; onYamlChange: (val
 export function PlaygroundPage() {
   const isMobile = useIsMobile()
   const [yaml, setYaml] = useState("")
-  const yamlRef = useRef(yaml)
 
   const handleYamlChange = useCallback((value: string) => {
-    yamlRef.current = value
     setYaml(value)
   }, [])
 

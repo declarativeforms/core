@@ -59,15 +59,15 @@ export function FormPreview({ yaml }: { yaml: string }) {
   }, [])
 
   const handleEffect = useCallback(
-    (effect: FormEffect) => {
+    (effect: FormEffect, state: { data: Record<string, unknown> }) => {
       switch (effect.type) {
         case "submit":
           break
         case "complete":
-          setPreviewState({ view: "complete", data: effect.data })
+          setPreviewState({ view: "complete", data: state.data })
           break
         case "redirect":
-          setPreviewState({ view: "redirect", data: {}, url: effect.url })
+          setPreviewState({ view: "redirect", data: state.data, url: effect.url })
           break
       }
     },
