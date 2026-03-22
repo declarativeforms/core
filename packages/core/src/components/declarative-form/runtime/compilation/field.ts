@@ -129,6 +129,21 @@ export function compileField(
         }),
       };
 
+    case "payment":
+      return {
+        ...base,
+        type: field.type,
+        ...(field.provider !== undefined && { provider: field.provider }),
+        ...(field.connection_id !== undefined && {
+          connection_id: field.connection_id,
+        }),
+        ...(field.amount !== undefined && { amount: field.amount }),
+        ...(field.currency !== undefined && { currency: field.currency }),
+        ...(field.description !== undefined && {
+          description: interpolateTemplate(field.description, data),
+        }),
+      };
+
     case "geolocation":
     case "turnstile":
       return { ...base, type: field.type };

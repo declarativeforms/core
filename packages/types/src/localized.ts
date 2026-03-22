@@ -76,6 +76,15 @@ export type ILocalizedCameraField = ILocalizedFormFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
+export type ILocalizedPaymentField = ILocalizedFormFieldBase & {
+  type?: "payment";
+  provider?: "stripe" | "paystack" | "payfast";
+  connection_id?: string;
+  amount?: number;
+  currency?: string;
+  description?: string;
+};
+
 export type ILocalizedTurnstileField = ILocalizedFormFieldBase & {
   type?: "turnstile";
 };
@@ -103,6 +112,7 @@ export type ILocalizedFormField =
   | ILocalizedSelectField
   | ILocalizedGeolocationField
   | ILocalizedCameraField
+  | ILocalizedPaymentField
   | ILocalizedTurnstileField
   | ILocalizedGenericField;
 

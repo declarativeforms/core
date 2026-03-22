@@ -131,6 +131,15 @@ const enMessageSource = {
   "multiple_select.selected_count": "{count} selected",
   "select.other": "Other",
   "select.other_placeholder": "Please specify",
+  "payment.pay_now": "Pay now",
+  "payment.processing": "Processing...",
+  "payment.confirming": "Confirming payment...",
+  "payment.succeeded": "Payment successful",
+  "payment.failed": "Payment was not completed. Please try again.",
+  "payment.retry": "Try again",
+  "payment.initiate_failed": "Could not initiate payment. Please try again.",
+  "payment.status_check_failed":
+    "Could not verify payment status. Please refresh the page.",
 } as const;
 
 export type TranslationKey = keyof typeof enMessageSource;

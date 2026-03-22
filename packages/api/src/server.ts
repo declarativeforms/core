@@ -15,6 +15,9 @@ import {
   OAUTH_GITHUB_ACCESS_TOKEN_POST,
   ONE_TIME_PIN_EMAIL_SEND_POST,
   ONE_TIME_PIN_EMAIL_VERIFY_POST,
+  PAYMENTS_ID_STATUS_GET,
+  PAYMENTS_INITIATE_POST,
+  PAYMENTS_WEBHOOK_POST,
 } from './routes';
 
 export async function startServer() {
@@ -91,6 +94,9 @@ export async function startServer() {
   server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
   server.route(ONE_TIME_PIN_EMAIL_SEND_POST);
   server.route(ONE_TIME_PIN_EMAIL_VERIFY_POST);
+  server.route(PAYMENTS_ID_STATUS_GET);
+  server.route(PAYMENTS_INITIATE_POST);
+  server.route(PAYMENTS_WEBHOOK_POST);
 
   server.route({
     handler: async (request, reply) => {

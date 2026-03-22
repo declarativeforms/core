@@ -136,4 +136,14 @@ export const esMessages: TranslationMessages = {
   "multiple_select.selected_count": "{count} seleccionados",
   "select.other": "Otro",
   "select.other_placeholder": "Por favor especifique",
+  "payment.pay_now": "Pagar ahora",
+  "payment.processing": "Procesando...",
+  "payment.confirming": "Confirmando pago...",
+  "payment.succeeded": "Pago exitoso",
+  "payment.failed": "El pago no se completó. Por favor, inténtalo de nuevo.",
+  "payment.retry": "Intentar de nuevo",
+  "payment.initiate_failed":
+    "No se pudo iniciar el pago. Por favor, inténtalo de nuevo.",
+  "payment.status_check_failed":
+    "No se pudo verificar el estado del pago. Por favor, actualiza la página.",
 };

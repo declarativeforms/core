@@ -69,6 +69,15 @@ export type CompiledCameraField = CompiledFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
+export type CompiledPaymentField = CompiledFieldBase & {
+  type: "payment";
+  provider?: "stripe" | "paystack" | "payfast";
+  connection_id?: string;
+  amount?: number;
+  currency?: string;
+  description?: string;
+};
+
 export type CompiledTurnstileField = CompiledFieldBase & {
   type: "turnstile";
 };
@@ -98,6 +107,7 @@ export type CompiledField =
   | CompiledSelectField
   | CompiledGeolocationField
   | CompiledCameraField
+  | CompiledPaymentField
   | CompiledTurnstileField
   | CompiledGenericField;
 

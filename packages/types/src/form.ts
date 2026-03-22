@@ -17,6 +17,7 @@ export const DECLARATIVE_FIELD_TYPES = [
   "mobile_number",
   "multiple_select",
   "number",
+  "payment",
   "rating",
   "short_text",
   "signature",
@@ -145,6 +146,15 @@ export type IDeclarativeFormCameraField = IDeclarativeFormFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
+export type IDeclarativeFormPaymentField = IDeclarativeFormFieldBase & {
+  type?: "payment";
+  provider?: "stripe" | "paystack" | "payfast";
+  connection_id?: string;
+  amount?: number;
+  currency?: string;
+  description?: ILocalizedText;
+};
+
 export type IDeclarativeFormTurnstileField = IDeclarativeFormFieldBase & {
   type?: "turnstile";
 };
@@ -172,6 +182,7 @@ export type IDeclarativeFormField =
   | IDeclarativeFormSelectField
   | IDeclarativeFormGeolocationField
   | IDeclarativeFormCameraField
+  | IDeclarativeFormPaymentField
   | IDeclarativeFormTurnstileField
   | IDeclarativeFormGenericField;
 

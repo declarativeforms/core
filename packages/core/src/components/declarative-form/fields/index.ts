@@ -7,6 +7,7 @@ export * from "./hidden-field.component";
 export * from "./input-field.component";
 export * from "./long-text-field.component";
 export * from "./multiple-select-field.component";
+export * from "./payment-field.component";
 export * from "./rating-field.component";
 export * from "./signature-field.component";
 export * from "./geolocation-field.component";

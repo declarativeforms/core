@@ -4,5 +4,6 @@ export * from './forms';
 export * from './localize';
 export * from './oauth';
 export * from './one-time-pin';
+export * from './payments';
 export * from './submissions';
 export * from './turnstile';

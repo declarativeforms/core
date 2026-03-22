@@ -28,3 +28,4 @@ export type {
 export * from "./form-record";
 export * from "./oauth";
 export * from "./one-time-pin";
+export * from "./payment";

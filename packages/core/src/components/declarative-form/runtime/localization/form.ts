@@ -163,6 +163,21 @@ function localizeField(
         }),
       };
 
+    case "payment":
+      return {
+        ...base,
+        type: field.type,
+        ...(field.provider !== undefined && { provider: field.provider }),
+        ...(field.connection_id !== undefined && {
+          connection_id: field.connection_id,
+        }),
+        ...(field.amount !== undefined && { amount: field.amount }),
+        ...(field.currency !== undefined && { currency: field.currency }),
+        ...(field.description !== undefined && {
+          description: resolveLocalizedText(field.description, locale),
+        }),
+      };
+
     default:
       return { ...base, type: field.type };
   }
