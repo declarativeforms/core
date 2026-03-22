@@ -1,7 +1,9 @@
-import type { IDeclarativeFormField } from "../../types";
 import { isDeclarativeFieldType } from "../../types";
 import { evaluateExpression, interpolateTemplate } from "../core/expression";
-import { localizeFieldContent } from "../localization/field";
+import type {
+  LocalizedFormField,
+  LocalizedFormOption,
+} from "../localization/form";
 import type { CompiledField, CompiledOption } from "../types";
 import { buildValidationRules } from "../validation/rules";
 
@@ -16,8 +18,21 @@ function interpolateString(
   return interpolateTemplate(value, data);
 }
 
+function compileOption(
+  option: LocalizedFormOption,
+  data: Record<string, unknown>
+): CompiledOption {
+  if (typeof option === "string") {
+    return { label: interpolateTemplate(option, data), value: option };
+  }
+
+  const label = option.label ? interpolateTemplate(option.label, data) : "";
+  const value = option.value ?? label;
+  return { label: label || value || "", value: value || "" };
+}
+
 export function compileField(
-  field: IDeclarativeFormField,
+  field: LocalizedFormField,
   locale: string,
   data: Record<string, unknown>
 ): CompiledField | null {
@@ -25,11 +40,10 @@ export function compileField(
     return null;
   }
 
-  const localized = localizeFieldContent(field, locale);
-  const label = interpolateTemplate(localized.label, data);
+  const label = interpolateTemplate(field.label ?? "", data);
   const validation = buildValidationRules(
     field.type,
-    localized.validators,
+    field.validators ?? [],
     label,
     locale
   );
@@ -37,7 +51,7 @@ export function compileField(
   const base = {
     id: field.id ?? "",
     label,
-    placeholder: interpolateString(localized.placeholder, data),
+    placeholder: interpolateString(field.placeholder, data),
     required: validation.some((rule) => rule.type === "required"),
     visible: field.visible_when
       ? evaluateExpression(field.visible_when, data)
@@ -45,13 +59,6 @@ export function compileField(
     visible_when: field.visible_when,
     validation,
   };
-
-  const options = localized.options?.map(
-    (option): CompiledOption => ({
-      label: interpolateTemplate(option.label, data),
-      value: option.value,
-    })
-  );
 
   switch (field.type) {
     case "email":
@@ -64,7 +71,8 @@ export function compileField(
         }),
       };
 
-    case "dropdown":
+    case "dropdown": {
+      const options = field.options?.map((o) => compileOption(o, data));
       return {
         ...base,
         type: field.type,
@@ -73,16 +81,17 @@ export function compileField(
         }),
         ...(options && { options }),
       };
+    }
 
     case "rating":
       return {
         ...base,
         type: field.type,
-        ...(localized.min_label && {
-          min_label: interpolateTemplate(localized.min_label, data),
+        ...(field.min_label && {
+          min_label: interpolateTemplate(field.min_label, data),
         }),
-        ...(localized.max_label && {
-          max_label: interpolateTemplate(localized.max_label, data),
+        ...(field.max_label && {
+          max_label: interpolateTemplate(field.max_label, data),
         }),
       };
 
@@ -99,13 +108,17 @@ export function compileField(
       };
 
     case "single_select":
-    case "multiple_select":
+    case "multiple_select": {
+      const options = field.options?.map((o) => compileOption(o, data));
       return {
         ...base,
         type: field.type,
         ...(options && { options }),
-        ...(field.allow_other !== undefined && { allow_other: field.allow_other }),
+        ...(field.allow_other !== undefined && {
+          allow_other: field.allow_other,
+        }),
       };
+    }
 
     case "camera":
       return {

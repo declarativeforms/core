@@ -1,31 +1,50 @@
-import type {
-  IDeclarativeForm,
-  IConnection,
-  IDeclarativeFormSection,
-} from "../../types";
+import type { IDeclarativeForm } from "../../types";
 import { isDeclarativeConnectionType } from "../../types";
 import { resolveCompletion } from "../core/completion";
 import { interpolateTemplate } from "../core/expression";
-import { localizeCompletion, resolveLocalizedText } from "../localization/text";
-import type { CompiledForm, CompiledSection } from "../types";
+import type {
+  LocalizedForm,
+  LocalizedFormCompletion,
+  LocalizedFormCompletionRule,
+  LocalizedFormSection,
+} from "../localization/form";
+import { localizeForm } from "../localization/form";
+import type { CompiledCompletion, CompiledForm, CompiledSection } from "../types";
 import { compileField } from "./field";
 
-function normalizeConnections(
-  connections: IDeclarativeForm["connections"]
-): IConnection[] {
+function normalizeConnections(connections: LocalizedForm["connections"]) {
   return (connections ?? []).flatMap((connection) =>
     isDeclarativeConnectionType(connection?.type) ? [connection] : []
   );
 }
 
+function buildCompiledCompletion(
+  completion: LocalizedFormCompletion | undefined
+): CompiledCompletion | undefined {
+  if (!completion) {
+    return undefined;
+  }
+
+  return {
+    title: completion.title,
+    message: completion.message,
+    button: completion.button
+      ? {
+          label: completion.button.label ?? "",
+          url: completion.button.url ?? "",
+        }
+      : undefined,
+  };
+}
+
 function compileSection(
-  section: IDeclarativeFormSection,
+  section: LocalizedFormSection,
   locale: string,
   data: Record<string, unknown>
 ): CompiledSection {
   return {
     id: section.id ?? "",
-    title: interpolateTemplate(resolveLocalizedText(section.title, locale), data),
+    title: interpolateTemplate(section.title ?? "", data),
     fields: (section.fields ?? []).flatMap((field) => {
       const compiled = compileField(field, locale, data);
       return compiled ? [compiled] : [];
@@ -39,24 +58,37 @@ export function compile(
   data: Record<string, unknown>,
   activeSectionId: string
 ): CompiledForm {
-  const sections = (schema.sections ?? []).map((section) =>
+  // Step 1: Compile localization — flatten every ILocalizedText into a plain
+  // string, preserving the exact input structure otherwise.
+  const localizedSchema = localizeForm(schema, locale);
+
+  // Step 2: Compile the localized schema into the final CompiledForm.
+  const sections = (localizedSchema.sections ?? []).map((section) =>
     compileSection(section, locale, data)
   );
 
+  const resolvedCompletion = resolveCompletion(
+    localizedSchema.completion as
+      | LocalizedFormCompletion
+      | LocalizedFormCompletionRule[]
+      | undefined,
+    data
+  );
+
   return {
-    id: schema.id,
-    version: schema.version ?? 1,
-    title: interpolateTemplate(resolveLocalizedText(schema.title, locale), data),
-    description: schema.description
-      ? interpolateTemplate(resolveLocalizedText(schema.description, locale), data)
+    id: localizedSchema.id,
+    version: localizedSchema.version ?? 1,
+    title: interpolateTemplate(localizedSchema.title ?? "", data),
+    description: localizedSchema.description
+      ? interpolateTemplate(localizedSchema.description, data)
       : undefined,
     activeSectionId,
     sections,
-    completion: localizeCompletion(resolveCompletion(schema.completion, data), locale),
-    connections: normalizeConnections(schema.connections),
+    completion: buildCompiledCompletion(resolvedCompletion),
+    connections: normalizeConnections(localizedSchema.connections),
     locale,
-    measurements: schema.measurements,
-    start_date: schema.start_date,
-    end_date: schema.end_date,
+    measurements: localizedSchema.measurements,
+    start_date: localizedSchema.start_date,
+    end_date: localizedSchema.end_date,
   };
 }
