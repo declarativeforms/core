@@ -151,7 +151,7 @@ function hasValidator(
   );
 }
 
-function getSchemaRatingRange(validators: ILocalizedFormValidator[]): {
+function getRatingRangeFromValidators(validators: ILocalizedFormValidator[]): {
   min: number;
   max: number;
 } {
@@ -306,7 +306,7 @@ export function buildValidationRules(
   }
 
   if (fieldType === "rating") {
-    const range = getSchemaRatingRange(validators);
+    const range = getRatingRangeFromValidators(validators);
     rules.push({
       type: "min",
       value: range.min,
