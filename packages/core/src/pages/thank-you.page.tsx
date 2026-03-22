@@ -95,6 +95,7 @@ export function ThankYouPage() {
             ? interpolateTemplate(completion.button.url, submissionData)
             : undefined
         }
+        theme={form?.theme}
       />
     );
   }
@@ -103,6 +104,7 @@ export function ThankYouPage() {
     <HeroSection
       title={t("thank_you.default_title")}
       description={t("thank_you.default_description")}
+      theme={form?.theme}
     />
   );
 }

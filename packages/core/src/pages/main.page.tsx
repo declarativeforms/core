@@ -250,6 +250,7 @@ export function MainPage() {
       <HeroSection
         title={t("main.form_not_yet_open.title")}
         description={t("main.form_not_yet_open.description")}
+        theme={form.theme}
       />
     );
   }
@@ -259,6 +260,7 @@ export function MainPage() {
       <HeroSection
         title={t("main.form_closed.title")}
         description={t("main.form_closed.description")}
+        theme={form.theme}
       />
     );
   }
@@ -275,7 +277,7 @@ export function MainPage() {
     : undefined;
 
   return (
-    <BasePage title={resolvedTitle} description={resolvedDescription}>
+    <BasePage title={resolvedTitle} description={resolvedDescription} theme={form.theme}>
       <DeclarativeForm
         form={form}
         locale={locale}

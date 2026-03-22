@@ -223,6 +223,10 @@ export type IDeclarativeFormRawEmailConnection = {
   when?: string;
 };
 
+export type IDeclarativeFormTheme = {
+  primary?: string;
+};
+
 export type IDeclarativeForm = {
   id?: string;
   version?: number;
@@ -239,4 +243,5 @@ export type IDeclarativeForm = {
   end_date?: string;
   locale?: string;
   measurements?: { mixpanel?: string };
+  theme?: IDeclarativeFormTheme;
 };

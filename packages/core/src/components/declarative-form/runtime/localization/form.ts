@@ -275,5 +275,6 @@ export function localizeForm(
     end_date: schema.end_date,
     locale: schema.locale,
     measurements: schema.measurements,
+    theme: schema.theme,
   };
 }

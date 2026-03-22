@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { Button } from "@/components";
 import { useI18n } from "@/i18n";
+import { buildThemeStyle } from "@/lib/theme";
 import { HtmlText } from "../view-support/html-text";
 import { stripHtml } from "../view-support/strip-html";
 
@@ -11,6 +12,7 @@ export function HeroSection(props: {
   onAction?: () => void;
   buttonLabel?: string;
   buttonHref?: string;
+  theme?: { primary?: string };
 }) {
   const { t } = useI18n();
 
@@ -18,8 +20,10 @@ export function HeroSection(props: {
     document.title = `${stripHtml(props.title)} — Declarative Forms`;
   }, [props.title]);
 
+  const themeStyle = buildThemeStyle(props.theme);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4" style={themeStyle}>
       <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
         <h1 className="text-2xl font-semibold text-gray-900 mb-4">
           <HtmlText html={props.title} />

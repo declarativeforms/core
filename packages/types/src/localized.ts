@@ -169,4 +169,5 @@ export type ILocalizedForm = {
   end_date?: string;
   locale?: string;
   measurements?: { mixpanel?: string };
+  theme?: { primary?: string };
 };

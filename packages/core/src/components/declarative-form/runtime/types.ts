@@ -126,6 +126,7 @@ export type CompiledForm = {
   measurements?: { mixpanel?: string };
   start_date?: string;
   end_date?: string;
+  theme?: { primary?: string };
 };
 
 // --- Form State ---

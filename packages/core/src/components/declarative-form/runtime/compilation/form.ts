@@ -90,5 +90,6 @@ export function compile(
     measurements: localizedSchema.measurements,
     start_date: localizedSchema.start_date,
     end_date: localizedSchema.end_date,
+    theme: localizedSchema.theme,
   };
 }

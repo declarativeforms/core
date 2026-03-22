@@ -22,6 +22,7 @@ export type {
   IDeclarativeFormRawWebhookConnection,
   IDeclarativeFormRawEmailConnection,
   IDeclarativeForm,
+  IDeclarativeFormTheme,
   ISubmission,
   IStructuredAddress,
   IConnection,
