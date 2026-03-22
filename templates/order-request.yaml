@@ -95,6 +95,37 @@ sections:
             value: 5
             message: "You can upload at most 5 files."
 
+    next:
+      # Collect additional details for large-budget projects.
+      - when: "data.budget === 'over_50k'"
+        go: "enterprise"
+      # All other projects go straight to the confirmation screen.
+      - else: "done"
+
+  - id: enterprise
+    title: "Enterprise details"
+    fields:
+      - id: company_size
+        type: dropdown
+        label: "Company size"
+        options:
+          - "1–10 employees"
+          - "11–50 employees"
+          - "51–200 employees"
+          - "201–1,000 employees"
+          - "1,000+ employees"
+        validators:
+          - required
+
+      - id: procurement_process
+        type: single_select
+        label: "Do you have a formal procurement process?"
+        options:
+          - "Yes"
+          - "No"
+        validators:
+          - required
+
     next: done
 
 completion:

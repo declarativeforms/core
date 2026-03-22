@@ -2,10 +2,19 @@ version: 1
 title: "Join the waitlist"
 description: "Be the first to know when we launch."
 
+# Override the default green with a custom brand color.
+theme:
+  primary: "#4F46E5"
+
 sections:
   - id: signup
     title: "Get early access"
     fields:
+      # Prefill this field via ?source=... in the URL to track referral channels.
+      - id: source
+        type: hidden
+        label: "Source"
+
       - id: full_name
         type: short_text
         label: "Full name"
@@ -53,6 +62,9 @@ sections:
 completion:
   title: "You are on the list!"
   message: "Thanks, {{data.full_name}}. We will reach out to {{data.email}} when your spot is ready."
+  button:
+    label: "Learn more about the product"
+    url: "https://example.com"
 
 connections:
   - type: webhook
