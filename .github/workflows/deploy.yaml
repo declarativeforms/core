@@ -1,40 +1,42 @@
-name: Build and publish to Container Registry
+name: Deploy
 
 on:
   push:
-    branches: ['main']
+    branches: [main]
     paths:
       - 'packages/api/**'
       - 'packages/types/**'
       - 'packages/core/**'
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push-image:
+  publish-api-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      attestations: write
-      id-token: write
     steps:
-      - uses: actions/checkout@v6
-    
-      - uses: docker/login-action@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-     
-      - id: meta
+
+      - name: Extract image metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-     
-      - id: push
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -42,17 +44,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      
-      # - uses: actions/attest-build-provenance@v3
-      #   with:
-      #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-      #     subject-digest: ${{ steps.push.outputs.digest }}
-      #     push-to-registry: true
 
-      - name: Wait 30 seconds before triggering DigitalOcean deployment
+      - name: Wait for image to propagate
         run: sleep 30
 
-      - name: Trigger DigitalOcean App Platform deployment
+      - name: Trigger DigitalOcean deployment
         run: |
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
@@ -69,16 +65,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps --no-package-lock
 
-      - name: Build UI
+      - name: Build frontend
         working-directory: packages/core
         run: npm run build
 
