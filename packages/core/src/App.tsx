@@ -11,6 +11,11 @@ import {
 } from "./pages";
 import { useI18n } from "./i18n";
 
+function ExternalRedirect({ url }: { url: string }) {
+  window.location.replace(url);
+  return null;
+}
+
 function App() {
   const { t } = useI18n();
 
@@ -24,7 +29,7 @@ function App() {
       </a>
       <main id="main-content">
         <Routes>
-          <Route path="/" element={<NotFoundPage />} />
+          <Route path="/" element={<ExternalRedirect url="https://docs.declarativeforms.com" />} />
           <Route path="/:id" element={<MainPage />} />
           <Route path="/:id/thank-you" element={<ThankYouPage />} />
           <Route path="/:owner/:repository/*" element={<MainPage />} />
