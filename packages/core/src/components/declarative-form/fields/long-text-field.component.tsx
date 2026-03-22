@@ -1,5 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getNumericRuleValue } from "../view-support/field-support";
+import { getNumericRuleValue } from "../validation";
 import { FormControl, Textarea } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 

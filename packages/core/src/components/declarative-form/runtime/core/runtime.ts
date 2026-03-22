@@ -1,7 +1,7 @@
 import type { IDeclarativeForm } from "../../types";
+import { validateSectionFields } from "../../validation";
 import { compile } from "../compilation/form";
 import type { DispatchResult, FormAction, FormState } from "../types";
-import { validateSectionData } from "../validation/section";
 import { isExternalNextSectionId, resolveNextSectionId } from "./navigation";
 
 function getInitialSectionId(
@@ -54,13 +54,19 @@ export function transitionRuntime(
 
     case "submit_section": {
       const data = { ...state.data, ...action.data };
-      const errors = validateSectionData(
+      const currentCompiled = compile(
         schema,
         locale,
-        state.activeSectionId,
-        action.data,
-        data
+        data,
+        state.activeSectionId
       );
+
+      const activeSection = currentCompiled.sections.find(
+        (s) => s.id === state.activeSectionId
+      );
+      const errors = activeSection
+        ? validateSectionFields(activeSection.fields, action.data, data)
+        : {};
 
       if (Object.keys(errors).length > 0) {
         return {
@@ -77,12 +83,6 @@ export function transitionRuntime(
       }
 
       const nextSectionId = resolveNextSectionId(section, data);
-      const currentCompiled = compile(
-        schema,
-        locale,
-        data,
-        state.activeSectionId
-      );
 
       if (isExternalNextSectionId(nextSectionId)) {
         return {

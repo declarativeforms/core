@@ -2,7 +2,7 @@ import { Upload } from "lucide-react";
 import { useState, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getNumericBound } from "../view-support/field-support";
+import { getNumericBound } from "../validation";
 import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 import { uploadFile } from "@/lib/file-upload";

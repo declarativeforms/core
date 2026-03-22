@@ -3,7 +3,7 @@ import { useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getNumericRuleValue } from "../view-support/field-support";
+import { getNumericRuleValue } from "../validation";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";

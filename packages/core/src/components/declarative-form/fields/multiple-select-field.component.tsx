@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useWatch } from "react-hook-form";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getFieldOptions, getNumericBound } from "../view-support/field-support";
+import { getFieldOptions, getNumericBound } from "../validation";
 import { HtmlText } from "../view-support/html-text";
 import { stripHtml } from "../view-support/strip-html";
 import {

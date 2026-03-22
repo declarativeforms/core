@@ -1,6 +1,6 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { HtmlText } from "../view-support/html-text";
-import { getRatingRange } from "./rating-range";
+import { getRatingRange } from "../validation";
 import {
   FormControl,
   FormItem,

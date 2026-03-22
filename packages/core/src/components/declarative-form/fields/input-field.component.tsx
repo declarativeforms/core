@@ -1,5 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { findValidationRule, getNumericRuleValue } from "../view-support/field-support";
+import { findValidationRule, getNumericRuleValue } from "../validation";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 

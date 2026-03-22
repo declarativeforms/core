@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getFieldOptions } from "../view-support/field-support";
+import { getFieldOptions } from "../validation";
 import { HtmlText } from "../view-support/html-text";
 import {
   Button,

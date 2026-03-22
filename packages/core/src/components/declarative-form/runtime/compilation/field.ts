@@ -3,7 +3,7 @@ import { isDeclarativeFieldType } from "../../types";
 import { evaluateExpression, interpolateTemplate } from "../core/expression";
 import { localizeFieldContent } from "../localization/field";
 import type { CompiledField, CompiledOption } from "../types";
-import { buildValidationRules } from "../validation/rules";
+import { buildValidationRules } from "./validation-rules";
 
 function interpolateString(
   value: string | undefined,
