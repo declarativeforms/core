@@ -1,5 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { findValidationRule, getNumericRuleValue } from "../view-support/field-support";
+import { buildFieldValidation } from "../validation";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 
@@ -8,6 +8,7 @@ export function InputField({
   controllerField,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
+  const { minLength, maxLength, hasPattern, minRule, maxRule } = buildFieldValidation(field);
 
   const inputType =
     field.type === "date"
@@ -27,9 +28,6 @@ export function InputField({
       : "text";
 
   const isDate = field.type === "date" || field.type === "date_month" || field.type === "time";
-  const hasPattern = field.validation.some((r) => r.type === "pattern");
-  const minRule = isDate ? findValidationRule(field.validation, "min") : undefined;
-  const maxRule = isDate ? findValidationRule(field.validation, "max") : undefined;
 
   return (
     <FormControl>
@@ -46,10 +44,10 @@ export function InputField({
         }
         required={field.required}
         aria-required={field.required}
-        minLength={isDate ? undefined : getNumericRuleValue(field.validation, "min_length")}
-        maxLength={isDate ? undefined : getNumericRuleValue(field.validation, "max_length")}
-        min={minRule ? String(minRule.value) : undefined}
-        max={maxRule ? String(maxRule.value) : undefined}
+        minLength={isDate ? undefined : minLength}
+        maxLength={isDate ? undefined : maxLength}
+        min={isDate && minRule ? String(minRule.value) : undefined}
+        max={isDate && maxRule ? String(maxRule.value) : undefined}
       />
     </FormControl>
   );

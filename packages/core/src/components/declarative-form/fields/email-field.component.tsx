@@ -3,7 +3,7 @@ import { useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getNumericRuleValue } from "../view-support/field-support";
+import { buildFieldValidation } from "../validation";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
 import { FormControl, Input } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
@@ -237,8 +237,7 @@ export function EmailField({
     }
   };
 
-  const minLength = getNumericRuleValue(field.validation, "min_length");
-  const maxLength = getNumericRuleValue(field.validation, "max_length");
+  const { minLength, maxLength } = buildFieldValidation(field);
 
   if (!otpEnabled) {
     return (

@@ -1,7 +1,7 @@
 import type { IDeclarativeForm } from "../../types";
 import { compile } from "../compilation/form";
 import type { DispatchResult, FormAction, FormState } from "../types";
-import { validateSectionData } from "../validation/section";
+import { validateSectionData } from "../../validation";
 import { isExternalNextSectionId, resolveNextSectionId } from "./navigation";
 
 function getInitialSectionId(

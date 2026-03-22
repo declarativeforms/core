@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useWatch } from "react-hook-form";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getFieldOptions, getNumericBound } from "../view-support/field-support";
+import { buildFieldValidation } from "../validation";
 import { HtmlText } from "../view-support/html-text";
 import { stripHtml } from "../view-support/strip-html";
 import {
@@ -21,8 +21,9 @@ export function MultipleSelectField({
   form,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
-  const minSelections = getNumericBound(field.validation, "min") ?? 0;
-  const maxSelections = getNumericBound(field.validation, "max");
+  const { minBound, maxBound, options } = buildFieldValidation(field);
+  const minSelections = minBound ?? 0;
+  const maxSelections = maxBound;
   const allowOther = "allow_other" in field && field.allow_other;
 
   // Watch the current value to show selection count
@@ -36,7 +37,6 @@ export function MultipleSelectField({
     : 0;
 
   const helperTextId = `multiselect-helper-${field.id}`;
-  const options = getFieldOptions(field);
   const optionValues = new Set(options?.map((o) => o.value) ?? []);
 
   // Find the "other" text value in the current selections

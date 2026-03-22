@@ -1,5 +1,5 @@
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { getNumericRuleValue } from "../view-support/field-support";
+import { buildFieldValidation } from "../validation";
 import { FormControl, Textarea } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";
 
@@ -8,6 +8,7 @@ export function LongTextField({
   controllerField,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
+  const { minLength, maxLength } = buildFieldValidation(field);
 
   return (
     <FormControl>
@@ -17,8 +18,8 @@ export function LongTextField({
         placeholder={field.placeholder || t("long_text.placeholder")}
         required={field.required}
         aria-required={field.required}
-        minLength={getNumericRuleValue(field.validation, "min_length")}
-        maxLength={getNumericRuleValue(field.validation, "max_length")}
+        minLength={minLength}
+        maxLength={maxLength}
       />
     </FormControl>
   );
