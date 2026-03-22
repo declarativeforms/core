@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Code, Eye } from "lucide-react"
-import { YamlEditor } from "@/components/yaml-editor"
+import { YamlEditor, defaultYaml } from "@/components/yaml-editor"
 import { FormPreview } from "@/components/form-preview"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -31,7 +31,7 @@ function DesktopLayout({ yaml, onYamlChange }: { yaml: string; onYamlChange: (va
           </span>
         </div>
         <div className="flex-1 min-h-0">
-          <YamlEditor onChange={onYamlChange} />
+          <YamlEditor onChange={onYamlChange} initialValue={yaml} />
         </div>
       </div>
 
@@ -65,7 +65,7 @@ function MobileLayout({ yaml, onYamlChange }: { yaml: string; onYamlChange: (val
       </div>
 
       <TabsContent value="editor" className="min-h-0">
-        <YamlEditor onChange={onYamlChange} />
+        <YamlEditor onChange={onYamlChange} initialValue={yaml} />
       </TabsContent>
 
       <TabsContent value="preview" className="min-h-0">
@@ -77,7 +77,7 @@ function MobileLayout({ yaml, onYamlChange }: { yaml: string; onYamlChange: (val
 
 export function PlaygroundPage() {
   const isMobile = useIsMobile()
-  const [yaml, setYaml] = useState("")
+  const [yaml, setYaml] = useState(defaultYaml)
 
   const handleYamlChange = useCallback((value: string) => {
     setYaml(value)
