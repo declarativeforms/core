@@ -1,9 +1,8 @@
 import type {
   IDeclarativeFormCompletion,
-  IDeclarativeFormOption,
   ILocalizedText,
 } from "../../types";
-import type { CompiledCompletion, CompiledOption } from "../types";
+import type { CompiledCompletion } from "../types";
 
 function normalizeLocaleKey(locale: string): string {
   return locale.trim().toLowerCase().replace("_", "-");
@@ -54,22 +53,6 @@ export function resolveLocalizedText(
   }
 
   return getObjectLocalizedValue(input, locale) ?? "";
-}
-
-export function resolveLocalizedOption(
-  option: IDeclarativeFormOption,
-  locale: string
-): CompiledOption {
-  if (typeof option === "string") {
-    return { label: option, value: option };
-  }
-
-  const label = resolveLocalizedText(option.label, locale);
-  const value = option.value ?? label;
-  return {
-    label: label || value || "",
-    value: value || "",
-  };
 }
 
 export function localizeCompletion(
