@@ -66,7 +66,10 @@
               "examples/send-submissions-to-email",
               "examples/localize-a-form",
               "examples/set-a-form-start-and-end-date",
-              "examples/prefill-data-using-query-parameters"
+              "examples/prefill-data-using-query-parameters",
+              "examples/build-a-multi-step-form-with-cross-field-validation",
+              "examples/protect-a-form-with-cloudflare-turnstile",
+              "examples/connect-a-form-to-zapier-n8n-or-make"
             ]
           }
         ]

@@ -1,0 +1,66 @@
+---
+title: "Connect a form to Zapier, n8n, or Make"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Lead capture"
+description: "Capture leads and send them to your automation platform."
+
+sections:
+  - id: section_1
+    title: "Your details"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: company
+        type: short_text
+        label: "Company"
+        placeholder: "Acme Inc."
+
+      - id: interest
+        type: dropdown
+        label: "What are you interested in?"
+        options:
+          - "Product demo"
+          - "Pricing"
+          - "Partnership"
+          - "Other"
+        validators:
+          - required
+
+    next: done
+
+connections:
+  # Replace the URL below with the webhook URL from your automation platform.
+  # Zapier:  Use a "Catch Hook" trigger — the URL looks like https://hooks.zapier.com/hooks/catch/...
+  # n8n:    Use a "Webhook" trigger node — the URL looks like https://your-instance.n8n.cloud/webhook/...
+  # Make:   Use a "Custom webhook" module — the URL looks like https://hook.make.com/...
+  - type: webhook
+    url: "https://hooks.zapier.com/hooks/catch/123456/abcdef/"
+```
+
+Use a `webhook` connection to send every completed submission to an automation platform. The platform receives the full submission as a JSON payload — see [Send submissions to a webhook](/examples/send-submissions-to-a-webhook) for the payload schema.
+
+**Setup steps:**
+
+1. Create a new automation in Zapier, n8n, or Make.
+2. Add a webhook trigger and copy the URL it generates.
+3. Paste the URL into the `url` field of your `webhook` connection.
+4. Submit a test entry through your form to verify the data arrives.
+
+From there, use your automation platform to route the data anywhere — a CRM, spreadsheet, Slack channel, email sequence, or database.
