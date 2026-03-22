@@ -156,7 +156,7 @@ function applyCommonRules(field: CompiledField): RegisterOptions {
   return rules;
 }
 
-function getItemCount(value: unknown): number {
+function getSelectionCount(value: unknown): number {
   if (Array.isArray(value)) {
     return value.length;
   }
@@ -252,7 +252,7 @@ function buildFieldTypeValidators(
             ? Array.isArray(value)
               ? value.length
               : 0
-            : getItemCount(value);
+            : getSelectionCount(value);
 
         if (field.required && count === 0 && requiredRule) {
           return requiredRule.message;
@@ -368,7 +368,7 @@ const ruleHandlers: {
     String(value).length > rule.value ? rule.message : undefined,
   min: (rule, { fieldType, value }) => {
     if (fieldType === "file_upload" || fieldType === "multiple_select") {
-      return getItemCount(value) < Number(rule.value)
+      return getSelectionCount(value) < Number(rule.value)
         ? rule.message
         : undefined;
     }
@@ -384,7 +384,7 @@ const ruleHandlers: {
   },
   max: (rule, { fieldType, value }) => {
     if (fieldType === "file_upload" || fieldType === "multiple_select") {
-      return getItemCount(value) > Number(rule.value)
+      return getSelectionCount(value) > Number(rule.value)
         ? rule.message
         : undefined;
     }
