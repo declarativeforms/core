@@ -1,6 +1,6 @@
 import type { IDeclarativeForm } from "../../types";
 import { isDeclarativeFieldType } from "../../types";
-import { localizeFieldContent } from "../localization/field";
+import { localizeForm } from "../localization/form";
 import { validateFieldValue } from "./execute";
 import { buildValidationRules } from "./rules";
 
@@ -11,7 +11,8 @@ export function validateSectionData(
   sectionData: Record<string, unknown>,
   formData: Record<string, unknown>
 ): Record<string, string> {
-  const section = (schema.sections ?? []).find(
+  const localizedSchema = localizeForm(schema, locale);
+  const section = (localizedSchema.sections ?? []).find(
     (candidate) => candidate.id === sectionId
   );
   if (!section) {
@@ -25,11 +26,10 @@ export function validateSectionData(
       continue;
     }
 
-    const localized = localizeFieldContent(field, locale);
     const rules = buildValidationRules(
       field.type,
-      localized.validators,
-      localized.label,
+      field.validators ?? [],
+      field.label ?? "",
       locale
     );
     const fieldId = field.id ?? "";

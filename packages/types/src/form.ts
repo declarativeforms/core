@@ -103,25 +103,25 @@ export type IDeclarativeFormFieldBase = {
   visible_when?: string;
 };
 
-export type IEmailField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormEmailField = IDeclarativeFormFieldBase & {
   type?: "email";
   otp?: boolean;
   block_free_email?: boolean;
 };
 
-export type IDropdownField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormDropdownField = IDeclarativeFormFieldBase & {
   type?: "dropdown";
   searchable?: boolean;
   options?: Array<IDeclarativeFormOption>;
 };
 
-export type IRatingField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormRatingField = IDeclarativeFormFieldBase & {
   type?: "rating";
   min_label?: ILocalizedText;
   max_label?: ILocalizedText;
 };
 
-export type IAddressField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormAddressField = IDeclarativeFormFieldBase & {
   type?:
     | "address"
     | "address_locality"
@@ -130,26 +130,26 @@ export type IAddressField = IDeclarativeFormFieldBase & {
   outputFormat?: "string" | "structured";
 };
 
-export type ISelectField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormSelectField = IDeclarativeFormFieldBase & {
   type?: "single_select" | "multiple_select";
   options?: Array<IDeclarativeFormOption>;
   allow_other?: boolean;
 };
 
-export type IGeolocationField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormGeolocationField = IDeclarativeFormFieldBase & {
   type?: "geolocation";
 };
 
-export type ICameraField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormCameraField = IDeclarativeFormFieldBase & {
   type?: "camera";
   facing_mode?: "front" | "rear";
 };
 
-export type ITurnstileField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormTurnstileField = IDeclarativeFormFieldBase & {
   type?: "turnstile";
 };
 
-export type IGenericField = IDeclarativeFormFieldBase & {
+export type IDeclarativeFormGenericField = IDeclarativeFormFieldBase & {
   type?:
     | "date"
     | "date_month"
@@ -165,15 +165,15 @@ export type IGenericField = IDeclarativeFormFieldBase & {
 };
 
 export type IDeclarativeFormField =
-  | IEmailField
-  | IDropdownField
-  | IRatingField
-  | IAddressField
-  | ISelectField
-  | IGeolocationField
-  | ICameraField
-  | ITurnstileField
-  | IGenericField;
+  | IDeclarativeFormEmailField
+  | IDeclarativeFormDropdownField
+  | IDeclarativeFormRatingField
+  | IDeclarativeFormAddressField
+  | IDeclarativeFormSelectField
+  | IDeclarativeFormGeolocationField
+  | IDeclarativeFormCameraField
+  | IDeclarativeFormTurnstileField
+  | IDeclarativeFormGenericField;
 
 export type IDeclarativeFormSection = {
   id?: string;
@@ -190,15 +190,17 @@ export type IDeclarativeFormSection = {
       >;
 };
 
-export type ICompletion = {
+export type IDeclarativeFormCompletion = {
   title?: ILocalizedText;
   message?: ILocalizedText;
   button?: { label?: ILocalizedText; url?: ILocalizedText };
 };
 
-export type ICompletionRule = ICompletion & { when?: string };
+export type IDeclarativeFormCompletionRule = IDeclarativeFormCompletion & {
+  when?: string;
+};
 
-export type IRawAirtableConnection = {
+export type IDeclarativeFormRawAirtableConnection = {
   type?: "airtable";
   connection_id?: string;
   base_id?: string;
@@ -206,9 +208,13 @@ export type IRawAirtableConnection = {
   when?: string;
 };
 
-export type IRawWebhookConnection = { type?: "webhook"; url?: string; when?: string };
+export type IDeclarativeFormRawWebhookConnection = {
+  type?: "webhook";
+  url?: string;
+  when?: string;
+};
 
-export type IRawEmailConnection = {
+export type IDeclarativeFormRawEmailConnection = {
   type?: "email";
   to?: string;
   subject?: ILocalizedText;
@@ -222,10 +228,12 @@ export type IDeclarativeForm = {
   version?: number;
   title?: ILocalizedText;
   description?: ILocalizedText;
-  completion?: ICompletion | ICompletionRule[];
+  completion?: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[];
   sections?: Array<IDeclarativeFormSection>;
   connections?: Array<
-    IRawAirtableConnection | IRawWebhookConnection | IRawEmailConnection
+    | IDeclarativeFormRawAirtableConnection
+    | IDeclarativeFormRawWebhookConnection
+    | IDeclarativeFormRawEmailConnection
   >;
   start_date?: string;
   end_date?: string;
