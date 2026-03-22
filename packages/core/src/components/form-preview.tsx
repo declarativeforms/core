@@ -6,10 +6,10 @@ import { DeclarativeForm, type IDeclarativeForm } from "@/components"
 import { HtmlText } from "@/components/declarative-form/view-support/html-text"
 import { resolveCompletion } from "@/components/declarative-form/runtime/core/completion"
 import { interpolateTemplate } from "@/components/declarative-form/runtime/core/expression"
-import { localizeCompletion } from "@/components/declarative-form/runtime/localization/text"
+import { localizeCompletion, resolveLocalizedText } from "@/components/declarative-form/runtime/localization/text"
 import type { FormEffect } from "@/components/declarative-form/runtime/types"
 import { useI18n } from "@/i18n"
-import { Button } from "@/components/ui"
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 
 function parseForm(yamlStr: string): IDeclarativeForm | null {
   try {
@@ -139,16 +139,44 @@ export function FormPreview({ yaml }: { yaml: string }) {
     )
   }
 
+  const title = resolveLocalizedText(form.title, locale) ?? ""
+  const description = form.description
+    ? resolveLocalizedText(form.description, locale)
+    : undefined
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-lg mx-auto px-4 py-8">
-        <DeclarativeForm
-          key={formKey}
-          form={form}
-          locale={locale}
-          initialData={{}}
-          onEffect={handleEffect}
-        />
+      <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
+        <Card className="mb-10 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
+          <CardHeader className="px-6 !pb-0 border-b border-gray-200">
+            <CardTitle className="text-2xl/7.5 font-semibold">
+              <HtmlText html={title} />
+            </CardTitle>
+            {description ? (
+              <CardDescription className="mb-3 mt-2 text-sm text-gray-500">
+                <HtmlText html={description} />
+              </CardDescription>
+            ) : null}
+          </CardHeader>
+          <CardContent className="px-6">
+            <DeclarativeForm
+              key={formKey}
+              form={form}
+              locale={locale}
+              initialData={{}}
+              onEffect={handleEffect}
+            />
+          </CardContent>
+        </Card>
+        <div className="text-center text-gray-500 text-xs tracking-wide">
+          {t("base.powered_by")}{" "}
+          <a
+            href="https://docs.declarativeforms.com"
+            className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
+          >
+            Declarative Forms
+          </a>
+        </div>
       </div>
     </div>
   )

@@ -80,10 +80,11 @@ const editorTheme = EditorView.theme({
   },
 });
 
-export function YamlEditor({ className, onChange }: { className?: string; onChange?: (value: string) => void }) {
+export function YamlEditor({ className, onChange, initialValue }: { className?: string; onChange?: (value: string) => void; initialValue?: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const initialValueRef = useRef(initialValue);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -92,8 +93,9 @@ export function YamlEditor({ className, onChange }: { className?: string; onChan
   useEffect(() => {
     if (!editorRef.current || viewRef.current) return;
 
+    const initialDoc = initialValueRef.current ?? defaultYaml;
     const state = EditorState.create({
-      doc: defaultYaml,
+      doc: initialDoc,
       extensions: [
         lineNumbers(),
         highlightActiveLineGutter(),
@@ -136,7 +138,7 @@ export function YamlEditor({ className, onChange }: { className?: string; onChan
     });
 
     viewRef.current = view;
-    onChangeRef.current?.(defaultYaml);
+    onChangeRef.current?.(initialDoc);
 
     return () => {
       view.destroy();
