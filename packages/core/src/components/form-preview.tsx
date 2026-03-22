@@ -9,6 +9,7 @@ import { interpolateTemplate } from "@/components/declarative-form/runtime/core/
 import { localizeCompletion, resolveLocalizedText } from "@/components/declarative-form/runtime/localization/text"
 import type { FormEffect } from "@/components/declarative-form/runtime/types"
 import { useI18n } from "@/i18n"
+import { buildThemeStyle } from "@/lib/theme"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 
 function parseForm(yamlStr: string): IDeclarativeForm | null {
@@ -84,6 +85,8 @@ export function FormPreview({ yaml }: { yaml: string }) {
     )
   }
 
+  const themeStyle = buildThemeStyle(form.theme)
+
   if (previewState.view === "complete" || previewState.view === "redirect") {
     const submissionData = previewState.data
     const resolved = resolveCompletion(form.completion, submissionData)
@@ -104,7 +107,7 @@ export function FormPreview({ yaml }: { yaml: string }) {
         : undefined
 
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full" style={themeStyle}>
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="flex flex-col items-center justify-center min-h-full px-4 py-12">
             <div className="w-full max-w-md mx-auto text-center">
@@ -145,7 +148,7 @@ export function FormPreview({ yaml }: { yaml: string }) {
     : undefined
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto" style={themeStyle}>
       <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
         <Card className="mb-10 w-full bg-white border-gray-200 shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="px-6 !pb-0 border-b border-gray-200">
