@@ -29,7 +29,7 @@ export function compileField(
   const label = interpolateTemplate(localized.label, data);
   const validation = buildValidationRules(
     field.type,
-    localized.validators,
+    field.validators,
     label,
     locale
   );

@@ -1,14 +1,13 @@
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
 import { translate } from "@/i18n/runtime";
 
-import type { DeclarativeFieldType } from "../../types";
-import type { LocalizedValidator } from "../localization/validators";
+import type {
+  DeclarativeFieldType,
+  IDeclarativeFormValidator,
+  ILocalizedText,
+} from "../../types";
+import { resolveLocalizedText } from "../localization/text";
 import type { ValidationRule } from "../types";
-
-type ValidatorWithValue = Extract<
-  Exclude<LocalizedValidator, "required">,
-  { value: number | string }
->;
 
 function toLocale(locale: string): Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(locale)
@@ -16,24 +15,39 @@ function toLocale(locale: string): Locale {
     : DEFAULT_LOCALE;
 }
 
+function resolveMessage(
+  message: ILocalizedText | undefined,
+  locale: string
+): string | undefined {
+  return resolveLocalizedText(message, locale) || undefined;
+}
+
 function getMinValidator(
-  validators: LocalizedValidator[]
-): ValidatorWithValue | undefined {
+  validators: IDeclarativeFormValidator[]
+): Extract<
+  Exclude<IDeclarativeFormValidator, "required">,
+  { type?: "min" }
+> | undefined {
   return validators.find(
-    (validator) => typeof validator === "object" && validator.type === "min"
-  ) as ValidatorWithValue | undefined;
+    (v): v is Extract<Exclude<IDeclarativeFormValidator, "required">, { type?: "min" }> =>
+      typeof v === "object" && v.type === "min" && v.value !== undefined
+  );
 }
 
 function getMaxValidator(
-  validators: LocalizedValidator[]
-): ValidatorWithValue | undefined {
+  validators: IDeclarativeFormValidator[]
+): Extract<
+  Exclude<IDeclarativeFormValidator, "required">,
+  { type?: "max" }
+> | undefined {
   return validators.find(
-    (validator) => typeof validator === "object" && validator.type === "max"
-  ) as ValidatorWithValue | undefined;
+    (v): v is Extract<Exclude<IDeclarativeFormValidator, "required">, { type?: "max" }> =>
+      typeof v === "object" && v.type === "max" && v.value !== undefined
+  );
 }
 
 function hasValidator(
-  validators: LocalizedValidator[],
+  validators: IDeclarativeFormValidator[],
   type: string
 ): boolean {
   return validators.some(
@@ -41,19 +55,22 @@ function hasValidator(
   );
 }
 
-function getRatingRange(validators: LocalizedValidator[]): {
-  min: number;
-  max: number;
-} {
+function getRatingRange(
+  validators: IDeclarativeFormValidator[]
+): { min: number; max: number } {
   const minVal = getMinValidator(validators);
   const maxVal = getMaxValidator(validators);
 
   const min =
-    minVal && typeof minVal.value === "number" && minVal.value >= 1
+    minVal &&
+    typeof minVal.value === "number" &&
+    minVal.value >= 1
       ? minVal.value
       : 1;
   const max =
-    maxVal && typeof maxVal.value === "number" && maxVal.value >= min
+    maxVal &&
+    typeof maxVal.value === "number" &&
+    maxVal.value >= min
       ? maxVal.value
       : 5;
 
@@ -62,14 +79,15 @@ function getRatingRange(validators: LocalizedValidator[]): {
 
 export function buildValidationRules(
   fieldType: DeclarativeFieldType,
-  validators: LocalizedValidator[],
+  validators: IDeclarativeFormValidator[] | undefined,
   label: string,
   locale: string
 ): ValidationRule[] {
   const rules: ValidationRule[] = [];
   const loc = toLocale(locale);
+  const resolved = validators ?? [];
 
-  for (const validator of validators) {
+  for (const validator of resolved) {
     if (validator === "required") {
       rules.push({
         type: "required",
@@ -78,23 +96,31 @@ export function buildValidationRules(
       continue;
     }
 
+    if (!validator.type) {
+      continue;
+    }
+
+    const message = resolveMessage(validator.message, locale);
+
     switch (validator.type) {
       case "pattern":
+        if (!validator.regex) break;
         rules.push({
           type: "pattern",
           regex: validator.regex,
           message:
-            validator.message ||
+            message ||
             translate(loc, "validation.invalid", { label }),
         });
         break;
 
       case "min_length":
+        if (typeof validator.value !== "number") break;
         rules.push({
           type: "min_length",
           value: validator.value,
           message:
-            validator.message ||
+            message ||
             translate(loc, "validation.min_length", {
               label,
               min: validator.value,
@@ -103,11 +129,12 @@ export function buildValidationRules(
         break;
 
       case "max_length":
+        if (typeof validator.value !== "number") break;
         rules.push({
           type: "max_length",
           value: validator.value,
           message:
-            validator.message ||
+            message ||
             translate(loc, "validation.max_length", {
               label,
               max: validator.value,
@@ -116,39 +143,42 @@ export function buildValidationRules(
         break;
 
       case "expression":
+        if (!validator.expression) break;
         rules.push({
           type: "expression",
           expression: validator.expression,
           message:
-            validator.message ||
+            message ||
             translate(loc, "validation.invalid", { label }),
         });
         break;
     }
   }
 
-  const minVal = getMinValidator(validators);
-  const maxVal = getMaxValidator(validators);
+  const minVal = getMinValidator(resolved);
+  const maxVal = getMaxValidator(resolved);
+  const minMessage = minVal ? resolveMessage(minVal.message, locale) : undefined;
+  const maxMessage = maxVal ? resolveMessage(maxVal.message, locale) : undefined;
 
   if (fieldType === "date" || fieldType === "date_month" || fieldType === "time") {
-    if (minVal) {
+    if (minVal && minVal.value !== undefined) {
       rules.push({
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          minMessage ||
           translate(loc, "validation.date_min", {
             label,
             min: String(minVal.value),
           }),
       });
     }
-    if (maxVal) {
+    if (maxVal && maxVal.value !== undefined) {
       rules.push({
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          maxMessage ||
           translate(loc, "validation.date_max", {
             label,
             max: String(maxVal.value),
@@ -158,7 +188,7 @@ export function buildValidationRules(
   }
 
   if (fieldType === "number") {
-    if (!hasValidator(validators, "pattern")) {
+    if (!hasValidator(resolved, "pattern")) {
       rules.push({
         type: "pattern",
         regex: "^\\d+$",
@@ -170,7 +200,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          minMessage ||
           translate(loc, "validation.number_min", {
             label,
             min: minVal.value,
@@ -182,7 +212,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          maxMessage ||
           translate(loc, "validation.number_max", {
             label,
             max: maxVal.value,
@@ -192,19 +222,19 @@ export function buildValidationRules(
   }
 
   if (fieldType === "rating") {
-    const range = getRatingRange(validators);
+    const range = getRatingRange(resolved);
     rules.push({
       type: "min",
       value: range.min,
       message:
-        minVal?.message ||
+        minMessage ||
         translate(loc, "validation.number_min", { label, min: range.min }),
     });
     rules.push({
       type: "max",
       value: range.max,
       message:
-        maxVal?.message ||
+        maxMessage ||
         translate(loc, "validation.number_max", { label, max: range.max }),
     });
   }
@@ -215,7 +245,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          minMessage ||
           translate(loc, "validation.file_min", {
             label,
             min: minVal.value,
@@ -227,7 +257,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          maxMessage ||
           translate(loc, "validation.file_max", {
             label,
             max: maxVal.value,
@@ -242,7 +272,7 @@ export function buildValidationRules(
         type: "min",
         value: minVal.value,
         message:
-          minVal.message ||
+          minMessage ||
           translate(loc, "validation.selection_min", {
             label,
             min: minVal.value,
@@ -254,7 +284,7 @@ export function buildValidationRules(
         type: "max",
         value: maxVal.value,
         message:
-          maxVal.message ||
+          maxMessage ||
           translate(loc, "validation.selection_max", {
             label,
             max: maxVal.value,

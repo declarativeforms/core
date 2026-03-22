@@ -1,10 +1,6 @@
 import type { IDeclarativeFormField } from "../../types";
 import type { CompiledOption } from "../types";
 import { resolveLocalizedOption, resolveLocalizedText } from "./text";
-import {
-  resolveLocalizedValidators,
-  type LocalizedValidator,
-} from "./validators";
 
 export type LocalizedFieldContent = {
   label: string;
@@ -12,7 +8,6 @@ export type LocalizedFieldContent = {
   options?: CompiledOption[];
   min_label?: string;
   max_label?: string;
-  validators: LocalizedValidator[];
 };
 
 export function localizeFieldContent(
@@ -37,6 +32,5 @@ export function localizeFieldContent(
     ...("max_label" in field && field.max_label
       ? { max_label: resolveLocalizedText(field.max_label, locale) }
       : {}),
-    validators: resolveLocalizedValidators(field.validators, locale),
   };
 }
