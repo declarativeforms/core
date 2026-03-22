@@ -31,6 +31,13 @@ sections:
         validators:
           - required
 
+      # Only shown for high-impact bugs to help us gauge blast radius.
+      - id: affected_users
+        type: short_text
+        label: "How many users are affected?"
+        placeholder: "e.g. All users, around 10%, one specific account"
+        visible_when: "data.severity === 'critical' || data.severity === 'high'"
+
       - id: description
         type: long_text
         label: "Steps to reproduce"

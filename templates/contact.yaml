@@ -6,6 +6,11 @@ sections:
   - id: contact
     title: "Your details"
     fields:
+      # Prefill this field via ?source=... in the URL to track referral channels.
+      - id: source
+        type: hidden
+        label: "Source"
+
       - id: full_name
         type: short_text
         label: "Full name"
@@ -19,6 +24,22 @@ sections:
         placeholder: "jane@example.com"
         validators:
           - required
+
+      - id: inquiry_type
+        type: single_select
+        label: "Type of inquiry"
+        options:
+          - "Personal"
+          - "Business"
+        validators:
+          - required
+
+      # Only shown when the inquiry is from a business.
+      - id: company
+        type: short_text
+        label: "Company name"
+        placeholder: "Acme Inc."
+        visible_when: "data.inquiry_type === 'Business'"
 
       - id: message
         type: long_text

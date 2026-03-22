@@ -20,6 +20,17 @@ sections:
         validators:
           - required
 
+      - id: confirm_email
+        type: email
+        label: "Confirm email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+          # Ensure both email fields match before moving on.
+          - type: expression
+            expression: "data.confirm_email === data.email"
+            message: "Email addresses do not match."
+
       - id: phone
         type: mobile_number
         label: "Phone number"
@@ -36,14 +47,15 @@ sections:
     title: "Role and experience"
     fields:
       - id: role
-        type: dropdown
+        type: single_select
         label: "Which role are you applying for?"
+        # allow_other lets applicants write in a role not listed.
+        allow_other: true
         options:
           - "Software Engineer"
           - "Product Designer"
           - "Product Manager"
           - "Marketing"
-          - "Other"
         validators:
           - required
 

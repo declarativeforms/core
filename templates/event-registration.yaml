@@ -2,6 +2,10 @@ version: 1
 title: "Event registration"
 description: "Register for our upcoming event."
 
+# The registration window opens on 1 April and closes on 14 April.
+start_date: "2026-04-01T00:00:00.000Z"
+end_date: "2026-04-14T23:59:59.000Z"
+
 sections:
   - id: attendee
     title: "Attendee information"
@@ -44,6 +48,8 @@ sections:
       - id: sessions
         type: multiple_select
         label: "Which sessions would you like to attend?"
+        # allow_other lets attendees write in a session not listed.
+        allow_other: true
         options:
           - "Opening keynote"
           - "Workshop A"
@@ -64,8 +70,21 @@ sections:
 
     next: done
 
+completion:
+  title: "You are registered!"
+  message: "Thanks, {{data.full_name}}. See you at the event."
+  button:
+    label: "View event details"
+    url: "https://example.com/event"
+
 connections:
   - type: email
     to: "events@example.com"
     subject: "Registration from {{data.full_name}}"
     include_responses: true
+
+  # Store every registration in Airtable for easy management.
+  - type: airtable
+    connection_id: "your-airtable-connection-id"
+    base_id: "your-base-id"
+    table_id_or_name: "Registrations"

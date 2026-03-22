@@ -60,6 +60,13 @@ sections:
             value: 20
             message: "Please provide at least 20 characters of detail."
 
+      # Only shown for technical issues — helps our engineers reproduce the problem.
+      - id: reproduction_steps
+        type: long_text
+        label: "Steps to reproduce"
+        placeholder: "1. Go to...\n2. Click on...\n3. See error"
+        visible_when: "data.category === 'technical'"
+
       - id: attachment
         type: file_upload
         label: "Attachments (optional)"

@@ -57,8 +57,12 @@ sections:
     next: done
 
 completion:
-  title: "Meeting requested"
-  message: "Thanks, {{data.full_name}}. We will confirm your meeting time at {{data.email}}."
+  # Send a tailored message depending on the type of meeting requested.
+  - when: "data.meeting_type === 'Product demo'"
+    title: "Demo request received"
+    message: "Thanks, {{data.full_name}}. Our team will send a calendar invite to {{data.email}} shortly."
+  - title: "Meeting requested"
+    message: "Thanks, {{data.full_name}}. We will confirm your meeting time at {{data.email}}."
 
 connections:
   - type: email

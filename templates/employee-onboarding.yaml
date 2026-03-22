@@ -2,6 +2,9 @@ version: 1
 title: "Employee onboarding"
 description: "Welcome to the team! Complete this form before your first day."
 
+# The form opens on the first day of the month when new hires join.
+start_date: "2026-04-01T00:00:00.000Z"
+
 sections:
   - id: personal
     title: "Personal details"
