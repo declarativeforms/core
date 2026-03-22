@@ -1,0 +1,51 @@
+---
+title: "Embed a form in an iframe"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Contact us"
+description: "Send us a message and we'll get back to you."
+
+sections:
+  - id: section_1
+    title: "Section 1"
+    fields:
+      - id: name
+        type: short_text
+        label: "Name"
+        validators:
+          - required
+
+      - id: message
+        type: long_text
+        label: "Message"
+        validators:
+          - required
+
+    next: done
+```
+
+Add `?embed=true` to your form URL and use it as the `src` of an `<iframe>` element. The form will render without the card container, drop shadow, or footer, so it fits naturally inside your page.
+
+```html
+<iframe
+  src="https://frms.dev/your-form-id?embed=true"
+  width="100%"
+  height="600"
+  style="border: none;"
+></iframe>
+```
+
+You can combine `embed=true` with other query parameters such as [prefilled field values](/examples/prefill-data-using-query-parameters).
+
+```html
+<iframe
+  src="https://frms.dev/your-form-id?embed=true&name=Ada"
+  width="100%"
+  height="600"
+  style="border: none;"
+></iframe>
+```

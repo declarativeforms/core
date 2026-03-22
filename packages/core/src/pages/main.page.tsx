@@ -17,6 +17,7 @@ import { getBackendUrl } from "@/lib/api";
 
 const RESERVED_QUERY_KEYS = new Set([
   "connection_id",
+  "embed",
   "lang",
   "submission_id",
   "step",
@@ -32,6 +33,7 @@ export function MainPage() {
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
   const connectionId = searchParams.get("connection_id");
+  const embed = searchParams.get("embed") === "true";
   const submissionId = searchParams.get("submission_id");
   const stepParam = searchParams.get("step");
   const langParam = searchParams.get("lang");
@@ -277,7 +279,7 @@ export function MainPage() {
     : undefined;
 
   return (
-    <BasePage title={resolvedTitle} description={resolvedDescription} theme={form.theme}>
+    <BasePage title={resolvedTitle} description={resolvedDescription} theme={form.theme} embed={embed}>
       <DeclarativeForm
         form={form}
         locale={locale}
