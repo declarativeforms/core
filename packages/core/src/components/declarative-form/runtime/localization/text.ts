@@ -1,5 +1,5 @@
 import type {
-  ICompletion,
+  IDeclarativeFormCompletion,
   IDeclarativeFormOption,
   ILocalizedText,
 } from "../../types";
@@ -73,7 +73,7 @@ export function resolveLocalizedOption(
 }
 
 export function localizeCompletion(
-  completion: ICompletion | undefined,
+  completion: IDeclarativeFormCompletion | undefined,
   locale: string
 ): CompiledCompletion | undefined {
   if (!completion) {

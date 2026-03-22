@@ -5,179 +5,35 @@ import type {
   IDeclarativeFormOption,
   IDeclarativeFormSection,
   IDeclarativeFormValidator,
-  ICompletion,
-  ICompletionRule,
-  IRawAirtableConnection,
-  IRawEmailConnection,
-  IRawWebhookConnection,
+  IDeclarativeFormCompletion,
+  IDeclarativeFormCompletionRule,
+  IDeclarativeFormRawAirtableConnection,
+  IDeclarativeFormRawWebhookConnection,
+  ILocalizedForm,
+  ILocalizedFormCompletion,
+  ILocalizedFormCompletionRule,
+  ILocalizedFormConnection,
+  ILocalizedFormField,
+  ILocalizedFormFieldBase,
+  ILocalizedFormOption,
+  ILocalizedFormSection,
+  ILocalizedFormValidator,
 } from "../../types";
 import { resolveLocalizedText } from "./text";
 
-// ---------------------------------------------------------------------------
-// Localized validator — same shape as IDeclarativeFormValidator but with
-// ILocalizedText resolved to string.
-// ---------------------------------------------------------------------------
-
-export type LocalizedFormValidator =
-  | "required"
-  | { type?: "pattern"; regex?: string; message?: string }
-  | { type?: "min"; value?: number | string; message?: string }
-  | { type?: "max"; value?: number | string; message?: string }
-  | { type?: "min_length"; value?: number; message?: string }
-  | { type?: "max_length"; value?: number; message?: string }
-  | { type?: "expression"; expression?: string; message?: string };
-
-// ---------------------------------------------------------------------------
-// Localized option — same shape as IDeclarativeFormOption but with
-// ILocalizedText resolved to string.
-// ---------------------------------------------------------------------------
-
-export type LocalizedFormOption = string | { label?: string; value?: string };
-
-// ---------------------------------------------------------------------------
-// Localized field types — same shape as their IDeclarativeFormField
-// counterparts but with ILocalizedText resolved to string.
-// ---------------------------------------------------------------------------
-
-type LocalizedFormFieldBase = {
-  id?: string;
-  label?: string;
-  placeholder?: string;
-  validators?: LocalizedFormValidator[];
-  visible_when?: string;
-};
-
-export type LocalizedEmailField = LocalizedFormFieldBase & {
-  type?: "email";
-  otp?: boolean;
-  block_free_email?: boolean;
-};
-
-export type LocalizedDropdownField = LocalizedFormFieldBase & {
-  type?: "dropdown";
-  searchable?: boolean;
-  options?: LocalizedFormOption[];
-};
-
-export type LocalizedRatingField = LocalizedFormFieldBase & {
-  type?: "rating";
-  min_label?: string;
-  max_label?: string;
-};
-
-export type LocalizedAddressField = LocalizedFormFieldBase & {
-  type?: "address" | "address_locality" | "address_region" | "address_country";
-  outputFormat?: "string" | "structured";
-};
-
-export type LocalizedSelectField = LocalizedFormFieldBase & {
-  type?: "single_select" | "multiple_select";
-  options?: LocalizedFormOption[];
-  allow_other?: boolean;
-};
-
-export type LocalizedGeolocationField = LocalizedFormFieldBase & {
-  type?: "geolocation";
-};
-
-export type LocalizedCameraField = LocalizedFormFieldBase & {
-  type?: "camera";
-  facing_mode?: "front" | "rear";
-};
-
-export type LocalizedTurnstileField = LocalizedFormFieldBase & {
-  type?: "turnstile";
-};
-
-export type LocalizedGenericField = LocalizedFormFieldBase & {
-  type?:
-    | "date"
-    | "date_month"
-    | "file_upload"
-    | "hidden"
-    | "long_text"
-    | "mobile_number"
-    | "number"
-    | "signature"
-    | "short_text"
-    | "time"
-    | "url";
-};
-
-export type LocalizedFormField =
-  | LocalizedEmailField
-  | LocalizedDropdownField
-  | LocalizedRatingField
-  | LocalizedAddressField
-  | LocalizedSelectField
-  | LocalizedGeolocationField
-  | LocalizedCameraField
-  | LocalizedTurnstileField
-  | LocalizedGenericField;
-
-// ---------------------------------------------------------------------------
-// Localized section — same shape as IDeclarativeFormSection but with
-// ILocalizedText resolved to string.
-// ---------------------------------------------------------------------------
-
-export type LocalizedFormSection = {
-  id?: string;
-  title?: string;
-  fields?: LocalizedFormField[];
-  next?: IDeclarativeFormSection["next"];
-};
-
-// ---------------------------------------------------------------------------
-// Localized completion — same shape as ICompletion / ICompletionRule but
-// with ILocalizedText resolved to string.
-// ---------------------------------------------------------------------------
-
-export type LocalizedFormCompletion = {
-  title?: string;
-  message?: string;
-  button?: { label?: string; url?: string };
-};
-
-export type LocalizedFormCompletionRule = LocalizedFormCompletion & {
-  when?: string;
-};
-
-// ---------------------------------------------------------------------------
-// Localized connections — IRawEmailConnection subject/body resolved to string.
-// ---------------------------------------------------------------------------
-
-export type LocalizedRawEmailConnection = {
-  type?: "email";
-  to?: string;
-  subject?: string;
-  body?: string;
-  include_responses?: boolean;
-  when?: string;
-};
-
-export type LocalizedFormConnection =
-  | IRawAirtableConnection
-  | IRawWebhookConnection
-  | LocalizedRawEmailConnection;
-
-// ---------------------------------------------------------------------------
-// LocalizedForm — exactly the same structure as IDeclarativeForm but with
-// every ILocalizedText property resolved to a plain string.
-// ---------------------------------------------------------------------------
-
-export type LocalizedForm = {
-  id?: string;
-  version?: number;
-  title?: string;
-  description?: string;
-  completion?: LocalizedFormCompletion | LocalizedFormCompletionRule[];
-  sections?: LocalizedFormSection[];
-  connections?: LocalizedFormConnection[];
-  start_date?: string;
-  end_date?: string;
-  locale?: string;
-  measurements?: { mixpanel?: string };
-};
+// Re-export ILocalized* types for consumers within this package.
+export type {
+  ILocalizedForm,
+  ILocalizedFormCompletion,
+  ILocalizedFormCompletionRule,
+  ILocalizedFormConnection,
+  ILocalizedFormField,
+  ILocalizedFormFieldBase,
+  ILocalizedFormOption,
+  ILocalizedFormSection,
+  ILocalizedFormValidator,
+  ILocalizedRawEmailConnection,
+} from "../../types";
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -186,7 +42,7 @@ export type LocalizedForm = {
 function localizeValidator(
   validator: IDeclarativeFormValidator,
   locale: string
-): LocalizedFormValidator {
+): ILocalizedFormValidator {
   if (validator === "required") {
     return "required";
   }
@@ -202,7 +58,7 @@ function localizeValidator(
 function localizeOption(
   option: IDeclarativeFormOption,
   locale: string
-): LocalizedFormOption {
+): ILocalizedFormOption {
   if (typeof option === "string") {
     return option;
   }
@@ -218,7 +74,7 @@ function localizeOption(
 function localizeFieldBase(
   field: IDeclarativeFormFieldBase,
   locale: string
-): LocalizedFormFieldBase {
+): ILocalizedFormFieldBase {
   return {
     id: field.id,
     label: field.label
@@ -235,7 +91,7 @@ function localizeFieldBase(
 function localizeField(
   field: IDeclarativeFormField,
   locale: string
-): LocalizedFormField {
+): ILocalizedFormField {
   const base = localizeFieldBase(field, locale);
 
   switch (field.type) {
@@ -315,7 +171,7 @@ function localizeField(
 function localizeSection(
   section: IDeclarativeFormSection,
   locale: string
-): LocalizedFormSection {
+): ILocalizedFormSection {
   return {
     id: section.id,
     title: section.title
@@ -327,9 +183,9 @@ function localizeSection(
 }
 
 function localizeCompletion(
-  completion: ICompletion,
+  completion: IDeclarativeFormCompletion,
   locale: string
-): LocalizedFormCompletion {
+): ILocalizedFormCompletion {
   return {
     title: completion.title
       ? resolveLocalizedText(completion.title, locale)
@@ -351,15 +207,15 @@ function localizeCompletion(
 }
 
 function localizeCompletionRules(
-  completion: ICompletion | ICompletionRule[],
+  completion: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[],
   locale: string
-): LocalizedFormCompletion | LocalizedFormCompletionRule[] {
+): ILocalizedFormCompletion | ILocalizedFormCompletionRule[] {
   if (!Array.isArray(completion)) {
     return localizeCompletion(completion, locale);
   }
 
   return completion.map(
-    (rule): LocalizedFormCompletionRule => ({
+    (rule): ILocalizedFormCompletionRule => ({
       ...localizeCompletion(rule, locale),
       when: rule.when,
     })
@@ -367,11 +223,11 @@ function localizeCompletionRules(
 }
 
 function localizeConnection(
-  connection: IRawAirtableConnection | IRawWebhookConnection | IRawEmailConnection,
+  connection: NonNullable<IDeclarativeForm["connections"]>[number],
   locale: string
-): LocalizedFormConnection {
+): ILocalizedFormConnection {
   if (connection.type !== "email") {
-    return connection as IRawAirtableConnection | IRawWebhookConnection;
+    return connection as IDeclarativeFormRawAirtableConnection | IDeclarativeFormRawWebhookConnection;
   }
 
   return {
@@ -400,7 +256,7 @@ function localizeConnection(
 export function localizeForm(
   schema: IDeclarativeForm,
   locale: string
-): LocalizedForm {
+): ILocalizedForm {
   return {
     id: schema.id,
     version: schema.version,

@@ -2,7 +2,7 @@ import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
 import { translate } from "@/i18n/runtime";
 
 import type { DeclarativeFieldType } from "../../types";
-import type { LocalizedFormValidator } from "../localization/form";
+import type { ILocalizedFormValidator } from "../localization/form";
 import type { ValidationRule } from "../types";
 
 type ValidatorWithValue = {
@@ -18,7 +18,7 @@ function toLocale(locale: string): Locale {
 }
 
 function getMinValidator(
-  validators: LocalizedFormValidator[]
+  validators: ILocalizedFormValidator[]
 ): ValidatorWithValue | undefined {
   const found = validators.find(
     (validator) =>
@@ -30,7 +30,7 @@ function getMinValidator(
 }
 
 function getMaxValidator(
-  validators: LocalizedFormValidator[]
+  validators: ILocalizedFormValidator[]
 ): ValidatorWithValue | undefined {
   const found = validators.find(
     (validator) =>
@@ -42,7 +42,7 @@ function getMaxValidator(
 }
 
 function hasValidator(
-  validators: LocalizedFormValidator[],
+  validators: ILocalizedFormValidator[],
   type: string
 ): boolean {
   return validators.some(
@@ -50,7 +50,7 @@ function hasValidator(
   );
 }
 
-function getRatingRange(validators: LocalizedFormValidator[]): {
+function getRatingRange(validators: ILocalizedFormValidator[]): {
   min: number;
   max: number;
 } {
@@ -71,7 +71,7 @@ function getRatingRange(validators: LocalizedFormValidator[]): {
 
 export function buildValidationRules(
   fieldType: DeclarativeFieldType,
-  validators: LocalizedFormValidator[],
+  validators: ILocalizedFormValidator[],
   label: string,
   locale: string
 ): ValidationRule[] {

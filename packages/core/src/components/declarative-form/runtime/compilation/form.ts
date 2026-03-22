@@ -3,23 +3,23 @@ import { isDeclarativeConnectionType } from "../../types";
 import { resolveCompletion } from "../core/completion";
 import { interpolateTemplate } from "../core/expression";
 import type {
-  LocalizedForm,
-  LocalizedFormCompletion,
-  LocalizedFormCompletionRule,
-  LocalizedFormSection,
+  ILocalizedForm,
+  ILocalizedFormCompletion,
+  ILocalizedFormCompletionRule,
+  ILocalizedFormSection,
 } from "../localization/form";
 import { localizeForm } from "../localization/form";
 import type { CompiledCompletion, CompiledForm, CompiledSection } from "../types";
 import { compileField } from "./field";
 
-function normalizeConnections(connections: LocalizedForm["connections"]) {
+function normalizeConnections(connections: ILocalizedForm["connections"]) {
   return (connections ?? []).flatMap((connection) =>
     isDeclarativeConnectionType(connection?.type) ? [connection] : []
   );
 }
 
 function buildCompiledCompletion(
-  completion: LocalizedFormCompletion | undefined
+  completion: ILocalizedFormCompletion | undefined
 ): CompiledCompletion | undefined {
   if (!completion) {
     return undefined;
@@ -38,7 +38,7 @@ function buildCompiledCompletion(
 }
 
 function compileSection(
-  section: LocalizedFormSection,
+  section: ILocalizedFormSection,
   locale: string,
   data: Record<string, unknown>
 ): CompiledSection {
@@ -69,8 +69,8 @@ export function compile(
 
   const resolvedCompletion = resolveCompletion(
     localizedSchema.completion as
-      | LocalizedFormCompletion
-      | LocalizedFormCompletionRule[]
+      | ILocalizedFormCompletion
+      | ILocalizedFormCompletionRule[]
       | undefined,
     data
   );

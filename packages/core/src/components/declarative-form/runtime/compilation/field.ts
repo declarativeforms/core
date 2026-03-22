@@ -1,8 +1,8 @@
 import { isDeclarativeFieldType } from "../../types";
 import { evaluateExpression, interpolateTemplate } from "../core/expression";
 import type {
-  LocalizedFormField,
-  LocalizedFormOption,
+  ILocalizedFormField,
+  ILocalizedFormOption,
 } from "../localization/form";
 import type { CompiledField, CompiledOption } from "../types";
 import { buildValidationRules } from "../validation/rules";
@@ -19,7 +19,7 @@ function interpolateString(
 }
 
 function compileOption(
-  option: LocalizedFormOption,
+  option: ILocalizedFormOption,
   data: Record<string, unknown>
 ): CompiledOption {
   if (typeof option === "string") {
@@ -32,7 +32,7 @@ function compileOption(
 }
 
 export function compileField(
-  field: LocalizedFormField,
+  field: ILocalizedFormField,
   locale: string,
   data: Record<string, unknown>
 ): CompiledField | null {
