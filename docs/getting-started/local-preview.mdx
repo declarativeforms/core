@@ -1,0 +1,278 @@
+---
+title: "Local preview options"
+description: "Five proposed approaches for previewing your form locally without pushing to GitHub every time."
+---
+
+<Warning>
+**This is a discovery document.** The five options described below are proposals, not currently available features. They are documented here to explore the design space and inform future development decisions.
+</Warning>
+
+Pushing to `main` every time you want to see a change is slow — especially if your form is already live and you don't want to ship a half-finished update. This document explores five distinct approaches that could allow form creators to preview a YAML form locally, from the lightest-weight options to full production-equivalent setups.
+
+---
+
+## Option 1 — Local CLI preview tool
+
+**Best for:** Quick iteration. Zero infrastructure to manage.
+
+This option proposes an `@declarativeforms/preview` npm package that accepts a path to a local YAML file and spins up a form preview in your browser — no GitHub push required.
+
+```bash
+npx @declarativeforms/preview ./contact.yaml
+# → Local form running at http://localhost:4000
+```
+
+### How it would work
+
+The CLI would:
+
+1. Read the local `.yaml` file.
+2. Validate and compile the schema (reusing the existing `@declarativeforms/types` package).
+3. Launch a lightweight static server that serves the `@declarativeforms/core` frontend bundle.
+4. Inject the compiled form definition into the page at startup — no API call required.
+5. Watch the YAML file for changes and hot-reload the browser via a WebSocket.
+
+### Implementation notes
+
+- The `@declarativeforms/core` frontend already compiles a form definition object via `localizeForm()` + `compile()` before rendering. The CLI can stub the API response with this locally-compiled definition.
+- File watching can be handled with `chokidar` (already in many Node.js toolchains).
+- Submissions in preview mode would be swallowed locally (no email/webhook fired) and a banner would indicate that the form is running in preview mode.
+- This is the **most discoverable** option — a single `npx` command, nothing to install permanently.
+
+### Trade-offs
+
+| Pros | Cons |
+|------|------|
+| Zero setup — single command | Does not test connections (email, webhook, Airtable) |
+| Works completely offline | Requires building and publishing a new `@declarativeforms/preview` package |
+| Identical rendering to production | Submissions are fake (no real data persisted) |
+| Hot-reload on YAML save | File-system based; not useful for testing private-repo OAuth |
+
+---
+
+## Option 2 — Docker Compose local stack
+
+**Best for:** End-to-end testing including connections, submissions, and database queries.
+
+Provide a `docker-compose.yml` at the root of the repository that developers and form creators can use to run the complete Declarative Forms stack locally.
+
+```bash
+# From the repo root
+docker compose up
+# → Frontend at http://localhost:5173
+# → API at http://localhost:3000
+# → MongoDB at localhost:27017
+```
+
+A companion environment variable allows the frontend and API to resolve a local YAML file directly from a mounted directory instead of fetching it from GitHub:
+
+```bash
+LOCAL_FORMS_DIR=./my-forms docker compose up
+```
+
+### Example docker-compose.yml structure
+
+```yaml
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+
+  api:
+    build: ./packages/api
+    environment:
+      MONGODB_CONNECTION_STRING: mongodb://mongo:27017/declarativeforms
+      LOCAL_FORMS_DIR: /forms
+    volumes:
+      - ${LOCAL_FORMS_DIR:-.}:/forms
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+
+  core:
+    build: ./packages/core
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000/api/v1
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+```
+
+### Implementation notes
+
+- The API would need a new route (e.g., `GET /api/v1/forms/local/:filename`) that reads from the mounted `LOCAL_FORMS_DIR` instead of GitHub. This route would only be registered when `LOCAL_FORMS_DIR` is set, so it cannot be triggered in production.
+- Connections (email, webhook, Airtable) can be tested as normal because the API is fully functional.
+- The frontend would need a UI indicator ("Preview mode — not connected to GitHub") when the local route is active.
+
+### Trade-offs
+
+| Pros | Cons |
+|------|------|
+| Full stack — all connections work | Requires Docker to be installed |
+| Real MongoDB — submissions persist | Takes a minute to build images the first time |
+| Mirrors production behaviour closely | Heavier than a simple CLI |
+| Useful for CI smoke-testing | Private-repo OAuth still not testable without ngrok |
+
+---
+
+## Option 3 — frms.dev Playground (online YAML editor)
+
+**Best for:** Instant feedback without installing anything. Shareable YAML snippets.
+
+Add a `/playground` route to the existing `frms.dev` frontend where users can paste or type YAML directly into an in-browser editor and see the form rendered live in a side panel — no GitHub repository needed.
+
+```text
+https://frms.dev/playground
+```
+
+### How it would work
+
+1. The left pane is a code editor (e.g., CodeMirror or Monaco) pre-filled with a minimal form YAML.
+2. The right pane renders the form using the existing `<DeclarativeForm>` component.
+3. Parsing and compilation run entirely in the browser using the `@declarativeforms/types` package — no API round-trip for rendering.
+4. Validation errors in the YAML are shown inline with line-number annotations.
+5. An optional **Share** button encodes the current YAML as a URL-safe base64 string and puts it in the URL hash, producing a shareable link like `https://frms.dev/playground#<base64>`.
+
+### Implementation notes
+
+- This is a purely frontend change — no new API endpoints required.
+- The `js-yaml` library is already a dependency of the API package; it would need to be added to the frontend too, or the browser's `import()` can load it dynamically.
+- Submissions in the Playground would be discarded locally (or optionally persisted to a temporary session, auto-deleted after 24 hours).
+- A "Save to GitHub" button could guide new users towards the full push-based workflow once they're happy with their form.
+
+### Trade-offs
+
+| Pros | Cons |
+|------|------|
+| Zero install — works in any browser | Requires a new `/playground` page in the frontend |
+| Shareable links for collaboration | Connections (email, webhook) cannot fire in the browser |
+| Great for prototyping & support tickets | YAML editor UX needs work to match developer expectations |
+| No GitHub account required | Very long YAML may produce unwieldy URLs |
+
+---
+
+## Option 4 — GitHub Actions branch preview deployments
+
+**Best for:** Teams reviewing forms before they go live on `main`.
+
+Extend the existing CI workflow to deploy a temporary preview URL for every push to a non-`main` branch (or every pull request). This mirrors the approach used by Netlify Preview Deployments and Vercel Preview URLs.
+
+### How it would work
+
+1. A form creator creates a branch: `git checkout -b preview/contact-redesign`.
+2. They edit the YAML and push the branch.
+3. A new GitHub Actions job triggers on `push` to branches matching `preview/**`.
+4. The job calls a new API endpoint (`POST /api/v1/forms/preview`) that:
+   - Fetches the YAML from the branch using the GitHub API.
+   - Compiles and stores it temporarily (TTL of 7 days).
+   - Returns a short preview URL like `https://frms.dev/preview/abc123`.
+5. The job posts the preview URL as a commit status or pull request comment.
+
+### Example workflow addition
+
+```yaml
+on:
+  push:
+    branches:
+      - 'preview/**'
+
+jobs:
+  create-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create preview URL
+        run: |
+          curl -X POST https://frms.dev/api/v1/forms/preview \
+            -H "Authorization: Bearer ${{ secrets.DECLARATIVEFORMS_TOKEN }}" \
+            -d '{"owner":"${{ github.repository_owner }}","repo":"${{ github.event.repository.name }}","branch":"${{ github.ref_name }}","path":"contact.yaml"}'
+```
+
+### Implementation notes
+
+- The API needs a `POST /api/v1/forms/preview` endpoint and a TTL-based preview store in MongoDB.
+- Preview forms should show a banner: "This is a preview — submissions are not recorded."
+- The GitHub Actions token can be used to post back the preview URL as a PR comment via the GitHub API.
+- This works for both public and private repositories (the API already has GitHub OAuth token handling).
+
+### Trade-offs
+
+| Pros | Cons |
+|------|------|
+| Keeps `main` clean | Requires a GitHub Actions workflow and a new API endpoint |
+| Shareable preview URLs for stakeholders | Not instant — CI takes ~30–60 seconds to run |
+| Works for teams, not just individuals | Needs a secret token to authenticate preview creation |
+| Preview shows exactly what production will look like | YAML must be pushed (even if to a branch, not main) |
+
+---
+
+## Option 5 — VS Code extension with live preview panel
+
+**Best for:** Developers who live in their editor and want instant feedback while they type.
+
+Create a VS Code extension (published to the VS Code Marketplace as `declarativeforms.preview`) that detects `.yaml` files containing a `version: 1` form schema and offers a live preview panel directly in the editor.
+
+### How it would work
+
+1. When a `.yaml` file is opened, the extension checks for `version: 1` at the top.
+2. If detected, a **"Open Form Preview"** button appears in the editor toolbar.
+3. Clicking it opens a WebView panel (split view) that renders the form using the `@declarativeforms/core` frontend bundle embedded in the extension.
+4. The extension watches the document for changes (using VS Code's `onDidChangeTextDocument` API) and re-renders the preview on every save — or optionally on every keystroke with a debounce.
+5. YAML parse errors are shown as squiggly underlines via VS Code Diagnostics, with error messages pulled from the existing schema validation logic.
+
+### Example user experience
+
+```
+┌─────────────────────────────┬─────────────────────────────┐
+│  contact.yaml               │  Form Preview               │
+│  ─────────────────────────  │  ─────────────────────────  │
+│  version: 1                 │  ┌─────────────────────┐   │
+│  title: "Contact us"        │  │ Contact us           │   │
+│  sections:                  │  │ ─────────────────────│   │
+│    - id: contact            │  │ Full name            │   │
+│      fields:                │  │ [               ]    │   │
+│        - id: full_name      │  │                      │   │
+│          type: short_text   │  │ Email address        │   │
+│          label: "Full name" │  │ [               ]    │   │
+│        ...                  │  └─────────────────────┘   │
+└─────────────────────────────┴─────────────────────────────┘
+```
+
+### Implementation notes
+
+- The extension would bundle the compiled `@declarativeforms/core` Vite output as a static asset and serve it inside the VS Code WebView.
+- Communication between the extension host (which reads the file) and the WebView (which renders the form) uses the VS Code `postMessage` API.
+- Schema validation with JSON Schema (derived from `@declarativeforms/types`) can be registered via `vscode-yaml` integration, enabling autocompletion and inline validation without the preview panel.
+- The extension can be built and published independently of the main monorepo.
+
+### Trade-offs
+
+| Pros | Cons |
+|------|------|
+| Sub-second feedback while typing | Requires building and maintaining a VS Code extension |
+| Inline YAML validation + autocompletion | WebView sandboxing limits some form features (e.g., camera, geolocation) |
+| Works fully offline | Not useful for non-VS Code editors |
+| No terminal or browser tab needed | Initial setup requires installing the extension from the Marketplace |
+
+---
+
+## Comparison summary
+
+| Option | Setup effort | Offline | Full fidelity | Connections | Best for |
+|--------|-------------|---------|---------------|-------------|----------|
+| 1. CLI preview tool | Low — one `npx` command | ✅ | Form rendering only | ❌ | Solo iteration |
+| 2. Docker Compose stack | Medium — install Docker | ✅ | ✅ Complete | ✅ | End-to-end testing |
+| 3. frms.dev Playground | None — browser only | ❌ | Form rendering only | ❌ | Prototyping & sharing |
+| 4. Branch preview deployments | Medium — CI workflow | ❌ | ✅ Complete | ✅ | Team review before merging |
+| 5. VS Code extension | Low — install extension | ✅ | Form rendering only | ❌ | Editor-native workflow |
+
+The **recommended starting point** depends on your context:
+
+- **Solo creator, quick iteration:** Start with the CLI preview tool (Option 1) or the Playground (Option 3).
+- **Team workflow with review gates:** Branch preview deployments (Option 4) fit naturally into a pull request process.
+- **End-to-end testing including connections:** Docker Compose (Option 2) gives you a production-equivalent environment on your laptop.
+- **Editor-first developer:** The VS Code extension (Option 5) removes context-switching entirely.
+
+None of these options are mutually exclusive — Option 3 (Playground) could ship quickly as a browser feature while Option 1 (CLI) is built in parallel.
