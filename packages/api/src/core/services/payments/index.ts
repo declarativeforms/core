@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import * as crypto from 'node:crypto';
 import { findConnection } from '../../repositories';
 import {
   findPayment,
@@ -39,10 +39,7 @@ export async function initiatePayment(
     throw new Error('Payment connection not found or missing credentials.');
   }
 
-  const paymentId = faker.string.alphanumeric({
-    casing: 'lower',
-    length: 12,
-  });
+  const paymentId = crypto.randomBytes(6).toString('hex');
 
   // Build the return URL with payment_id for the frontend to poll status
   const returnUrl = new URL(input.returnUrl);

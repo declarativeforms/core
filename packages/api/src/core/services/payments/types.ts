@@ -1,4 +1,10 @@
-export type PaymentProvider = 'stripe' | 'paystack' | 'payfast';
+export const PAYMENT_PROVIDERS = ['stripe', 'paystack', 'payfast'] as const;
+
+export type PaymentProvider = (typeof PAYMENT_PROVIDERS)[number];
+
+export function isPaymentProvider(value: string): value is PaymentProvider {
+  return (PAYMENT_PROVIDERS as readonly string[]).includes(value);
+}
 
 export type CreateSessionInput = {
   provider: PaymentProvider;
@@ -14,16 +20,4 @@ export type CreateSessionInput = {
 export type CreateSessionResult = {
   providerSessionId: string;
   redirectUrl: string;
-};
-
-export type WebhookEvent = {
-  providerSessionId: string;
-  status: 'succeeded' | 'failed' | 'cancelled';
-};
-
-export type VerifyWebhookInput = {
-  provider: PaymentProvider;
-  secretKey: string;
-  payload: string;
-  signature: string;
 };

@@ -1,12 +1,6 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { handlePaymentWebhook } from '../core/services/payments';
-
-const PAYMENT_PROVIDERS = ['stripe', 'paystack', 'payfast'] as const;
-type PaymentProviderParam = (typeof PAYMENT_PROVIDERS)[number];
-
-function isPaymentProvider(value: string): value is PaymentProviderParam {
-  return (PAYMENT_PROVIDERS as readonly string[]).includes(value);
-}
+import { isPaymentProvider } from '../core/services/payments/types';
 
 export const PAYMENTS_WEBHOOK_POST: RouteOptions<any, any, any, any> = {
   handler: async (

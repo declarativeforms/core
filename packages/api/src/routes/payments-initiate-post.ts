@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { initiatePayment } from '../core/services/payments';
+import { isPaymentProvider } from '../core/services/payments/types';
 
 export const PAYMENTS_INITIATE_POST: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -30,13 +31,11 @@ export const PAYMENTS_INITIATE_POST: RouteOptions<any, any, any, any> = {
       returnUrl,
     } = request.body;
 
-    if (!formId || !fieldId || !connectionId || !provider || !amount || !currency || !returnUrl) {
+    if (!formId || !fieldId || !connectionId || !provider || amount == null || !currency || !returnUrl) {
       return reply.status(400).send({ error: 'Missing required fields.' });
     }
 
-    const validProviders = ['stripe', 'paystack', 'payfast'] as const;
-    type ValidProvider = (typeof validProviders)[number];
-    if (!(validProviders as readonly string[]).includes(provider)) {
+    if (!isPaymentProvider(provider)) {
       return reply.status(400).send({ error: 'Unsupported payment provider.' });
     }
 
@@ -46,7 +45,7 @@ export const PAYMENTS_INITIATE_POST: RouteOptions<any, any, any, any> = {
         submissionId: submissionId || '',
         fieldId,
         connectionId,
-        provider: provider as ValidProvider,
+        provider,
         amount,
         currency,
         description,
