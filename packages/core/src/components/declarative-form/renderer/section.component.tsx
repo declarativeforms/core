@@ -3,7 +3,8 @@ import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
 import { Button } from "../../ui";
 import { useI18n } from "@/i18n";
-import type { CompiledSection, FormAction } from "../runtime/types";
+import type { CompiledField, CompiledSection, FormAction } from "../runtime/types";
+import { evaluateExpression } from "../runtime/core/expression";
 import { DeclarativeFormField } from "./field.component";
 
 type DeclarativeFormSectionProps = {
@@ -24,6 +25,22 @@ function buildDefaultValues(
   }, {} as FieldValues);
 }
 
+function resolveFieldVisibility(
+  field: CompiledField,
+  data: Record<string, unknown>
+): CompiledField {
+  if (!field.visible_when) {
+    return field;
+  }
+
+  const visible = evaluateExpression(field.visible_when, data);
+  if (visible === field.visible) {
+    return field;
+  }
+
+  return { ...field, visible };
+}
+
 export const DeclarativeFormSection = forwardRef<
   HTMLFormElement,
   DeclarativeFormSectionProps
@@ -32,6 +49,12 @@ export const DeclarativeFormSection = forwardRef<
   const form = useForm({
     defaultValues: buildDefaultValues(props.section, props.data),
   });
+
+  const hasVisibleWhen = props.section.fields.some((f) => f.visible_when);
+  const watchedValues = hasVisibleWhen ? form.watch() : undefined;
+  const currentData = watchedValues
+    ? { ...props.data, ...watchedValues }
+    : props.data;
 
   const handleSubmit = form.handleSubmit(
     (data: FieldValues) => props.onSubmit(data),
@@ -54,7 +77,11 @@ export const DeclarativeFormSection = forwardRef<
       >
         <div className="space-y-6">
           {props.section.fields.map((field) => (
-            <DeclarativeFormField key={field.id} field={field} form={form} />
+            <DeclarativeFormField
+              key={field.id}
+              field={resolveFieldVisibility(field, currentData)}
+              form={form}
+            />
           ))}
         </div>
 
