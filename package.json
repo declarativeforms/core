@@ -1,7 +1,9 @@
 {
   "name": "declarativeforms",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build --workspaces",
     "build:types": "npm run build -w @declarativeforms/types",
@@ -11,5 +13,6 @@
     "dev:api": "npm run dev -w @declarativeforms/api",
     "deploy:core": "npm run deploy -w @declarativeforms/core",
     "test": "npm test -w @declarativeforms/api"
-  }
+  },
+  "dependencies": {}
 }
