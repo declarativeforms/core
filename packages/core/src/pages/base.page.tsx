@@ -16,6 +16,7 @@ export function BasePage(props: {
   title: string;
   description?: string;
   theme?: { primary?: string };
+  embed?: boolean;
   children: ReactNode;
 }) {
   const { t, withLang } = useI18n();
@@ -25,6 +26,24 @@ export function BasePage(props: {
   }, [props.title]);
 
   const themeStyle = buildThemeStyle(props.theme);
+
+  if (props.embed) {
+    return (
+      <div style={themeStyle}>
+        <div className="px-6 pb-6 border-b border-gray-200">
+          <h1 className="text-2xl/7.5 font-semibold">
+            <HtmlText html={props.title} />
+          </h1>
+          {props.description ? (
+            <p className="mb-3 mt-2 text-sm text-gray-500">
+              <HtmlText html={props.description} />
+            </p>
+          ) : null}
+        </div>
+        <div className="px-6">{props.children}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 py-12 md:py-16" style={themeStyle}>
