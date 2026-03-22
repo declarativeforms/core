@@ -114,12 +114,12 @@ Once your YAML file is on `main`, open it through `frms.dev`. The process differ
     https://frms.dev/<owner>/<repo>/<filename>
     ```
 
-    The first time you open this URL, Declarative Forms will redirect you to GitHub to authorize access. This is a standard OAuth flow — you grant Declarative Forms read access to the repository so it can fetch the YAML file.
+    The first time **you** (the form creator) open this URL, Declarative Forms will redirect you to GitHub to authorize access. This is a one-time OAuth flow — you grant Declarative Forms read access to the repository so it can fetch the YAML file.
 
-    Once authorized, the form loads and works exactly like a public form. The authorization only happens once per repository.
+    Once authorized, the form loads and you are redirected to a short URL with a unique form ID (e.g., `https://frms.dev/c979ac5b`). This is the link you share with your audience.
 
     <Note>
-    Anyone you share the form URL with will also need to authorize access on first load, since the repository is private. If you want the form to be accessible to anyone without authentication, use a public repository.
+    **Your respondents will never be asked to log into GitHub.** The OAuth authorization is only required once — by you, the form creator — so that Declarative Forms can connect to your private repository and read the YAML file. After that, anyone with the short URL can fill in the form without any authentication.
     </Note>
   </Tab>
 </Tabs>
@@ -135,6 +135,10 @@ https://frms.dev/c979ac5b
 ```
 
 This is your form's **shareable link**. Share it with anyone who should fill in the form. It always points to the latest version of your YAML — every push to `main` updates the form automatically.
+
+<Info>
+**This is the URL your respondents use — not the repository path.** The short URL works without any GitHub authentication, even if the YAML file lives in a private repository. Only you (the form creator) needed to authorize access; your audience simply opens the link and fills in the form.
+</Info>
 
 <Check>
 **No redeploy needed.** Edit the YAML, push to `main`, and the form updates. There is no build step, deploy step, or cache to clear.
