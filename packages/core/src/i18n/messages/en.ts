@@ -131,6 +131,9 @@ const enMessageSource = {
   "multiple_select.selected_count": "{count} selected",
   "select.other": "Other",
   "select.other_placeholder": "Please specify",
+  "preview.invalid_yaml":
+    "Enter valid YAML with a sections array to preview your form.",
+  "preview.restart": "Restart preview",
 } as const;
 
 export type TranslationKey = keyof typeof enMessageSource;

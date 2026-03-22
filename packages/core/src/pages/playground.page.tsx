@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
-import { Code, Eye } from "lucide-react";
-import { YamlEditor } from "@/components/yaml-editor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCallback, useEffect, useState } from "react"
+import { Code, Eye } from "lucide-react"
+import { YamlEditor } from "@/components/yaml-editor"
+import { FormPreview } from "@/components/form-preview"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 function useIsMobile(breakpoint = 768) {
-  const query = `(max-width: ${breakpoint - 1}px)`;
+  const query = `(max-width: ${breakpoint - 1}px)`
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(query).matches
-  );
+    () => typeof window !== "undefined" && window.matchMedia(query).matches,
+  )
 
   useEffect(() => {
-    const mql = window.matchMedia(query);
-    setIsMobile(mql.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, [query]);
+    const mql = window.matchMedia(query)
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener("change", onChange)
+    return () => mql.removeEventListener("change", onChange)
+  }, [query])
 
-  return isMobile;
+  return isMobile
 }
 
-function DesktopLayout() {
+function DesktopLayout({ yaml, onYamlChange }: { yaml: string; onYamlChange: (value: string) => void }) {
   return (
     <div className="flex h-full">
       <div className="flex flex-col flex-1 min-w-0 border-r border-border">
@@ -31,7 +31,7 @@ function DesktopLayout() {
           </span>
         </div>
         <div className="flex-1 min-h-0">
-          <YamlEditor />
+          <YamlEditor onChange={onYamlChange} />
         </div>
       </div>
 
@@ -40,13 +40,15 @@ function DesktopLayout() {
           <Eye className="size-4 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Preview</span>
         </div>
-        <div className="flex-1 min-h-0" />
+        <div className="flex-1 min-h-0">
+          <FormPreview yaml={yaml} />
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
-function MobileLayout() {
+function MobileLayout({ yaml, onYamlChange }: { yaml: string; onYamlChange: (value: string) => void }) {
   return (
     <Tabs defaultValue="editor" className="flex flex-col h-full">
       <div className="px-2 pt-2 shrink-0 bg-background border-b border-border">
@@ -63,20 +65,27 @@ function MobileLayout() {
       </div>
 
       <TabsContent value="editor" className="min-h-0">
-        <YamlEditor />
+        <YamlEditor onChange={onYamlChange} />
       </TabsContent>
 
-      <TabsContent value="preview" className="min-h-0" />
+      <TabsContent value="preview" className="min-h-0">
+        <FormPreview yaml={yaml} />
+      </TabsContent>
     </Tabs>
-  );
+  )
 }
 
 export function PlaygroundPage() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
+  const [yaml, setYaml] = useState("")
+
+  const handleYamlChange = useCallback((value: string) => {
+    setYaml(value)
+  }, [])
 
   useEffect(() => {
-    document.title = "Playground — Declarative Forms";
-  }, []);
+    document.title = "Playground — Declarative Forms"
+  }, [])
 
   return (
     <div className="h-dvh w-full flex flex-col bg-background">
@@ -93,8 +102,12 @@ export function PlaygroundPage() {
       </header>
 
       <div className="flex-1 min-h-0">
-        {isMobile ? <MobileLayout /> : <DesktopLayout />}
+        {isMobile ? (
+          <MobileLayout yaml={yaml} onYamlChange={handleYamlChange} />
+        ) : (
+          <DesktopLayout yaml={yaml} onYamlChange={handleYamlChange} />
+        )}
       </div>
     </div>
-  );
+  )
 }
