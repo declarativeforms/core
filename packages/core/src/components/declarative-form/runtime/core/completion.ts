@@ -1,4 +1,4 @@
-import { evaluateExpression } from "./expression";
+import { evaluateExpression } from "@declarativeforms/common";
 
 type CompletionLike = {
   title?: unknown;

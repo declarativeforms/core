@@ -4,7 +4,7 @@ import type {
 } from "../../types";
 import { isDeclarativeConnectionType } from "../../types";
 import { resolveCompletion } from "../core/completion";
-import { interpolateTemplate } from "../core/expression";
+import { interpolateTemplate } from "@declarativeforms/common";
 import { localizeCompletion, resolveLocalizedText } from "../localization/text";
 import type { CompiledForm, CompiledSection } from "../types";
 import { compileField } from "./field";

@@ -1,6 +1,6 @@
 import type { IDeclarativeFormField, IDeclarativeFormOption } from "../../types";
 import { isDeclarativeFieldType } from "../../types";
-import { evaluateExpression, interpolateTemplate } from "../core/expression";
+import { evaluateExpression, interpolateTemplate } from "@declarativeforms/common";
 import { resolveLocalizedText } from "../localization/text";
 import type { CompiledField, CompiledOption } from "../types";
 import { buildValidationRules } from "../../validation";

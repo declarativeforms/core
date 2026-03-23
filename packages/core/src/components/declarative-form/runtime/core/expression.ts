@@ -1,6 +1,4 @@
-import { evaluateExpression, interpolateTemplate } from "@declarativeforms/common"
-
-export { evaluateExpression, interpolateTemplate }
+import { evaluateExpression } from "@declarativeforms/common"
 
 export function evaluateValidationExpression(
   expression: string,
