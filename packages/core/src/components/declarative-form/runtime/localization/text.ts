@@ -4,7 +4,6 @@ import type {
 } from "../../types"
 import type { CompiledCompletion } from "../types"
 
-export { resolveLocalizedText }
 export function localizeCompletion(
   completion: IDeclarativeFormCompletion | undefined,
   locale: string

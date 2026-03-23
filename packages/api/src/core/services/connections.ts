@@ -1,4 +1,4 @@
-import { evaluateExpression, interpolateTemplate } from '@declarativeforms/common';
+import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from '@declarativeforms/common';
 import { Resend } from 'resend';
 import { findConnection } from '../repositories';
 import type {
@@ -9,7 +9,6 @@ import type {
   IWebhookConnection,
 } from '../types';
 import { isDeclarativeConnectionType, isDeclarativeFieldType } from '../types';
-import { resolveLocalizedText } from './localize';
 
 function generateResponsesHTML(
   form: IDeclarativeForm,

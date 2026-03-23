@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 
 import { HeroSection, type IDeclarativeForm } from "@/components";
 import { resolveCompletion } from "@/components/declarative-form/runtime/core/completion";
-import { interpolateTemplate } from "@/components/declarative-form/runtime/core/expression";
+import { interpolateTemplate } from "@declarativeforms/common";
 import { localizeCompletion } from "@/components/declarative-form/runtime/localization/text";
 import { useI18n } from "@/i18n";
 import { getBackendUrl } from "@/lib/api";
