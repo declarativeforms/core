@@ -24,6 +24,7 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
   url: '/api/v1/forms/:id/submissions/:submissionId',
   schema: {
     tags: ['forms'],
+    summary: 'Get a specific submission',
     params: {
       type: 'object',
       properties: {
@@ -31,6 +32,12 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
         submissionId: { type: 'string' },
       },
       required: ['id', 'submissionId'],
+    },
+    response: {
+      200: {
+        type: 'object',
+      },
+      404: { type: 'null' },
     },
   },
 };

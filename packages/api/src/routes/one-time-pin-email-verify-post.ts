@@ -38,6 +38,7 @@ export const ONE_TIME_PIN_EMAIL_VERIFY_POST: RouteOptions<any, any, any, any> = 
   url: '/api/v1/one-time-pin/email/verify',
   schema: {
     tags: ['one-time-pin'],
+    summary: 'Verify a one-time PIN',
     body: {
       type: 'object',
       required: ['email', 'request_id', 'one_time_pin'],
@@ -45,6 +46,26 @@ export const ONE_TIME_PIN_EMAIL_VERIFY_POST: RouteOptions<any, any, any, any> = 
         email: { type: 'string' },
         request_id: { type: 'string' },
         one_time_pin: { type: 'string' },
+      },
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          verification_token: { type: 'string' },
+        },
+      },
+      400: {
+        type: 'object',
+        properties: {
+          error: { type: 'string' },
+        },
+      },
+      422: {
+        type: 'object',
+        properties: {
+          error: { type: 'string' },
+        },
       },
     },
   },

@@ -22,5 +22,19 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
   url: '/api/v1/forms/:id',
   schema: {
     tags: ['forms'],
+    summary: 'Get a form by ID',
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+      },
+      required: ['id'],
+    },
+    response: {
+      200: {
+        type: 'object',
+      },
+      404: { type: 'null' },
+    },
   },
 };

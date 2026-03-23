@@ -35,6 +35,7 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
   url: '/api/v1/forms/:owner/:repository/*',
   schema: {
     tags: ['forms'],
+    summary: 'Get a form by slug',
     params: {
       type: 'object',
       required: ['owner', 'repository'],
@@ -48,6 +49,14 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
       properties: {
         connection_id: { type: 'string' },
       },
+    },
+    response: {
+      200: {
+        type: 'object',
+      },
+      400: { type: 'null' },
+      403: { type: 'null' },
+      404: { type: 'null' },
     },
   },
 };
