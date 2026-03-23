@@ -57,21 +57,22 @@
           {
             "group": "Examples",
             "pages": [
+              "examples/test-a-form-in-the-playground",
               "examples/add-another-section",
-              "examples/add-conditional-navigation",
-              "examples/route-to-an-external-website",
-              "examples/customize-the-thank-you-page",
-              "examples/send-submissions-to-a-webhook",
               "examples/show-or-hide-a-field",
-              "examples/send-submissions-to-email",
+              "examples/customize-the-thank-you-page",
+              "examples/customize-the-primary-color",
+              "examples/add-conditional-navigation",
+              "examples/build-a-multi-step-form-with-cross-field-validation",
+              "examples/prefill-data-using-query-parameters",
               "examples/localize-a-form",
               "examples/set-a-form-start-and-end-date",
-              "examples/prefill-data-using-query-parameters",
-              "examples/build-a-multi-step-form-with-cross-field-validation",
-              "examples/protect-a-form-with-cloudflare-turnstile",
+              "examples/send-submissions-to-email",
+              "examples/send-submissions-to-a-webhook",
               "examples/connect-a-form-to-zapier-n8n-or-make",
-              "examples/customize-the-primary-color",
-              "examples/embed-a-form-in-an-iframe"
+              "examples/route-to-an-external-website",
+              "examples/embed-a-form-in-an-iframe",
+              "examples/protect-a-form-with-cloudflare-turnstile"
             ]
           }
         ]
