@@ -1,4 +1,4 @@
-import Handlebars from 'handlebars';
+import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from '@declarativeforms/common';
 import { Resend } from 'resend';
 import { findConnection } from '../repositories';
 import type {
@@ -9,16 +9,6 @@ import type {
   IWebhookConnection,
 } from '../types';
 import { isDeclarativeConnectionType, isDeclarativeFieldType } from '../types';
-import { resolveLocalizedText } from './localize';
-
-function interpolateTemplate(
-  template: string,
-  data: Record<string, unknown>,
-  form: IDeclarativeForm,
-): string {
-  const compiled = Handlebars.compile(template, { noEscape: true });
-  return compiled({ data, form });
-}
 
 function generateResponsesHTML(
   form: IDeclarativeForm,
@@ -62,13 +52,13 @@ async function handleEmail(
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const to = interpolateTemplate(connection.to, submission.data, form);
+  const to = interpolateTemplate(connection.to, submission.data, { form });
   const localizedSubject = resolveLocalizedText(
     connection.subject,
     form.locale,
   );
   const subject = localizedSubject
-    ? interpolateTemplate(localizedSubject, submission.data, form)
+    ? interpolateTemplate(localizedSubject, submission.data, { form })
     : '';
 
   if (!to || !subject) {
@@ -81,7 +71,7 @@ async function handleEmail(
     html = interpolateTemplate(
       resolveLocalizedText(connection.body, form.locale),
       submission.data,
-      form,
+      { form },
     );
   }
 
@@ -149,20 +139,6 @@ async function handleAirtable(
       method: 'POST',
     },
   );
-}
-
-function evaluateExpression(
-  expression: string,
-  data: Record<string, unknown>,
-): boolean {
-  try {
-    const fn = new Function('data', `return ${expression}`) as (
-      value: Record<string, unknown>,
-    ) => unknown;
-    return Boolean(fn(data));
-  } catch {
-    return false;
-  }
 }
 
 export async function processConnections(

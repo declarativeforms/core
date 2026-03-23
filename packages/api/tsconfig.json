@@ -12,6 +12,6 @@
     "strict": true,
     "target": "ES2023"
   },
-  "references": [{ "path": "../types" }],
+  "references": [{ "path": "../types" }, { "path": "../common" }],
   "include": ["src"]
 }
