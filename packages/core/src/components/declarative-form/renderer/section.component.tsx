@@ -4,7 +4,7 @@ import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 import { Button } from "../../ui";
 import { useI18n } from "@/i18n";
 import type { CompiledField, CompiledSection, FormAction } from "../runtime/types";
-import { evaluateExpression } from "../runtime/core/expression";
+import { evaluateExpression } from "@declarativeforms/common";
 import { DeclarativeFormField } from "./field.component";
 
 type DeclarativeFormSectionProps = {
