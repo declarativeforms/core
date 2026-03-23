@@ -27,6 +27,7 @@ export const OAUTH_AIRTABLE_ACCESS_TOKEN_POST: RouteOptions<
   url: '/api/v1/oauth/airtable/access_token',
   schema: {
     tags: ['oauth2'],
+    summary: 'Exchange Airtable OAuth code for an access token',
     body: {
       type: 'object',
       required: ['code', 'redirect_uri', 'code_verifier'],
@@ -34,6 +35,14 @@ export const OAUTH_AIRTABLE_ACCESS_TOKEN_POST: RouteOptions<
         code: { type: 'string' },
         redirect_uri: { type: 'string' },
         code_verifier: { type: 'string' },
+      },
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+        },
       },
     },
   },

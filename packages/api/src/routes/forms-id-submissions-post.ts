@@ -32,6 +32,14 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
   url: '/api/v1/forms/:id/submissions',
   schema: {
     tags: ['forms'],
+    summary: 'Create or update a form submission',
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+      },
+      required: ['id'],
+    },
     querystring: {
       type: 'object',
       properties: {
@@ -41,6 +49,12 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     },
     body: {
       type: 'object',
+    },
+    response: {
+      200: {
+        type: 'object',
+      },
+      422: { type: 'null' },
     },
   },
 };

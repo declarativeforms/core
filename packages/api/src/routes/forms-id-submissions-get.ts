@@ -30,10 +30,26 @@ export const FORMS_ID_SUBMISSIONS_GET: RouteOptions<any, any, any, any> = {
   url: '/api/v1/forms/:id/submissions',
   schema: {
     tags: ['forms'],
+    summary: 'List submissions for a form',
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+      },
+      required: ['id'],
+    },
     security: [
       {
         apiKey: [],
       },
     ],
+    response: {
+      200: {
+        type: 'array',
+        items: { type: 'object' },
+      },
+      401: { type: 'null' },
+      403: { type: 'null' },
+    },
   },
 };

@@ -21,5 +21,22 @@ export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
   url: '/api/v1/files/upload',
   schema: {
     tags: ['files'],
+    summary: 'Upload a file',
+    consumes: ['multipart/form-data'],
+    body: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          url: { type: 'string' },
+        },
+      },
+      400: { type: 'null' },
+    },
   },
 };
