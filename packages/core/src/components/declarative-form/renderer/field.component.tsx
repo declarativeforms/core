@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   type FieldValues,
   type UseFormReturn,
@@ -29,8 +30,15 @@ export function DeclarativeFormField(props: {
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
   const { t } = useI18n();
+  const { visible, id } = props.field;
 
-  if (!props.field.visible) {
+  useEffect(() => {
+    if (!visible) {
+      props.form.unregister(id);
+    }
+  }, [visible, id, props.form]);
+
+  if (!visible) {
     return null;
   }
 

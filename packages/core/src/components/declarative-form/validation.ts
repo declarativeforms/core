@@ -5,7 +5,7 @@ import { translate } from "@/i18n/runtime";
 
 import { evaluateValidationExpression } from "./runtime/core/expression";
 import { getEmailValidation } from "./fields/email/validation";
-import { resolveLocalizedText } from "@declarativeforms/common";
+import { evaluateExpression, resolveLocalizedText } from "@declarativeforms/common";
 import type { IDeclarativeForm, IDeclarativeFormValidator, ILocalizedText } from "./types";
 import { isDeclarativeFieldType, type DeclarativeFieldType } from "./types";
 import type {
@@ -503,6 +503,10 @@ export function validateSectionData(
 
   for (const field of section.fields ?? []) {
     if (!isDeclarativeFieldType(field.type)) {
+      continue;
+    }
+
+    if (field.visible_when && !evaluateExpression(field.visible_when, formData, false)) {
       continue;
     }
 
