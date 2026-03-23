@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "packages/types" },
+    { "path": "packages/common" },
     { "path": "packages/core" },
     { "path": "packages/api" }
   ]
