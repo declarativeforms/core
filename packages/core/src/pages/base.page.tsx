@@ -30,17 +30,20 @@ export function BasePage(props: {
   if (props.embed) {
     return (
       <div style={themeStyle}>
-        <div className="px-6 pb-6 border-b border-gray-200">
-          <h1 className="text-2xl/7.5 font-semibold">
-            <HtmlText html={props.title} />
-          </h1>
-          {props.description ? (
-            <p className="mb-3 mt-2 text-sm text-gray-500">
-              <HtmlText html={props.description} />
-            </p>
-          ) : null}
-        </div>
-        <div className="px-6">{props.children}</div>
+        <Card className="w-full border-0 shadow-none rounded-none">
+          <CardHeader className="px-6 !pb-0 border-b border-gray-200">
+            <CardTitle className="text-2xl/7.5 font-semibold">
+              <HtmlText html={props.title} />
+            </CardTitle>
+            {props.description ? (
+              <CardDescription className="mb-3 mt-2 text-sm text-gray-500">
+                <HtmlText html={props.description} />
+              </CardDescription>
+            ) : null}
+          </CardHeader>
+
+          <CardContent className="px-6">{props.children}</CardContent>
+        </Card>
       </div>
     );
   }
