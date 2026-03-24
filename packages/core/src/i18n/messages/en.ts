@@ -1,5 +1,4 @@
 const enMessageSource = {
-  "app.skip_to_main_content": "Skip to main content",
   "base.powered_by": "Powered by",
   "base.privacy_policy": "Privacy Policy",
   "hero.continue": "Continue",

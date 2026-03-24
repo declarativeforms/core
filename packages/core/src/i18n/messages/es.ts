@@ -1,7 +1,6 @@
 import type { TranslationMessages } from "./en";
 
 export const esMessages: TranslationMessages = {
-  "app.skip_to_main_content": "Saltar al contenido principal",
   "base.powered_by": "Desarrollado por",
   "base.privacy_policy": "Política de privacidad",
   "hero.continue": "Continuar",

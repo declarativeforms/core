@@ -1,4 +1,6 @@
 import { createHash, createHmac, randomInt } from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { faker } from '@faker-js/faker';
 import { Resend } from 'resend';
 import {
@@ -8,7 +10,12 @@ import {
   incrementOneTimePinVerifyAttempts,
   insertOneTimePinRequest,
 } from '../repositories';
-import type { IOneTimePinRequest, IVerificationTokenPayload } from '../types';
+import type { IOneTimePinRecord, IVerificationTokenPayload } from '../types';
+
+const ONE_TIME_PIN_EMAIL_TEMPLATE = readFileSync(
+  join(__dirname, 'templates', 'one-time-pin-email.html'),
+  'utf-8',
+);
 
 const ONE_TIME_PIN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 const RESEND_COOLDOWN_MS = 30 * 1000; // 30 seconds
@@ -93,52 +100,7 @@ async function sendOneTimePinEmail(email: string, code: string): Promise<void> {
     from: `Declarative Forms <${process.env.RESEND_FROM_EMAIL || 'noreply@example.com'}>`,
     to: email,
     subject: 'Your Declarative Forms verification code',
-    html: `
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
-<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;">
-          <!-- Header -->
-          <tr>
-            <td style="padding:32px 40px 24px;text-align:center;">
-              <span style="font-size:14px;font-weight:700;letter-spacing:2px;color:#18181b;text-transform:uppercase;">Declarative Forms</span>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding:32px 40px 40px;">
-              <p style="margin:0 0 20px;font-size:16px;color:#18181b;">Hey there,</p>
-              <p style="margin:0 0 24px;font-size:16px;color:#3f3f46;">Use this code to verify your email:</p>
-              <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background-color:#18181b;border-radius:6px;padding:8px 12px;">
-                    <span style="font-size:14px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;letter-spacing:1px;">${code}</span>
-                  </td>
-                </tr>
-              </table>
-              <div style="height:24px;"></div>
-              <p style="margin:0 0 24px;font-size:14px;color:#71717a;">This code expires in 10 minutes.</p>
-              <p style="margin:0 0 24px;font-size:14px;color:#71717a;">Didn't request this? Please contact us at <a href="mailto:support@declarativeforms.com" style="color:#2563eb;text-decoration:none;">support@declarativeforms.com</a> or reply to this email.</p>
-              <p style="margin:0;font-size:16px;color:#18181b;">Thanks,<br />The Declarative Forms Team</p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="padding:24px 40px;text-align:center;">
-              <p style="margin:0 0 4px;font-size:12px;color:#a1a1aa;">Declarative Forms</p>
-              <p style="margin:0;font-size:12px;color:#a1a1aa;">Watershed, 17 Dock Rd, Victoria &amp; Alfred Waterfront, Cape Town, 8002, South Africa</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`,
+    html: ONE_TIME_PIN_EMAIL_TEMPLATE.replace('{{code}}', code),
   });
 }
 
@@ -160,7 +122,7 @@ export async function createOneTimePinRequest(
 
   const now = new Date();
 
-  const oneTimePinRequest: IOneTimePinRequest = {
+  const oneTimePinRequest: IOneTimePinRecord = {
     id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
     field_id: fieldId,
     email,

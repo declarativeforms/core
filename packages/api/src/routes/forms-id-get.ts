@@ -1,4 +1,5 @@
-import { findFormById, IDeclarativeForm } from '../core';
+import type { IDeclarativeForm } from '@declarativeforms/types';
+import { findFormById } from '../core';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 
 export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {

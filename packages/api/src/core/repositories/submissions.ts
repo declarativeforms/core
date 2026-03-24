@@ -1,5 +1,5 @@
+import type { ISubmission } from '@declarativeforms/types';
 import { getContainer } from '../container';
-import type { ISubmission } from '../types';
 
 export async function findSubmission(
   formId: string,

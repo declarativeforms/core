@@ -1,4 +1,4 @@
-export type IOneTimePinRequest = {
+export type IOneTimePinRecord = {
   id: string;
   field_id: string;
   email: string;

@@ -4,7 +4,7 @@
   "description": "",
   "type": "commonjs",
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc -b && cp -r src/core/services/templates dist/core/services/",
     "dev": "tsx watch src/main.ts",
     "lint": "prettier --write --config prettier.config.js --list-different src/**/*.ts",
     "start": "node dist/main.js",

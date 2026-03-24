@@ -6,13 +6,11 @@ import {
   insertSubmission,
   replaceSubmission,
 } from '../repositories';
-import {
-  isDeclarativeFieldType,
-  type IDeclarativeForm,
-  type ISubmission,
-} from '../types';
+import { isDeclarativeFieldType } from '@declarativeforms/types';
+import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
 import { processConnections } from './connections';
-import { findFormById, hasRequiredGitHubPermissions } from './forms';
+import { findFormById } from './forms';
+import { hasRequiredGitHubPermissions } from '../gateways';
 import { verifyOneTimePinVerificationToken } from './one-time-pin';
 import { verifyTurnstileToken } from './turnstile';
 
