@@ -53,6 +53,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     response: {
       200: {
         type: 'object',
+        additionalProperties: true,
       },
       422: { type: 'null' },
     },

@@ -36,6 +36,7 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
     response: {
       200: {
         type: 'object',
+        additionalProperties: true,
       },
       404: { type: 'null' },
     },

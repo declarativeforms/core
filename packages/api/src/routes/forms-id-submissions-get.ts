@@ -46,7 +46,7 @@ export const FORMS_ID_SUBMISSIONS_GET: RouteOptions<any, any, any, any> = {
     response: {
       200: {
         type: 'array',
-        items: { type: 'object' },
+        items: { type: 'object', additionalProperties: true },
       },
       401: { type: 'null' },
       403: { type: 'null' },
