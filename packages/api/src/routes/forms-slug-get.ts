@@ -53,6 +53,7 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     response: {
       200: {
         type: 'object',
+        additionalProperties: true,
       },
       400: { type: 'null' },
       403: { type: 'null' },
