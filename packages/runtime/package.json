@@ -1,0 +1,23 @@
+{
+  "name": "@declarativeforms/runtime",
+  "private": true,
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@declarativeforms/types": "*",
+    "@declarativeforms/common": "*"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}

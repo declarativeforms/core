@@ -3,6 +3,7 @@
   "references": [
     { "path": "../types" },
     { "path": "../common" },
+    { "path": "../runtime" },
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],

@@ -4,7 +4,7 @@ import { useWatch } from "react-hook-form";
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
 import { buildFieldValidation } from "../validation";
 import { HtmlText } from "../view-support/html-text";
-import { stripHtml } from "../view-support/strip-html";
+import { stripHtml } from "@declarativeforms/common";
 import {
   Checkbox,
   FormControl,

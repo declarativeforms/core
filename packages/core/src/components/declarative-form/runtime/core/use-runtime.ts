@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 
 import type { IDeclarativeForm } from "../../types";
-import type { FormAction, FormEffect, FormState } from "../types";
-import { createRuntimeState, transitionRuntime } from "./runtime";
+import type { FormAction, FormEffect, FormState } from "@declarativeforms/runtime";
+import { createRuntimeState, transitionRuntime } from "@declarativeforms/runtime";
 
 export function useFormRuntime(
   schema: IDeclarativeForm,

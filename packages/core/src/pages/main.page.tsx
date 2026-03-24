@@ -11,7 +11,7 @@ import {
   type IDeclarativeForm,
 } from "@/components";
 import { resolveLocalizedText } from "@declarativeforms/common";
-import type { FormEffect } from "@/components/declarative-form/runtime/types";
+import type { FormEffect } from "@declarativeforms/runtime";
 import { useI18n } from "@/i18n";
 import { getBackendUrl } from "@/lib/api";
 

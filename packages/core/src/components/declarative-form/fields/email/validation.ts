@@ -1,6 +1,6 @@
 import type { RegisterOptions, Validate } from "react-hook-form";
 
-import type { CompiledField } from "../../runtime/types";
+import type { CompiledField } from "@declarativeforms/runtime";
 import { FREE_EMAIL_DOMAINS } from "./free-email-domains";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
 

@@ -2,6 +2,7 @@ export { useFormRuntime } from "./core/use-runtime";
 
 export type {
   CompiledAddressField,
+  CompiledCameraField,
   CompiledCompletion,
   CompiledDropdownField,
   CompiledEmailField,
@@ -13,9 +14,10 @@ export type {
   CompiledRatingField,
   CompiledSection,
   CompiledSelectField,
+  CompiledTurnstileField,
   DispatchResult,
   FormAction,
   FormEffect,
   FormState,
   ValidationRule,
-} from "./types";
+} from "@declarativeforms/runtime";

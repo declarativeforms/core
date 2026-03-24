@@ -1,24 +1,26 @@
 import type {
   IDeclarativeForm,
   IDeclarativeFormSection,
-} from "../../types";
-import { isDeclarativeConnectionType } from "../../types";
+} from "@declarativeforms/types";
+import { isDeclarativeConnectionType } from "@declarativeforms/types";
 import { resolveCompletion } from "../core/completion";
 import { interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
-import { localizeCompletion } from "../localization/text";
+import { localizeCompletion } from "../localization";
 import type { CompiledForm, CompiledSection } from "../types";
+import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
 import { compileField } from "./field";
 
 function compileSection(
   section: IDeclarativeFormSection,
   locale: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  messages: ValidationMessages,
 ): CompiledSection {
   return {
     id: section.id ?? "",
     title: interpolateTemplate(resolveLocalizedText(section.title, locale), data),
     fields: (section.fields ?? []).flatMap((field) => {
-      const compiled = compileField(field, locale, data);
+      const compiled = compileField(field, locale, data, messages);
       return compiled ? [compiled] : [];
     }),
   };
@@ -28,10 +30,11 @@ export function compile(
   schema: IDeclarativeForm,
   locale: string,
   data: Record<string, unknown>,
-  activeSectionId: string
+  activeSectionId: string,
+  messages: ValidationMessages = DEFAULT_MESSAGES,
 ): CompiledForm {
   const sections = (schema.sections ?? []).map((section) =>
-    compileSection(section, locale, data)
+    compileSection(section, locale, data, messages)
   );
 
   const resolvedCompletion = resolveCompletion(schema.completion, data);

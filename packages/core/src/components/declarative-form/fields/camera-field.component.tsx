@@ -2,7 +2,7 @@ import { Camera, Loader2, RefreshCw, VideoOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import type { CompiledCameraField } from "../runtime/types";
+import type { CompiledCameraField } from "@declarativeforms/runtime";
 import { Button } from "@/components/ui/button";
 import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../view-support/use-form-i18n";

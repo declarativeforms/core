@@ -21,12 +21,13 @@ export function FileUploadField({
   const { minBound, maxBound } = buildFieldValidation(field);
   const maxFiles = maxBound ?? 1;
 
-  const currentUrls: string[] =
-    maxFiles === 1
-      ? controllerField.value
-        ? [controllerField.value]
-        : []
-      : controllerField.value || [];
+  const currentUrls: string[] = Array.isArray(controllerField.value)
+    ? controllerField.value.filter(
+        (value): value is string => typeof value === "string" && value.length > 0
+      )
+    : typeof controllerField.value === "string" && controllerField.value
+      ? [controllerField.value]
+      : [];
 
   const validateFile = (): string | null => {
     if (fileMetadata.length >= maxFiles) {

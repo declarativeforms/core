@@ -16,6 +16,7 @@
     "@codemirror/view": "^6.40.0",
     "@declarativeforms/types": "*",
     "@declarativeforms/common": "*",
+    "@declarativeforms/runtime": "*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-collapsible": "^1.1.12",

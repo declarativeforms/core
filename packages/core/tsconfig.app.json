@@ -1,5 +1,5 @@
 {
-  "references": [{ "path": "../types" }, { "path": "../common" }],
+  "references": [{ "path": "../types" }, { "path": "../common" }, { "path": "../runtime" }],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",

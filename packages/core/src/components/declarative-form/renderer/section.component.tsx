@@ -3,8 +3,12 @@ import { FormProvider, useForm, type FieldValues } from "react-hook-form";
 
 import { Button } from "../../ui";
 import { useI18n } from "@/i18n";
-import type { CompiledField, CompiledSection, FormAction } from "../runtime/types";
-import { evaluateExpression } from "@declarativeforms/common";
+import {
+  buildDefaultValues,
+  resolveFieldVisibility,
+  type CompiledSection,
+  type FormAction,
+} from "@declarativeforms/runtime";
 import { DeclarativeFormField } from "./field.component";
 
 type DeclarativeFormSectionProps = {
@@ -14,32 +18,6 @@ type DeclarativeFormSectionProps = {
   dispatch: (action: FormAction) => void;
   onSubmit: (sectionData: FieldValues) => void;
 };
-
-function buildDefaultValues(
-  section: CompiledSection,
-  data: Record<string, unknown>
-): FieldValues {
-  return section.fields.reduce((acc, field) => {
-    acc[field.id] = data[field.id] || "";
-    return acc;
-  }, {} as FieldValues);
-}
-
-function resolveFieldVisibility(
-  field: CompiledField,
-  data: Record<string, unknown>
-): CompiledField {
-  if (!field.visible_when) {
-    return field;
-  }
-
-  const visible = evaluateExpression(field.visible_when, data);
-  if (visible === field.visible) {
-    return field;
-  }
-
-  return { ...field, visible };
-}
 
 export const DeclarativeFormSection = forwardRef<
   HTMLFormElement,

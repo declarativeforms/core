@@ -1,7 +1,8 @@
-import type { IDeclarativeForm } from "../../types";
+import type { IDeclarativeForm } from "@declarativeforms/types";
 import { compile } from "../compilation/form";
 import type { DispatchResult, FormAction, FormState } from "../types";
-import { validateSectionData } from "../../validation";
+import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
+import { validateSectionData } from "../validation";
 import { isExternalNextSectionId, resolveNextSectionId } from "./navigation";
 
 function getInitialSectionId(
@@ -19,12 +20,13 @@ export function createRuntimeState(
   schema: IDeclarativeForm,
   locale: string,
   initialData: Record<string, unknown>,
-  initialSectionId?: string
+  initialSectionId?: string,
+  messages: ValidationMessages = DEFAULT_MESSAGES,
 ): FormState {
   const activeSectionId = getInitialSectionId(schema, initialSectionId);
 
   return {
-    compiled: compile(schema, locale, initialData, activeSectionId),
+    compiled: compile(schema, locale, initialData, activeSectionId, messages),
     data: initialData,
     activeSectionId,
     sectionHistory: [],
@@ -36,7 +38,8 @@ export function transitionRuntime(
   schema: IDeclarativeForm,
   locale: string,
   state: FormState,
-  action: FormAction
+  action: FormAction,
+  messages: ValidationMessages = DEFAULT_MESSAGES,
 ): DispatchResult {
   switch (action.type) {
     case "update_field": {
@@ -45,7 +48,7 @@ export function transitionRuntime(
         state: {
           ...state,
           data,
-          compiled: compile(schema, locale, data, state.activeSectionId),
+          compiled: compile(schema, locale, data, state.activeSectionId, messages),
           validationErrors: {},
         },
         effect: { type: "none" },
@@ -59,7 +62,8 @@ export function transitionRuntime(
         locale,
         state.activeSectionId,
         action.data,
-        data
+        data,
+        messages,
       );
 
       if (Object.keys(errors).length > 0) {
@@ -81,7 +85,8 @@ export function transitionRuntime(
         schema,
         locale,
         data,
-        state.activeSectionId
+        state.activeSectionId,
+        messages,
       );
 
       if (isExternalNextSectionId(nextSectionId)) {
@@ -113,7 +118,7 @@ export function transitionRuntime(
           ...state,
           data,
           activeSectionId: nextSectionId,
-          compiled: compile(schema, locale, data, nextSectionId),
+          compiled: compile(schema, locale, data, nextSectionId, messages),
           sectionHistory: [...state.sectionHistory, state.activeSectionId],
           validationErrors: {},
         },
@@ -132,7 +137,7 @@ export function transitionRuntime(
         state: {
           ...state,
           activeSectionId: previousSectionId,
-          compiled: compile(schema, locale, state.data, previousSectionId),
+          compiled: compile(schema, locale, state.data, previousSectionId, messages),
           sectionHistory: state.sectionHistory.slice(0, -1),
           validationErrors: {},
         },
@@ -148,7 +153,8 @@ export function transitionRuntime(
             schema,
             action.locale,
             state.data,
-            state.activeSectionId
+            state.activeSectionId,
+            messages,
           ),
         },
         effect: { type: "none" },

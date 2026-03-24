@@ -1,8 +1,9 @@
-import type { IDeclarativeFormField, IDeclarativeFormOption } from "../../types";
-import { isDeclarativeFieldType } from "../../types";
+import type { IDeclarativeFormField, IDeclarativeFormOption } from "@declarativeforms/types";
+import { isDeclarativeFieldType } from "@declarativeforms/types";
 import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
 import type { CompiledField, CompiledOption } from "../types";
-import { buildValidationRules } from "../../validation";
+import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
+import { buildValidationRules } from "../validation";
 
 function resolveAndInterpolate(
   value: IDeclarativeFormField["label"],
@@ -35,7 +36,8 @@ function compileOption(
 export function compileField(
   field: IDeclarativeFormField,
   locale: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  messages: ValidationMessages = DEFAULT_MESSAGES,
 ): CompiledField | null {
   if (!isDeclarativeFieldType(field.type)) {
     return null;
@@ -46,7 +48,8 @@ export function compileField(
     field.type,
     field.validators ?? [],
     label,
-    locale
+    locale,
+    messages,
   );
 
   const base = {
@@ -137,4 +140,20 @@ export function compileField(
     default:
       return { ...base, type: field.type };
   }
+}
+
+export function resolveFieldVisibility(
+  field: CompiledField,
+  data: Record<string, unknown>,
+): CompiledField {
+  if (!field.visible_when) {
+    return field;
+  }
+
+  const visible = evaluateExpression(field.visible_when, data);
+  if (visible === field.visible) {
+    return field;
+  }
+
+  return { ...field, visible };
 }

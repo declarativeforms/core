@@ -1,12 +1,10 @@
-import { resolveLocalizedText } from "@declarativeforms/common"
-import type {
-  IDeclarativeFormCompletion,
-} from "../../types"
-import type { CompiledCompletion } from "../types"
+import { resolveLocalizedText } from "@declarativeforms/common";
+import type { IDeclarativeFormCompletion } from "@declarativeforms/types";
+import type { CompiledCompletion } from "./types";
 
 export function localizeCompletion(
   completion: IDeclarativeFormCompletion | undefined,
-  locale: string
+  locale: string,
 ): CompiledCompletion | undefined {
   if (!completion) {
     return undefined;

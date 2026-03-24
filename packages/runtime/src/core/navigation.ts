@@ -1,4 +1,4 @@
-import type { IDeclarativeFormSection } from "../../types";
+import type { IDeclarativeFormSection } from "@declarativeforms/types";
 import { evaluateExpression } from "@declarativeforms/common";
 
 export function resolveNextSectionId(

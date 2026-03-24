@@ -1,7 +1,7 @@
 import type {
   DeclarativeFieldType,
   IConnection,
-} from "../types";
+} from "@declarativeforms/types";
 
 // --- Validation Rules (extensible discriminated union) ---
 
