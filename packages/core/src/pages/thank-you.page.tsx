@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 import { HeroSection, type IDeclarativeForm } from "@/components";
-import { resolveCompletion, localizeCompletion } from "@declarativeforms/runtime";
+import { compile } from "@declarativeforms/runtime";
 import { interpolateTemplate } from "@declarativeforms/common";
 import { useI18n } from "@/i18n";
 import { getBackendUrl } from "@/lib/api";
@@ -73,8 +73,9 @@ export function ThankYouPage() {
   }, [form?.locale, langParam, searchParams, setSearchParams]);
 
   const submissionData = submission?.data ?? {};
-  const resolved = resolveCompletion(form?.completion, submissionData);
-  const completion = localizeCompletion(resolved, locale);
+  const completion = form
+    ? compile(form, locale, submissionData, "").completion
+    : undefined;
 
   if (completion) {
     return (

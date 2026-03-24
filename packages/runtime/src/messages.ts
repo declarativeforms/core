@@ -1,5 +1,3 @@
-import { interpolateTemplate } from "@declarativeforms/common";
-
 export type ValidationMessages = {
   required: string;
   invalid: string;
@@ -31,10 +29,3 @@ export const DEFAULT_MESSAGES: ValidationMessages = {
   selection_min: "{{label}} requires at least {{min}} selection(s).",
   selection_max: "{{label}} allows at most {{max}} selection(s).",
 };
-
-export function interpolate(
-  template: string,
-  values?: Record<string, string | number>,
-): string {
-  return interpolateTemplate(template, {}, values);
-}

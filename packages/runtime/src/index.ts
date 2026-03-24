@@ -30,12 +30,10 @@ export type {
 } from "./validation";
 
 // Navigation & Completion
-export { resolveNextSectionId, isExternalNextSectionId } from "./core/navigation";
-export { resolveCompletion } from "./core/completion";
-export { localizeCompletion } from "./localization";
+export { resolveNextSectionId, isExternalNextSectionId } from "./core/runtime";
 
 // Messages
-export { DEFAULT_MESSAGES, interpolate } from "./messages";
+export { DEFAULT_MESSAGES } from "./messages";
 export type { ValidationMessages } from "./messages";
 
 // Types

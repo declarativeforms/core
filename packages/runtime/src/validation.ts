@@ -1,4 +1,4 @@
-import { evaluateExpression, resolveLocalizedText } from "@declarativeforms/common";
+import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
 import type {
   DeclarativeFieldType,
   IDeclarativeForm,
@@ -6,7 +6,7 @@ import type {
   ILocalizedText,
 } from "@declarativeforms/types";
 import { isDeclarativeFieldType } from "@declarativeforms/types";
-import { DEFAULT_MESSAGES, interpolate, type ValidationMessages } from "./messages";
+import { DEFAULT_MESSAGES, type ValidationMessages } from "./messages";
 import type { CompiledField, CompiledOption, ValidationRule } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ export function buildValidationRules(
     if (validator === "required") {
       rules.push({
         type: "required",
-        message: interpolate(messages.required, { label }),
+        message: interpolateTemplate(messages.required, {}, { label }),
       });
       continue;
     }
@@ -101,7 +101,7 @@ export function buildValidationRules(
           regex: validator.regex,
           message:
             resolveLocalizedText(validator.message, locale) ||
-            interpolate(messages.invalid, { label }),
+            interpolateTemplate(messages.invalid, {}, { label }),
         });
         break;
 
@@ -112,7 +112,7 @@ export function buildValidationRules(
           value: validator.value,
           message:
             resolveLocalizedText(validator.message, locale) ||
-            interpolate(messages.min_length, {
+            interpolateTemplate(messages.min_length, {}, {
               label,
               min: validator.value,
             }),
@@ -126,7 +126,7 @@ export function buildValidationRules(
           value: validator.value,
           message:
             resolveLocalizedText(validator.message, locale) ||
-            interpolate(messages.max_length, {
+            interpolateTemplate(messages.max_length, {}, {
               label,
               max: validator.value,
             }),
@@ -140,7 +140,7 @@ export function buildValidationRules(
           expression: validator.expression,
           message:
             resolveLocalizedText(validator.message, locale) ||
-            interpolate(messages.invalid, { label }),
+            interpolateTemplate(messages.invalid, {}, { label }),
         });
         break;
     }
@@ -156,7 +156,7 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolate(messages.date_min, {
+          interpolateTemplate(messages.date_min, {}, {
             label,
             min: String(minVal.value),
           }),
@@ -168,7 +168,7 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolate(messages.date_max, {
+          interpolateTemplate(messages.date_max, {}, {
             label,
             max: String(maxVal.value),
           }),
@@ -181,7 +181,7 @@ export function buildValidationRules(
       rules.push({
         type: "pattern",
         regex: "^\\d+$",
-        message: interpolate(messages.whole_number, { label }),
+        message: interpolateTemplate(messages.whole_number, {}, { label }),
       });
     }
     if (minVal && typeof minVal.value === "number") {
@@ -190,7 +190,7 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolate(messages.number_min, {
+          interpolateTemplate(messages.number_min, {}, {
             label,
             min: minVal.value,
           }),
@@ -202,7 +202,7 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolate(messages.number_max, {
+          interpolateTemplate(messages.number_max, {}, {
             label,
             max: maxVal.value,
           }),
@@ -217,14 +217,14 @@ export function buildValidationRules(
       value: range.min,
       message:
         resolveLocalizedText(minVal?.message, locale) ||
-        interpolate(messages.number_min, { label, min: range.min }),
+        interpolateTemplate(messages.number_min, {}, { label, min: range.min }),
     });
     rules.push({
       type: "max",
       value: range.max,
       message:
         resolveLocalizedText(maxVal?.message, locale) ||
-        interpolate(messages.number_max, { label, max: range.max }),
+        interpolateTemplate(messages.number_max, {}, { label, max: range.max }),
     });
   }
 
@@ -235,7 +235,7 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolate(messages.file_min, {
+          interpolateTemplate(messages.file_min, {}, {
             label,
             min: minVal.value,
           }),
@@ -247,7 +247,7 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolate(messages.file_max, {
+          interpolateTemplate(messages.file_max, {}, {
             label,
             max: maxVal.value,
           }),
@@ -262,7 +262,7 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolate(messages.selection_min, {
+          interpolateTemplate(messages.selection_min, {}, {
             label,
             min: minVal.value,
           }),
@@ -274,7 +274,7 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolate(messages.selection_max, {
+          interpolateTemplate(messages.selection_max, {}, {
             label,
             max: maxVal.value,
           }),
@@ -285,7 +285,7 @@ export function buildValidationRules(
   if (fieldType === "turnstile" && !rules.some((rule) => rule.type === "required")) {
     rules.push({
       type: "required",
-      message: interpolate(messages.required, { label }),
+      message: interpolateTemplate(messages.required, {}, { label }),
     });
   }
 

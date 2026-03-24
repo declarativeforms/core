@@ -5,7 +5,7 @@ import { RotateCcw } from "lucide-react"
 import { DeclarativeForm, type IDeclarativeForm } from "@/components"
 import { HtmlText } from "@/components/declarative-form/view-support/html-text"
 import { interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common"
-import { resolveCompletion, localizeCompletion, type FormEffect } from "@declarativeforms/runtime"
+import { compile, type FormEffect } from "@declarativeforms/runtime"
 import { useI18n } from "@/i18n"
 import { buildThemeStyle } from "@/lib/theme"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
@@ -87,8 +87,7 @@ export function FormPreview({ yaml }: { yaml: string }) {
 
   if (previewState.view === "complete" || previewState.view === "redirect") {
     const submissionData = previewState.data
-    const resolved = resolveCompletion(form.completion, submissionData)
-    const completion = localizeCompletion(resolved, locale)
+    const completion = compile(form, locale, submissionData, "").completion
 
     const title = completion?.title
       ? interpolateTemplate(completion.title, submissionData)
