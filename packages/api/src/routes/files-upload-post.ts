@@ -23,12 +23,6 @@ export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
     tags: ['files'],
     summary: 'Upload a file',
     consumes: ['multipart/form-data'],
-    body: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', format: 'binary' },
-      },
-    },
     response: {
       200: {
         type: 'object',
