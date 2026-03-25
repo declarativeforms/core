@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { buildFieldValidation } from "../validation";
-import { HtmlText } from "../view-support/html-text";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+import { buildFieldValidation } from "../supporting/validation";
+import { HtmlText } from "../supporting/html-text";
 import {
   Button,
   Command,
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
-import { useFormI18n } from "../view-support/use-form-i18n";
+import { useFormI18n } from "../supporting/use-form-i18n";
 import { cn } from "@/lib/utils";
 
 export function DropdownField({

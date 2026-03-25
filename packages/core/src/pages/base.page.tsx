@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
-import { HtmlText } from "@/components/declarative-form/view-support/html-text";
+import { HtmlText } from "@/components/declarative-form/supporting/html-text";
 import { stripHtml } from "@declarativeforms/common";
 import { useI18n } from "@/i18n";
 import { buildThemeStyle } from "@/lib/theme";

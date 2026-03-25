@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Button } from "@/components";
 import { useI18n } from "@/i18n";
 import { buildThemeStyle } from "@/lib/theme";
-import { HtmlText } from "../view-support/html-text";
+import { HtmlText } from "../supporting/html-text";
 import { stripHtml } from "@declarativeforms/common";
 
 export function HeroSection(props: {

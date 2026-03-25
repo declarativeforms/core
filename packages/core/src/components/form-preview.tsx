@@ -3,7 +3,7 @@ import { load as parseYaml } from "js-yaml"
 import { RotateCcw } from "lucide-react"
 
 import { DeclarativeForm, type IDeclarativeForm } from "@/components"
-import { HtmlText } from "@/components/declarative-form/view-support/html-text"
+import { HtmlText } from "@/components/declarative-form/supporting/html-text"
 import { interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common"
 import { compile, type FormEffect } from "@declarativeforms/runtime"
 import { useI18n } from "@/i18n"

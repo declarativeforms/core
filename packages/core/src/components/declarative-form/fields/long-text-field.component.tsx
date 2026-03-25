@@ -1,7 +1,7 @@
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { buildFieldValidation } from "../validation";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+import { buildFieldValidation } from "../supporting/validation";
 import { FormControl, Textarea } from "@/components/ui";
-import { useFormI18n } from "../view-support/use-form-i18n";
+import { useFormI18n } from "../supporting/use-form-i18n";
 
 export function LongTextField({
   field,

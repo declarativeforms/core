@@ -1,3 +1,4 @@
+import { interpolateTemplate } from "@declarativeforms/common";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./locales";
 import {
   enMessages,
@@ -36,23 +37,13 @@ function toSupportedLocale(value?: string | null): Locale | null {
   return SUPPORTED_LOCALES.find((locale) => locale === base) ?? null;
 }
 
-function interpolate(template: string, values?: TranslationValues): string {
-  if (!values) {
-    return template;
-  }
-
-  return template.replace(/\{(\w+)\}/g, (_, key) =>
-    key in values ? String(values[key]) : `{${key}}`
-  );
-}
-
 export function translate(
   locale: Locale,
   key: TranslationKey,
   values?: TranslationValues
 ): string {
   const template = TRANSLATIONS[locale][key] ?? TRANSLATIONS[DEFAULT_LOCALE][key];
-  return interpolate(template ?? key, values);
+  return interpolateTemplate(template ?? key, values ?? {});
 }
 
 export function resolveLocale(queryLang?: string | null): {

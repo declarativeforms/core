@@ -1,8 +1,8 @@
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { useWaitForGlobal } from "../view-support/use-wait-for-global";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+import { useWaitForGlobal } from "../supporting/use-wait-for-global";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   getPlacePredictions,
@@ -24,7 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useFormI18n } from "../view-support/use-form-i18n";
+import { useFormI18n } from "../supporting/use-form-i18n";
 
 export function AddressField({
   field,

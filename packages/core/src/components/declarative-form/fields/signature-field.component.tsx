@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
 import { FormControl } from "@/components/ui";
-import { useFormI18n } from "../view-support/use-form-i18n";
-import { useUploadBlob } from "../view-support/use-upload-blob";
+import { useFormI18n } from "../supporting/use-form-i18n";
+import { useUploadBlob } from "../supporting/use-upload-blob";
 import { cn } from "@/lib/utils";
 
 type Point = {

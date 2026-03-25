@@ -4,9 +4,8 @@ import {
   buildFieldMetadata,
   type CompiledField,
   type FieldMetadata,
-  type RatingRange,
 } from "@declarativeforms/runtime";
-import { getEmailValidation } from "./fields/email/validation";
+import { getEmailValidation } from "../fields/email/validation";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,16 +19,6 @@ export type ValidationMessages = {
 export type FieldValidation = Omit<FieldMetadata, "config"> & {
   registerOptions: RegisterOptions;
 };
-
-// Re-exports for existing consumers
-export {
-  findValidationRule,
-  getNumericRuleValue,
-  getNumericBound,
-  getFieldOptions,
-  getRatingRange,
-} from "@declarativeforms/runtime";
-export type { RatingRange };
 
 // ---------------------------------------------------------------------------
 // Builder — single entry-point for field components and the renderer

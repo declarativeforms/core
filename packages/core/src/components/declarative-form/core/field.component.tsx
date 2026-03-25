@@ -7,9 +7,9 @@ import {
 import { FormField, FormItem, FormLabel, FormMessage } from "../../ui";
 import { useI18n } from "@/i18n";
 import type { CompiledField } from "@declarativeforms/runtime";
-import { buildFieldValidation } from "../validation";
-import { HtmlText } from "../view-support/html-text";
-import { FieldErrorBoundary } from "./field-error-boundary.component";
+import { buildFieldValidation } from "../supporting/validation";
+import { HtmlText } from "../supporting/html-text";
+import { FieldErrorBoundary } from "../supporting/field-error-boundary.component";
 import { fieldRegistry } from "./field-registry";
 
 function FieldLabel({ field }: { field: CompiledField }) {

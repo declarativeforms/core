@@ -1,10 +1,10 @@
 import { AlertCircle, Loader2, MapPin, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import type { DeclarativeFieldComponentProps } from "../../supporting/field-support";
 import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { useFormI18n } from "../view-support/use-form-i18n";
+import { useFormI18n } from "../../supporting/use-form-i18n";
 import type { TranslationKey } from "@/i18n/messages/en";
 
 const GeolocationMapPreview = lazy(() => import("./geolocation-map-preview"));

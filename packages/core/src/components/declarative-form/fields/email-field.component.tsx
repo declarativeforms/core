@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 import { Check } from "lucide-react";
 
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { buildFieldValidation } from "../validation";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+import { buildFieldValidation } from "../supporting/validation";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
 import { FormControl, Input } from "@/components/ui";
-import { useFormI18n } from "../view-support/use-form-i18n";
+import { useFormI18n } from "../supporting/use-form-i18n";
 import { cn } from "@/lib/utils";
 import { sendEmailOtp, verifyEmailOtp } from "./email/api";
 import { isEmailValid, sanitizeOtpCode, toFieldString } from "./email/utils";

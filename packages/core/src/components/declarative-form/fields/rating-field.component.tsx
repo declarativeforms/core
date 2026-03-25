@@ -1,6 +1,6 @@
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { HtmlText } from "../view-support/html-text";
-import { buildFieldValidation } from "../validation";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+import { HtmlText } from "../supporting/html-text";
+import { buildFieldValidation } from "../supporting/validation";
 import {
   FormControl,
   FormItem,

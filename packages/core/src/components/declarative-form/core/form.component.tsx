@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import type { FieldValues } from "react-hook-form";
 
-import { useFormRuntime } from "../runtime";
+import { useFormRuntime } from "./use-runtime";
 import type { FormEffect } from "@declarativeforms/runtime";
 import { DeclarativeFormSection } from "./section.component";
-import type { IDeclarativeForm } from "../types";
+import type { IDeclarativeForm } from "../supporting/types";
 
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;

@@ -1,8 +1,8 @@
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
-import { useWaitForGlobal } from "../view-support/use-wait-for-global";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+import { useWaitForGlobal } from "../supporting/use-wait-for-global";
 import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 

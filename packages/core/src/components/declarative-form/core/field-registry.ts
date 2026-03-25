@@ -16,8 +16,8 @@ import {
   SingleSelectField,
   TurnstileField,
 } from "../fields";
-import type { DeclarativeFieldType } from "../types";
-import type { DeclarativeFieldComponentProps } from "../view-support/field-support";
+import type { DeclarativeFieldType } from "../supporting/types";
+import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
 
 type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 
