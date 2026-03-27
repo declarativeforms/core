@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useSearchParams } from "react-router-dom";
 
 import {
   ConnectionsPage,
@@ -17,10 +17,12 @@ function ExternalRedirect({ url }: { url: string }) {
 }
 
 function App() {
+  const [searchParams] = useSearchParams();
+  const embed = searchParams.get("embed") === "true";
 
   return (
     <>
-      <main id="main-content">
+      <main id="main-content" className={embed ? "min-h-lvh bg-white" : undefined}>
         <Routes>
           <Route path="/" element={<ExternalRedirect url="https://docs.declarativeforms.com" />} />
           <Route path="/:id" element={<MainPage />} />
