@@ -27,6 +27,22 @@ export function BasePage(props: {
 
   const themeStyle = buildThemeStyle(props.theme);
 
+  useEffect(() => {
+    if (!props.embed) return;
+
+    document.documentElement.classList.remove("bg-neutral-50");
+    document.documentElement.classList.add("bg-white");
+    document.body.classList.remove("bg-neutral-50");
+    document.body.classList.add("bg-white");
+
+    return () => {
+      document.documentElement.classList.remove("bg-white");
+      document.documentElement.classList.add("bg-neutral-50");
+      document.body.classList.remove("bg-white");
+      document.body.classList.add("bg-neutral-50");
+    };
+  }, [props.embed]);
+
   if (props.embed) {
     return (
       <div style={themeStyle}>
