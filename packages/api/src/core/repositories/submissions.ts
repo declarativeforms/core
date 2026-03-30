@@ -18,6 +18,7 @@ export async function findSubmissions(formId: string): Promise<Array<ISubmission
   return container.db
     .collection<ISubmission>('submissions')
     .find({ form_id: formId })
+    .sort({ updated_at: -1, created_at: -1 })
     .toArray();
 }
 

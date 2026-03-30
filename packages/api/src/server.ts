@@ -15,6 +15,12 @@ import {
   OAUTH_GITHUB_ACCESS_TOKEN_POST,
   ONE_TIME_PIN_EMAIL_SEND_POST,
   ONE_TIME_PIN_EMAIL_VERIFY_POST,
+  STUDIO_FORMS_GET,
+  STUDIO_FORMS_ID_DELETE,
+  STUDIO_FORMS_ID_GET,
+  STUDIO_FORMS_ID_PUT,
+  STUDIO_FORMS_ID_SUBMISSIONS_GET,
+  STUDIO_FORMS_POST,
 } from './routes';
 
 export async function startServer() {
@@ -91,6 +97,12 @@ export async function startServer() {
   server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
   server.route(ONE_TIME_PIN_EMAIL_SEND_POST);
   server.route(ONE_TIME_PIN_EMAIL_VERIFY_POST);
+  server.route(STUDIO_FORMS_GET);
+  server.route(STUDIO_FORMS_POST);
+  server.route(STUDIO_FORMS_ID_GET);
+  server.route(STUDIO_FORMS_ID_PUT);
+  server.route(STUDIO_FORMS_ID_DELETE);
+  server.route(STUDIO_FORMS_ID_SUBMISSIONS_GET);
 
   server.route({
     handler: async (request, reply) => {

@@ -3,6 +3,7 @@ import {
   findForm,
   findSubmission,
   findSubmissions,
+  findStudioForm,
   insertSubmission,
   replaceSubmission,
 } from '../repositories';
@@ -204,6 +205,18 @@ export async function listFormSubmissions(
   );
 
   if (!canAccess) {
+    return null;
+  }
+
+  return findSubmissions(formId);
+}
+
+export async function listStudioFormSubmissions(
+  formId: string,
+): Promise<Array<ISubmission> | null> {
+  const form = await findStudioForm(formId);
+
+  if (!form) {
     return null;
   }
 

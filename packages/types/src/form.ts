@@ -229,6 +229,8 @@ export type IDeclarativeFormTheme = {
 
 export type IDeclarativeForm = {
   id?: string;
+  created_at?: string;
+  updated_at?: string;
   version?: number;
   title?: ILocalizedText;
   description?: ILocalizedText;
