@@ -1,1 +1,1 @@
-export * from "./use-forms";
+export * from "./useForms";
