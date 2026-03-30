@@ -221,27 +221,29 @@ export function FormEditorPage() {
           </TabsList>
         </div>
 
-        <TabsContent value="edit" className="min-h-0 overflow-y-auto p-6">
-          <FormBuilder
-            form={editorState.form}
-            onChange={(nextForm) => {
-              setEditorState((current) => ({
-                ...current,
-                form: nextForm,
-              }));
-            }}
-          />
+        <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-6">
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <FormBuilder
+              form={editorState.form}
+              onChange={(nextForm) => {
+                setEditorState((current) => ({
+                  ...current,
+                  form: nextForm,
+                }));
+              }}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="preview" className="min-h-0 overflow-y-auto p-6">
+        <TabsContent value="preview" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">
           <PlaceholderPanel>Form preview goes here</PlaceholderPanel>
         </TabsContent>
 
-        <TabsContent value="share" className="min-h-0 overflow-y-auto p-6">
+        <TabsContent value="share" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">
           <PlaceholderPanel>Share options go here</PlaceholderPanel>
         </TabsContent>
 
-        <TabsContent value="results" className="min-h-0 overflow-y-auto p-6">
+        <TabsContent value="results" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">
           <PlaceholderPanel>Results table goes here</PlaceholderPanel>
         </TabsContent>
       </Tabs>

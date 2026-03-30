@@ -23,14 +23,14 @@ export function SectionList({
   onAddSection,
 }: SectionListProps) {
   return (
-    <div className="flex min-h-0 flex-col">
-      <div className="px-3 py-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="shrink-0 px-3 py-3">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Sections
         </h2>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-3">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 pb-3">
         {sections.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-background px-3 py-4 text-sm text-muted-foreground">
             No sections yet.
@@ -66,7 +66,7 @@ export function SectionList({
         )}
       </div>
 
-      <div className="border-t border-border p-3">
+      <div className="shrink-0 border-t border-border p-3">
         <Button
           type="button"
           variant="outline"

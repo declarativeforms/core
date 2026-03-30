@@ -188,16 +188,18 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden rounded-xl border border-border bg-background">
-      <div className="flex w-72 shrink-0 flex-col border-r border-border bg-muted/10">
-        <SectionList
-          sections={sections}
-          activeSectionIndex={activeSectionIndex}
-          onSelectSection={handleSelectSection}
-          onUpdateSectionTitle={handleUpdateSectionTitle}
-          onAddSection={handleAddSection}
-        />
+      <div className="flex min-h-0 w-72 shrink-0 flex-col overflow-hidden border-r border-border bg-muted/10">
+        <div className="min-h-0 max-h-[40%] shrink overflow-hidden">
+          <SectionList
+            sections={sections}
+            activeSectionIndex={activeSectionIndex}
+            onSelectSection={handleSelectSection}
+            onUpdateSectionTitle={handleUpdateSectionTitle}
+            onAddSection={handleAddSection}
+          />
+        </div>
 
-        <div className="min-h-0 flex-1 border-t border-border">
+        <div className="min-h-0 flex-1 overflow-hidden border-t border-border">
           <FieldList
             fields={activeFields}
             selectedFieldIndex={selectedFieldIndex}
@@ -208,7 +210,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 bg-background">
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
         <FieldProperties field={selectedField} onChange={handleUpdateField} />
       </div>
     </div>

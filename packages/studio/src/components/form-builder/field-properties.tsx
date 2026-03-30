@@ -595,14 +595,14 @@ export function FieldProperties({
       : [];
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-border px-4 py-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="shrink-0 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-foreground">
           Field Properties
         </h2>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-4">
         <div className="space-y-2">
           <Label htmlFor="field-id">Field ID</Label>
           <Input
