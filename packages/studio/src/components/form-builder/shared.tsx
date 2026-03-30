@@ -1,0 +1,227 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  AlignLeft,
+  Building2,
+  Calendar,
+  Camera,
+  Clock3,
+  Crosshair,
+  ChevronDown,
+  FileUp,
+  Globe,
+  Hash,
+  Link2,
+  ListChecks,
+  Map,
+  Mail,
+  MapPin,
+  PenSquare,
+  Phone,
+  ShieldCheck,
+  Star,
+  Type,
+  EyeOff,
+} from "lucide-react";
+
+import type {
+  DeclarativeFieldType,
+  IDeclarativeFormField,
+  IDeclarativeFormOption,
+} from "@/lib/declarative-form-types";
+
+export const BUILDER_FIELD_TYPES = [
+  "address",
+  "address_country",
+  "address_locality",
+  "address_region",
+  "camera",
+  "short_text",
+  "long_text",
+  "email",
+  "number",
+  "date",
+  "date_month",
+  "dropdown",
+  "geolocation",
+  "hidden",
+  "single_select",
+  "multiple_select",
+  "rating",
+  "file_upload",
+  "signature",
+  "time",
+  "turnstile",
+  "url",
+  "mobile_number",
+] as const satisfies readonly DeclarativeFieldType[];
+
+export type SupportedFieldType = (typeof BUILDER_FIELD_TYPES)[number];
+
+const supportedFieldTypeSet = new Set<SupportedFieldType>([
+  ...BUILDER_FIELD_TYPES,
+]);
+
+const fieldTypeLabels: Record<SupportedFieldType, string> = {
+  address: "Address",
+  address_country: "Country",
+  address_locality: "City",
+  address_region: "Region",
+  camera: "Camera",
+  short_text: "Short Text",
+  long_text: "Long Text",
+  email: "Email",
+  number: "Number",
+  date: "Date",
+  date_month: "Month",
+  dropdown: "Dropdown",
+  geolocation: "Geolocation",
+  hidden: "Hidden",
+  single_select: "Single Select",
+  multiple_select: "Multiple Select",
+  rating: "Rating",
+  file_upload: "File Upload",
+  signature: "Signature",
+  time: "Time",
+  turnstile: "Turnstile",
+  url: "URL",
+  mobile_number: "Mobile Number",
+};
+
+const fieldTypeIcons: Record<SupportedFieldType, LucideIcon> = {
+  address: MapPin,
+  address_country: Globe,
+  address_locality: Building2,
+  address_region: Map,
+  camera: Camera,
+  short_text: Type,
+  long_text: AlignLeft,
+  email: Mail,
+  number: Hash,
+  date: Calendar,
+  date_month: Calendar,
+  dropdown: ChevronDown,
+  geolocation: Crosshair,
+  hidden: EyeOff,
+  single_select: ChevronDown,
+  multiple_select: ListChecks,
+  rating: Star,
+  file_upload: FileUp,
+  signature: PenSquare,
+  time: Clock3,
+  turnstile: ShieldCheck,
+  url: Link2,
+  mobile_number: Phone,
+};
+
+export function isSupportedFieldType(
+  value: DeclarativeFieldType | undefined,
+): value is SupportedFieldType {
+  return !!value && supportedFieldTypeSet.has(value as SupportedFieldType);
+}
+
+export function isChoiceFieldType(
+  value: DeclarativeFieldType | undefined,
+): value is "dropdown" | "single_select" | "multiple_select" {
+  return (
+    value === "dropdown" ||
+    value === "single_select" ||
+    value === "multiple_select"
+  );
+}
+
+export function getFieldTypeLabel(type: SupportedFieldType | undefined) {
+  return fieldTypeLabels[type ?? "short_text"];
+}
+
+export function getFieldTypeIcon(type: SupportedFieldType | undefined) {
+  return fieldTypeIcons[type ?? "short_text"];
+}
+
+export function getEditableFieldType(field: IDeclarativeFormField) {
+  return isSupportedFieldType(field.type) ? field.type : "short_text";
+}
+
+export function getFieldDisplayLabel(field: IDeclarativeFormField) {
+  return typeof field.label === "string" && field.label.trim()
+    ? field.label
+    : "Untitled Field";
+}
+
+export function getSectionDisplayTitle(title: unknown) {
+  return typeof title === "string" && title.trim()
+    ? title
+    : "Untitled Section";
+}
+
+export function getOptionStrings(options?: Array<IDeclarativeFormOption>) {
+  return (options ?? []).map((option) => {
+    if (typeof option === "string") {
+      return option;
+    }
+
+    if (typeof option.label === "string" && option.label.trim()) {
+      return option.label;
+    }
+
+    return option.value ?? "";
+  });
+}
+
+export function createDefaultField(type: SupportedFieldType, id: string) {
+  const baseField = {
+    id,
+    type,
+    label: "",
+    placeholder: "",
+    validators: [],
+  };
+
+  switch (type) {
+    case "dropdown":
+      return {
+        ...baseField,
+        searchable: false,
+        options: ["Option 1", "Option 2"],
+      } as IDeclarativeFormField;
+
+    case "single_select":
+    case "multiple_select":
+      return {
+        ...baseField,
+        allow_other: false,
+        options: ["Option 1", "Option 2"],
+      } as IDeclarativeFormField;
+
+    case "email":
+      return {
+        ...baseField,
+        otp: false,
+        block_free_email: false,
+      } as IDeclarativeFormField;
+
+    case "rating":
+      return {
+        ...baseField,
+        min_label: "",
+        max_label: "",
+      } as IDeclarativeFormField;
+
+    case "address":
+    case "address_country":
+    case "address_locality":
+    case "address_region":
+      return {
+        ...baseField,
+        outputFormat: "string",
+      } as IDeclarativeFormField;
+
+    case "camera":
+      return {
+        ...baseField,
+        facing_mode: "rear",
+      } as IDeclarativeFormField;
+
+    default:
+      return baseField as IDeclarativeFormField;
+  }
+}
