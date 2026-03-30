@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 
 import type { IDeclarativeFormSection } from "@/lib/declarative-form-types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
+import { BuilderPane, BuilderPaneEmptyState } from "./panel-shell";
 import { getSectionDisplayTitle } from "./shared";
 
 type SectionListProps = {
@@ -23,18 +23,25 @@ export function SectionList({
   onAddSection,
 }: SectionListProps) {
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="shrink-0 px-3 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Sections
-        </h2>
-      </div>
-
-      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 pb-3">
+    <BuilderPane
+      title="Sections"
+      footer={
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-start"
+          onClick={onAddSection}
+        >
+          <Plus />
+          Add Section
+        </Button>
+      }
+      bodyClassName="space-y-1"
+    >
         {sections.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-background px-3 py-4 text-sm text-muted-foreground">
+          <BuilderPaneEmptyState>
             No sections yet.
-          </div>
+          </BuilderPaneEmptyState>
         ) : (
           sections.map((section, index) => (
             <div
@@ -64,19 +71,6 @@ export function SectionList({
             </div>
           ))
         )}
-      </div>
-
-      <div className="shrink-0 border-t border-border p-3">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-start"
-          onClick={onAddSection}
-        >
-          <Plus />
-          Add Section
-        </Button>
-      </div>
-    </div>
+    </BuilderPane>
   );
 }

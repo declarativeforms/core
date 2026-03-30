@@ -10,19 +10,20 @@ import type {
   IDeclarativeFormSelectField,
   IDeclarativeFormValidator,
 } from "@/lib/declarative-form-types";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+  Textarea,
+} from "@/components/ui";
 
+import { BuilderPaneHeader } from "./panel-shell";
 import { getEditableFieldType, getFieldTypeLabel, getOptionStrings } from "./shared";
 
 type FieldPropertiesProps = {
@@ -596,11 +597,7 @@ export function FieldProperties({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="shrink-0 border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-foreground">
-          Field Properties
-        </h2>
-      </div>
+      <BuilderPaneHeader title="Field Properties" />
 
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-4">
         <div className="space-y-2">

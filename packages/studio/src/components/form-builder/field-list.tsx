@@ -3,16 +3,17 @@ import { useState } from "react";
 
 import type { IDeclarativeFormField } from "@/lib/declarative-form-types";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
 
+import { BuilderPane, BuilderPaneEmptyState } from "./panel-shell";
 import {
   BUILDER_FIELD_TYPES,
   type SupportedFieldType,
@@ -40,54 +41,9 @@ export function FieldList({
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="shrink-0 px-3 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Fields
-        </h2>
-      </div>
-
-      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 pb-3">
-        {!canAddField ? (
-          <div className="rounded-xl border border-dashed border-border bg-background px-3 py-4 text-sm text-muted-foreground">
-            Select or add a section to start adding fields.
-          </div>
-        ) : fields.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-background px-3 py-4 text-sm text-muted-foreground">
-            No fields in this section yet.
-          </div>
-        ) : (
-          fields.map((field, index) => {
-            const Icon = getFieldTypeIcon(getEditableFieldType(field));
-
-            return (
-              <button
-                key={field.id ?? `field-${index}`}
-                type="button"
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent hover:text-accent-foreground",
-                  selectedFieldIndex === index &&
-                    "bg-accent text-accent-foreground",
-                )}
-                onClick={() => onSelectField(index)}
-              >
-                <Icon className="size-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {getFieldDisplayLabel(field)}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {getFieldTypeLabel(getEditableFieldType(field))}
-                  </p>
-                </div>
-                <GripVertical className="size-4 shrink-0 text-muted-foreground" />
-              </button>
-            );
-          })
-        )}
-      </div>
-
-      <div className="shrink-0 border-t border-border p-3">
+    <BuilderPane
+      title="Fields"
+      footer={
         <Dialog open={isPickerOpen} onOpenChange={setIsPickerOpen}>
           <DialogTrigger asChild>
             <Button
@@ -131,7 +87,46 @@ export function FieldList({
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
+      }
+      bodyClassName="space-y-1"
+    >
+        {!canAddField ? (
+          <BuilderPaneEmptyState>
+            Select or add a section to start adding fields.
+          </BuilderPaneEmptyState>
+        ) : fields.length === 0 ? (
+          <BuilderPaneEmptyState>
+            No fields in this section yet.
+          </BuilderPaneEmptyState>
+        ) : (
+          fields.map((field, index) => {
+            const Icon = getFieldTypeIcon(getEditableFieldType(field));
+
+            return (
+              <button
+                key={field.id ?? `field-${index}`}
+                type="button"
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent hover:text-accent-foreground",
+                  selectedFieldIndex === index &&
+                    "bg-accent text-accent-foreground",
+                )}
+                onClick={() => onSelectField(index)}
+              >
+                <Icon className="size-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {getFieldDisplayLabel(field)}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {getFieldTypeLabel(getEditableFieldType(field))}
+                  </p>
+                </div>
+                <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+              </button>
+            );
+          })
+        )}
+    </BuilderPane>
   );
 }
