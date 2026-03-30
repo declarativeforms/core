@@ -23,3 +23,4 @@ export type IDeclarativeFormSelectField =
   import("@declarativeforms/types").IDeclarativeFormSelectField;
 export type IDeclarativeFormCameraField =
   import("@declarativeforms/types").IDeclarativeFormCameraField;
+export type ISubmission = import("@declarativeforms/types").ISubmission;

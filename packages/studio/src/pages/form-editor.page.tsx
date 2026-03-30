@@ -1,5 +1,5 @@
-import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -15,20 +15,46 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components";
-import type { IDeclarativeForm } from "@/lib/declarative-form-types";
 import {
-  createEmptyFormDefinition,
-  createForm,
-  ensureForm,
-  saveForm,
-} from "@/lib/mock-data";
+  useCreateForm,
+  useDeleteForm,
+  useForm,
+  useUpdateForm,
+} from "@/hooks";
+import { createEmptyFormDefinition } from "@/lib/default-form";
+import type { IDeclarativeForm, ILocalizedText } from "@/lib/declarative-form-types";
 
 type FormEditorState = {
   form: IDeclarativeForm;
 };
 
+type SaveState = "idle" | "saving" | "saved" | "error";
+
 function cloneForm(form: IDeclarativeForm) {
   return JSON.parse(JSON.stringify(form)) as IDeclarativeForm;
+}
+
+function getEditableText(value: ILocalizedText | undefined) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (!value) {
+    return "";
+  }
+
+  const firstTextValue = Object.values(value).find(
+    (entry) => typeof entry === "string" && entry.trim().length > 0,
+  );
+
+  return typeof firstTextValue === "string" ? firstTextValue : "";
+}
+
+function normalizeForm(form: IDeclarativeForm, id: string): IDeclarativeForm {
+  return {
+    ...form,
+    id,
+  };
 }
 
 function PlaceholderPanel({ children }: { children: string }) {
@@ -39,67 +65,194 @@ function PlaceholderPanel({ children }: { children: string }) {
   );
 }
 
+function SaveIndicator({ state }: { state: SaveState }) {
+  const text =
+    state === "saving"
+      ? "Saving..."
+      : state === "saved"
+        ? "Saved"
+        : state === "error"
+          ? "Save failed"
+          : "Ready";
+
+  const className =
+    state === "error"
+      ? "text-destructive"
+      : state === "saving"
+        ? "text-foreground"
+        : "text-muted-foreground";
+
+  return <span className={`text-sm ${className}`}>{text}</span>;
+}
+
 export function FormEditorPage() {
   const navigate = useNavigate();
   const { formId } = useParams();
   const currentFormId = formId ?? "new";
+  const createForm = useCreateForm();
+  const updateForm = useUpdateForm();
+  const deleteForm = useDeleteForm();
+  const {
+    data: loadedForm,
+    isLoading,
+    isError,
+  } = useForm(currentFormId);
   const [editorState, setEditorState] = useState<FormEditorState>({
     form: createEmptyFormDefinition(),
   });
-  const [saved, setSaved] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const createRequestedRef = useRef(false);
+  const hydratedFormIdRef = useRef<string | null>(null);
+  const lastPersistedSerializedRef = useRef("");
+  const saveGenerationRef = useRef(0);
 
   useEffect(() => {
     document.title = "Edit Form — Studio";
   }, []);
 
   useEffect(() => {
-    if (!saved) {
+    createRequestedRef.current = false;
+    hydratedFormIdRef.current = null;
+    lastPersistedSerializedRef.current = "";
+    saveGenerationRef.current += 1;
+    setEditorState({
+      form: createEmptyFormDefinition(),
+    });
+    setSaveState("idle");
+  }, [currentFormId]);
+
+  useEffect(() => {
+    if (currentFormId !== "new" || createRequestedRef.current) {
       return;
     }
 
+    createRequestedRef.current = true;
+
+    void createForm
+      .mutateAsync(createEmptyFormDefinition())
+      .then((form) => {
+        if (form.id) {
+          navigate(`/forms/${form.id}`, { replace: true });
+        }
+      });
+  }, [createForm, currentFormId, navigate]);
+
+  useEffect(() => {
+    if (currentFormId === "new" || !loadedForm) {
+      return;
+    }
+
+    if (hydratedFormIdRef.current === currentFormId) {
+      return;
+    }
+
+    const nextForm = cloneForm(loadedForm);
+    const nextSerialized = JSON.stringify(normalizeForm(nextForm, currentFormId));
+
+    setEditorState({ form: nextForm });
+    hydratedFormIdRef.current = currentFormId;
+    lastPersistedSerializedRef.current = nextSerialized;
+    setSaveState("saved");
+  }, [currentFormId, loadedForm]);
+
+  useEffect(() => {
+    if (currentFormId === "new" || hydratedFormIdRef.current !== currentFormId) {
+      return;
+    }
+
+    const nextForm = normalizeForm(editorState.form, currentFormId);
+    const nextSerialized = JSON.stringify(nextForm);
+
+    if (nextSerialized === lastPersistedSerializedRef.current) {
+      return;
+    }
+
+    const generation = ++saveGenerationRef.current;
+    setSaveState("saving");
+
     const timer = window.setTimeout(() => {
-      setSaved(false);
-    }, 2000);
+      void updateForm
+        .mutateAsync({
+          id: currentFormId,
+          form: nextForm,
+        })
+        .then((savedForm) => {
+          lastPersistedSerializedRef.current = JSON.stringify(
+            normalizeForm(savedForm, currentFormId),
+          );
+
+          if (saveGenerationRef.current === generation) {
+            setSaveState("saved");
+          }
+        })
+        .catch(() => {
+          if (saveGenerationRef.current === generation) {
+            setSaveState("error");
+          }
+        });
+    }, 1000);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [saved]);
-
-  useEffect(() => {
-    if (currentFormId === "new") {
-      const nextForm = createForm();
-      navigate(`/forms/${nextForm.id}`, { replace: true });
-      return;
-    }
-
-    const nextRecord = ensureForm(currentFormId);
-    setEditorState({
-      form: cloneForm(nextRecord.form),
-    });
-  }, [currentFormId, navigate]);
-
-  const displayTitle =
-    typeof editorState.form.title === "string" && editorState.form.title.trim()
-      ? editorState.form.title
-      : "Untitled Form";
+  }, [currentFormId, editorState.form, updateForm]);
 
   const persistedFormId =
-    typeof editorState.form.id === "string" && editorState.form.id.trim()
-      ? editorState.form.id
-      : currentFormId;
+    currentFormId === "new"
+      ? ""
+      : typeof editorState.form.id === "string" && editorState.form.id.trim().length > 0
+        ? editorState.form.id
+        : currentFormId;
 
-  const handleSave = () => {
+  const titleValue = getEditableText(editorState.form.title);
+
+  const handleDelete = async () => {
     if (!persistedFormId) {
       return;
     }
 
-    saveForm({
-      ...editorState.form,
-      id: persistedFormId,
-    });
-    setSaved(true);
+    await deleteForm.mutateAsync(persistedFormId);
+    navigate("/", { replace: true });
   };
+
+  if (currentFormId === "new") {
+    return (
+      <PageShell className="items-center justify-center">
+        <EmptyState
+          title={createForm.isError ? "Unable to create form" : "Creating form..."}
+          description={
+            createForm.isError
+              ? "Studio couldn’t create a new form. Try again in a moment."
+              : "Preparing your form editor."
+          }
+        />
+      </PageShell>
+    );
+  }
+
+  if (isLoading && hydratedFormIdRef.current !== currentFormId) {
+    return (
+      <PageShell className="items-center justify-center">
+        <EmptyState title="Loading form..." description="Fetching the latest form definition." />
+      </PageShell>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageShell className="items-center justify-center">
+        <EmptyState
+          title="Unable to load form"
+          description="Studio couldn’t fetch this form from the API."
+          action={
+            <Button asChild type="button" variant="outline">
+              <Link to="/">Back to dashboard</Link>
+            </Button>
+          }
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell className="overflow-hidden">
@@ -113,26 +266,32 @@ export function FormEditorPage() {
             </Button>
 
             <Input
-              value={displayTitle}
+              value={titleValue}
               onChange={(event) => {
-                const nextTitle = event.target.value;
-
                 setEditorState((current) => ({
                   ...current,
                   form: {
                     ...current.form,
-                    title: nextTitle,
+                    title: event.target.value,
                   },
                 }));
               }}
+              placeholder="Untitled Form"
               aria-label="Form title"
               className="h-auto max-w-xl border-transparent bg-transparent px-0 text-base font-semibold shadow-none focus-visible:border-transparent focus-visible:ring-0"
             />
           </div>
 
           <div className="flex items-center gap-3">
-            <Button type="button" onClick={handleSave}>
-              {saved ? "Saved!" : "Save"}
+            <SaveIndicator state={saveState} />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleDelete}
+              disabled={deleteForm.isPending}
+            >
+              <Trash2 />
+              Delete
             </Button>
           </div>
         </div>

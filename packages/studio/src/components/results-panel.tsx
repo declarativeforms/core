@@ -1,5 +1,5 @@
 import { Download, FileText } from "lucide-react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 
 import {
   Button,
@@ -9,7 +9,8 @@ import {
   CardTitle,
   EmptyState,
 } from "@/components";
-import { listSubmissions, type StudioSubmissionRecord } from "@/lib/mock-data";
+import { useSubmissions } from "@/hooks";
+import type { ISubmission } from "@/lib/declarative-form-types";
 
 type ResultsPanelProps = {
   formId: string;
@@ -55,7 +56,7 @@ function formatSubmissionValue(value: unknown) {
   return JSON.stringify(value);
 }
 
-function StatusBadge({ status }: { status: StudioSubmissionRecord["status"] }) {
+function StatusBadge({ status }: { status: ISubmission["status"] }) {
   const className =
     status === "completed"
       ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
@@ -74,8 +75,44 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
   const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(
     null,
   );
+  const { data: submissions = [], isLoading, isError } = useSubmissions(formId);
 
-  const submissions = useMemo(() => listSubmissions(formId), [formId]);
+  if (isLoading) {
+    return (
+      <div className="flex h-full min-h-0 flex-col gap-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="h-10 w-24 animate-pulse rounded bg-muted" />
+        </div>
+
+        <Card className="min-h-0 rounded-xl border-border shadow-sm">
+          <CardHeader className="gap-1 pb-4">
+            <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="h-14 animate-pulse rounded-lg bg-muted/60" />
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <EmptyState
+          icon={<FileText className="size-6" />}
+          title="Unable to load responses"
+          description="Try again in a moment. Studio couldn’t fetch submissions from the API."
+        />
+      </div>
+    );
+  }
 
   if (submissions.length === 0) {
     return (
@@ -124,7 +161,7 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
                 <tbody>
                   {submissions.map((submission) => {
                     const isExpanded = expandedSubmissionId === submission.id;
-                    const primaryValues = getPrimaryValues(submission.values);
+                    const primaryValues = getPrimaryValues(submission.data);
                     const handleToggle = () => {
                       setExpandedSubmissionId((current) =>
                         current === submission.id ? null : submission.id,
@@ -141,7 +178,7 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
                             {truncateSubmissionId(submission.id)}
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
-                            {formatSubmittedAt(submission.submittedAt)}
+                            {formatSubmittedAt(submission.created_at)}
                           </td>
                           <td className="px-4 py-3">
                             <StatusBadge status={submission.status} />
@@ -167,7 +204,7 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
                           <tr className="border-b border-border/70 bg-muted/10">
                             <td colSpan={4} className="px-4 py-4">
                               <div className="grid gap-3 md:grid-cols-2">
-                                {Object.entries(submission.values).map(([key, value]) => (
+                                {Object.entries(submission.data).map(([key, value]) => (
                                   <div
                                     key={key}
                                     className="rounded-lg border border-border bg-background px-3 py-3"
