@@ -25,7 +25,8 @@
           {
             "group": "Getting Started",
             "pages": [
-              "getting-started/create-a-form"
+              "getting-started/create-a-form",
+              "getting-started/use-the-starter-repository"
             ]
           },
           {
