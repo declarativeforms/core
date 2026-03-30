@@ -7,6 +7,7 @@ on:
       - 'packages/api/**'
       - 'packages/types/**'
       - 'packages/core/**'
+      - 'packages/studio/**'
 
 env:
   REGISTRY: ghcr.io
@@ -78,6 +79,10 @@ jobs:
 
       - name: Build frontend
         working-directory: packages/core
+        run: npm run build
+
+      - name: Build studio
+        working-directory: packages/studio
         run: npm run build
 
       - name: Deploy to Firebase Hosting
