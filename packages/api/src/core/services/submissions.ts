@@ -198,11 +198,13 @@ export async function listFormSubmissions(
     return null;
   }
 
-  const canAccess = await hasRequiredGitHubPermissions(
-    token,
-    form.owner,
-    form.repository,
-  );
+  const canAccess = form.owner && form.repository
+    ? await hasRequiredGitHubPermissions(
+        token,
+        form.owner,
+        form.repository,
+      )
+    : false;
 
   if (!canAccess) {
     return null;

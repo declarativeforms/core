@@ -23,6 +23,10 @@ export async function findFormById(
   }
 
   // source === 'github': fetch YAML from the linked repository
+  if (!record.owner || !record.repository || !record.file) {
+    return null;
+  }
+
   let text: string | null = null;
 
   if (record.connection_id) {

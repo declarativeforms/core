@@ -42,9 +42,6 @@ export async function createStudioForm(
   await upsertForm({
     id,
     source: 'studio',
-    owner: '',
-    repository: '',
-    file: '',
   });
 
   return nextForm;
