@@ -59,8 +59,8 @@ export async function authenticateWithGitHub(
       Accept: 'application/json',
     },
     body: JSON.stringify({
-      client_id: process.env.GITHUB_CLIENT_ID,
-      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      client_id: process.env.STUDIO_GITHUB_CLIENT_ID,
+      client_secret: process.env.STUDIO_GITHUB_CLIENT_SECRET,
       code,
     }),
   });
