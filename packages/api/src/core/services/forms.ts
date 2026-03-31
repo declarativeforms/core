@@ -1,7 +1,12 @@
 import yaml from 'js-yaml';
 import md5 from 'md5';
 import { fetchGitHubYaml } from '../gateways';
-import { findConnection, findForm, upsertForm } from '../repositories';
+import {
+  findConnection,
+  findForm,
+  findStudioForm,
+  upsertForm,
+} from '../repositories';
 import type { IDeclarativeForm } from '@declarativeforms/types';
 
 export async function findFormById(
@@ -10,7 +15,9 @@ export async function findFormById(
   const form = await findForm(id);
 
   if (!form) {
-    return null;
+    // Fall back to the studio_forms collection so that forms created
+    // in Studio are also reachable via the public /:id route.
+    return findStudioForm(id);
   }
 
   let text: string | null = null;
