@@ -1,11 +1,13 @@
 import { faker } from '@faker-js/faker';
 import type { IDeclarativeForm } from '@declarativeforms/types';
 import {
+  deleteForm,
   deleteStudioForm,
   findStudioForm,
   findStudioForms,
   insertStudioForm,
   replaceStudioForm,
+  upsertForm,
 } from '../repositories';
 
 async function generateStudioFormId(): Promise<string> {
@@ -36,6 +38,14 @@ export async function createStudioForm(
   };
 
   await insertStudioForm(nextForm);
+
+  await upsertForm({
+    id,
+    source: 'studio',
+    owner: '',
+    repository: '',
+    file: '',
+  });
 
   return nextForm;
 }
@@ -69,5 +79,11 @@ export async function updateStudioFormById(
 }
 
 export async function deleteStudioFormById(id: string): Promise<boolean> {
-  return deleteStudioForm(id);
+  const deleted = await deleteStudioForm(id);
+
+  if (deleted) {
+    await deleteForm(id);
+  }
+
+  return deleted;
 }

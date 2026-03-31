@@ -12,32 +12,35 @@ import type { IDeclarativeForm } from '@declarativeforms/types';
 export async function findFormById(
   id: string,
 ): Promise<IDeclarativeForm | null> {
-  const form = await findForm(id);
+  const record = await findForm(id);
 
-  if (!form) {
-    // Fall back to the studio_forms collection so that forms created
-    // in Studio are also reachable via the public /:id route.
+  if (!record) {
+    return null;
+  }
+
+  if (record.source === 'studio') {
     return findStudioForm(id);
   }
 
+  // source === 'github': fetch YAML from the linked repository
   let text: string | null = null;
 
-  if (form.connection_id) {
-    const connection = await findConnection(form.connection_id);
+  if (record.connection_id) {
+    const connection = await findConnection(record.connection_id);
     const token = connection?.access_token;
 
     if (token) {
       text = await fetchGitHubYaml(
-        form.owner,
-        form.repository,
-        form.file,
+        record.owner,
+        record.repository,
+        record.file,
         token,
       );
     }
   }
 
   if (!text) {
-    text = await fetchGitHubYaml(form.owner, form.repository, form.file);
+    text = await fetchGitHubYaml(record.owner, record.repository, record.file);
   }
 
   if (!text) {
@@ -88,6 +91,7 @@ export async function findFormBySlug(
   await upsertForm({
     file,
     id,
+    source: 'github',
     owner,
     repository,
     ...(connectionId ? { connection_id: connectionId } : {}),
