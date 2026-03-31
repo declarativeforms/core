@@ -1,3 +1,5 @@
+export * from './auth-github-post';
+export * from './auth-me-get';
 export * from './files-upload-post';
 export * from './forms-id-get';
 export * from './forms-id-submissions-get';

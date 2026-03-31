@@ -1,14 +1,23 @@
 import type { ReactNode } from "react";
-import { LayoutDashboard, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { LayoutDashboard, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui";
+import { useAuth } from "@/hooks";
 
 type AppLayoutProps = {
   children: ReactNode;
 };
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="flex h-dvh w-full flex-col bg-background text-foreground">
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
@@ -20,14 +29,21 @@ export function AppLayout({ children }: AppLayoutProps) {
           <span>Studio</span>
         </Link>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label="User menu"
-        >
-          <User className="text-muted-foreground" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {user ? (
+            <span className="text-xs text-muted-foreground">{user.login}</span>
+          ) : null}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Sign out"
+            onClick={handleLogout}
+          >
+            <LogOut className="text-muted-foreground" />
+          </Button>
+        </div>
       </header>
 
       <div className="flex-1 min-h-0 bg-background">{children}</div>

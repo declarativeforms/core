@@ -5,6 +5,8 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import * as qs from 'qs';
 import {
+  AUTH_GITHUB_POST,
+  AUTH_ME_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
   FORMS_ID_SUBMISSIONS_GET,
@@ -22,6 +24,7 @@ import {
   STUDIO_FORMS_ID_SUBMISSIONS_GET,
   STUDIO_FORMS_POST,
 } from './routes';
+import { requireStudioAuth } from './middleware';
 
 export async function startServer() {
   const server = fastify({
@@ -87,6 +90,8 @@ export async function startServer() {
     routePrefix: '/docs',
   });
 
+  server.route(AUTH_GITHUB_POST);
+  server.route(AUTH_ME_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_GET);
@@ -97,12 +102,30 @@ export async function startServer() {
   server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
   server.route(ONE_TIME_PIN_EMAIL_SEND_POST);
   server.route(ONE_TIME_PIN_EMAIL_VERIFY_POST);
-  server.route(STUDIO_FORMS_GET);
-  server.route(STUDIO_FORMS_POST);
-  server.route(STUDIO_FORMS_ID_GET);
-  server.route(STUDIO_FORMS_ID_PUT);
-  server.route(STUDIO_FORMS_ID_DELETE);
-  server.route(STUDIO_FORMS_ID_SUBMISSIONS_GET);
+  server.route({
+    ...STUDIO_FORMS_GET,
+    preHandler: requireStudioAuth,
+  });
+  server.route({
+    ...STUDIO_FORMS_POST,
+    preHandler: requireStudioAuth,
+  });
+  server.route({
+    ...STUDIO_FORMS_ID_GET,
+    preHandler: requireStudioAuth,
+  });
+  server.route({
+    ...STUDIO_FORMS_ID_PUT,
+    preHandler: requireStudioAuth,
+  });
+  server.route({
+    ...STUDIO_FORMS_ID_DELETE,
+    preHandler: requireStudioAuth,
+  });
+  server.route({
+    ...STUDIO_FORMS_ID_SUBMISSIONS_GET,
+    preHandler: requireStudioAuth,
+  });
 
   server.route({
     handler: async (request, reply) => {
