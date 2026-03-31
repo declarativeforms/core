@@ -87,9 +87,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   }, [sections, activeSectionIndex, selectedFieldIndex, isCompletionSelected]);
 
   const activeSection =
-    !isCompletionSelected && activeSectionIndex !== null
-      ? sections[activeSectionIndex] ?? null
-      : null;
+    activeSectionIndex !== null ? sections[activeSectionIndex] ?? null : null;
   const activeFields = activeSection?.fields ?? [];
   const selectedField =
     selectedFieldIndex !== null ? activeFields[selectedFieldIndex] ?? null : null;
@@ -138,6 +136,8 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
 
   const handleSelectCompletion = () => {
     setIsCompletionSelected(true);
+    setActiveSectionIndex(null);
+    setSelectedFieldIndex(null);
   };
 
   const handleViewSectionSettings = () => {
@@ -250,7 +250,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
         <div className="min-h-0 max-h-[40%] shrink overflow-hidden">
           <SectionList
             sections={sections}
-            activeSectionIndex={isCompletionSelected ? null : activeSectionIndex}
+            activeSectionIndex={activeSectionIndex}
             isCompletionSelected={isCompletionSelected}
             onSelectSection={handleSelectSection}
             onUpdateSectionTitle={handleUpdateSectionTitle}
