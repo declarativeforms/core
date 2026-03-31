@@ -19,6 +19,31 @@ async function createConnectionRecord(
   return connection;
 }
 
+export async function createGitHubConnection(
+  code: string,
+): Promise<{ accessToken: string; id: string }> {
+  const response = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      code,
+    }),
+  });
+
+  const data: any = await response.json();
+
+  const accessToken = data.access_token || '';
+
+  const connection = await createConnectionRecord(accessToken);
+
+  return { accessToken, id: connection.id };
+}
+
 export async function createAirtableConnection(input: {
   code: string;
   redirectUri: string;
