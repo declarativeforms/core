@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
+import { arrayMove } from "@dnd-kit/sortable";
 
 import type {
   IDeclarativeForm,
   IDeclarativeFormField,
   IDeclarativeFormSection,
 } from "@/lib/declarative-form-types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
+import { CompletionEditor } from "./completion-editor";
 import { FieldList } from "./field-list";
 import { FieldProperties } from "./field-properties";
 import { SectionList } from "./section-list";
+import { SectionProperties } from "./section-properties";
 import { createDefaultField, type SupportedFieldType } from "./shared";
 
 type FormBuilderProps = {
@@ -162,6 +166,40 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     setSelectedFieldIndex(activeFields.length);
   };
 
+  const handleReorderFields = (fromIndex: number, toIndex: number) => {
+    if (activeSectionIndex === null) {
+      return;
+    }
+
+    const nextSections = sections.map((section, sectionIndex) => {
+      if (sectionIndex !== activeSectionIndex) {
+        return section;
+      }
+
+      return {
+        ...section,
+        fields: arrayMove(section.fields ?? [], fromIndex, toIndex),
+      };
+    });
+
+    onChange({
+      ...form,
+      sections: nextSections,
+    });
+
+    if (selectedFieldIndex === fromIndex) {
+      setSelectedFieldIndex(toIndex);
+    } else if (
+      selectedFieldIndex !== null &&
+      selectedFieldIndex >= Math.min(fromIndex, toIndex) &&
+      selectedFieldIndex <= Math.max(fromIndex, toIndex)
+    ) {
+      setSelectedFieldIndex(
+        fromIndex < toIndex ? selectedFieldIndex - 1 : selectedFieldIndex + 1,
+      );
+    }
+  };
+
   const handleUpdateField = (nextField: IDeclarativeFormField) => {
     if (activeSectionIndex === null || selectedFieldIndex === null) {
       return;
@@ -179,6 +217,21 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
         ),
       };
     });
+
+    onChange({
+      ...form,
+      sections: nextSections,
+    });
+  };
+
+  const handleUpdateSection = (nextSection: IDeclarativeFormSection) => {
+    if (activeSectionIndex === null) {
+      return;
+    }
+
+    const nextSections = sections.map((section, sectionIndex) =>
+      sectionIndex === activeSectionIndex ? nextSection : section,
+    );
 
     onChange({
       ...form,
@@ -206,12 +259,43 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
             canAddField={activeSectionIndex !== null}
             onSelectField={setSelectedFieldIndex}
             onAddField={handleAddField}
+            onReorderFields={handleReorderFields}
           />
         </div>
       </div>
 
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
-        <FieldProperties field={selectedField} onChange={handleUpdateField} />
+        <Tabs defaultValue="field" className="flex h-full flex-col">
+          <div className="shrink-0 border-b border-border px-4">
+            <TabsList variant="line" className="h-10 w-auto gap-1 p-0">
+              <TabsTrigger value="field" className="px-3 text-xs">
+                Field
+              </TabsTrigger>
+              <TabsTrigger value="section" className="px-3 text-xs">
+                Section
+              </TabsTrigger>
+              <TabsTrigger value="completion" className="px-3 text-xs">
+                Completion
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="field" className="mt-0 min-h-0 flex-1 overflow-hidden">
+            <FieldProperties field={selectedField} onChange={handleUpdateField} />
+          </TabsContent>
+
+          <TabsContent value="section" className="mt-0 min-h-0 flex-1 overflow-hidden">
+            <SectionProperties
+              section={activeSection}
+              allSections={sections}
+              onChange={handleUpdateSection}
+            />
+          </TabsContent>
+
+          <TabsContent value="completion" className="mt-0 min-h-0 flex-1 overflow-hidden">
+            <CompletionEditor form={form} onChange={onChange} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
