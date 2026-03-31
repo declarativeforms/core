@@ -208,6 +208,23 @@ export function SectionProperties({ section, allSections, onChange }: SectionPro
       <BuilderPaneHeader title="Section Settings" />
       <div className="flex-1 space-y-5 overflow-y-auto p-4">
         <div className="space-y-2">
+          <Label>Title</Label>
+          <Input
+            value={typeof section.title === "string" ? section.title : ""}
+            onChange={(e) => onChange({ ...section, title: e.target.value })}
+            placeholder="Untitled Section"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="section-id">Section ID</Label>
+          <Input id="section-id" value={section.id ?? ""} disabled className="font-mono text-xs" />
+          <p className="text-xs text-muted-foreground">
+            Used to reference this section in navigation rules.
+          </p>
+        </div>
+
+        <div className="space-y-2">
           <Label>After this section</Label>
           <Select value={currentMode} onValueChange={handleModeChange}>
             <SelectTrigger>
