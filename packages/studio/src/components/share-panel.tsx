@@ -8,7 +8,7 @@ type SharePanelProps = {
 };
 
 function buildShareUrl(formId: string) {
-  return `https://app.declarativeforms.com/${formId}`;
+  return `https://frms.dev/${formId}`;
 }
 
 function buildEmbedCode(formId: string) {

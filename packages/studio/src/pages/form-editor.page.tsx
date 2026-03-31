@@ -65,14 +65,6 @@ function normalizeForm(form: IDeclarativeForm, id: string): IDeclarativeForm {
   };
 }
 
-function PlaceholderPanel({ children }: { children: string }) {
-  return (
-    <div className="flex h-full min-h-[240px] items-center justify-center">
-      <EmptyState title={children} className="max-w-none" />
-    </div>
-  );
-}
-
 function SaveIndicator({ state }: { state: SaveState }) {
   const text =
     state === "saving"
@@ -327,9 +319,6 @@ export function FormEditorPage() {
               <TabsTrigger value="edit" className="px-3">
                 Edit
               </TabsTrigger>
-              <TabsTrigger value="preview" className="px-3">
-                Preview
-              </TabsTrigger>
               <TabsTrigger value="share" className="px-3">
                 Share
               </TabsTrigger>
@@ -351,10 +340,6 @@ export function FormEditorPage() {
                 }}
               />
             </div>
-          </TabsContent>
-
-          <TabsContent value="preview" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">
-            <PlaceholderPanel>Form preview goes here</PlaceholderPanel>
           </TabsContent>
 
           <TabsContent value="share" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">

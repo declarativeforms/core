@@ -1,5 +1,21 @@
 import { GripVertical, Plus } from "lucide-react";
 import { useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import type { IDeclarativeFormField } from "@/lib/declarative-form-types";
 import {
@@ -29,7 +45,72 @@ type FieldListProps = {
   canAddField: boolean;
   onSelectField: (index: number) => void;
   onAddField: (type: SupportedFieldType) => void;
+  onReorderFields: (fromIndex: number, toIndex: number) => void;
 };
+
+type SortableFieldItemProps = {
+  field: IDeclarativeFormField;
+  index: number;
+  isSelected: boolean;
+  onSelect: () => void;
+};
+
+function SortableFieldItem({ field, index, isSelected, onSelect }: SortableFieldItemProps) {
+  const fieldId = field.id ?? `field-${index}`;
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: fieldId });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const Icon = getFieldTypeIcon(getEditableFieldType(field));
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex w-full items-center gap-1 rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground",
+        isSelected && "bg-accent text-accent-foreground",
+        isDragging && "z-10 opacity-80 shadow-md",
+      )}
+    >
+      <button
+        type="button"
+        className="shrink-0 cursor-grab touch-none p-1.5 text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        aria-label={`Reorder ${getFieldDisplayLabel(field)}`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
+
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-3 py-2 pr-3 text-left"
+        onClick={onSelect}
+      >
+        <Icon className="size-4 shrink-0 text-muted-foreground" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">
+            {getFieldDisplayLabel(field)}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {getFieldTypeLabel(getEditableFieldType(field))}
+          </p>
+        </div>
+      </button>
+    </div>
+  );
+}
 
 export function FieldList({
   fields,
@@ -37,8 +118,35 @@ export function FieldList({
   canAddField,
   onSelectField,
   onAddField,
+  onReorderFields,
 }: FieldListProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const fieldIds = fields.map((field, index) => field.id ?? `field-${index}`);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = fieldIds.indexOf(String(active.id));
+    const newIndex = fieldIds.indexOf(String(over.id));
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      onReorderFields(oldIndex, newIndex);
+    }
+  };
 
   return (
     <BuilderPane
@@ -99,33 +207,23 @@ export function FieldList({
             No fields in this section yet.
           </BuilderPaneEmptyState>
         ) : (
-          fields.map((field, index) => {
-            const Icon = getFieldTypeIcon(getEditableFieldType(field));
-
-            return (
-              <button
-                key={field.id ?? `field-${index}`}
-                type="button"
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent hover:text-accent-foreground",
-                  selectedFieldIndex === index &&
-                    "bg-accent text-accent-foreground",
-                )}
-                onClick={() => onSelectField(index)}
-              >
-                <Icon className="size-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {getFieldDisplayLabel(field)}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {getFieldTypeLabel(getEditableFieldType(field))}
-                  </p>
-                </div>
-                <GripVertical className="size-4 shrink-0 text-muted-foreground" />
-              </button>
-            );
-          })
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={fieldIds} strategy={verticalListSortingStrategy}>
+              {fields.map((field, index) => (
+                <SortableFieldItem
+                  key={field.id ?? `field-${index}`}
+                  field={field}
+                  index={index}
+                  isSelected={selectedFieldIndex === index}
+                  onSelect={() => onSelectField(index)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
     </BuilderPane>
   );
