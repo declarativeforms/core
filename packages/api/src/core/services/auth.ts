@@ -1,20 +1,14 @@
-import { createHmac } from 'crypto';
+import jwt from 'jsonwebtoken';
 import { fetchGitHubUser, type GitHubUser } from '../gateways';
 
-const AUTH_JWT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const AUTH_JWT_EXPIRY = '7d';
 
 export type AuthTokenPayload = {
   github_id: number;
   login: string;
   name: string | null;
   avatar_url: string;
-  exp: number;
 };
-
-function base64url(data: Buffer | string): string {
-  const buf = typeof data === 'string' ? Buffer.from(data) : data;
-  return buf.toString('base64url');
-}
 
 function getAuthSecret(): string {
   const secret = process.env.AUTH_JWT_SECRET;
@@ -34,16 +28,9 @@ export function createAuthToken(user: GitHubUser): string {
     login: user.login,
     name: user.name,
     avatar_url: user.avatar_url,
-    exp: Date.now() + AUTH_JWT_EXPIRY_MS,
   };
 
-  const encodedPayload = base64url(JSON.stringify(payload));
-
-  const signature = base64url(
-    createHmac('sha256', secret).update(encodedPayload).digest(),
-  );
-
-  return `${encodedPayload}.${signature}`;
+  return jwt.sign(payload, secret, { expiresIn: AUTH_JWT_EXPIRY });
 }
 
 export function verifyAuthToken(token: string): AuthTokenPayload | null {
@@ -53,30 +40,8 @@ export function verifyAuthToken(token: string): AuthTokenPayload | null {
     return null;
   }
 
-  const parts = token.split('.');
-
-  if (parts.length !== 2) {
-    return null;
-  }
-
-  const [encodedPayload, signature] = parts;
-
-  const expectedSignature = base64url(
-    createHmac('sha256', secret).update(encodedPayload).digest(),
-  );
-
-  if (signature !== expectedSignature) {
-    return null;
-  }
-
   try {
-    const payload: AuthTokenPayload = JSON.parse(
-      Buffer.from(encodedPayload, 'base64url').toString(),
-    );
-
-    if (payload.exp < Date.now()) {
-      return null;
-    }
+    const payload = jwt.verify(token, secret) as AuthTokenPayload;
 
     return payload;
   } catch {
@@ -153,6 +118,5 @@ export async function resolveAuthUser(
     login: user.login,
     name: user.name,
     avatar_url: user.avatar_url,
-    exp: Date.now() + AUTH_JWT_EXPIRY_MS,
   };
 }

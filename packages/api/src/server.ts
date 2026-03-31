@@ -14,7 +14,6 @@ import {
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
   OAUTH_AIRTABLE_ACCESS_TOKEN_POST,
-  OAUTH_GITHUB_ACCESS_TOKEN_POST,
   ONE_TIME_PIN_EMAIL_SEND_POST,
   ONE_TIME_PIN_EMAIL_VERIFY_POST,
   STUDIO_FORMS_GET,
@@ -23,8 +22,8 @@ import {
   STUDIO_FORMS_ID_PUT,
   STUDIO_FORMS_ID_SUBMISSIONS_GET,
   STUDIO_FORMS_POST,
-  requireStudioAuth,
 } from './routes';
+import { requireStudioAuth } from './middleware';
 
 export async function startServer() {
   const server = fastify({
@@ -99,7 +98,6 @@ export async function startServer() {
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
   server.route(OAUTH_AIRTABLE_ACCESS_TOKEN_POST);
-  server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
   server.route(ONE_TIME_PIN_EMAIL_SEND_POST);
   server.route(ONE_TIME_PIN_EMAIL_VERIFY_POST);
   server.route({
