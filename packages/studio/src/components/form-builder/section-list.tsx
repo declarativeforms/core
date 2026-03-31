@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { CheckCircle2, Plus } from "lucide-react";
 
 import type { IDeclarativeFormSection } from "@/lib/declarative-form-types";
 import { Button, Input } from "@/components/ui";
@@ -10,31 +10,48 @@ import { getSectionDisplayTitle } from "./shared";
 type SectionListProps = {
   sections: IDeclarativeFormSection[];
   activeSectionIndex: number | null;
+  isCompletionSelected: boolean;
   onSelectSection: (index: number) => void;
   onUpdateSectionTitle: (index: number, title: string) => void;
   onAddSection: () => void;
+  onSelectCompletion: () => void;
 };
 
 export function SectionList({
   sections,
   activeSectionIndex,
+  isCompletionSelected,
   onSelectSection,
   onUpdateSectionTitle,
   onAddSection,
+  onSelectCompletion,
 }: SectionListProps) {
   return (
     <BuilderPane
       title="Sections"
       footer={
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-start"
-          onClick={onAddSection}
-        >
-          <Plus />
-          Add Section
-        </Button>
+        <div className="space-y-2">
+          <button
+            type="button"
+            className={cn(
+              "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+              isCompletionSelected && "bg-accent text-accent-foreground",
+            )}
+            onClick={onSelectCompletion}
+          >
+            <CheckCircle2 className="size-4 text-muted-foreground" />
+            Completion
+          </button>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-start"
+            onClick={onAddSection}
+          >
+            <Plus />
+            Add Section
+          </Button>
+        </div>
       }
       bodyClassName="space-y-1"
     >
