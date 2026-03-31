@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { findStudioFormById } from '../core';
+import { findFormById } from '../core';
 
 export const STUDIO_FORMS_ID_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -8,7 +8,7 @@ export const STUDIO_FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const form = await findStudioFormById(request.params.id);
+    const form = await findFormById(request.params.id);
 
     if (!form) {
       reply.status(404).send();

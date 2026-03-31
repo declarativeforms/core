@@ -3,17 +3,18 @@ import type { IDeclarativeForm } from '@declarativeforms/types';
 import {
   deleteForm,
   deleteStudioForm,
-  findStudioForm,
+  findForm,
   findStudioForms,
   insertStudioForm,
   replaceStudioForm,
   upsertForm,
 } from '../repositories';
+import { findFormById } from './forms';
 
 async function generateStudioFormId(): Promise<string> {
   while (true) {
     const id = faker.string.alphanumeric({ casing: 'lower', length: 8 });
-    const existing = await findStudioForm(id);
+    const existing = await findForm(id);
 
     if (!existing) {
       return id;
@@ -47,17 +48,11 @@ export async function createStudioForm(
   return nextForm;
 }
 
-export async function findStudioFormById(
-  id: string,
-): Promise<IDeclarativeForm | null> {
-  return findStudioForm(id);
-}
-
 export async function updateStudioFormById(
   id: string,
   form: IDeclarativeForm,
 ): Promise<IDeclarativeForm | null> {
-  const existing = await findStudioForm(id);
+  const existing = await findFormById(id);
 
   if (!existing) {
     return null;

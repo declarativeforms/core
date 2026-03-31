@@ -3,7 +3,6 @@ import {
   findForm,
   findSubmission,
   findSubmissions,
-  findStudioForm,
   insertSubmission,
   replaceSubmission,
 } from '../repositories';
@@ -216,7 +215,7 @@ export async function listFormSubmissions(
 export async function listStudioFormSubmissions(
   formId: string,
 ): Promise<Array<ISubmission> | null> {
-  const form = await findStudioForm(formId);
+  const form = await findFormById(formId);
 
   if (!form) {
     return null;
