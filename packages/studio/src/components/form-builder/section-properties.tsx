@@ -109,7 +109,7 @@ export function SectionProperties({ section, allSections, onChange }: SectionPro
   }
 
   const currentMode = parseNextMode(section);
-  const otherSections = allSections.filter((s) => s.id !== section.id);
+  const otherSections = allSections.filter((s) => s.id && s.id !== section.id);
   const conditionalRules = parseConditionalRules(section);
   const elseFallback = parseElseFallback(section);
 
