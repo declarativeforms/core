@@ -4,7 +4,7 @@ const TOKEN_KEY = "studio_auth_token";
 const USER_KEY = "studio_auth_user";
 
 export type AuthUser = {
-  github_id: number;
+  id: number;
   login: string;
   name: string | null;
   avatar_url: string;

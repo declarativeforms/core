@@ -9,5 +9,6 @@ export async function requireStudioAuth(
 
   if (!user) {
     reply.status(401).send({ error: 'Unauthorized' });
+    return;
   }
 }
