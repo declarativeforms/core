@@ -16,3 +16,13 @@ export async function upsertForm(record: IFormRecord): Promise<void> {
     { upsert: true },
   );
 }
+
+export async function deleteForm(id: string): Promise<boolean> {
+  const container = await getContainer();
+
+  const result = await container.db
+    .collection<IFormRecord>('forms')
+    .deleteOne({ id });
+
+  return result.deletedCount > 0;
+}

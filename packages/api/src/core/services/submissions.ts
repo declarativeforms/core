@@ -3,7 +3,6 @@ import {
   findForm,
   findSubmission,
   findSubmissions,
-  findStudioForm,
   insertSubmission,
   replaceSubmission,
 } from '../repositories';
@@ -198,11 +197,13 @@ export async function listFormSubmissions(
     return null;
   }
 
-  const canAccess = await hasRequiredGitHubPermissions(
-    token,
-    form.owner,
-    form.repository,
-  );
+  const canAccess = form.owner && form.repository
+    ? await hasRequiredGitHubPermissions(
+        token,
+        form.owner,
+        form.repository,
+      )
+    : false;
 
   if (!canAccess) {
     return null;
@@ -214,7 +215,7 @@ export async function listFormSubmissions(
 export async function listStudioFormSubmissions(
   formId: string,
 ): Promise<Array<ISubmission> | null> {
-  const form = await findStudioForm(formId);
+  const form = await findFormById(formId);
 
   if (!form) {
     return null;

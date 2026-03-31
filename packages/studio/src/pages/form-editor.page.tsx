@@ -1,5 +1,5 @@
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -51,8 +51,16 @@ function getEditableText(value: ILocalizedText | undefined) {
 }
 
 function normalizeForm(form: IDeclarativeForm, id: string): IDeclarativeForm {
+  // Strip server-managed metadata so that comparisons only consider
+  // user-editable fields. Without this, a fresh `updated_at` returned by
+  // the API after each save would differ from the editor state, causing an
+  // infinite save loop.
+  const { _id, created_at, updated_at, ...rest } = form as IDeclarativeForm & {
+    _id?: unknown;
+  };
+
   return {
-    ...form,
+    ...rest,
     id,
   };
 }
@@ -106,6 +114,26 @@ export function FormEditorPage() {
   const lastPersistedSerializedRef = useRef("");
   const saveGenerationRef = useRef(0);
 
+  // Keep a ref-based stable reference to mutateAsync so the auto-save
+  // effect does not re-run every time the mutation state object changes.
+  const updateFormRef = useRef(updateForm.mutateAsync);
+  updateFormRef.current = updateForm.mutateAsync;
+
+  const stableMutateAsync = useCallback(
+    (...args: Parameters<typeof updateForm.mutateAsync>) =>
+      updateFormRef.current(...args),
+    [],
+  );
+
+  const createFormRef = useRef(createForm.mutateAsync);
+  createFormRef.current = createForm.mutateAsync;
+
+  const stableCreateAsync = useCallback(
+    (...args: Parameters<typeof createForm.mutateAsync>) =>
+      createFormRef.current(...args),
+    [],
+  );
+
   useEffect(() => {
     document.title = "Edit Form — Studio";
   }, []);
@@ -128,14 +156,12 @@ export function FormEditorPage() {
 
     createRequestedRef.current = true;
 
-    void createForm
-      .mutateAsync(createEmptyFormDefinition())
-      .then((form) => {
-        if (form.id) {
-          navigate(`/forms/${form.id}`, { replace: true });
-        }
-      });
-  }, [createForm, currentFormId, navigate]);
+    void stableCreateAsync(createEmptyFormDefinition()).then((form) => {
+      if (form.id) {
+        navigate(`/forms/${form.id}`, { replace: true });
+      }
+    });
+  }, [currentFormId, navigate, stableCreateAsync]);
 
   useEffect(() => {
     if (currentFormId === "new" || !loadedForm) {
@@ -171,11 +197,10 @@ export function FormEditorPage() {
     setSaveState("saving");
 
     const timer = window.setTimeout(() => {
-      void updateForm
-        .mutateAsync({
-          id: currentFormId,
-          form: nextForm,
-        })
+      void stableMutateAsync({
+        id: currentFormId,
+        form: nextForm,
+      })
         .then((savedForm) => {
           lastPersistedSerializedRef.current = JSON.stringify(
             normalizeForm(savedForm, currentFormId),
@@ -195,7 +220,7 @@ export function FormEditorPage() {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [currentFormId, editorState.form, updateForm]);
+  }, [currentFormId, editorState.form, stableMutateAsync]);
 
   const persistedFormId =
     currentFormId === "new"
