@@ -110,22 +110,6 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     setSelectedFieldIndex(null);
   };
 
-  const handleUpdateSectionTitle = (index: number, title: string) => {
-    const nextSections = sections.map((section, sectionIndex) =>
-      sectionIndex === index
-        ? {
-            ...section,
-            title,
-          }
-        : section,
-    );
-
-    onChange({
-      ...form,
-      sections: nextSections,
-    });
-  };
-
   const handleSelectSection = (index: number) => {
     setIsCompletionSelected(false);
     setActiveSectionIndex(index);
@@ -253,7 +237,6 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
             activeSectionIndex={activeSectionIndex}
             isCompletionSelected={isCompletionSelected}
             onSelectSection={handleSelectSection}
-            onUpdateSectionTitle={handleUpdateSectionTitle}
             onAddSection={handleAddSection}
             onSelectCompletion={handleSelectCompletion}
           />

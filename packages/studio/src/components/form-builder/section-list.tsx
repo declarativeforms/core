@@ -1,7 +1,7 @@
-import { CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2, Layers, Plus } from "lucide-react";
 
 import type { IDeclarativeFormSection } from "@/lib/declarative-form-types";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 import { BuilderPane, BuilderPaneEmptyState } from "./panel-shell";
@@ -12,7 +12,6 @@ type SectionListProps = {
   activeSectionIndex: number | null;
   isCompletionSelected: boolean;
   onSelectSection: (index: number) => void;
-  onUpdateSectionTitle: (index: number, title: string) => void;
   onAddSection: () => void;
   onSelectCompletion: () => void;
 };
@@ -22,7 +21,6 @@ export function SectionList({
   activeSectionIndex,
   isCompletionSelected,
   onSelectSection,
-  onUpdateSectionTitle,
   onAddSection,
   onSelectCompletion,
 }: SectionListProps) {
@@ -61,31 +59,22 @@ export function SectionList({
           </BuilderPaneEmptyState>
         ) : (
           sections.map((section, index) => (
-            <div
+            <button
+              type="button"
               key={section.id ?? `section-${index}`}
               className={cn(
-                "rounded-lg px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground",
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                 activeSectionIndex === index &&
                   "bg-accent text-accent-foreground",
               )}
+              onClick={() => onSelectSection(index)}
+              aria-label={`Select section: ${getSectionDisplayTitle(section.title)}`}
             >
-              <Input
-                value={typeof section.title === "string" ? section.title : ""}
-                placeholder="Untitled Section"
-                onFocus={() => onSelectSection(index)}
-                onClick={() => onSelectSection(index)}
-                onChange={(event) =>
-                  onUpdateSectionTitle(index, event.target.value)
-                }
-                className="h-auto border-transparent bg-transparent px-0 py-0 text-sm font-medium shadow-none focus-visible:border-transparent focus-visible:ring-0"
-                aria-label={`Section ${index + 1} title`}
-              />
-              {!(typeof section.title === "string" && section.title.trim()) && (
-                <p className="pointer-events-none mt-1 text-xs text-muted-foreground">
-                  {getSectionDisplayTitle(section.title)}
-                </p>
-              )}
-            </div>
+              <Layers className="size-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">
+                {getSectionDisplayTitle(section.title)}
+              </span>
+            </button>
           ))
         )}
     </BuilderPane>

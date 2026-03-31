@@ -209,13 +209,18 @@ export function FieldList({
             <button
               type="button"
               className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent hover:text-accent-foreground",
                 selectedFieldIndex === null && "bg-accent text-accent-foreground",
               )}
               onClick={onViewSectionSettings}
             >
               <Settings className="size-4 shrink-0 text-muted-foreground" />
-              <span className="font-medium">Section Settings</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">Section Settings</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  Navigation &amp; Properties
+                </p>
+              </div>
             </button>
 
             {fields.length === 0 ? (
