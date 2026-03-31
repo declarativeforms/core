@@ -6,7 +6,6 @@ import type {
   IDeclarativeFormField,
   IDeclarativeFormSection,
 } from "@/lib/declarative-form-types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { CompletionEditor } from "./completion-editor";
 import { FieldList } from "./field-list";
 import { FieldProperties } from "./field-properties";
@@ -49,8 +48,13 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(
     sections[0]?.fields && sections[0].fields.length > 0 ? 0 : null,
   );
+  const [isCompletionSelected, setIsCompletionSelected] = useState(false);
 
   useEffect(() => {
+    if (isCompletionSelected) {
+      return;
+    }
+
     if (sections.length === 0) {
       if (activeSectionIndex !== null) {
         setActiveSectionIndex(null);
@@ -63,35 +67,24 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
       return;
     }
 
-    const nextSectionIndex =
-      activeSectionIndex !== null && activeSectionIndex < sections.length
-        ? activeSectionIndex
-        : 0;
-
-    if (nextSectionIndex !== activeSectionIndex) {
-      setActiveSectionIndex(nextSectionIndex);
+    if (activeSectionIndex === null) {
+      setActiveSectionIndex(0);
       return;
     }
 
-    const fields = sections[nextSectionIndex]?.fields ?? [];
-
-    if (fields.length === 0) {
-      if (selectedFieldIndex !== null) {
-        setSelectedFieldIndex(null);
-      }
-
+    if (activeSectionIndex >= sections.length) {
+      setActiveSectionIndex(sections.length - 1);
       return;
     }
 
-    const nextFieldIndex =
-      selectedFieldIndex !== null && selectedFieldIndex < fields.length
-        ? selectedFieldIndex
-        : 0;
+    const fields = sections[activeSectionIndex]?.fields ?? [];
 
-    if (nextFieldIndex !== selectedFieldIndex) {
-      setSelectedFieldIndex(nextFieldIndex);
+    if (fields.length === 0 && selectedFieldIndex !== null) {
+      setSelectedFieldIndex(null);
+    } else if (selectedFieldIndex !== null && selectedFieldIndex >= fields.length) {
+      setSelectedFieldIndex(fields.length - 1);
     }
-  }, [sections, activeSectionIndex, selectedFieldIndex]);
+  }, [sections, activeSectionIndex, selectedFieldIndex, isCompletionSelected]);
 
   const activeSection =
     activeSectionIndex !== null ? sections[activeSectionIndex] ?? null : null;
@@ -112,6 +105,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
       sections: nextSections,
     });
 
+    setIsCompletionSelected(false);
     setActiveSectionIndex(nextSections.length - 1);
     setSelectedFieldIndex(null);
   };
@@ -133,10 +127,21 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   };
 
   const handleSelectSection = (index: number) => {
+    setIsCompletionSelected(false);
     setActiveSectionIndex(index);
 
     const nextFields = sections[index]?.fields ?? [];
     setSelectedFieldIndex(nextFields.length > 0 ? 0 : null);
+  };
+
+  const handleSelectCompletion = () => {
+    setIsCompletionSelected(true);
+    setActiveSectionIndex(null);
+    setSelectedFieldIndex(null);
+  };
+
+  const handleViewSectionSettings = () => {
+    setSelectedFieldIndex(null);
   };
 
   const handleAddField = (type: SupportedFieldType) => {
@@ -246,56 +251,41 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
           <SectionList
             sections={sections}
             activeSectionIndex={activeSectionIndex}
+            isCompletionSelected={isCompletionSelected}
             onSelectSection={handleSelectSection}
             onUpdateSectionTitle={handleUpdateSectionTitle}
             onAddSection={handleAddSection}
+            onSelectCompletion={handleSelectCompletion}
           />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden border-t border-border">
-          <FieldList
-            fields={activeFields}
-            selectedFieldIndex={selectedFieldIndex}
-            canAddField={activeSectionIndex !== null}
-            onSelectField={setSelectedFieldIndex}
-            onAddField={handleAddField}
-            onReorderFields={handleReorderFields}
-          />
-        </div>
+        {!isCompletionSelected && (
+          <div className="min-h-0 flex-1 overflow-hidden border-t border-border">
+            <FieldList
+              fields={activeFields}
+              selectedFieldIndex={selectedFieldIndex}
+              canAddField={activeSectionIndex !== null}
+              onSelectField={setSelectedFieldIndex}
+              onAddField={handleAddField}
+              onReorderFields={handleReorderFields}
+              onViewSectionSettings={handleViewSectionSettings}
+            />
+          </div>
+        )}
       </div>
 
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
-        <Tabs defaultValue="field" className="flex h-full flex-col">
-          <div className="shrink-0 border-b border-border px-4">
-            <TabsList variant="line" className="h-10 w-auto gap-1 p-0">
-              <TabsTrigger value="field" className="px-3 text-xs">
-                Field
-              </TabsTrigger>
-              <TabsTrigger value="section" className="px-3 text-xs">
-                Section
-              </TabsTrigger>
-              <TabsTrigger value="completion" className="px-3 text-xs">
-                Completion
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="field" className="mt-0 min-h-0 flex-1 overflow-hidden">
-            <FieldProperties field={selectedField} onChange={handleUpdateField} />
-          </TabsContent>
-
-          <TabsContent value="section" className="mt-0 min-h-0 flex-1 overflow-hidden">
-            <SectionProperties
-              section={activeSection}
-              allSections={sections}
-              onChange={handleUpdateSection}
-            />
-          </TabsContent>
-
-          <TabsContent value="completion" className="mt-0 min-h-0 flex-1 overflow-hidden">
-            <CompletionEditor form={form} onChange={onChange} />
-          </TabsContent>
-        </Tabs>
+        {isCompletionSelected ? (
+          <CompletionEditor form={form} onChange={onChange} />
+        ) : selectedField ? (
+          <FieldProperties field={selectedField} onChange={handleUpdateField} />
+        ) : (
+          <SectionProperties
+            section={activeSection}
+            allSections={sections}
+            onChange={handleUpdateSection}
+          />
+        )}
       </div>
     </div>
   );

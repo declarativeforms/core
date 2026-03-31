@@ -1,4 +1,4 @@
-import { GripVertical, Plus } from "lucide-react";
+import { GripVertical, Plus, Settings } from "lucide-react";
 import { useState } from "react";
 import {
   DndContext,
@@ -46,6 +46,7 @@ type FieldListProps = {
   onSelectField: (index: number) => void;
   onAddField: (type: SupportedFieldType) => void;
   onReorderFields: (fromIndex: number, toIndex: number) => void;
+  onViewSectionSettings: () => void;
 };
 
 type SortableFieldItemProps = {
@@ -119,6 +120,7 @@ export function FieldList({
   onSelectField,
   onAddField,
   onReorderFields,
+  onViewSectionSettings,
 }: FieldListProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
@@ -202,28 +204,44 @@ export function FieldList({
           <BuilderPaneEmptyState>
             Select or add a section to start adding fields.
           </BuilderPaneEmptyState>
-        ) : fields.length === 0 ? (
-          <BuilderPaneEmptyState>
-            No fields in this section yet.
-          </BuilderPaneEmptyState>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={fieldIds} strategy={verticalListSortingStrategy}>
-              {fields.map((field, index) => (
-                <SortableFieldItem
-                  key={field.id ?? `field-${index}`}
-                  field={field}
-                  index={index}
-                  isSelected={selectedFieldIndex === index}
-                  onSelect={() => onSelectField(index)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+          <>
+            <button
+              type="button"
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                selectedFieldIndex === null && "bg-accent text-accent-foreground",
+              )}
+              onClick={onViewSectionSettings}
+            >
+              <Settings className="size-4 shrink-0 text-muted-foreground" />
+              <span className="font-medium">Section Settings</span>
+            </button>
+
+            {fields.length === 0 ? (
+              <BuilderPaneEmptyState>
+                No fields in this section yet.
+              </BuilderPaneEmptyState>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={fieldIds} strategy={verticalListSortingStrategy}>
+                  {fields.map((field, index) => (
+                    <SortableFieldItem
+                      key={field.id ?? `field-${index}`}
+                      field={field}
+                      index={index}
+                      isSelected={selectedFieldIndex === index}
+                      onSelect={() => onSelectField(index)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
+          </>
         )}
     </BuilderPane>
   );
