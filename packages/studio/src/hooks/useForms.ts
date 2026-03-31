@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getBackendUrl } from "@/lib/api";
+import { getAuthHeaders } from "@/lib/auth";
 import type { IDeclarativeForm, ISubmission } from "@/lib/declarative-form-types";
 
 export const studioFormsKeys = {
@@ -25,7 +26,9 @@ export function useForms() {
   return useQuery({
     queryKey: studioFormsKeys.all,
     queryFn: async () => {
-      const response = await fetch(getBackendUrl("studio/forms"));
+      const response = await fetch(getBackendUrl("studio/forms"), {
+        headers: getAuthHeaders(),
+      });
       return parseJsonResponse<IDeclarativeForm[]>(response);
     },
   });
@@ -35,7 +38,9 @@ export function useForm(id: string) {
   return useQuery({
     queryKey: studioFormsKeys.detail(id),
     queryFn: async () => {
-      const response = await fetch(getBackendUrl(`studio/forms/${id}`));
+      const response = await fetch(getBackendUrl(`studio/forms/${id}`), {
+        headers: getAuthHeaders(),
+      });
       return parseJsonResponse<IDeclarativeForm>(response);
     },
     enabled: Boolean(id) && id !== "new",
@@ -51,6 +56,7 @@ export function useCreateForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(form),
       });
@@ -77,6 +83,7 @@ export function useUpdateForm() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(input.form),
       });
@@ -97,6 +104,7 @@ export function useDeleteForm() {
     mutationFn: async (id: string) => {
       const response = await fetch(getBackendUrl(`studio/forms/${id}`), {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
       await parseJsonResponse<void>(response);
@@ -116,6 +124,7 @@ export function useSubmissions(formId: string) {
     queryFn: async () => {
       const response = await fetch(
         getBackendUrl(`studio/forms/${formId}/submissions`),
+        { headers: getAuthHeaders() },
       );
 
       return parseJsonResponse<ISubmission[]>(response);

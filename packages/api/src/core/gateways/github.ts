@@ -1,3 +1,34 @@
+export type GitHubUser = {
+  id: number;
+  login: string;
+  name: string | null;
+  avatar_url: string;
+};
+
+export async function fetchGitHubUser(
+  accessToken: string,
+): Promise<GitHubUser | null> {
+  const response = await fetch('https://api.github.com/user', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data: any = await response.json();
+
+  return {
+    id: data.id,
+    login: data.login,
+    name: data.name || null,
+    avatar_url: data.avatar_url,
+  };
+}
+
 export async function fetchGitHubYaml(
   owner: string,
   repository: string,

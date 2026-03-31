@@ -1,3 +1,5 @@
+export * from './auth-github-post';
+export * from './auth-me-get';
 export * from './files-upload-post';
 export * from './forms-id-get';
 export * from './forms-id-submissions-get';
@@ -8,6 +10,7 @@ export * from './oauth-airtable-access-token-post';
 export * from './oauth-github-access-token-post';
 export * from './one-time-pin-email-send-post';
 export * from './one-time-pin-email-verify-post';
+export * from './require-studio-auth';
 export * from './studio-forms-get';
 export * from './studio-forms-id-delete';
 export * from './studio-forms-id-get';

@@ -1,3 +1,5 @@
+export * from "./callback.page";
 export * from "./dashboard.page";
 export * from "./form-editor.page";
+export * from "./login.page";
 export * from "./not-found.page";
