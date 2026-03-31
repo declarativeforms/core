@@ -40,6 +40,7 @@ export async function startServer() {
 
   await server.register(fastifyCors, {
     allowedHeaders: '*',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     origin: '*',
   });
 
