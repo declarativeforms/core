@@ -308,7 +308,7 @@ export function FormEditorPage() {
               disabled={deleteForm.isPending}
             >
               <Trash2 />
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </Button>
           </div>
         </div>

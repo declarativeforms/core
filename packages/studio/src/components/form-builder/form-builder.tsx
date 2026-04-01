@@ -229,8 +229,8 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   };
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden rounded-xl border border-border bg-background">
-      <div className="flex min-h-0 w-72 shrink-0 flex-col overflow-hidden border-r border-border bg-muted/10">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background md:flex-row">
+      <div className="flex min-h-0 max-h-[50%] shrink-0 flex-col overflow-hidden border-b border-border bg-muted/10 md:max-h-full md:w-72 md:border-b-0 md:border-r">
         <div className="min-h-0 max-h-[40%] shrink overflow-hidden">
           <SectionList
             sections={sections}

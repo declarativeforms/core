@@ -147,9 +147,9 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
           <CardTitle className="text-base font-semibold">Submission log</CardTitle>
         </CardHeader>
         <CardContent className="min-h-0">
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="rounded-lg border border-border">
             <div className="max-h-[28rem] overflow-auto">
-              <table className="w-full border-collapse text-left text-sm">
+              <table className="min-w-[36rem] w-full border-collapse text-left text-sm">
                 <thead className="sticky top-0 bg-muted/40">
                   <tr className="border-b border-border">
                     <th className="px-4 py-3 font-medium text-foreground">Submission</th>
