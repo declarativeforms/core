@@ -28,18 +28,19 @@ export function SectionList({
     <BuilderPane
       title="Sections"
       footer={
-        <div className="space-y-2">
-          <button
+        <div className="space-y-1">
+          <Button
             type="button"
+            variant={isCompletionSelected ? "secondary" : "ghost"}
             className={cn(
-              "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+              "h-auto w-full justify-start gap-2 px-3 py-2",
               isCompletionSelected && "bg-accent text-accent-foreground",
             )}
             onClick={onSelectCompletion}
           >
             <CheckCircle2 className="size-4 text-muted-foreground" />
             Completion
-          </button>
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -59,11 +60,12 @@ export function SectionList({
           </BuilderPaneEmptyState>
         ) : (
           sections.map((section, index) => (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               key={section.id ?? `section-${index}`}
               className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                "h-auto w-full justify-start gap-2 px-3 py-2",
                 activeSectionIndex === index &&
                   "bg-accent text-accent-foreground",
               )}
@@ -74,7 +76,7 @@ export function SectionList({
               <span className="truncate">
                 {getSectionDisplayTitle(section.title)}
               </span>
-            </button>
+            </Button>
           ))
         )}
     </BuilderPane>

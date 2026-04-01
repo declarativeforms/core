@@ -64,7 +64,7 @@ function StatusBadge({ status }: { status: ISubmission["status"] }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ${className}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${className}`}
     >
       {status}
     </span>

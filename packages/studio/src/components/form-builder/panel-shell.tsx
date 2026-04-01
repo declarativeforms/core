@@ -19,8 +19,8 @@ export function BuilderPane({
 }: BuilderPaneProps) {
   return (
     <section className={cn("flex h-full min-h-0 flex-col overflow-hidden", className)}>
-      <div className="shrink-0 px-3 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="shrink-0 px-3 py-2.5">
+        <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {title}
         </h2>
       </div>
@@ -44,14 +44,14 @@ export function BuilderPane({
 export function BuilderPaneHeader({ title }: { title: string }) {
   return (
     <div className="shrink-0 border-b border-border px-4 py-3">
-      <h2 className="text-sm font-medium text-foreground">{title}</h2>
+      <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</h2>
     </div>
   );
 }
 
 export function BuilderPaneEmptyState({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-border bg-background px-3 py-4 text-sm text-muted-foreground">
+    <div className="rounded-md border border-dashed border-border bg-muted/10 px-3 py-4 text-sm text-muted-foreground">
       {children}
     </div>
   );

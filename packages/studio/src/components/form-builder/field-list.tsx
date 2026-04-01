@@ -79,36 +79,39 @@ function SortableFieldItem({ field, index, isSelected, onSelect }: SortableField
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex w-full items-center gap-1 rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground",
+        "flex w-full items-center gap-1 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
         isSelected && "bg-accent text-accent-foreground",
         isDragging && "z-10 opacity-80 shadow-md",
       )}
     >
-      <button
+      <Button
         type="button"
-        className="shrink-0 cursor-grab touch-none p-1.5 text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        variant="ghost"
+        size="icon-sm"
+        className="shrink-0 cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
         aria-label={`Reorder ${getFieldDisplayLabel(field)}`}
         {...attributes}
         {...listeners}
       >
         <GripVertical className="size-4" />
-      </button>
+      </Button>
 
-      <button
+      <Button
         type="button"
-        className="flex min-w-0 flex-1 items-center gap-3 py-2 pr-3 text-left"
+        variant="ghost"
+        className="h-auto min-w-0 flex-1 justify-start gap-3 py-2 pr-3 hover:bg-transparent"
         onClick={onSelect}
       >
         <Icon className="size-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 text-left">
           <p className="truncate text-sm font-medium">
             {getFieldDisplayLabel(field)}
           </p>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="truncate text-xs font-normal text-muted-foreground">
             {getFieldTypeLabel(getEditableFieldType(field))}
           </p>
         </div>
-      </button>
+      </Button>
     </div>
   );
 }
@@ -180,10 +183,11 @@ export function FieldList({
                 const Icon = getFieldTypeIcon(fieldType);
 
                 return (
-                  <button
+                  <Button
                     key={fieldType}
                     type="button"
-                    className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-3 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                    variant="outline"
+                    className="h-auto justify-start gap-3 px-3 py-3"
                     onClick={() => {
                       onAddField(fieldType);
                       setIsPickerOpen(false);
@@ -191,7 +195,7 @@ export function FieldList({
                   >
                     <Icon className="size-4 text-muted-foreground" />
                     <span>{getFieldTypeLabel(fieldType)}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -206,22 +210,23 @@ export function FieldList({
           </BuilderPaneEmptyState>
         ) : (
           <>
-            <button
+            <Button
               type="button"
+              variant="ghost"
               className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent hover:text-accent-foreground",
+                "h-auto w-full justify-start gap-3 px-3 py-2",
                 selectedFieldIndex === null && "bg-accent text-accent-foreground",
               )}
               onClick={onViewSectionSettings}
             >
               <Settings className="size-4 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-sm font-medium">Section Settings</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate text-xs font-normal text-muted-foreground">
                   Navigation &amp; Properties
                 </p>
               </div>
-            </button>
+            </Button>
 
             {fields.length === 0 ? (
               <BuilderPaneEmptyState>
