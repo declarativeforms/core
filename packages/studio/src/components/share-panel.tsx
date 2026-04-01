@@ -41,12 +41,12 @@ export function SharePanel({ formId }: SharePanelProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
-      <Card className="rounded-xl border-border shadow-sm">
-        <CardHeader className="gap-1 pb-4">
+    <div className="mx-auto flex w-full min-w-0 max-w-4xl flex-col gap-4">
+      <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
+        <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
           <CardTitle className="text-base font-semibold">Share link</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-4 sm:px-6">
           <p className="text-sm text-muted-foreground">
             Use this link to send respondents directly to your form.
           </p>
@@ -60,28 +60,28 @@ export function SharePanel({ formId }: SharePanelProps) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]">
-        <Card className="rounded-xl border-border shadow-sm">
-          <CardHeader className="gap-1 pb-4">
+      <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]">
+        <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
+          <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
             <CardTitle className="text-base font-semibold">Embed code</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 px-4 sm:px-6">
             <p className="text-sm text-muted-foreground">
               Paste this snippet into your site to embed the form directly.
             </p>
             <Textarea
               readOnly
               value={embedCode}
-              className="min-h-36 resize-none font-mono text-sm"
+              className="min-h-36 resize-none font-mono text-sm [field-sizing:fixed]"
             />
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-border shadow-sm">
-          <CardHeader className="gap-1 pb-4">
+        <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
+          <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
             <CardTitle className="text-base font-semibold">QR code</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <div className="flex min-h-36 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 text-sm text-muted-foreground">
               <div className="flex flex-col items-center gap-2">
                 <QrCode className="size-6" />

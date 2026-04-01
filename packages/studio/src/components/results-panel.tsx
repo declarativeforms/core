@@ -127,9 +127,9 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
+    <div className="flex h-full min-h-0 min-w-0 flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-base font-semibold text-foreground">Responses</h2>
           <p className="text-sm text-muted-foreground">
             {submissions.length} {submissions.length === 1 ? "response" : "responses"}
@@ -142,7 +142,7 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
         </Button>
       </div>
 
-      <Card className="min-h-0 rounded-xl border-border shadow-sm">
+      <Card className="min-h-0 min-w-0 rounded-xl border-border shadow-sm">
         <CardHeader className="gap-1 pb-4">
           <CardTitle className="text-base font-semibold">Submission log</CardTitle>
         </CardHeader>

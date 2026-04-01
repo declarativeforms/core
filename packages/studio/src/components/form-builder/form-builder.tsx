@@ -1,6 +1,9 @@
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 
+import { Button } from "@/components/ui";
+import { useIsMobile } from "@/hooks";
 import type {
   IDeclarativeForm,
   IDeclarativeFormField,
@@ -41,6 +44,7 @@ function createFieldId(fields: IDeclarativeFormField[], type: SupportedFieldType
 }
 
 export function FormBuilder({ form, onChange }: FormBuilderProps) {
+  const isMobile = useIsMobile();
   const sections = form.sections ?? [];
   const [activeSectionIndex, setActiveSectionIndex] = useState<number | null>(
     sections.length > 0 ? 0 : null,
@@ -49,6 +53,13 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     sections[0]?.fields && sections[0].fields.length > 0 ? 0 : null,
   );
   const [isCompletionSelected, setIsCompletionSelected] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
+
+  useEffect(() => {
+    if (!isMobile) {
+      setMobileView("list");
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (isCompletionSelected) {
@@ -116,16 +127,28 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
 
     const nextFields = sections[index]?.fields ?? [];
     setSelectedFieldIndex(nextFields.length > 0 ? 0 : null);
+
+    if (isMobile) {
+      setMobileView("list");
+    }
   };
 
   const handleSelectCompletion = () => {
     setIsCompletionSelected(true);
     setActiveSectionIndex(null);
     setSelectedFieldIndex(null);
+
+    if (isMobile) {
+      setMobileView("detail");
+    }
   };
 
   const handleViewSectionSettings = () => {
     setSelectedFieldIndex(null);
+
+    if (isMobile) {
+      setMobileView("detail");
+    }
   };
 
   const handleAddField = (type: SupportedFieldType) => {
@@ -153,6 +176,10 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     });
 
     setSelectedFieldIndex(activeFields.length);
+
+    if (isMobile) {
+      setMobileView("detail");
+    }
   };
 
   const handleReorderFields = (fromIndex: number, toIndex: number) => {
@@ -228,47 +255,100 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     });
   };
 
+  const handleSelectFieldMobile = (index: number) => {
+    setSelectedFieldIndex(index);
+
+    if (isMobile) {
+      setMobileView("detail");
+    }
+  };
+
+  const sectionListNode = (
+    <SectionList
+      sections={sections}
+      activeSectionIndex={activeSectionIndex}
+      isCompletionSelected={isCompletionSelected}
+      onSelectSection={handleSelectSection}
+      onAddSection={handleAddSection}
+      onSelectCompletion={handleSelectCompletion}
+    />
+  );
+
+  const fieldListNode = !isCompletionSelected && (
+    <FieldList
+      fields={activeFields}
+      selectedFieldIndex={selectedFieldIndex}
+      canAddField={activeSectionIndex !== null}
+      onSelectField={isMobile ? handleSelectFieldMobile : setSelectedFieldIndex}
+      onAddField={handleAddField}
+      onReorderFields={handleReorderFields}
+      onViewSectionSettings={handleViewSectionSettings}
+    />
+  );
+
+  const detailNode = isCompletionSelected ? (
+    <CompletionEditor form={form} onChange={onChange} />
+  ) : selectedField ? (
+    <FieldProperties field={selectedField} onChange={handleUpdateField} />
+  ) : (
+    <SectionProperties
+      section={activeSection}
+      allSections={sections}
+      onChange={handleUpdateSection}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
+        {mobileView === "list" ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-muted/10">
+            <div className="min-h-0 max-h-[40%] shrink overflow-hidden">
+              {sectionListNode}
+            </div>
+            {fieldListNode && (
+              <div className="min-h-0 flex-1 overflow-hidden border-t border-border">
+                {fieldListNode}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex shrink-0 items-center border-b border-border px-2 py-1.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileView("list")}
+              >
+                <ArrowLeft className="size-4" />
+                Back
+              </Button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden">
+              {detailNode}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full min-h-0 overflow-hidden rounded-xl border border-border bg-background">
       <div className="flex min-h-0 w-72 shrink-0 flex-col overflow-hidden border-r border-border bg-muted/10">
         <div className="min-h-0 max-h-[40%] shrink overflow-hidden">
-          <SectionList
-            sections={sections}
-            activeSectionIndex={activeSectionIndex}
-            isCompletionSelected={isCompletionSelected}
-            onSelectSection={handleSelectSection}
-            onAddSection={handleAddSection}
-            onSelectCompletion={handleSelectCompletion}
-          />
+          {sectionListNode}
         </div>
-
-        {!isCompletionSelected && (
+        {fieldListNode && (
           <div className="min-h-0 flex-1 overflow-hidden border-t border-border">
-            <FieldList
-              fields={activeFields}
-              selectedFieldIndex={selectedFieldIndex}
-              canAddField={activeSectionIndex !== null}
-              onSelectField={setSelectedFieldIndex}
-              onAddField={handleAddField}
-              onReorderFields={handleReorderFields}
-              onViewSectionSettings={handleViewSectionSettings}
-            />
+            {fieldListNode}
           </div>
         )}
       </div>
 
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
-        {isCompletionSelected ? (
-          <CompletionEditor form={form} onChange={onChange} />
-        ) : selectedField ? (
-          <FieldProperties field={selectedField} onChange={handleUpdateField} />
-        ) : (
-          <SectionProperties
-            section={activeSection}
-            allSections={sections}
-            onChange={handleUpdateSection}
-          />
-        )}
+        {detailNode}
       </div>
     </div>
   );

@@ -308,7 +308,7 @@ export function FormEditorPage() {
               disabled={deleteForm.isPending}
             >
               <Trash2 />
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </Button>
           </div>
         </div>
@@ -328,7 +328,7 @@ export function FormEditorPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-4">
+          <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-2 sm:p-4">
             <div className="min-h-0 flex-1 overflow-hidden">
               <FormBuilder
                 form={editorState.form}
@@ -342,11 +342,11 @@ export function FormEditorPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="share" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">
+          <TabsContent value="share" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
             <SharePanel formId={persistedFormId} />
           </TabsContent>
 
-          <TabsContent value="results" className="mt-0 min-h-0 flex-1 overflow-y-auto p-6">
+          <TabsContent value="results" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
             <ResultsPanel formId={persistedFormId} />
           </TabsContent>
         </Tabs>
