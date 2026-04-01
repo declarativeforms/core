@@ -274,8 +274,8 @@ export function FormEditorPage() {
   return (
     <PageShell className="overflow-hidden">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-        <div className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-2 md:gap-4 md:px-4">
+          <div className="flex min-w-0 items-center gap-2 md:gap-3">
             <Button asChild type="button" variant="ghost" size="icon-sm">
               <Link to="/" aria-label="Back to forms">
                 <ArrowLeft />
@@ -299,11 +299,23 @@ export function FormEditorPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <SaveIndicator state={saveState} />
             <Button
               type="button"
               variant="outline"
+              size="icon-sm"
+              className="md:hidden"
+              onClick={handleDelete}
+              disabled={deleteForm.isPending}
+              aria-label="Delete form"
+            >
+              <Trash2 />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="hidden md:inline-flex"
               onClick={handleDelete}
               disabled={deleteForm.isPending}
             >
@@ -328,7 +340,7 @@ export function FormEditorPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-4">
+          <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-2 md:p-4">
             <div className="min-h-0 flex-1 overflow-hidden">
               <FormBuilder
                 form={editorState.form}
