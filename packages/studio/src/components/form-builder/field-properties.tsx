@@ -22,6 +22,7 @@ import {
   SelectValue,
   Textarea,
 } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 import { BuilderPaneHeader } from "./panel-shell";
 import { getEditableFieldType, getFieldTypeLabel, getOptionStrings } from "./shared";
@@ -29,6 +30,9 @@ import { getEditableFieldType, getFieldTypeLabel, getOptionStrings } from "./sha
 type FieldPropertiesProps = {
   field: IDeclarativeFormField | null;
   onChange: (nextField: IDeclarativeFormField) => void;
+  showHeader?: boolean;
+  className?: string;
+  contentClassName?: string;
 };
 
 type ObjectValidatorType =
@@ -569,10 +573,13 @@ function ValidatorEditor({
 export function FieldProperties({
   field,
   onChange,
+  showHeader = false,
+  className,
+  contentClassName,
 }: FieldPropertiesProps) {
   if (!field) {
     return (
-      <div className="flex h-full items-center justify-center p-6">
+      <div className={cn("flex items-center justify-center p-6", className)}>
         <div className="rounded-xl border border-dashed border-border bg-muted/10 px-8 py-12 text-center">
           <p className="text-sm text-muted-foreground">
             Select a field to edit its properties
@@ -595,287 +602,305 @@ export function FieldProperties({
       ? getOptionStrings(selectField.options)
       : [];
 
-  return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <BuilderPaneHeader title="Field Properties" />
-
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="field-id">Field ID</Label>
-          <Input
-            id="field-id"
-            value={getStringValue(field.id)}
-            onChange={(event) => {
-              onChange({
-                ...field,
-                id: event.target.value,
-              });
-            }}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="field-type">Field Type</Label>
-          <Input id="field-type" value={getFieldTypeLabel(currentType)} disabled />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="field-label">Label</Label>
-          <Input
-            id="field-label"
-            value={getStringValue(field.label)}
-            onChange={(event) => {
-              onChange({
-                ...field,
-                label: event.target.value,
-              });
-            }}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="field-placeholder">Placeholder</Label>
-          <Input
-            id="field-placeholder"
-            value={getStringValue(field.placeholder)}
-            onChange={(event) => {
-              onChange({
-                ...field,
-                placeholder: event.target.value,
-              });
-            }}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="field-visible-when">Visible When</Label>
-          <Textarea
-            id="field-visible-when"
-            value={getStringValue(field.visible_when)}
-            onChange={(event) => {
-              onChange({
-                ...field,
-                visible_when: event.target.value,
-              });
-            }}
-          />
-        </div>
-
-        <div className="border-t border-border pt-5" />
-
-        <div className="space-y-3">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validation</h3>
-          <ValidatorEditor field={field} onChange={onChange} />
-        </div>
-
-        {emailField && (
-          <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Email Settings
-            </h3>
-
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
-              <Checkbox
-                id="field-otp"
-                checked={emailField.otp === true}
-                onCheckedChange={(checked) => {
-                  onChange({
-                    ...emailField,
-                    otp: checked === true,
-                  });
-                }}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="field-otp">Require OTP</Label>
-                <p className="text-xs text-muted-foreground">
-                  Ask users to verify the email with a one-time passcode.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
-              <Checkbox
-                id="field-block-free-email"
-                checked={emailField.block_free_email === true}
-                onCheckedChange={(checked) => {
-                  onChange({
-                    ...emailField,
-                    block_free_email: checked === true,
-                  });
-                }}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="field-block-free-email">
-                  Block free email domains
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Restrict addresses from common free email providers.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {dropdownField && (
-          <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Dropdown Settings
-            </h3>
-
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
-              <Checkbox
-                id="field-searchable"
-                checked={dropdownField.searchable === true}
-                onCheckedChange={(checked) => {
-                  onChange({
-                    ...dropdownField,
-                    searchable: checked === true,
-                  });
-                }}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="field-searchable">Searchable</Label>
-                <p className="text-xs text-muted-foreground">
-                  Allow users to search within the dropdown options.
-                </p>
-              </div>
-            </div>
-
-            <OptionsEditor
-              field={dropdownField}
-              optionValues={optionValues}
-              onChange={onChange}
-            />
-          </div>
-        )}
-
-        {selectField && (
-          <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Selection Settings
-            </h3>
-
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
-              <Checkbox
-                id="field-allow-other"
-                checked={selectField.allow_other === true}
-                onCheckedChange={(checked) => {
-                  onChange({
-                    ...selectField,
-                    allow_other: checked === true,
-                  });
-                }}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="field-allow-other">Allow “Other” option</Label>
-                <p className="text-xs text-muted-foreground">
-                  Let respondents provide their own value when none fit.
-                </p>
-              </div>
-            </div>
-
-            <OptionsEditor
-              field={selectField}
-              optionValues={optionValues}
-              onChange={onChange}
-            />
-          </div>
-        )}
-
-        {ratingField && (
-          <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Rating Settings
-            </h3>
-
-            <div className="space-y-2">
-              <Label htmlFor="field-min-label">Minimum Label</Label>
-              <Input
-                id="field-min-label"
-                value={getStringValue(ratingField.min_label)}
-                onChange={(event) => {
-                  onChange({
-                    ...ratingField,
-                    min_label: event.target.value,
-                  });
-                }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="field-max-label">Maximum Label</Label>
-              <Input
-                id="field-max-label"
-                value={getStringValue(ratingField.max_label)}
-                onChange={(event) => {
-                  onChange({
-                    ...ratingField,
-                    max_label: event.target.value,
-                  });
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {addressField && (
-          <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Address Settings
-            </h3>
-
-            <div className="space-y-2">
-              <Label>Output Format</Label>
-              <Select
-                value={addressField.outputFormat ?? "string"}
-                onValueChange={(value) => {
-                  onChange({
-                    ...addressField,
-                    outputFormat: value as "string" | "structured",
-                  });
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="string">String</SelectItem>
-                  <SelectItem value="structured">Structured</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
-
-        {cameraField && (
-          <div className="space-y-3 border-t border-border pt-5">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Camera Settings
-            </h3>
-
-            <div className="space-y-2">
-              <Label>Facing Mode</Label>
-              <Select
-                value={cameraField.facing_mode ?? "rear"}
-                onValueChange={(value) => {
-                  onChange({
-                    ...cameraField,
-                    facing_mode: value as "front" | "rear",
-                  });
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="front">Front</SelectItem>
-                  <SelectItem value="rear">Rear</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
+  const content = (
+    <>
+      <div className="space-y-1.5">
+        <Label htmlFor="field-id">Field ID</Label>
+        <Input
+          id="field-id"
+          value={getStringValue(field.id)}
+          onChange={(event) => {
+            onChange({
+              ...field,
+              id: event.target.value,
+            });
+          }}
+        />
       </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="field-type">Field Type</Label>
+        <Input id="field-type" value={getFieldTypeLabel(currentType)} disabled />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="field-label">Label</Label>
+        <Input
+          id="field-label"
+          value={getStringValue(field.label)}
+          onChange={(event) => {
+            onChange({
+              ...field,
+              label: event.target.value,
+            });
+          }}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="field-placeholder">Placeholder</Label>
+        <Input
+          id="field-placeholder"
+          value={getStringValue(field.placeholder)}
+          onChange={(event) => {
+            onChange({
+              ...field,
+              placeholder: event.target.value,
+            });
+          }}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="field-visible-when">Visible When</Label>
+        <Textarea
+          id="field-visible-when"
+          value={getStringValue(field.visible_when)}
+          onChange={(event) => {
+            onChange({
+              ...field,
+              visible_when: event.target.value,
+            });
+          }}
+        />
+      </div>
+
+      <div className="border-t border-border pt-5" />
+
+      <div className="space-y-3">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validation</h3>
+        <ValidatorEditor field={field} onChange={onChange} />
+      </div>
+
+      {emailField && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Email Settings
+          </h3>
+
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+            <Checkbox
+              id="field-otp"
+              checked={emailField.otp === true}
+              onCheckedChange={(checked) => {
+                onChange({
+                  ...emailField,
+                  otp: checked === true,
+                });
+              }}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="field-otp">Require OTP</Label>
+              <p className="text-xs text-muted-foreground">
+                Ask users to verify the email with a one-time passcode.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+            <Checkbox
+              id="field-block-free-email"
+              checked={emailField.block_free_email === true}
+              onCheckedChange={(checked) => {
+                onChange({
+                  ...emailField,
+                  block_free_email: checked === true,
+                });
+              }}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="field-block-free-email">
+                Block free email domains
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Restrict addresses from common free email providers.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dropdownField && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Dropdown Settings
+          </h3>
+
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+            <Checkbox
+              id="field-searchable"
+              checked={dropdownField.searchable === true}
+              onCheckedChange={(checked) => {
+                onChange({
+                  ...dropdownField,
+                  searchable: checked === true,
+                });
+              }}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="field-searchable">Searchable</Label>
+              <p className="text-xs text-muted-foreground">
+                Allow users to search within the dropdown options.
+              </p>
+            </div>
+          </div>
+
+          <OptionsEditor
+            field={dropdownField}
+            optionValues={optionValues}
+            onChange={onChange}
+          />
+        </div>
+      )}
+
+      {selectField && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Selection Settings
+          </h3>
+
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+            <Checkbox
+              id="field-allow-other"
+              checked={selectField.allow_other === true}
+              onCheckedChange={(checked) => {
+                onChange({
+                  ...selectField,
+                  allow_other: checked === true,
+                });
+              }}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="field-allow-other">Allow “Other” option</Label>
+              <p className="text-xs text-muted-foreground">
+                Let respondents provide their own value when none fit.
+              </p>
+            </div>
+          </div>
+
+          <OptionsEditor
+            field={selectField}
+            optionValues={optionValues}
+            onChange={onChange}
+          />
+        </div>
+      )}
+
+      {ratingField && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Rating Settings
+          </h3>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-min-label">Minimum Label</Label>
+            <Input
+              id="field-min-label"
+              value={getStringValue(ratingField.min_label)}
+              onChange={(event) => {
+                onChange({
+                  ...ratingField,
+                  min_label: event.target.value,
+                });
+              }}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-max-label">Maximum Label</Label>
+            <Input
+              id="field-max-label"
+              value={getStringValue(ratingField.max_label)}
+              onChange={(event) => {
+                onChange({
+                  ...ratingField,
+                  max_label: event.target.value,
+                });
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {addressField && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Address Settings
+          </h3>
+
+          <div className="space-y-2">
+            <Label>Output Format</Label>
+            <Select
+              value={addressField.outputFormat ?? "string"}
+              onValueChange={(value) => {
+                onChange({
+                  ...addressField,
+                  outputFormat: value as "string" | "structured",
+                });
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="string">String</SelectItem>
+                <SelectItem value="structured">Structured</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
+      {cameraField && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Camera Settings
+          </h3>
+
+          <div className="space-y-2">
+            <Label>Facing Mode</Label>
+            <Select
+              value={cameraField.facing_mode ?? "rear"}
+              onValueChange={(value) => {
+                onChange({
+                  ...cameraField,
+                  facing_mode: value as "front" | "rear",
+                });
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="front">Front</SelectItem>
+                <SelectItem value="rear">Rear</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  if (showHeader) {
+    return (
+      <div className={cn("flex h-full min-h-0 flex-col overflow-hidden", className)}>
+        <BuilderPaneHeader title="Field Properties" />
+        <div
+          className={cn(
+            "min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4",
+            contentClassName,
+          )}
+        >
+          {content}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("space-y-5", className, contentClassName)}>
+      {content}
     </div>
   );
 }

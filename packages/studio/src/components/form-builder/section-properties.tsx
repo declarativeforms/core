@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 import { BuilderPaneHeader } from "./panel-shell";
 
@@ -18,6 +19,9 @@ type SectionPropertiesProps = {
   section: IDeclarativeFormSection | null;
   allSections: IDeclarativeFormSection[];
   onChange: (nextSection: IDeclarativeFormSection) => void;
+  showHeader?: boolean;
+  className?: string;
+  contentClassName?: string;
 };
 
 type NextMode = "next_in_order" | "section" | "conditional" | "external" | "done";
@@ -96,15 +100,28 @@ function parseElseFallback(section: IDeclarativeFormSection | null): string {
   return elseRule?.else ?? "done";
 }
 
-export function SectionProperties({ section, allSections, onChange }: SectionPropertiesProps) {
+export function SectionProperties({
+  section,
+  allSections,
+  onChange,
+  showHeader = false,
+  className,
+  contentClassName,
+}: SectionPropertiesProps) {
   if (!section) {
     return (
-      <div className="flex h-full flex-col">
-        <BuilderPaneHeader title="Section Settings" />
-        <div className="flex flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
+      showHeader ? (
+        <div className={cn("flex h-full flex-col", className)}>
+          <BuilderPaneHeader title="Section Settings" />
+          <div className="flex flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
+            Select a section to configure its settings.
+          </div>
+        </div>
+      ) : (
+        <div className={cn("p-4 text-sm text-muted-foreground", className)}>
           Select a section to configure its settings.
         </div>
-      </div>
+      )
     );
   }
 
@@ -203,172 +220,186 @@ export function SectionProperties({ section, allSections, onChange }: SectionPro
     onChange({ ...section, next: [...whenGoRules, { else: value }] });
   };
 
-  return (
-    <div className="flex h-full flex-col">
-      <BuilderPaneHeader title="Section Settings" />
-      <div className="flex-1 space-y-5 overflow-y-auto p-4">
-        <div className="space-y-2">
-          <Label>Title</Label>
-          <Input
-            value={typeof section.title === "string" ? section.title : ""}
-            onChange={(e) => onChange({ ...section, title: e.target.value })}
-            placeholder="Untitled Section"
-          />
-        </div>
+  const content = (
+    <>
+      <div className="space-y-2">
+        <Label>Title</Label>
+        <Input
+          value={typeof section.title === "string" ? section.title : ""}
+          onChange={(e) => onChange({ ...section, title: e.target.value })}
+          placeholder="Untitled Section"
+        />
+      </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="section-id">Section ID</Label>
+        <Input id="section-id" value={section.id ?? ""} disabled className="font-mono text-xs" />
+        <p className="text-xs text-muted-foreground">
+          Used to reference this section in navigation rules.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>After this section</Label>
+        <Select value={currentMode} onValueChange={handleModeChange}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="next_in_order">Continue to next section</SelectItem>
+            <SelectItem value="section">Go to specific section</SelectItem>
+            <SelectItem value="conditional">Conditional logic</SelectItem>
+            <SelectItem value="external">Redirect to URL</SelectItem>
+            <SelectItem value="done">Complete form</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {currentMode === "section" && (
         <div className="space-y-2">
-          <Label htmlFor="section-id">Section ID</Label>
-          <Input id="section-id" value={section.id ?? ""} disabled className="font-mono text-xs" />
+          <Label>Target section</Label>
+          {otherSections.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Add more sections to enable navigation.
+            </p>
+          ) : (
+            <Select value={parseNextSectionId(section)} onValueChange={handleSectionIdChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {otherSections.map((s) => (
+                  <SelectItem key={s.id} value={s.id ?? ""}>
+                    {typeof s.title === "string" && s.title.trim() ? s.title : s.id ?? "Untitled"}
+                  </SelectItem>
+                ))}
+                <SelectItem value="done">Complete form</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      )}
+
+      {currentMode === "external" && (
+        <div className="space-y-2">
+          <Label>Redirect URL</Label>
+          <Input
+            value={parseExternalUrl(section)}
+            onChange={(e) => handleExternalUrlChange(e.target.value)}
+            placeholder="https://example.com"
+          />
           <p className="text-xs text-muted-foreground">
-            Used to reference this section in navigation rules.
+            The user will be redirected to this URL after completing this section.
           </p>
         </div>
+      )}
 
-        <div className="space-y-2">
-          <Label>After this section</Label>
-          <Select value={currentMode} onValueChange={handleModeChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="next_in_order">Continue to next section</SelectItem>
-              <SelectItem value="section">Go to specific section</SelectItem>
-              <SelectItem value="conditional">Conditional logic</SelectItem>
-              <SelectItem value="external">Redirect to URL</SelectItem>
-              <SelectItem value="done">Complete form</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {currentMode === "section" && (
-          <div className="space-y-2">
-            <Label>Target section</Label>
-            {otherSections.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Add more sections to enable navigation.
-              </p>
-            ) : (
-              <Select value={parseNextSectionId(section)} onValueChange={handleSectionIdChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {otherSections.map((s) => (
-                    <SelectItem key={s.id} value={s.id ?? ""}>
-                      {typeof s.title === "string" && s.title.trim() ? s.title : s.id ?? "Untitled"}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="done">Complete form</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-        )}
-
-        {currentMode === "external" && (
-          <div className="space-y-2">
-            <Label>Redirect URL</Label>
-            <Input
-              value={parseExternalUrl(section)}
-              onChange={(e) => handleExternalUrlChange(e.target.value)}
-              placeholder="https://example.com"
-            />
-            <p className="text-xs text-muted-foreground">
-              The user will be redirected to this URL after completing this section.
-            </p>
-          </div>
-        )}
-
-        {currentMode === "conditional" && (
-          <div className="space-y-4">
-            <div className="space-y-3">
-              {conditionalRules.map((rule, index) => (
-                <div
-                  key={index}
-                  className="space-y-2 rounded-lg border border-border bg-muted/20 p-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Rule {index + 1}
-                    </Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleRemoveConditionalRule(index)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">When (expression)</Label>
-                    <Input
-                      value={rule.when}
-                      onChange={(e) => handleUpdateConditionalRule(index, "when", e.target.value)}
-                      placeholder="e.g. {{field_id}} === 'yes'"
-                      className="font-mono text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Go to</Label>
-                    <Select
-                      value={rule.go}
-                      onValueChange={(value) => handleUpdateConditionalRule(index, "go", value)}
-                    >
-                      <SelectTrigger className="text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {otherSections.map((s) => (
-                          <SelectItem key={s.id} value={s.id ?? ""}>
-                            {typeof s.title === "string" && s.title.trim()
-                              ? s.title
-                              : s.id ?? "Untitled"}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="done">Complete form</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+      {currentMode === "conditional" && (
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {conditionalRules.map((rule, index) => (
+              <div
+                key={index}
+                className="space-y-2 rounded-lg border border-border bg-muted/20 p-3"
+              >
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Rule {index + 1}
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => handleRemoveConditionalRule(index)}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
                 </div>
-              ))}
-            </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleAddConditionalRule}
-            >
-              <Plus className="size-4" />
-              Add Rule
-            </Button>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">When (expression)</Label>
+                  <Input
+                    value={rule.when}
+                    onChange={(e) => handleUpdateConditionalRule(index, "when", e.target.value)}
+                    placeholder="e.g. {{field_id}} === 'yes'"
+                    className="font-mono text-xs"
+                  />
+                </div>
 
-            <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/10 p-3">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Otherwise
-              </Label>
-              <Select value={elseFallback} onValueChange={handleElseFallbackChange}>
-                <SelectTrigger className="text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {otherSections.map((s) => (
-                    <SelectItem key={s.id} value={s.id ?? ""}>
-                      {typeof s.title === "string" && s.title.trim()
-                        ? s.title
-                        : s.id ?? "Untitled"}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="done">Complete form</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Go to</Label>
+                  <Select
+                    value={rule.go}
+                    onValueChange={(value) => handleUpdateConditionalRule(index, "go", value)}
+                  >
+                    <SelectTrigger className="text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {otherSections.map((s) => (
+                        <SelectItem key={s.id} value={s.id ?? ""}>
+                          {typeof s.title === "string" && s.title.trim()
+                            ? s.title
+                            : s.id ?? "Untitled"}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="done">Complete form</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-start"
+            onClick={handleAddConditionalRule}
+          >
+            <Plus className="size-4" />
+            Add Rule
+          </Button>
+
+          <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/10 p-3">
+            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Otherwise
+            </Label>
+            <Select value={elseFallback} onValueChange={handleElseFallbackChange}>
+              <SelectTrigger className="text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {otherSections.map((s) => (
+                  <SelectItem key={s.id} value={s.id ?? ""}>
+                    {typeof s.title === "string" && s.title.trim()
+                      ? s.title
+                      : s.id ?? "Untitled"}
+                  </SelectItem>
+                ))}
+                <SelectItem value="done">Complete form</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  if (showHeader) {
+    return (
+      <div className={cn("flex h-full flex-col", className)}>
+        <BuilderPaneHeader title="Section Settings" />
+        <div className={cn("flex-1 space-y-5 overflow-y-auto p-4", contentClassName)}>
+          {content}
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className={cn("space-y-5", className, contentClassName)}>
+      {content}
     </div>
   );
 }

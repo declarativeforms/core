@@ -364,8 +364,8 @@ export function FormEditorPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-2 sm:p-4">
-            <div className="min-h-0 flex-1 overflow-hidden">
+          <TabsContent value="edit" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
+            <div className="mx-auto w-full max-w-xl">
               <FormBuilder
                 form={editorState.form}
                 onChange={(nextForm) => {
