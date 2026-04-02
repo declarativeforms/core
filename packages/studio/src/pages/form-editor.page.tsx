@@ -75,14 +75,28 @@ function SaveIndicator({ state }: { state: SaveState }) {
           ? "Save failed"
           : "Ready";
 
-  const className =
+  const textClassName =
     state === "error"
       ? "text-destructive"
       : state === "saving"
         ? "text-foreground"
         : "text-muted-foreground";
 
-  return <span className={`text-sm ${className}`}>{text}</span>;
+  const dotClassName =
+    state === "saved"
+      ? "bg-emerald-500"
+      : state === "saving"
+        ? "bg-amber-500"
+        : state === "error"
+          ? "bg-destructive"
+          : "bg-muted-foreground/40";
+
+  return (
+    <span className={`flex items-center gap-1.5 text-sm ${textClassName}`}>
+      <span className={`size-1.5 shrink-0 rounded-full ${dotClassName}`} />
+      {text}
+    </span>
+  );
 }
 
 export function FormEditorPage() {
@@ -274,7 +288,7 @@ export function FormEditorPage() {
   return (
     <PageShell className="overflow-hidden">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-        <div className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
+        <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
           <div className="flex min-w-0 items-center gap-3">
             <Button asChild type="button" variant="ghost" size="icon-sm">
               <Link to="/" aria-label="Back to forms">

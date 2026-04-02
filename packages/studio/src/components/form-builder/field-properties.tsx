@@ -599,8 +599,8 @@ export function FieldProperties({
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <BuilderPaneHeader title="Field Properties" />
 
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-4">
-        <div className="space-y-2">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4">
+        <div className="space-y-1.5">
           <Label htmlFor="field-id">Field ID</Label>
           <Input
             id="field-id"
@@ -614,12 +614,12 @@ export function FieldProperties({
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="field-type">Field Type</Label>
           <Input id="field-type" value={getFieldTypeLabel(currentType)} disabled />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="field-label">Label</Label>
           <Input
             id="field-label"
@@ -633,7 +633,7 @@ export function FieldProperties({
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="field-placeholder">Placeholder</Label>
           <Input
             id="field-placeholder"
@@ -647,7 +647,7 @@ export function FieldProperties({
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="field-visible-when">Visible When</Label>
           <Textarea
             id="field-visible-when"
@@ -661,13 +661,15 @@ export function FieldProperties({
           />
         </div>
 
+        <div className="border-t border-border pt-5" />
+
         <div className="space-y-3">
           <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validation</h3>
           <ValidatorEditor field={field} onChange={onChange} />
         </div>
 
         {emailField && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Email Settings
             </h3>
@@ -715,7 +717,7 @@ export function FieldProperties({
         )}
 
         {dropdownField && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Dropdown Settings
             </h3>
@@ -748,7 +750,7 @@ export function FieldProperties({
         )}
 
         {selectField && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Selection Settings
             </h3>
@@ -781,7 +783,7 @@ export function FieldProperties({
         )}
 
         {ratingField && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Rating Settings
             </h3>
@@ -817,7 +819,7 @@ export function FieldProperties({
         )}
 
         {addressField && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Address Settings
             </h3>
@@ -846,7 +848,7 @@ export function FieldProperties({
         )}
 
         {cameraField && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Camera Settings
             </h3>

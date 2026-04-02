@@ -163,7 +163,7 @@ export function DashboardPage() {
                 key={form.id}
                 role="link"
                 tabIndex={0}
-                className="cursor-pointer rounded-xl border-border shadow-sm transition-[border-color,box-shadow] hover:shadow-md"
+                className="cursor-pointer rounded-xl border-border shadow-sm transition-[border-color,box-shadow] duration-150 hover:border-foreground/10 hover:shadow-md"
                 onClick={() => navigate(`/forms/${form.id}`)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {

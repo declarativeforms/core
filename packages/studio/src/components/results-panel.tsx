@@ -171,7 +171,7 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
                     return (
                       <Fragment key={submission.id}>
                         <tr
-                          className="cursor-pointer border-b border-border/70 transition-colors hover:bg-muted/20"
+                          className="cursor-pointer border-b border-border/70 transition-colors duration-150 hover:bg-muted/40"
                           onClick={handleToggle}
                         >
                           <td className="px-4 py-3 font-medium text-foreground">

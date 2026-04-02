@@ -79,8 +79,10 @@ function SortableFieldItem({ field, index, isSelected, onSelect }: SortableField
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex w-full items-center gap-1 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-        isSelected && "bg-accent text-accent-foreground",
+        "flex w-full items-center gap-1 border-l-2 border-l-transparent transition-colors",
+        isSelected
+          ? "border-l-foreground bg-accent text-accent-foreground"
+          : "hover:bg-accent/50",
         isDragging && "z-10 opacity-80 shadow-md",
       )}
     >
@@ -214,8 +216,10 @@ export function FieldList({
               type="button"
               variant="ghost"
               className={cn(
-                "h-auto w-full justify-start gap-3 px-3 py-2",
-                selectedFieldIndex === null && "bg-accent text-accent-foreground",
+                "h-auto w-full justify-start gap-3 rounded-none border-l-2 border-l-transparent px-3 py-2",
+                selectedFieldIndex === null
+                  ? "border-l-foreground bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50",
               )}
               onClick={onViewSectionSettings}
             >

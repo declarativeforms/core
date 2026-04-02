@@ -10,9 +10,9 @@ export function LoginPage() {
   }, []);
 
   return (
-    <div className="flex h-dvh w-full items-center justify-center bg-background px-4">
+    <div className="flex h-dvh w-full items-center justify-center bg-muted/40 px-4">
       <div className="flex w-full max-w-sm flex-col items-center text-center">
-        <div className="mb-6 flex size-14 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+        <div className="mb-6 flex size-16 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -34,8 +34,12 @@ export function LoginPage() {
           Welcome to Studio
         </h1>
 
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Sign in with your GitHub account to create and manage forms.
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Build forms from YAML. Share anywhere.
+        </p>
+
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          Sign in with GitHub to get started.
         </p>
 
         <div className="mt-6 w-full">

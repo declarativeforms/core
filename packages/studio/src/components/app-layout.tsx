@@ -19,8 +19,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="flex h-dvh w-full flex-col bg-background text-foreground">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+    <div className="flex h-dvh w-full flex-col bg-muted/40 text-foreground">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4 shadow-[0_1px_0_0_theme(colors.border)]">
         <Link
           to="/"
           className="flex items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-foreground/80"
@@ -46,7 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </header>
 
-      <div className="flex-1 min-h-0 bg-background">{children}</div>
+      <div className="flex-1 min-h-0">{children}</div>
     </div>
   );
 }
