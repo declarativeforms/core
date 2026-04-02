@@ -16,7 +16,7 @@ type DeclarativeFormSectionProps = {
   data: Record<string, unknown>;
   sectionHistory: string[];
   dispatch: (action: FormAction) => void;
-  onSubmit: (sectionData: FieldValues) => void;
+  onSubmit: (sectionData: FieldValues) => void | Promise<void>;
 };
 
 export const DeclarativeFormSection = forwardRef<

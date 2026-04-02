@@ -39,6 +39,7 @@ export function MainPage() {
   const langParam = searchParams.get("lang");
 
   const submissionIdRef = useRef(submissionId);
+  const isCompletingRef = useRef(false);
 
   useEffect(() => {
     submissionIdRef.current = submissionId;
@@ -204,6 +205,11 @@ export function MainPage() {
         }
 
         case "complete": {
+          if (isCompletingRef.current) {
+            return;
+          }
+          isCompletingRef.current = true;
+
           const id = await submitToBackend(state.data, false);
           const finalSubmissionId = id ?? submissionIdRef.current;
           updateProgressQuery({
@@ -221,6 +227,11 @@ export function MainPage() {
         }
 
         case "redirect": {
+          if (isCompletingRef.current) {
+            return;
+          }
+          isCompletingRef.current = true;
+
           const id = await submitToBackend(state.data, false);
           updateProgressQuery({
             submissionId: id ?? submissionIdRef.current,

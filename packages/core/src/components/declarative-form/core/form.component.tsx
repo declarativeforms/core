@@ -11,7 +11,7 @@ export function DeclarativeForm(props: {
   locale: string;
   initialData: FieldValues;
   initialSectionId?: string;
-  onEffect: (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => void;
+  onEffect: (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => void | Promise<void>;
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
@@ -47,14 +47,14 @@ export function DeclarativeForm(props: {
       data={state.data}
       sectionHistory={state.sectionHistory}
       dispatch={dispatch}
-      onSubmit={(sectionData: FieldValues) => {
+      onSubmit={async (sectionData: FieldValues) => {
         const result = dispatch({
           type: "submit_section",
           data: sectionData,
         });
 
         if (result.type !== "none") {
-          props.onEffect(result, {
+          await props.onEffect(result, {
             data: { ...state.data, ...sectionData },
             activeSectionId: result.activeSectionId,
           });
