@@ -210,19 +210,24 @@ export function MainPage() {
           }
           isCompletingRef.current = true;
 
-          const id = await submitToBackend(state.data, false);
-          const finalSubmissionId = id ?? submissionIdRef.current;
-          updateProgressQuery({
-            submissionId: finalSubmissionId,
-            step: "done",
-          });
-          navigate(
-            withLang(
-              finalSubmissionId
-                ? `thank-you?submission_id=${finalSubmissionId}`
-                : "thank-you",
-            ),
-          );
+          try {
+            const id = await submitToBackend(state.data, false);
+            const finalSubmissionId = id ?? submissionIdRef.current;
+            updateProgressQuery({
+              submissionId: finalSubmissionId,
+              step: "done",
+            });
+            navigate(
+              withLang(
+                finalSubmissionId
+                  ? `thank-you?submission_id=${finalSubmissionId}`
+                  : "thank-you",
+              ),
+            );
+          } catch (error) {
+            isCompletingRef.current = false;
+            throw error;
+          }
           break;
         }
 
@@ -232,12 +237,17 @@ export function MainPage() {
           }
           isCompletingRef.current = true;
 
-          const id = await submitToBackend(state.data, false);
-          updateProgressQuery({
-            submissionId: id ?? submissionIdRef.current,
-            step: "done",
-          });
-          window.location.href = effect.url;
+          try {
+            const id = await submitToBackend(state.data, false);
+            updateProgressQuery({
+              submissionId: id ?? submissionIdRef.current,
+              step: "done",
+            });
+            window.location.href = effect.url;
+          } catch (error) {
+            isCompletingRef.current = false;
+            throw error;
+          }
           break;
         }
       }
