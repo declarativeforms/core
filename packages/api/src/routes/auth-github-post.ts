@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { authenticateWithGitHub } from '../core';
+import { findTokenAndUserByCode } from '../core';
 
 export const AUTH_GITHUB_POST: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -8,7 +8,7 @@ export const AUTH_GITHUB_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const result = await authenticateWithGitHub(request.body.code);
+    const result = await findTokenAndUserByCode(request.body.code);
 
     if (!result) {
       reply.status(401).send({ error: 'Authentication failed' });

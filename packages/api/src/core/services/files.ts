@@ -1,5 +1,5 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION as string,

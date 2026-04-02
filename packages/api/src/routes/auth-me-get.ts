@@ -1,9 +1,16 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { resolveAuthUser } from '../core';
+import { findUserByToken, parseAuthorizationHeader } from '../core';
 
 export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
   handler: async (request: FastifyRequest, reply: FastifyReply) => {
-    const user = await resolveAuthUser(request.headers.authorization);
+    const token = parseAuthorizationHeader(request.headers.authorization);
+
+    if (!token) {
+      reply.status(401).send({ error: 'Unauthorized' });
+      return;
+    }
+
+    const user = await findUserByToken(token);
 
     if (!user) {
       reply.status(401).send({ error: 'Unauthorized' });

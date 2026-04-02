@@ -1,13 +1,6 @@
-export type GitHubUser = {
-  id: number;
-  login: string;
-  name: string | null;
-  avatar_url: string;
-};
-
 export async function fetchGitHubUser(
   accessToken: string,
-): Promise<GitHubUser | null> {
+): Promise<{ id: number; login: string; name: string | null; avatar_url: string } | null> {
   const response = await fetch('https://api.github.com/user', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -34,6 +27,7 @@ export async function fetchGitHubYaml(
   repository: string,
   file: string,
   token?: string,
+  branch = 'main',
 ): Promise<string | null> {
   if (token) {
     const response = await fetch(
@@ -55,7 +49,7 @@ export async function fetchGitHubYaml(
   }
 
   const response = await fetch(
-    `https://raw.githubusercontent.com/${owner}/${repository}/main/${file}.yaml`,
+    `https://raw.githubusercontent.com/${owner}/${repository}/${branch}/${file}.yaml`,
     { cache: 'no-store' },
   );
 

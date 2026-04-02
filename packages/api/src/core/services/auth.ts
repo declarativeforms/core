@@ -1,39 +1,16 @@
 import jwt from 'jsonwebtoken';
-import { fetchGitHubUser, type GitHubUser } from '../gateways';
+import { fetchGitHubUser } from '../gateways';
 
 const AUTH_JWT_EXPIRY = '7d';
 
-export type AuthTokenPayload = {
+type AuthUser = {
   github_id: number;
   login: string;
   name: string | null;
   avatar_url: string;
 };
 
-function getAuthSecret(): string {
-  const secret = process.env.AUTH_JWT_SECRET;
-
-  if (!secret) {
-    throw new Error('AUTH_JWT_SECRET is not configured');
-  }
-
-  return secret;
-}
-
-export function createAuthToken(user: GitHubUser): string {
-  const secret = getAuthSecret();
-
-  const payload: AuthTokenPayload = {
-    github_id: user.id,
-    login: user.login,
-    name: user.name,
-    avatar_url: user.avatar_url,
-  };
-
-  return jwt.sign(payload, secret, { expiresIn: AUTH_JWT_EXPIRY });
-}
-
-export function verifyAuthToken(token: string): AuthTokenPayload | null {
+export function decodeToken(token: string): (jwt.JwtPayload & AuthUser) | null {
   const secret = process.env.AUTH_JWT_SECRET;
 
   if (!secret) {
@@ -41,17 +18,15 @@ export function verifyAuthToken(token: string): AuthTokenPayload | null {
   }
 
   try {
-    const payload = jwt.verify(token, secret) as AuthTokenPayload;
-
-    return payload;
+    return jwt.verify(token, secret) as jwt.JwtPayload & AuthUser;
   } catch {
     return null;
   }
 }
 
-export async function authenticateWithGitHub(
+export async function findTokenAndUserByCode(
   code: string,
-): Promise<{ token: string; user: GitHubUser } | null> {
+): Promise<{ token: string; user: Awaited<ReturnType<typeof fetchGitHubUser>> & {} } | null> {
   const response = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: {
@@ -79,34 +54,33 @@ export async function authenticateWithGitHub(
     return null;
   }
 
-  const token = createAuthToken(user);
+  const secret = process.env.AUTH_JWT_SECRET;
+
+  if (!secret) {
+    throw new Error('AUTH_JWT_SECRET is not configured');
+  }
+
+  const token = jwt.sign(
+    {
+      github_id: user.id,
+      login: user.login,
+      name: user.name,
+      avatar_url: user.avatar_url,
+    } satisfies AuthUser,
+    secret,
+    { expiresIn: AUTH_JWT_EXPIRY },
+  );
 
   return { token, user };
 }
 
-export async function resolveAuthUser(
-  authorization: string | undefined,
-): Promise<AuthTokenPayload | null> {
-  if (!authorization) {
-    return null;
-  }
-
-  const token = authorization.startsWith('Bearer ')
-    ? authorization.slice(7)
-    : authorization;
-
-  if (!token) {
-    return null;
-  }
-
-  // Try JWT verification first
-  const jwtPayload = verifyAuthToken(token);
+export async function findUserByToken(token: string): Promise<AuthUser | null> {
+  const jwtPayload = decodeToken(token);
 
   if (jwtPayload) {
     return jwtPayload;
   }
 
-  // Fall back to GitHub access token
   const user = await fetchGitHubUser(token);
 
   if (!user) {

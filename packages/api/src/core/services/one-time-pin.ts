@@ -11,6 +11,7 @@ import {
   insertOneTimePinRequest,
 } from '../repositories';
 import type { IOneTimePinRecord, IVerificationTokenPayload } from '../types';
+import { bufferToBase64 } from '../utils';
 
 const ONE_TIME_PIN_EMAIL_TEMPLATE = readFileSync(
   join(__dirname, 'templates', 'one-time-pin-email.html'),
@@ -20,11 +21,6 @@ const ONE_TIME_PIN_EMAIL_TEMPLATE = readFileSync(
 const ONE_TIME_PIN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 const RESEND_COOLDOWN_MS = 30 * 1000; // 30 seconds
 const MAX_VERIFY_ATTEMPTS = 5;
-
-function base64url(data: Buffer | string): string {
-  const buf = typeof data === 'string' ? Buffer.from(data) : data;
-  return buf.toString('base64url');
-}
 
 export function createOneTimePinVerificationToken(
   email: string,
@@ -44,9 +40,9 @@ export function createOneTimePinVerificationToken(
     exp: Date.now() + ONE_TIME_PIN_EXPIRY_MS,
   };
 
-  const encodedPayload = base64url(JSON.stringify(fullPayload));
+  const encodedPayload = bufferToBase64(JSON.stringify(fullPayload));
 
-  const signature = base64url(
+  const signature = bufferToBase64(
     createHmac('sha256', secret).update(encodedPayload).digest(),
   );
 
@@ -70,7 +66,7 @@ export function verifyOneTimePinVerificationToken(
 
   const [encodedPayload, signature] = parts;
 
-  const expectedSignature = base64url(
+  const expectedSignature = bufferToBase64(
     createHmac('sha256', secret).update(encodedPayload).digest(),
   );
 
