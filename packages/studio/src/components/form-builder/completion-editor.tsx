@@ -4,9 +4,12 @@ import type {
   IDeclarativeForm,
   IDeclarativeFormCompletion,
   IDeclarativeFormCompletionRule,
+  ILocalizedText,
 } from "@/lib/declarative-form-types";
-import { Button, Input, Label, Textarea } from "@/components/ui";
+import { hasLocalizedTextContent } from "@/lib/localized-text";
+import { Button, Input, Label } from "@/components/ui";
 
+import { LocalizedTextEditor } from "./localized-text-editor";
 
 type CompletionEditorProps = {
   form: IDeclarativeForm;
@@ -14,23 +17,15 @@ type CompletionEditorProps = {
 };
 
 type ParsedCompletion = {
-  title: string;
-  message: string;
-  buttonLabel: string;
-  buttonUrl: string;
+  title: ILocalizedText | undefined;
+  message: ILocalizedText | undefined;
+  buttonLabel: ILocalizedText | undefined;
+  buttonUrl: ILocalizedText | undefined;
 };
 
 type ParsedCompletionRule = ParsedCompletion & {
   when: string;
 };
-
-function getTextValue(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  return "";
-}
 
 function parseSimpleCompletion(
   completion: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[] | undefined,
@@ -40,10 +35,10 @@ function parseSimpleCompletion(
   }
 
   return {
-    title: getTextValue(completion.title),
-    message: getTextValue(completion.message),
-    buttonLabel: getTextValue(completion.button?.label),
-    buttonUrl: getTextValue(completion.button?.url),
+    title: completion.title,
+    message: completion.message,
+    buttonLabel: completion.button?.label,
+    buttonUrl: completion.button?.url,
   };
 }
 
@@ -55,31 +50,36 @@ function parseCompletionRules(
   }
 
   return completion.map((rule) => ({
-    when: getTextValue((rule as IDeclarativeFormCompletionRule).when),
-    title: getTextValue(rule.title),
-    message: getTextValue(rule.message),
-    buttonLabel: getTextValue(rule.button?.label),
-    buttonUrl: getTextValue(rule.button?.url),
+    when: typeof rule.when === "string" ? rule.when : "",
+    title: rule.title,
+    message: rule.message,
+    buttonLabel: rule.button?.label,
+    buttonUrl: rule.button?.url,
   }));
 }
 
 function buildCompletion(parsed: ParsedCompletion): IDeclarativeFormCompletion {
   const result: IDeclarativeFormCompletion = {};
 
-  if (parsed.title) {
+  if (hasLocalizedTextContent(parsed.title)) {
     result.title = parsed.title;
   }
 
-  if (parsed.message) {
+  if (hasLocalizedTextContent(parsed.message)) {
     result.message = parsed.message;
   }
 
-  if (parsed.buttonLabel || parsed.buttonUrl) {
+  if (
+    hasLocalizedTextContent(parsed.buttonLabel) ||
+    hasLocalizedTextContent(parsed.buttonUrl)
+  ) {
     result.button = {};
-    if (parsed.buttonLabel) {
+
+    if (hasLocalizedTextContent(parsed.buttonLabel)) {
       result.button.label = parsed.buttonLabel;
     }
-    if (parsed.buttonUrl) {
+
+    if (hasLocalizedTextContent(parsed.buttonUrl)) {
       result.button.url = parsed.buttonUrl;
     }
   }
@@ -91,24 +91,29 @@ function buildCompletionRules(rules: ParsedCompletionRule[]): IDeclarativeFormCo
   return rules.map((rule) => {
     const result: IDeclarativeFormCompletionRule = {};
 
-    if (rule.when) {
+    if (rule.when.trim()) {
       result.when = rule.when;
     }
 
-    if (rule.title) {
+    if (hasLocalizedTextContent(rule.title)) {
       result.title = rule.title;
     }
 
-    if (rule.message) {
+    if (hasLocalizedTextContent(rule.message)) {
       result.message = rule.message;
     }
 
-    if (rule.buttonLabel || rule.buttonUrl) {
+    if (
+      hasLocalizedTextContent(rule.buttonLabel) ||
+      hasLocalizedTextContent(rule.buttonUrl)
+    ) {
       result.button = {};
-      if (rule.buttonLabel) {
+
+      if (hasLocalizedTextContent(rule.buttonLabel)) {
         result.button.label = rule.buttonLabel;
       }
-      if (rule.buttonUrl) {
+
+      if (hasLocalizedTextContent(rule.buttonUrl)) {
         result.button.url = rule.buttonUrl;
       }
     }
@@ -120,48 +125,46 @@ function buildCompletionRules(rules: ParsedCompletionRule[]): IDeclarativeFormCo
 function CompletionFields({
   parsed,
   onChange,
+  defaultLocale,
 }: {
   parsed: ParsedCompletion;
   onChange: (next: ParsedCompletion) => void;
+  defaultLocale?: string;
 }) {
   return (
     <div className="space-y-3">
-      <div className="space-y-1.5">
-        <Label className="text-xs">Title</Label>
-        <Input
-          value={parsed.title}
-          onChange={(e) => onChange({ ...parsed, title: e.target.value })}
-          placeholder="Thank you!"
-        />
-      </div>
+      <LocalizedTextEditor
+        label="Title"
+        value={parsed.title}
+        onChange={(title) => onChange({ ...parsed, title })}
+        defaultLocale={defaultLocale}
+        placeholder="Thank you!"
+      />
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">Message</Label>
-        <Textarea
-          value={parsed.message}
-          onChange={(e) => onChange({ ...parsed, message: e.target.value })}
-          placeholder="Thanks for submitting your response."
-          className="min-h-20 resize-none"
-        />
-      </div>
+      <LocalizedTextEditor
+        label="Message"
+        value={parsed.message}
+        onChange={(message) => onChange({ ...parsed, message })}
+        defaultLocale={defaultLocale}
+        placeholder="Thanks for submitting your response."
+        multiline
+      />
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">Button label</Label>
-        <Input
-          value={parsed.buttonLabel}
-          onChange={(e) => onChange({ ...parsed, buttonLabel: e.target.value })}
-          placeholder="e.g. Visit our website"
-        />
-      </div>
+      <LocalizedTextEditor
+        label="Button label"
+        value={parsed.buttonLabel}
+        onChange={(buttonLabel) => onChange({ ...parsed, buttonLabel })}
+        defaultLocale={defaultLocale}
+        placeholder="e.g. Visit our website"
+      />
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">Button URL</Label>
-        <Input
-          value={parsed.buttonUrl}
-          onChange={(e) => onChange({ ...parsed, buttonUrl: e.target.value })}
-          placeholder="https://example.com"
-        />
-      </div>
+      <LocalizedTextEditor
+        label="Button URL"
+        value={parsed.buttonUrl}
+        onChange={(buttonUrl) => onChange({ ...parsed, buttonUrl })}
+        defaultLocale={defaultLocale}
+        placeholder="https://example.com"
+      />
     </div>
   );
 }
@@ -169,10 +172,10 @@ function CompletionFields({
 export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
   const isConditional = Array.isArray(form.completion);
   const simpleCompletion = parseSimpleCompletion(form.completion) ?? {
-    title: "",
-    message: "",
-    buttonLabel: "",
-    buttonUrl: "",
+    title: undefined,
+    message: undefined,
+    buttonLabel: undefined,
+    buttonUrl: undefined,
   };
   const conditionalRules = parseCompletionRules(form.completion);
 
@@ -198,24 +201,32 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
     onChange({
       ...form,
       completion: buildCompletion(
-        first ?? { title: "", message: "", buttonLabel: "", buttonUrl: "" },
+        first ?? {
+          title: undefined,
+          message: undefined,
+          buttonLabel: undefined,
+          buttonUrl: undefined,
+        },
       ),
     });
   };
 
   const handleUpdateRule = (index: number, next: ParsedCompletionRule) => {
-    const updatedRules = conditionalRules.map((rule, i) => (i === index ? next : rule));
+    const updatedRules = conditionalRules.map((rule, ruleIndex) =>
+      ruleIndex === index ? next : rule,
+    );
     onChange({ ...form, completion: buildCompletionRules(updatedRules) });
   };
 
   const handleAddRule = () => {
     const newRule: ParsedCompletionRule = {
       when: "",
-      title: "",
-      message: "",
-      buttonLabel: "",
-      buttonUrl: "",
+      title: undefined,
+      message: undefined,
+      buttonLabel: undefined,
+      buttonUrl: undefined,
     };
+
     onChange({
       ...form,
       completion: buildCompletionRules([...conditionalRules, newRule]),
@@ -223,7 +234,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
   };
 
   const handleRemoveRule = (index: number) => {
-    const updatedRules = conditionalRules.filter((_, i) => i !== index);
+    const updatedRules = conditionalRules.filter((_, ruleIndex) => ruleIndex !== index);
 
     if (updatedRules.length === 0) {
       onChange({ ...form, completion: buildCompletion(simpleCompletion) });
@@ -239,82 +250,89 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
         Configure what users see after completing the form.
       </p>
 
-        {!isConditional ? (
-          <>
-            <CompletionFields parsed={simpleCompletion} onChange={handleSimpleChange} />
+      {!isConditional ? (
+        <>
+          <CompletionFields
+            parsed={simpleCompletion}
+            onChange={handleSimpleChange}
+            defaultLocale={form.locale}
+          />
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full text-xs"
-              onClick={handleSwitchToConditional}
-            >
-              Add conditional completion rules
-            </Button>
-          </>
-        ) : (
-          <>
-            <div className="space-y-3">
-              {conditionalRules.map((rule, index) => (
-                <div
-                  key={index}
-                  className="space-y-3 rounded-lg border border-border bg-muted/20 p-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {rule.when ? `Rule ${index + 1}` : "Default"}
-                    </Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleRemoveRule(index)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Condition (expression)</Label>
-                    <Input
-                      value={rule.when}
-                      onChange={(e) => handleUpdateRule(index, { ...rule, when: e.target.value })}
-                      placeholder="Leave empty for default"
-                      className="font-mono text-xs"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Leave empty to use as the default fallback completion.
-                    </p>
-                  </div>
-
-                  <CompletionFields
-                    parsed={rule}
-                    onChange={(next) => handleUpdateRule(index, { ...next, when: rule.when })}
-                  />
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full text-xs"
+            onClick={handleSwitchToConditional}
+          >
+            Add conditional completion rules
+          </Button>
+        </>
+      ) : (
+        <>
+          <div className="space-y-3">
+            {conditionalRules.map((rule, index) => (
+              <div
+                key={index}
+                className="space-y-3 rounded-lg border border-border bg-muted/20 p-3"
+              >
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {rule.when ? `Rule ${index + 1}` : "Default"}
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => handleRemoveRule(index)}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
                 </div>
-              ))}
-            </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleAddRule}
-            >
-              <Plus className="size-4" />
-              Add Rule
-            </Button>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Condition (expression)</Label>
+                  <Input
+                    value={rule.when}
+                    onChange={(event) =>
+                      handleUpdateRule(index, { ...rule, when: event.target.value })
+                    }
+                    placeholder="Leave empty for default"
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to use as the default fallback completion.
+                  </p>
+                </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full text-xs text-muted-foreground"
-              onClick={handleSwitchToSimple}
-            >
-              Switch to simple completion
-            </Button>
-          </>
-        )}
+                <CompletionFields
+                  parsed={rule}
+                  onChange={(next) => handleUpdateRule(index, { ...next, when: rule.when })}
+                  defaultLocale={form.locale}
+                />
+              </div>
+            ))}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-start"
+            onClick={handleAddRule}
+          >
+            <Plus className="size-4" />
+            Add Rule
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full text-xs text-muted-foreground"
+            onClick={handleSwitchToSimple}
+          >
+            Switch to simple completion
+          </Button>
+        </>
+      )}
     </div>
   );
 }

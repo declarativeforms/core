@@ -28,6 +28,7 @@ import type {
   IDeclarativeFormField,
   IDeclarativeFormOption,
 } from "@/lib/declarative-form-types";
+import { getLocalizedTextPreview } from "@/lib/localized-text";
 
 export const BUILDER_FIELD_TYPES = [
   "address",
@@ -142,15 +143,17 @@ export function getEditableFieldType(field: IDeclarativeFormField) {
 }
 
 export function getFieldDisplayLabel(field: IDeclarativeFormField) {
-  return typeof field.label === "string" && field.label.trim()
-    ? field.label
-    : "Untitled Field";
+  const label = getLocalizedTextPreview(field.label);
+  return label.trim() ? label : "Untitled Field";
 }
 
 export function getSectionDisplayTitle(title: unknown) {
-  return typeof title === "string" && title.trim()
-    ? title
-    : "Untitled Section";
+  if (typeof title === "string") {
+    return title.trim() ? title : "Untitled Section";
+  }
+
+  const localizedTitle = getLocalizedTextPreview(title as never);
+  return localizedTitle.trim() ? localizedTitle : "Untitled Section";
 }
 
 export function getOptionStrings(options?: Array<IDeclarativeFormOption>) {
@@ -159,8 +162,10 @@ export function getOptionStrings(options?: Array<IDeclarativeFormOption>) {
       return option;
     }
 
-    if (typeof option.label === "string" && option.label.trim()) {
-      return option.label;
+    const localizedLabel = getLocalizedTextPreview(option.label);
+
+    if (localizedLabel.trim()) {
+      return localizedLabel;
     }
 
     return option.value ?? "";

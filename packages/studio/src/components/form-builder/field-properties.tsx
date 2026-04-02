@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import type {
@@ -6,6 +7,7 @@ import type {
   IDeclarativeFormDropdownField,
   IDeclarativeFormEmailField,
   IDeclarativeFormField,
+  IDeclarativeFormOption,
   IDeclarativeFormRatingField,
   IDeclarativeFormSelectField,
   IDeclarativeFormValidator,
@@ -22,14 +24,17 @@ import {
   SelectValue,
   Textarea,
 } from "@/components/ui";
+import { getLocalizedTextPreview } from "@/lib/localized-text";
 import { cn } from "@/lib/utils";
 
+import { LocalizedTextEditor } from "./localized-text-editor";
 import { BuilderPaneHeader } from "./panel-shell";
-import { getEditableFieldType, getFieldTypeLabel, getOptionStrings } from "./shared";
+import { getEditableFieldType, getFieldTypeLabel } from "./shared";
 
 type FieldPropertiesProps = {
   field: IDeclarativeFormField | null;
   onChange: (nextField: IDeclarativeFormField) => void;
+  defaultLocale?: string;
   showHeader?: boolean;
   className?: string;
   contentClassName?: string;
@@ -55,6 +60,7 @@ type ValueValidator =
   | MaxValidator
   | MinLengthValidator
   | MaxLengthValidator;
+type DeclarativeFormOptionObject = Exclude<IDeclarativeFormOption, string>;
 
 type ValidatorDefinition = {
   type: ObjectValidatorType;
@@ -293,75 +299,224 @@ function getValidatorValue(
   }
 }
 
+function isOptionObject(
+  option: IDeclarativeFormOption,
+): option is DeclarativeFormOptionObject {
+  return typeof option === "object";
+}
+
+function getOptionDisplayValue(option: IDeclarativeFormOption) {
+  if (typeof option === "string") {
+    return option;
+  }
+
+  const localizedLabel = getLocalizedTextPreview(option.label);
+
+  return localizedLabel.trim() ? localizedLabel : option.value ?? "";
+}
+
+function toAdvancedOption(option: IDeclarativeFormOption): DeclarativeFormOptionObject {
+  if (isOptionObject(option)) {
+    return option;
+  }
+
+  return {
+    label: option,
+    value: option,
+  };
+}
+
+function toSimpleOption(option: IDeclarativeFormOption) {
+  if (typeof option === "string") {
+    return option;
+  }
+
+  const localizedLabel = getLocalizedTextPreview(option.label);
+
+  if (localizedLabel.trim()) {
+    return localizedLabel;
+  }
+
+  return option.value ?? "";
+}
+
 function OptionsEditor({
   field,
-  optionValues,
   onChange,
+  defaultLocale,
 }: {
   field: IDeclarativeFormDropdownField | IDeclarativeFormSelectField;
-  optionValues: string[];
   onChange: (nextField: IDeclarativeFormField) => void;
+  defaultLocale?: string;
 }) {
+  const options = field.options ?? [];
+  const [advancedMode, setAdvancedMode] = useState(
+    options.some((option) => isOptionObject(option)),
+  );
+
+  useEffect(() => {
+    setAdvancedMode(options.some((option) => isOptionObject(option)));
+  }, [options]);
+
+  const updateOptions = (nextOptions: IDeclarativeFormOption[]) => {
+    onChange({
+      ...field,
+      options: nextOptions,
+    });
+  };
+
+  const nextOptionNumber = options.length + 1;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <Label>Options</Label>
         <Button
           type="button"
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="xs"
           onClick={() => {
-            onChange({
-              ...field,
-              options: [...optionValues, `Option ${optionValues.length + 1}`],
-            });
+            const nextAdvancedMode = !advancedMode;
+            setAdvancedMode(nextAdvancedMode);
+            updateOptions(
+              nextAdvancedMode
+                ? options.map(toAdvancedOption)
+                : options.map(toSimpleOption),
+            );
           }}
         >
-          <Plus />
-          Add Option
+          {advancedMode ? "Use simple options" : "Use label + value"}
         </Button>
       </div>
 
-      <div className="space-y-2">
-        {optionValues.map((option, index) => (
-          <div
-            key={`${field.id ?? "field"}-option-${index}`}
-            className="flex items-center gap-2"
-          >
-            <Input
-              value={option}
-              onChange={(event) => {
-                const nextOptions = optionValues.map((value, optionIndex) =>
-                  optionIndex === index ? event.target.value : value,
-                );
+      {advancedMode ? (
+        <div className="space-y-3">
+          {options.map((option, index) => {
+            const advancedOption = toAdvancedOption(option);
 
-                onChange({
-                  ...field,
-                  options: nextOptions,
-                });
-              }}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Remove option"
-              onClick={() => {
-                const nextOptions = optionValues.filter(
-                  (_, optionIndex) => optionIndex !== index,
-                );
+            return (
+              <div
+                key={`${field.id ?? "field"}-option-${index}`}
+                className="rounded-xl border border-border bg-background p-3"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Option {index + 1}
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Remove option"
+                    onClick={() => {
+                      updateOptions(
+                        options.filter((_, optionIndex) => optionIndex !== index),
+                      );
+                    }}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
 
-                onChange({
-                  ...field,
-                  options: nextOptions,
-                });
-              }}
+                <div className="space-y-3">
+                  <LocalizedTextEditor
+                    label="Label"
+                    value={advancedOption.label}
+                    onChange={(label) => {
+                      updateOptions(
+                        options.map((currentOption, optionIndex) =>
+                          optionIndex === index
+                            ? {
+                                ...toAdvancedOption(currentOption),
+                                label,
+                              }
+                            : currentOption,
+                        ),
+                      );
+                    }}
+                    defaultLocale={defaultLocale}
+                    placeholder={`Option ${index + 1}`}
+                  />
+
+                  <div className="space-y-1.5">
+                    <Label>Value</Label>
+                    <Input
+                      value={advancedOption.value ?? ""}
+                      onChange={(event) => {
+                        updateOptions(
+                          options.map((currentOption, optionIndex) =>
+                            optionIndex === index
+                              ? {
+                                  ...toAdvancedOption(currentOption),
+                                  value: event.target.value,
+                                }
+                              : currentOption,
+                          ),
+                        );
+                      }}
+                      placeholder={`option_${index + 1}`}
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {options.map((option, index) => (
+            <div
+              key={`${field.id ?? "field"}-option-${index}`}
+              className="flex items-center gap-2"
             >
-              <Trash2 />
-            </Button>
-          </div>
-        ))}
-      </div>
+              <Input
+                value={getOptionDisplayValue(option)}
+                onChange={(event) => {
+                  updateOptions(
+                    options.map((currentOption, optionIndex) =>
+                      optionIndex === index
+                        ? event.target.value
+                        : toSimpleOption(currentOption),
+                    ),
+                  );
+                }}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Remove option"
+                onClick={() => {
+                  updateOptions(options.filter((_, optionIndex) => optionIndex !== index));
+                }}
+              >
+                <Trash2 />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          updateOptions([
+            ...options,
+            advancedMode
+              ? {
+                  label: `Option ${nextOptionNumber}`,
+                  value: `option_${nextOptionNumber}`,
+                }
+              : `Option ${nextOptionNumber}`,
+          ]);
+        }}
+      >
+        <Plus />
+        Add Option
+      </Button>
     </div>
   );
 }
@@ -369,9 +524,11 @@ function OptionsEditor({
 function ValidatorEditor({
   field,
   onChange,
+  defaultLocale,
 }: {
   field: IDeclarativeFormField;
   onChange: (nextField: IDeclarativeFormField) => void;
+  defaultLocale?: string;
 }) {
   return (
     <div className="space-y-3">
@@ -405,8 +562,6 @@ function ValidatorEditor({
         const validator = getObjectValidator(field, definition.type);
         const isEnabled = !!validator;
         const value = getValidatorValue(validator, definition.type);
-        const message = getStringValue(validator?.message);
-
         return (
           <div
             key={definition.type}
@@ -547,20 +702,20 @@ function ValidatorEditor({
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Validation Message</Label>
-                  <Input
-                    value={message}
-                    onChange={(event) => {
-                      onChange(
-                        withUpdatedValidator(field, {
-                          ...(validator ?? createObjectValidator(definition.type)),
-                          message: event.target.value,
-                        }),
-                      );
-                    }}
-                  />
-                </div>
+                <LocalizedTextEditor
+                  label="Validation Message"
+                  value={validator?.message}
+                  onChange={(message) => {
+                    onChange(
+                      withUpdatedValidator(field, {
+                        ...(validator ?? createObjectValidator(definition.type)),
+                        message,
+                      }),
+                    );
+                  }}
+                  defaultLocale={defaultLocale}
+                  placeholder="Validation message"
+                />
               </div>
             )}
           </div>
@@ -573,6 +728,7 @@ function ValidatorEditor({
 export function FieldProperties({
   field,
   onChange,
+  defaultLocale,
   showHeader = false,
   className,
   contentClassName,
@@ -596,11 +752,6 @@ export function FieldProperties({
   const ratingField = isRatingField(field) ? field : null;
   const addressField = isAddressField(field) ? field : null;
   const cameraField = isCameraField(field) ? field : null;
-  const optionValues = dropdownField
-    ? getOptionStrings(dropdownField.options)
-    : selectField
-      ? getOptionStrings(selectField.options)
-      : [];
 
   const content = (
     <>
@@ -623,33 +774,31 @@ export function FieldProperties({
         <Input id="field-type" value={getFieldTypeLabel(currentType)} disabled />
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="field-label">Label</Label>
-        <Input
-          id="field-label"
-          value={getStringValue(field.label)}
-          onChange={(event) => {
-            onChange({
-              ...field,
-              label: event.target.value,
-            });
-          }}
-        />
-      </div>
+      <LocalizedTextEditor
+        id="field-label"
+        label="Label"
+        value={field.label}
+        onChange={(label) => {
+          onChange({
+            ...field,
+            label,
+          });
+        }}
+        defaultLocale={defaultLocale}
+      />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="field-placeholder">Placeholder</Label>
-        <Input
-          id="field-placeholder"
-          value={getStringValue(field.placeholder)}
-          onChange={(event) => {
-            onChange({
-              ...field,
-              placeholder: event.target.value,
-            });
-          }}
-        />
-      </div>
+      <LocalizedTextEditor
+        id="field-placeholder"
+        label="Placeholder"
+        value={field.placeholder}
+        onChange={(placeholder) => {
+          onChange({
+            ...field,
+            placeholder,
+          });
+        }}
+        defaultLocale={defaultLocale}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="field-visible-when">Visible When</Label>
@@ -669,7 +818,7 @@ export function FieldProperties({
 
       <div className="space-y-3">
         <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validation</h3>
-        <ValidatorEditor field={field} onChange={onChange} />
+        <ValidatorEditor field={field} onChange={onChange} defaultLocale={defaultLocale} />
       </div>
 
       {emailField && (
@@ -747,8 +896,8 @@ export function FieldProperties({
 
           <OptionsEditor
             field={dropdownField}
-            optionValues={optionValues}
             onChange={onChange}
+            defaultLocale={defaultLocale}
           />
         </div>
       )}
@@ -780,8 +929,8 @@ export function FieldProperties({
 
           <OptionsEditor
             field={selectField}
-            optionValues={optionValues}
             onChange={onChange}
+            defaultLocale={defaultLocale}
           />
         </div>
       )}
@@ -792,33 +941,31 @@ export function FieldProperties({
             Rating Settings
           </h3>
 
-          <div className="space-y-2">
-            <Label htmlFor="field-min-label">Minimum Label</Label>
-            <Input
-              id="field-min-label"
-              value={getStringValue(ratingField.min_label)}
-              onChange={(event) => {
-                onChange({
-                  ...ratingField,
-                  min_label: event.target.value,
-                });
-              }}
-            />
-          </div>
+          <LocalizedTextEditor
+            id="field-min-label"
+            label="Minimum Label"
+            value={ratingField.min_label}
+            onChange={(min_label) => {
+              onChange({
+                ...ratingField,
+                min_label,
+              });
+            }}
+            defaultLocale={defaultLocale}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="field-max-label">Maximum Label</Label>
-            <Input
-              id="field-max-label"
-              value={getStringValue(ratingField.max_label)}
-              onChange={(event) => {
-                onChange({
-                  ...ratingField,
-                  max_label: event.target.value,
-                });
-              }}
-            />
-          </div>
+          <LocalizedTextEditor
+            id="field-max-label"
+            label="Maximum Label"
+            value={ratingField.max_label}
+            onChange={(max_label) => {
+              onChange({
+                ...ratingField,
+                max_label,
+              });
+            }}
+            defaultLocale={defaultLocale}
+          />
         </div>
       )}
 

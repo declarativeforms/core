@@ -27,4 +27,7 @@ export type IDeclarativeFormCompletion =
   import("@declarativeforms/types").IDeclarativeFormCompletion;
 export type IDeclarativeFormCompletionRule =
   import("@declarativeforms/types").IDeclarativeFormCompletionRule;
+export type IConnection = import("@declarativeforms/types").IConnection;
+export type IWebhookConnection =
+  import("@declarativeforms/types").IWebhookConnection;
 export type ISubmission = import("@declarativeforms/types").ISubmission;

@@ -13,12 +13,15 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
+import { LocalizedTextEditor } from "./localized-text-editor";
 import { BuilderPaneHeader } from "./panel-shell";
+import { getSectionDisplayTitle } from "./shared";
 
 type SectionPropertiesProps = {
   section: IDeclarativeFormSection | null;
   allSections: IDeclarativeFormSection[];
   onChange: (nextSection: IDeclarativeFormSection) => void;
+  defaultLocale?: string;
   showHeader?: boolean;
   className?: string;
   contentClassName?: string;
@@ -104,6 +107,7 @@ export function SectionProperties({
   section,
   allSections,
   onChange,
+  defaultLocale,
   showHeader = false,
   className,
   contentClassName,
@@ -222,18 +226,22 @@ export function SectionProperties({
 
   const content = (
     <>
-      <div className="space-y-2">
-        <Label>Title</Label>
-        <Input
-          value={typeof section.title === "string" ? section.title : ""}
-          onChange={(e) => onChange({ ...section, title: e.target.value })}
-          placeholder="Untitled Section"
-        />
-      </div>
+      <LocalizedTextEditor
+        label="Title"
+        value={section.title}
+        onChange={(title) => onChange({ ...section, title })}
+        defaultLocale={defaultLocale}
+        placeholder="Untitled Section"
+      />
 
       <div className="space-y-2">
         <Label htmlFor="section-id">Section ID</Label>
-        <Input id="section-id" value={section.id ?? ""} disabled className="font-mono text-xs" />
+        <Input
+          id="section-id"
+          value={section.id ?? ""}
+          onChange={(event) => onChange({ ...section, id: event.target.value || undefined })}
+          className="font-mono text-xs"
+        />
         <p className="text-xs text-muted-foreground">
           Used to reference this section in navigation rules.
         </p>
@@ -270,7 +278,7 @@ export function SectionProperties({
               <SelectContent>
                 {otherSections.map((s) => (
                   <SelectItem key={s.id} value={s.id ?? ""}>
-                    {typeof s.title === "string" && s.title.trim() ? s.title : s.id ?? "Untitled"}
+                    {getSectionDisplayTitle(s.title ?? s.id)}
                   </SelectItem>
                 ))}
                 <SelectItem value="done">Complete form</SelectItem>
@@ -338,9 +346,7 @@ export function SectionProperties({
                     <SelectContent>
                       {otherSections.map((s) => (
                         <SelectItem key={s.id} value={s.id ?? ""}>
-                          {typeof s.title === "string" && s.title.trim()
-                            ? s.title
-                            : s.id ?? "Untitled"}
+                          {getSectionDisplayTitle(s.title ?? s.id)}
                         </SelectItem>
                       ))}
                       <SelectItem value="done">Complete form</SelectItem>
@@ -372,9 +378,7 @@ export function SectionProperties({
               <SelectContent>
                 {otherSections.map((s) => (
                   <SelectItem key={s.id} value={s.id ?? ""}>
-                    {typeof s.title === "string" && s.title.trim()
-                      ? s.title
-                      : s.id ?? "Untitled"}
+                    {getSectionDisplayTitle(s.title ?? s.id)}
                   </SelectItem>
                 ))}
                 <SelectItem value="done">Complete form</SelectItem>

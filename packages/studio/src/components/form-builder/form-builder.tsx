@@ -81,6 +81,7 @@ type SortableFieldCardProps = {
   onToggle: () => void;
   onChange: (nextField: IDeclarativeFormField) => void;
   onDelete: () => void;
+  defaultLocale?: string;
 };
 
 function createSectionId(sections: IDeclarativeFormSection[]) {
@@ -231,6 +232,7 @@ function SortableFieldCard({
   onToggle,
   onChange,
   onDelete,
+  defaultLocale,
 }: SortableFieldCardProps) {
   const sortableId = getSortableFieldId(field, index);
   const {
@@ -282,7 +284,11 @@ function SortableFieldCard({
           </div>
         }
       >
-        <FieldProperties field={field} onChange={onChange} />
+        <FieldProperties
+          field={field}
+          onChange={onChange}
+          defaultLocale={defaultLocale}
+        />
       </InlineEditorCard>
     </div>
   );
@@ -584,6 +590,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
             <SectionProperties
               section={activeSection}
               allSections={sections}
+              defaultLocale={form.locale}
               onChange={handleUpdateSection}
             />
           </InlineEditorCard>
@@ -601,6 +608,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
                       key={getSortableFieldId(field, index)}
                       field={field}
                       index={index}
+                      defaultLocale={form.locale}
                       isExpanded={
                         expandedPanel?.type === "field" && expandedPanel.index === index
                       }

@@ -24,7 +24,11 @@ import {
   useUpdateForm,
 } from "@/hooks";
 import { createEmptyFormDefinition } from "@/lib/default-form";
-import type { IDeclarativeForm, ILocalizedText } from "@/lib/declarative-form-types";
+import type { IDeclarativeForm } from "@/lib/declarative-form-types";
+import {
+  getLocalizedTextPreview,
+  updateLocalizedTextAtLocale,
+} from "@/lib/localized-text";
 
 type FormEditorState = {
   form: IDeclarativeForm;
@@ -34,22 +38,6 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 function cloneForm(form: IDeclarativeForm) {
   return JSON.parse(JSON.stringify(form)) as IDeclarativeForm;
-}
-
-function getEditableText(value: ILocalizedText | undefined) {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (!value) {
-    return "";
-  }
-
-  const firstTextValue = Object.values(value).find(
-    (entry) => typeof entry === "string" && entry.trim().length > 0,
-  );
-
-  return typeof firstTextValue === "string" ? firstTextValue : "";
 }
 
 function normalizeForm(form: IDeclarativeForm, id: string): IDeclarativeForm {
@@ -237,7 +225,7 @@ export function FormEditorPage() {
         ? editorState.form.id
         : currentFormId;
 
-  const titleValue = getEditableText(editorState.form.title);
+  const titleValue = getLocalizedTextPreview(editorState.form.title);
 
   const handleDelete = async () => {
     if (!persistedFormId) {
@@ -305,7 +293,11 @@ export function FormEditorPage() {
                   ...current,
                   form: {
                     ...current.form,
-                    title: event.target.value,
+                    title: updateLocalizedTextAtLocale(
+                      current.form.title,
+                      event.target.value,
+                      current.form.locale,
+                    ),
                   },
                 }));
               }}

@@ -1,45 +1,61 @@
 import type { IDeclarativeForm } from "@/lib/declarative-form-types";
-import { Input, Label, Textarea } from "@/components/ui";
+import { Input, Label } from "@/components/ui";
+
+import { LocalizedTextEditor } from "./localized-text-editor";
+import { WebhookConnectionsEditor } from "./webhook-connections-editor";
 
 type FormPropertiesProps = {
   form: IDeclarativeForm;
   onChange: (nextForm: IDeclarativeForm) => void;
 };
 
-function getTextValue(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  return "";
-}
-
 export function FormProperties({ form, onChange }: FormPropertiesProps) {
-  const title = getTextValue(form.title);
-  const description = getTextValue(form.description);
   const startDate = form.start_date ?? "";
   const endDate = form.end_date ?? "";
   const primaryColor = form.theme?.primary ?? "";
+  const locale = form.locale ?? "";
+  const mixpanelToken = form.measurements?.mixpanel ?? "";
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1.5">
-        <Label>Title</Label>
-        <Input
-          value={title}
-          onChange={(e) => onChange({ ...form, title: e.target.value })}
-          placeholder="Untitled Form"
-        />
-      </div>
+      <LocalizedTextEditor
+        label="Title"
+        value={form.title}
+        onChange={(title) => onChange({ ...form, title })}
+        defaultLocale={form.locale}
+        placeholder="Untitled Form"
+      />
 
-      <div className="space-y-1.5">
-        <Label>Description</Label>
-        <Textarea
-          value={description}
-          onChange={(e) => onChange({ ...form, description: e.target.value })}
-          placeholder="A short description of this form"
-          className="min-h-20 resize-none"
-        />
+      <LocalizedTextEditor
+        label="Description"
+        value={form.description}
+        onChange={(description) => onChange({ ...form, description })}
+        defaultLocale={form.locale}
+        placeholder="A short description of this form"
+        multiline
+      />
+
+      <div className="border-t border-border pt-5">
+        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Localization
+        </p>
+        <div className="space-y-1.5">
+          <Label>Default locale</Label>
+          <Input
+            value={locale}
+            onChange={(event) =>
+              onChange({
+                ...form,
+                locale: event.target.value || undefined,
+              })
+            }
+            placeholder="en"
+            className="font-mono text-xs"
+          />
+          <p className="text-xs text-muted-foreground">
+            Used as the default locale for localized content and published forms.
+          </p>
+        </div>
       </div>
 
       <div className="border-t border-border pt-5">
@@ -52,7 +68,9 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
             <Input
               type="date"
               value={startDate}
-              onChange={(e) => onChange({ ...form, start_date: e.target.value || undefined })}
+              onChange={(event) =>
+                onChange({ ...form, start_date: event.target.value || undefined })
+              }
             />
             <p className="text-xs text-muted-foreground">
               The form will not accept submissions before this date.
@@ -64,12 +82,40 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
             <Input
               type="date"
               value={endDate}
-              onChange={(e) => onChange({ ...form, end_date: e.target.value || undefined })}
+              onChange={(event) =>
+                onChange({ ...form, end_date: event.target.value || undefined })
+              }
             />
             <p className="text-xs text-muted-foreground">
               The form will stop accepting submissions after this date.
             </p>
           </div>
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-5">
+        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Analytics
+        </p>
+        <div className="space-y-1.5">
+          <Label>Mixpanel token</Label>
+          <Input
+            value={mixpanelToken}
+            onChange={(event) =>
+              onChange({
+                ...form,
+                measurements: {
+                  ...form.measurements,
+                  mixpanel: event.target.value || undefined,
+                },
+              })
+            }
+            placeholder="Mixpanel project token"
+            className="font-mono text-xs"
+          />
+          <p className="text-xs text-muted-foreground">
+            Initializes Mixpanel tracking for the published form when set.
+          </p>
         </div>
       </div>
 
@@ -83,20 +129,20 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
             <input
               type="color"
               value={primaryColor || "#6366f1"}
-              onChange={(e) =>
+              onChange={(event) =>
                 onChange({
                   ...form,
-                  theme: { ...form.theme, primary: e.target.value },
+                  theme: { ...form.theme, primary: event.target.value },
                 })
               }
               className="h-9 w-9 shrink-0 cursor-pointer rounded border border-border bg-transparent p-0.5"
             />
             <Input
               value={primaryColor}
-              onChange={(e) =>
+              onChange={(event) =>
                 onChange({
                   ...form,
-                  theme: { ...form.theme, primary: e.target.value || undefined },
+                  theme: { ...form.theme, primary: event.target.value || undefined },
                 })
               }
               placeholder="#6366f1"
@@ -107,6 +153,18 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
             Used for buttons and interactive elements in the published form.
           </p>
         </div>
+      </div>
+
+      <div className="border-t border-border pt-5">
+        <WebhookConnectionsEditor
+          connections={form.connections}
+          onChange={(connections) =>
+            onChange({
+              ...form,
+              connections,
+            })
+          }
+        />
       </div>
     </div>
   );
