@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@declarativeforms/types": "*",
-    "handlebars": "^4.7.8"
+    "handlebars": "^4.7.9"
   },
   "devDependencies": {
     "typescript": "~5.9.3"
