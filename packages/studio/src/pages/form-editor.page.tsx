@@ -4,8 +4,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
   Button,
+  CompletionEditor,
   EmptyState,
   FormBuilder,
+  FormProperties,
   Input,
   PageShell,
   ResultsPanel,
@@ -330,8 +332,14 @@ export function FormEditorPage() {
         <Tabs defaultValue="edit" className="flex min-h-0 flex-1 flex-col gap-0">
           <div className="shrink-0 border-b border-border bg-background px-4">
             <TabsList variant="line" className="h-12 w-auto gap-1 p-0">
+              <TabsTrigger value="settings" className="px-3">
+                Settings
+              </TabsTrigger>
               <TabsTrigger value="edit" className="px-3">
                 Edit
+              </TabsTrigger>
+              <TabsTrigger value="completion" className="px-3">
+                Completion
               </TabsTrigger>
               <TabsTrigger value="share" className="px-3">
                 Share
@@ -342,9 +350,37 @@ export function FormEditorPage() {
             </TabsList>
           </div>
 
+          <TabsContent value="settings" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
+            <div className="mx-auto w-full max-w-xl">
+              <FormProperties
+                form={editorState.form}
+                onChange={(nextForm) => {
+                  setEditorState((current) => ({
+                    ...current,
+                    form: nextForm,
+                  }));
+                }}
+              />
+            </div>
+          </TabsContent>
+
           <TabsContent value="edit" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-2 sm:p-4">
             <div className="min-h-0 flex-1 overflow-hidden">
               <FormBuilder
+                form={editorState.form}
+                onChange={(nextForm) => {
+                  setEditorState((current) => ({
+                    ...current,
+                    form: nextForm,
+                  }));
+                }}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="completion" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
+            <div className="mx-auto w-full max-w-xl">
+              <CompletionEditor
                 form={editorState.form}
                 onChange={(nextForm) => {
                   setEditorState((current) => ({

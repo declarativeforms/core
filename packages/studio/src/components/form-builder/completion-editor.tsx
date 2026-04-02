@@ -7,7 +7,6 @@ import type {
 } from "@/lib/declarative-form-types";
 import { Button, Input, Label, Textarea } from "@/components/ui";
 
-import { BuilderPaneHeader } from "./panel-shell";
 
 type CompletionEditorProps = {
   form: IDeclarativeForm;
@@ -235,12 +234,10 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <BuilderPaneHeader title="Completion" />
-      <div className="flex-1 space-y-5 overflow-y-auto p-4">
-        <p className="text-sm text-muted-foreground">
-          Configure what users see after completing the form.
-        </p>
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground">
+        Configure what users see after completing the form.
+      </p>
 
         {!isConditional ? (
           <>
@@ -318,7 +315,6 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
             </Button>
           </>
         )}
-      </div>
     </div>
   );
 }

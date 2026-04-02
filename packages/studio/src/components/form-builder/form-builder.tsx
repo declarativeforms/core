@@ -9,7 +9,6 @@ import type {
   IDeclarativeFormField,
   IDeclarativeFormSection,
 } from "@/lib/declarative-form-types";
-import { CompletionEditor } from "./completion-editor";
 import { FieldList } from "./field-list";
 import { FieldProperties } from "./field-properties";
 import { SectionList } from "./section-list";
@@ -52,7 +51,6 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(
     sections[0]?.fields && sections[0].fields.length > 0 ? 0 : null,
   );
-  const [isCompletionSelected, setIsCompletionSelected] = useState(false);
   const [mobileView, setMobileView] = useState<"list" | "detail">("list");
 
   useEffect(() => {
@@ -62,10 +60,6 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   }, [isMobile]);
 
   useEffect(() => {
-    if (isCompletionSelected) {
-      return;
-    }
-
     if (sections.length === 0) {
       if (activeSectionIndex !== null) {
         setActiveSectionIndex(null);
@@ -95,7 +89,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     } else if (selectedFieldIndex !== null && selectedFieldIndex >= fields.length) {
       setSelectedFieldIndex(fields.length - 1);
     }
-  }, [sections, activeSectionIndex, selectedFieldIndex, isCompletionSelected]);
+  }, [sections, activeSectionIndex, selectedFieldIndex]);
 
   const activeSection =
     activeSectionIndex !== null ? sections[activeSectionIndex] ?? null : null;
@@ -116,13 +110,11 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
       sections: nextSections,
     });
 
-    setIsCompletionSelected(false);
     setActiveSectionIndex(nextSections.length - 1);
     setSelectedFieldIndex(null);
   };
 
   const handleSelectSection = (index: number) => {
-    setIsCompletionSelected(false);
     setActiveSectionIndex(index);
 
     const nextFields = sections[index]?.fields ?? [];
@@ -130,16 +122,6 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
 
     if (isMobile) {
       setMobileView("list");
-    }
-  };
-
-  const handleSelectCompletion = () => {
-    setIsCompletionSelected(true);
-    setActiveSectionIndex(null);
-    setSelectedFieldIndex(null);
-
-    if (isMobile) {
-      setMobileView("detail");
     }
   };
 
@@ -267,14 +249,12 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     <SectionList
       sections={sections}
       activeSectionIndex={activeSectionIndex}
-      isCompletionSelected={isCompletionSelected}
       onSelectSection={handleSelectSection}
       onAddSection={handleAddSection}
-      onSelectCompletion={handleSelectCompletion}
     />
   );
 
-  const fieldListNode = !isCompletionSelected && (
+  const fieldListNode = (
     <FieldList
       fields={activeFields}
       selectedFieldIndex={selectedFieldIndex}
@@ -286,9 +266,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     />
   );
 
-  const detailNode = isCompletionSelected ? (
-    <CompletionEditor form={form} onChange={onChange} />
-  ) : selectedField ? (
+  const detailNode = selectedField ? (
     <FieldProperties field={selectedField} onChange={handleUpdateField} />
   ) : (
     <SectionProperties
