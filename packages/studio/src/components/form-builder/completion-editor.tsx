@@ -246,10 +246,6 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted-foreground">
-        Configure what users see after completing the form.
-      </p>
-
       {!isConditional ? (
         <>
           <CompletionFields

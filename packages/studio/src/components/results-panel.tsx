@@ -5,9 +5,8 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   EmptyState,
+  TabPageHeader,
 } from "@/components";
 import { useSubmissions } from "@/hooks";
 import type { ISubmission } from "@/lib/declarative-form-types";
@@ -79,20 +78,17 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="flex h-full min-h-0 flex-col gap-6">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="h-5 w-24 animate-pulse rounded bg-muted" />
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />
           </div>
-          <div className="h-10 w-24 animate-pulse rounded bg-muted" />
+          <div className="h-9 w-24 animate-pulse rounded bg-muted" />
         </div>
 
         <Card className="min-h-0 rounded-xl border-border shadow-sm">
-          <CardHeader className="gap-1 pb-4">
-            <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-          </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 py-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="h-14 animate-pulse rounded-lg bg-muted/60" />
             ))}
@@ -127,26 +123,20 @@ export function ResultsPanel({ formId }: ResultsPanelProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold text-foreground">Responses</h2>
-          <p className="text-sm text-muted-foreground">
-            {submissions.length} {submissions.length === 1 ? "response" : "responses"}
-          </p>
-        </div>
-
-        <Button type="button" variant="outline">
-          <Download />
-          Export
-        </Button>
-      </div>
+    <div className="flex h-full min-h-0 min-w-0 flex-col gap-6">
+      <TabPageHeader
+        title="Responses"
+        description={`${submissions.length} ${submissions.length === 1 ? "response" : "responses"}`}
+        actions={
+          <Button type="button" variant="outline">
+            <Download />
+            Export
+          </Button>
+        }
+      />
 
       <Card className="min-h-0 min-w-0 rounded-xl border-border shadow-sm">
-        <CardHeader className="gap-1 pb-4">
-          <CardTitle className="text-base font-semibold">Submission log</CardTitle>
-        </CardHeader>
-        <CardContent className="min-h-0">
+        <CardContent className="min-h-0 py-4">
           <div className="overflow-hidden rounded-lg border border-border">
             <div className="max-h-[28rem] overflow-auto">
               <table className="w-full border-collapse text-left text-sm">
