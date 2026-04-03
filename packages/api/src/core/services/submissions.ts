@@ -147,6 +147,10 @@ export async function createOrUpdateSubmission(input: {
       return null;
     }
 
+    if (existingSubmission.status === 'completed' && !input.isPartial) {
+      return existingSubmission;
+    }
+
     submission = {
       ...existingSubmission,
       data: {
