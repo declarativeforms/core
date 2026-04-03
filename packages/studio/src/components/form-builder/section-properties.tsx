@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { LocalizedTextEditor } from "./localized-text-editor";
-import { BuilderPaneHeader } from "./panel-shell";
+import { BuilderInset, BuilderPaneHeader, BuilderSectionTitle } from "./panel-shell";
 import { getSectionDisplayTitle } from "./shared";
 
 type SectionPropertiesProps = {
@@ -306,14 +306,12 @@ export function SectionProperties({
         <div className="space-y-4">
           <div className="space-y-3">
             {conditionalRules.map((rule, index) => (
-              <div
+              <BuilderInset
                 key={index}
-                className="space-y-2 rounded-lg border border-border bg-muted/20 p-3"
+                className="space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Rule {index + 1}
-                  </Label>
+                  <BuilderSectionTitle className="leading-none">Rule {index + 1}</BuilderSectionTitle>
                   <Button
                     type="button"
                     variant="ghost"
@@ -353,7 +351,7 @@ export function SectionProperties({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
+              </BuilderInset>
             ))}
           </div>
 
@@ -367,10 +365,8 @@ export function SectionProperties({
             Add Rule
           </Button>
 
-          <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/10 p-3">
-            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Otherwise
-            </Label>
+          <BuilderInset variant="dashed" className="space-y-2">
+            <BuilderSectionTitle className="leading-none">Otherwise</BuilderSectionTitle>
             <Select value={elseFallback} onValueChange={handleElseFallbackChange}>
               <SelectTrigger className="text-xs">
                 <SelectValue />
@@ -384,7 +380,7 @@ export function SectionProperties({
                 <SelectItem value="done">Complete form</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </BuilderInset>
         </div>
       )}
     </>
@@ -394,7 +390,7 @@ export function SectionProperties({
     return (
       <div className={cn("flex h-full flex-col", className)}>
         <BuilderPaneHeader title="Section Settings" />
-        <div className={cn("flex-1 space-y-5 overflow-y-auto p-4", contentClassName)}>
+        <div className={cn("flex-1 space-y-4 overflow-y-auto p-4", contentClassName)}>
           {content}
         </div>
       </div>
@@ -402,7 +398,7 @@ export function SectionProperties({
   }
 
   return (
-    <div className={cn("space-y-5", className, contentClassName)}>
+    <div className={cn("space-y-4", className, contentClassName)}>
       {content}
     </div>
   );

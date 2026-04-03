@@ -20,12 +20,12 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex w-full max-w-md flex-col items-center rounded-xl border border-dashed border-border bg-muted/10 px-8 py-10 text-center",
+        "flex w-full max-w-md flex-col items-center rounded-xl border border-dashed border-border bg-muted/10 px-6 py-8 text-center",
         className,
       )}
     >
       {icon ? (
-        <div className="mb-5 flex size-14 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground shadow-sm">
+        <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground">
           {icon}
         </div>
       ) : null}
@@ -35,12 +35,12 @@ export function EmptyState({
       </h2>
 
       {description ? (
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
           {description}
         </p>
       ) : null}
 
-      {action ? <div className="mt-5">{action}</div> : null}
+      {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
 }

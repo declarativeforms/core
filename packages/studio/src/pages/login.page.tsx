@@ -1,7 +1,7 @@
 import { Github } from "lucide-react";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui";
+import { Button, PageShell } from "@/components";
 import { getGitHubOAuthUrl } from "@/lib/auth";
 
 export function LoginPage() {
@@ -10,9 +10,9 @@ export function LoginPage() {
   }, []);
 
   return (
-    <div className="flex h-dvh w-full items-center justify-center bg-muted/40 px-4">
+    <PageShell className="items-center justify-center bg-muted/30">
       <div className="flex w-full max-w-sm flex-col items-center text-center">
-        <div className="mb-6 flex size-16 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+        <div className="flex size-14 items-center justify-center rounded-lg border border-border bg-background">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -30,19 +30,21 @@ export function LoginPage() {
           </svg>
         </div>
 
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Welcome to Studio
-        </h1>
+        <div className="mt-5 space-y-1.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            Welcome to Studio
+          </h1>
 
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Build forms from YAML. Share anywhere.
-        </p>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Build forms from YAML. Share anywhere.
+          </p>
 
-        <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          Sign in with GitHub to get started.
-        </p>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Sign in with GitHub to get started.
+          </p>
+        </div>
 
-        <div className="mt-6 w-full">
+        <div className="mt-5 w-full">
           <Button
             type="button"
             className="w-full"
@@ -55,10 +57,10 @@ export function LoginPage() {
           </Button>
         </div>
 
-        <p className="mt-6 text-xs leading-5 text-muted-foreground">
+        <p className="mt-5 text-xs leading-5 text-muted-foreground">
           By continuing, you agree to our terms of service.
         </p>
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,5 +1,5 @@
-import { ArrowLeft, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Download, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -83,10 +83,33 @@ function SaveIndicator({ state }: { state: SaveState }) {
           : "bg-muted-foreground/40";
 
   return (
-    <span className={`flex items-center gap-1.5 text-sm ${textClassName}`}>
+    <span className={`flex items-center gap-1.5 text-xs ${textClassName}`}>
       <span className={`size-1.5 shrink-0 rounded-full ${dotClassName}`} />
       {text}
     </span>
+  );
+}
+
+function EditorTabSection({
+  title,
+  description,
+  children,
+  actions,
+  maxWidth = "xl",
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+  actions?: ReactNode;
+  maxWidth?: "xl" | "3xl";
+}) {
+  return (
+    <div
+      className={`mx-auto w-full space-y-5 ${maxWidth === "3xl" ? "max-w-3xl" : "max-w-xl"}`}
+    >
+      <TabPageHeader title={title} description={description} actions={actions} />
+      {children}
+    </div>
   );
 }
 
@@ -278,8 +301,8 @@ export function FormEditorPage() {
 
   return (
     <PageShell className="overflow-hidden">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-        <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background">
+        <div className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
           <div className="flex min-w-0 items-center gap-3">
             <Button asChild type="button" variant="ghost" size="icon-sm">
               <Link to="/" aria-label="Back to forms">
@@ -304,15 +327,16 @@ export function FormEditorPage() {
               }}
               placeholder="Untitled Form"
               aria-label="Form title"
-              className="h-auto max-w-xl border-transparent bg-transparent px-0 text-base font-semibold shadow-none focus-visible:border-transparent focus-visible:ring-0"
+              className="h-8 max-w-xl border-transparent bg-transparent px-0 text-lg font-semibold shadow-none focus-visible:border-transparent focus-visible:ring-0"
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <SaveIndicator state={saveState} />
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={handleDelete}
               disabled={deleteForm.isPending}
             >
@@ -324,7 +348,7 @@ export function FormEditorPage() {
 
         <Tabs defaultValue="edit" className="flex min-h-0 flex-1 flex-col gap-0">
           <div className="shrink-0 border-b border-border bg-background px-4">
-            <TabsList variant="line" className="h-12 w-auto gap-1 p-0">
+            <TabsList variant="line" className="h-11 w-auto gap-1 p-0">
               <TabsTrigger value="settings" className="px-3">
                 Settings
               </TabsTrigger>
@@ -343,12 +367,11 @@ export function FormEditorPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="settings" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-xl space-y-6">
-              <TabPageHeader
-                title="Settings"
-                description="Configure your form's general properties, appearance, and integrations."
-              />
+          <TabsContent value="settings" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6">
+            <EditorTabSection
+              title="Settings"
+              description="Configure your form's general properties, appearance, and integrations."
+            >
               <FormProperties
                 form={editorState.form}
                 onChange={(nextForm) => {
@@ -358,15 +381,14 @@ export function FormEditorPage() {
                   }));
                 }}
               />
-            </div>
+            </EditorTabSection>
           </TabsContent>
 
-          <TabsContent value="edit" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-xl space-y-6">
-              <TabPageHeader
-                title="Edit"
-                description="Add and arrange the fields in your form."
-              />
+          <TabsContent value="edit" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6">
+            <EditorTabSection
+              title="Edit"
+              description="Add and arrange the fields in your form."
+            >
               <FormBuilder
                 form={editorState.form}
                 onChange={(nextForm) => {
@@ -376,15 +398,14 @@ export function FormEditorPage() {
                   }));
                 }}
               />
-            </div>
+            </EditorTabSection>
           </TabsContent>
 
-          <TabsContent value="completion" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-xl space-y-6">
-              <TabPageHeader
-                title="Completion"
-                description="Configure what users see after completing the form."
-              />
+          <TabsContent value="completion" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6">
+            <EditorTabSection
+              title="Completion"
+              description="Configure what users see after completing the form."
+            >
               <CompletionEditor
                 form={editorState.form}
                 onChange={(nextForm) => {
@@ -394,23 +415,33 @@ export function FormEditorPage() {
                   }));
                 }}
               />
-            </div>
+            </EditorTabSection>
           </TabsContent>
 
-          <TabsContent value="share" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-3xl space-y-6">
-              <TabPageHeader
-                title="Share"
-                description="Share your form via link, embed code, or QR code."
-              />
+          <TabsContent value="share" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6">
+            <EditorTabSection
+              title="Share"
+              description="Share your form via link, embed code, or QR code."
+              maxWidth="3xl"
+            >
               <SharePanel formId={persistedFormId} />
-            </div>
+            </EditorTabSection>
           </TabsContent>
 
-          <TabsContent value="results" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-3xl">
-              <ResultsPanel formId={persistedFormId} />
-            </div>
+          <TabsContent value="results" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6">
+            <EditorTabSection
+              title="Responses"
+              description="Review submissions and inspect the data captured by this form."
+              maxWidth="3xl"
+              actions={
+                <Button type="button" variant="outline">
+                  <Download />
+                  Export
+                </Button>
+              }
+            >
+              <ResultsPanel formId={persistedFormId} showHeader={false} />
+            </EditorTabSection>
           </TabsContent>
         </Tabs>
       </div>

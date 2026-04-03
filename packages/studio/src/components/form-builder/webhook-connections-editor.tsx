@@ -3,6 +3,8 @@ import { Plus, Trash2, Webhook } from "lucide-react";
 import type { IConnection, IWebhookConnection } from "@/lib/declarative-form-types";
 import { Button, Input, Label } from "@/components/ui";
 
+import { BuilderInset, BuilderSectionTitle } from "./panel-shell";
+
 type WebhookConnectionsEditorProps = {
   connections: IConnection[] | undefined;
   onChange: (nextConnections: IConnection[] | undefined) => void;
@@ -70,9 +72,7 @@ export function WebhookConnectionsEditor({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Connections
-        </p>
+        <BuilderSectionTitle>Connections</BuilderSectionTitle>
         <p className="text-sm text-muted-foreground">
           Send completed submissions to external systems. Studio currently supports
           webhook connections only.
@@ -80,20 +80,20 @@ export function WebhookConnectionsEditor({
       </div>
 
       {unsupportedConnections.length > 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 px-4 py-3 text-sm text-muted-foreground">
+        <BuilderInset variant="dashed" className="px-4">
           {unsupportedConnections.length} existing non-webhook connection
           {unsupportedConnections.length === 1 ? "" : "s"} {unsupportedConnections.length === 1 ? "is" : "are"} preserved but cannot be edited in Studio yet.
-        </div>
+        </BuilderInset>
       ) : null}
 
       {webhookConnections.length > 0 ? (
         <div className="space-y-3">
           {webhookConnections.map((connection, index) => (
-            <div
+            <BuilderInset
               key={`webhook-connection-${index}`}
-              className="rounded-xl border border-border bg-muted/10 p-4"
+              className="space-y-3 p-4"
             >
-              <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="flex size-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground">
                     <Webhook className="size-4" />
@@ -168,13 +168,13 @@ export function WebhookConnectionsEditor({
                   </p>
                 </div>
               </div>
-            </div>
+            </BuilderInset>
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 px-4 py-6 text-sm text-muted-foreground">
+        <BuilderInset variant="dashed" className="px-4 py-6">
           No webhook connections yet.
-        </div>
+        </BuilderInset>
       )}
 
       <Button

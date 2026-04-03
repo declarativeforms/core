@@ -16,11 +16,9 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-start justify-between gap-4", className)}>
+    <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between", className)}>
       <div className="min-w-0 space-y-1">
-        <h1 className="text-lg font-semibold text-foreground">
-          {title}
-        </h1>
+        <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         {description ? (
           <p className="max-w-2xl text-sm text-muted-foreground">
             {description}
@@ -29,7 +27,7 @@ export function PageHeader({
       </div>
 
       {actions ? (
-        <div className="flex shrink-0 items-center gap-3">{actions}</div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
       ) : null}
     </div>
   );

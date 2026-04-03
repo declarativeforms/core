@@ -28,7 +28,7 @@ import { getLocalizedTextPreview } from "@/lib/localized-text";
 import { cn } from "@/lib/utils";
 
 import { LocalizedTextEditor } from "./localized-text-editor";
-import { BuilderPaneHeader } from "./panel-shell";
+import { BuilderInset, BuilderPaneHeader, BuilderSectionTitle } from "./panel-shell";
 import { getEditableFieldType, getFieldTypeLabel } from "./shared";
 
 type FieldPropertiesProps = {
@@ -395,14 +395,13 @@ function OptionsEditor({
             const advancedOption = toAdvancedOption(option);
 
             return (
-              <div
+              <BuilderInset
                 key={`${field.id ?? "field"}-option-${index}`}
-                className="rounded-xl border border-border bg-background p-3"
+                variant="default"
+                className="space-y-3"
               >
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Option {index + 1}
-                  </Label>
+                <div className="flex items-center justify-between gap-3">
+                  <BuilderSectionTitle className="leading-none">Option {index + 1}</BuilderSectionTitle>
                   <Button
                     type="button"
                     variant="ghost"
@@ -459,7 +458,7 @@ function OptionsEditor({
                     />
                   </div>
                 </div>
-              </div>
+              </BuilderInset>
             );
           })}
         </div>
@@ -532,7 +531,7 @@ function ValidatorEditor({
 }) {
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-border bg-background px-3 py-3">
+      <BuilderInset variant="default">
         <div className="flex items-start gap-3">
           <Checkbox
             id="field-required"
@@ -556,16 +555,16 @@ function ValidatorEditor({
             </p>
           </div>
         </div>
-      </div>
+      </BuilderInset>
 
       {validatorDefinitions.map((definition) => {
         const validator = getObjectValidator(field, definition.type);
         const isEnabled = !!validator;
         const value = getValidatorValue(validator, definition.type);
         return (
-          <div
+          <BuilderInset
             key={definition.type}
-            className="rounded-xl border border-border bg-background px-3 py-3"
+            variant="default"
           >
             <div className="flex items-start gap-3">
               <Checkbox
@@ -718,7 +717,7 @@ function ValidatorEditor({
                 />
               </div>
             )}
-          </div>
+          </BuilderInset>
         );
       })}
     </div>
@@ -736,11 +735,11 @@ export function FieldProperties({
   if (!field) {
     return (
       <div className={cn("flex items-center justify-center p-6", className)}>
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 px-8 py-12 text-center">
+        <BuilderInset variant="dashed" className="px-8 py-12 text-center">
           <p className="text-sm text-muted-foreground">
             Select a field to edit its properties
           </p>
-        </div>
+        </BuilderInset>
       </div>
     );
   }
@@ -814,20 +813,18 @@ export function FieldProperties({
         />
       </div>
 
-      <div className="border-t border-border pt-5" />
+      <div className="border-t border-border pt-4" />
 
       <div className="space-y-3">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validation</h3>
+        <BuilderSectionTitle>Validation</BuilderSectionTitle>
         <ValidatorEditor field={field} onChange={onChange} defaultLocale={defaultLocale} />
       </div>
 
       {emailField && (
-        <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Email Settings
-          </h3>
+        <div className="space-y-3 border-t border-border pt-4">
+          <BuilderSectionTitle>Email Settings</BuilderSectionTitle>
 
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+          <BuilderInset variant="default" className="flex items-start gap-3">
             <Checkbox
               id="field-otp"
               checked={emailField.otp === true}
@@ -844,9 +841,9 @@ export function FieldProperties({
                 Ask users to verify the email with a one-time passcode.
               </p>
             </div>
-          </div>
+          </BuilderInset>
 
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+          <BuilderInset variant="default" className="flex items-start gap-3">
             <Checkbox
               id="field-block-free-email"
               checked={emailField.block_free_email === true}
@@ -865,17 +862,15 @@ export function FieldProperties({
                 Restrict addresses from common free email providers.
               </p>
             </div>
-          </div>
+          </BuilderInset>
         </div>
       )}
 
       {dropdownField && (
-        <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Dropdown Settings
-          </h3>
+        <div className="space-y-3 border-t border-border pt-4">
+          <BuilderSectionTitle>Dropdown Settings</BuilderSectionTitle>
 
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+          <BuilderInset variant="default" className="flex items-start gap-3">
             <Checkbox
               id="field-searchable"
               checked={dropdownField.searchable === true}
@@ -892,7 +887,7 @@ export function FieldProperties({
                 Allow users to search within the dropdown options.
               </p>
             </div>
-          </div>
+          </BuilderInset>
 
           <OptionsEditor
             field={dropdownField}
@@ -903,12 +898,10 @@ export function FieldProperties({
       )}
 
       {selectField && (
-        <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Selection Settings
-          </h3>
+        <div className="space-y-3 border-t border-border pt-4">
+          <BuilderSectionTitle>Selection Settings</BuilderSectionTitle>
 
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
+          <BuilderInset variant="default" className="flex items-start gap-3">
             <Checkbox
               id="field-allow-other"
               checked={selectField.allow_other === true}
@@ -925,7 +918,7 @@ export function FieldProperties({
                 Let respondents provide their own value when none fit.
               </p>
             </div>
-          </div>
+          </BuilderInset>
 
           <OptionsEditor
             field={selectField}
@@ -936,10 +929,8 @@ export function FieldProperties({
       )}
 
       {ratingField && (
-        <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Rating Settings
-          </h3>
+        <div className="space-y-3 border-t border-border pt-4">
+          <BuilderSectionTitle>Rating Settings</BuilderSectionTitle>
 
           <LocalizedTextEditor
             id="field-min-label"
@@ -970,10 +961,8 @@ export function FieldProperties({
       )}
 
       {addressField && (
-        <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Address Settings
-          </h3>
+        <div className="space-y-3 border-t border-border pt-4">
+          <BuilderSectionTitle>Address Settings</BuilderSectionTitle>
 
           <div className="space-y-2">
             <Label>Output Format</Label>
@@ -999,10 +988,8 @@ export function FieldProperties({
       )}
 
       {cameraField && (
-        <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Camera Settings
-          </h3>
+        <div className="space-y-3 border-t border-border pt-4">
+          <BuilderSectionTitle>Camera Settings</BuilderSectionTitle>
 
           <div className="space-y-2">
             <Label>Facing Mode</Label>
@@ -1035,7 +1022,7 @@ export function FieldProperties({
         <BuilderPaneHeader title="Field Properties" />
         <div
           className={cn(
-            "min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4",
+            "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4",
             contentClassName,
           )}
         >
@@ -1046,7 +1033,7 @@ export function FieldProperties({
   }
 
   return (
-    <div className={cn("space-y-5", className, contentClassName)}>
+    <div className={cn("space-y-4", className, contentClassName)}>
       {content}
     </div>
   );

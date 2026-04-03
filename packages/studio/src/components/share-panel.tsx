@@ -41,8 +41,8 @@ export function SharePanel({ formId }: SharePanelProps) {
   };
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-4">
-      <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
+    <div className="flex w-full min-w-0 flex-col gap-5">
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
           <CardTitle className="text-base font-semibold">Share link</CardTitle>
         </CardHeader>
@@ -61,7 +61,7 @@ export function SharePanel({ formId }: SharePanelProps) {
       </Card>
 
       <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]">
-        <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
             <CardTitle className="text-base font-semibold">Embed code</CardTitle>
           </CardHeader>
@@ -77,12 +77,12 @@ export function SharePanel({ formId }: SharePanelProps) {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
             <CardTitle className="text-base font-semibold">QR code</CardTitle>
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
-            <div className="flex min-h-36 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 text-sm text-muted-foreground">
+            <div className="flex min-h-36 items-center justify-center rounded-lg border border-dashed border-border bg-muted/10 text-sm text-muted-foreground">
               <div className="flex flex-col items-center gap-2">
                 <QrCode className="size-6" />
                 <span>QR Code</span>

@@ -2,6 +2,7 @@ import type { IDeclarativeForm } from "@/lib/declarative-form-types";
 import { Input, Label } from "@/components/ui";
 
 import { LocalizedTextEditor } from "./localized-text-editor";
+import { BuilderSectionTitle } from "./panel-shell";
 import { WebhookConnectionsEditor } from "./webhook-connections-editor";
 
 type FormPropertiesProps = {
@@ -17,7 +18,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
   const mixpanelToken = form.measurements?.mixpanel ?? "";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <LocalizedTextEditor
         label="Title"
         value={form.title}
@@ -35,10 +36,8 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
         multiline
       />
 
-      <div className="border-t border-border pt-5">
-        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Localization
-        </p>
+      <div className="space-y-3 border-t border-border pt-4">
+        <BuilderSectionTitle>Localization</BuilderSectionTitle>
         <div className="space-y-1.5">
           <Label>Default locale</Label>
           <Input
@@ -58,11 +57,9 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
         </div>
       </div>
 
-      <div className="border-t border-border pt-5">
-        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Scheduling
-        </p>
-        <div className="space-y-4">
+      <div className="space-y-3 border-t border-border pt-4">
+        <BuilderSectionTitle>Scheduling</BuilderSectionTitle>
+        <div className="space-y-3">
           <div className="space-y-1.5">
             <Label>Start date</Label>
             <Input
@@ -93,10 +90,8 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
         </div>
       </div>
 
-      <div className="border-t border-border pt-5">
-        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Analytics
-        </p>
+      <div className="space-y-3 border-t border-border pt-4">
+        <BuilderSectionTitle>Analytics</BuilderSectionTitle>
         <div className="space-y-1.5">
           <Label>Mixpanel token</Label>
           <Input
@@ -119,10 +114,8 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
         </div>
       </div>
 
-      <div className="border-t border-border pt-5">
-        <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Appearance
-        </p>
+      <div className="space-y-3 border-t border-border pt-4">
+        <BuilderSectionTitle>Appearance</BuilderSectionTitle>
         <div className="space-y-1.5">
           <Label>Primary color</Label>
           <div className="flex items-center gap-2">
@@ -135,7 +128,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
                   theme: { ...form.theme, primary: event.target.value },
                 })
               }
-              className="h-9 w-9 shrink-0 cursor-pointer rounded border border-border bg-transparent p-0.5"
+              className="size-9 shrink-0 cursor-pointer rounded-md border border-border bg-background p-0.5"
             />
             <Input
               value={primaryColor}
@@ -155,7 +148,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
         </div>
       </div>
 
-      <div className="border-t border-border pt-5">
+      <div className="border-t border-border pt-4">
         <WebhookConnectionsEditor
           connections={form.connections}
           onChange={(connections) =>

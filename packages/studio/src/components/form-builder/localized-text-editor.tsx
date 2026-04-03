@@ -13,6 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button, Input, Label, Textarea } from "@/components/ui";
 
+import { BuilderInset, BuilderSectionTitle } from "./panel-shell";
+
 type LocalizedTextEditorProps = {
   label: string;
   value: ILocalizedText | undefined;
@@ -126,7 +128,7 @@ export function LocalizedTextEditor({
   }
 
   return (
-    <div className={cn("space-y-3 rounded-xl border border-border bg-muted/10 p-3", className)}>
+    <BuilderInset className={cn("space-y-3", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <Label className={labelClassName}>{label}</Label>
@@ -142,14 +144,12 @@ export function LocalizedTextEditor({
 
       <div className="space-y-3">
         {localizedEntries.map((entry, index) => (
-          <div
+          <BuilderInset
             key={`${entry.locale}-${index}`}
-            className="rounded-lg border border-border bg-background p-3"
+            variant="default"
           >
             <div className="mb-3 flex items-center justify-between gap-3">
-              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Locale {index + 1}
-              </Label>
+              <BuilderSectionTitle className="leading-none">Locale {index + 1}</BuilderSectionTitle>
               <Button
                 type="button"
                 variant="ghost"
@@ -182,7 +182,7 @@ export function LocalizedTextEditor({
                 />
               </div>
             </div>
-          </div>
+          </BuilderInset>
         ))}
       </div>
 
@@ -206,6 +206,6 @@ export function LocalizedTextEditor({
         <Plus />
         Add Locale
       </Button>
-    </div>
+    </BuilderInset>
   );
 }

@@ -49,8 +49,8 @@ export function SectionList({
               className={cn(
                 "h-auto w-full justify-start gap-2 rounded-none border-l-2 border-l-transparent px-3 py-2",
                 activeSectionIndex === index
-                  ? "border-l-foreground bg-accent text-accent-foreground"
-                  : "hover:bg-accent/50",
+                  ? "border-l-foreground bg-accent/40 text-foreground"
+                  : "hover:bg-accent/30",
               )}
               onClick={() => onSelectSection(index)}
               aria-label={`Select section: ${getSectionDisplayTitle(section.title)}`}

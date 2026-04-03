@@ -43,29 +43,30 @@ export function CallbackPage() {
 
   if (error) {
     return (
-      <div className="flex h-dvh w-full items-center justify-center bg-background">
-        <PageShell className="items-center justify-center">
-          <EmptyState
-            title="Authentication failed"
-            description="Something went wrong while signing in. Please try again."
-            action={
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/login", { replace: true })}
-              >
-                Back to sign in
-              </Button>
-            }
-          />
-        </PageShell>
-      </div>
+      <PageShell className="items-center justify-center">
+        <EmptyState
+          title="Authentication failed"
+          description="Something went wrong while signing in. Please try again."
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/login", { replace: true })}
+            >
+              Back to sign in
+            </Button>
+          }
+        />
+      </PageShell>
     );
   }
 
   return (
-    <div className="flex h-dvh w-full items-center justify-center bg-background">
-      <p className="text-sm text-muted-foreground">Signing in…</p>
-    </div>
+    <PageShell className="items-center justify-center">
+      <div className="space-y-1 text-center">
+        <p className="text-sm font-medium text-foreground">Signing in…</p>
+        <p className="text-sm text-muted-foreground">Completing your GitHub login.</p>
+      </div>
+    </PageShell>
   );
 }

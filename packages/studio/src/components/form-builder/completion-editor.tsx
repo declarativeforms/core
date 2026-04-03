@@ -10,6 +10,7 @@ import { hasLocalizedTextContent } from "@/lib/localized-text";
 import { Button, Input, Label } from "@/components/ui";
 
 import { LocalizedTextEditor } from "./localized-text-editor";
+import { BuilderInset, BuilderSectionTitle } from "./panel-shell";
 
 type CompletionEditorProps = {
   form: IDeclarativeForm;
@@ -245,7 +246,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {!isConditional ? (
         <>
           <CompletionFields
@@ -257,7 +258,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
           <Button
             type="button"
             variant="outline"
-            className="w-full text-xs"
+            className="w-full justify-start"
             onClick={handleSwitchToConditional}
           >
             Add conditional completion rules
@@ -267,14 +268,14 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
         <>
           <div className="space-y-3">
             {conditionalRules.map((rule, index) => (
-              <div
+              <BuilderInset
                 key={index}
-                className="space-y-3 rounded-lg border border-border bg-muted/20 p-3"
+                className="space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <BuilderSectionTitle className="leading-none">
                     {rule.when ? `Rule ${index + 1}` : "Default"}
-                  </Label>
+                  </BuilderSectionTitle>
                   <Button
                     type="button"
                     variant="ghost"
@@ -305,7 +306,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
                   onChange={(next) => handleUpdateRule(index, { ...next, when: rule.when })}
                   defaultLocale={form.locale}
                 />
-              </div>
+              </BuilderInset>
             ))}
           </div>
 
@@ -322,7 +323,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
           <Button
             type="button"
             variant="ghost"
-            className="w-full text-xs text-muted-foreground"
+            className="w-full text-muted-foreground"
             onClick={handleSwitchToSimple}
           >
             Switch to simple completion

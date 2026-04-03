@@ -81,9 +81,9 @@ function SortableFieldItem({ field, index, isSelected, onSelect }: SortableField
       className={cn(
         "flex w-full items-center gap-1 border-l-2 border-l-transparent transition-colors",
         isSelected
-          ? "border-l-foreground bg-accent text-accent-foreground"
-          : "hover:bg-accent/50",
-        isDragging && "z-10 opacity-80 shadow-md",
+          ? "border-l-foreground bg-accent/40 text-foreground"
+          : "hover:bg-accent/30",
+        isDragging && "z-10 opacity-90 shadow-sm",
       )}
     >
       <Button
@@ -218,8 +218,8 @@ export function FieldList({
               className={cn(
                 "h-auto w-full justify-start gap-3 rounded-none border-l-2 border-l-transparent px-3 py-2",
                 selectedFieldIndex === null
-                  ? "border-l-foreground bg-accent text-accent-foreground"
-                  : "hover:bg-accent/50",
+                  ? "border-l-foreground bg-accent/40 text-foreground"
+                  : "hover:bg-accent/30",
               )}
               onClick={onViewSectionSettings}
             >

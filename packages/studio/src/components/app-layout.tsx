@@ -19,8 +19,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="flex h-dvh w-full flex-col bg-muted/40 text-foreground">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4 shadow-[0_1px_0_0_theme(colors.border)]">
+    <div className="flex h-dvh w-full flex-col bg-muted/30 text-foreground">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:px-6">
         <Link
           to="/"
           className="flex items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-foreground/80"

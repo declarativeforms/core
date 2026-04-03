@@ -40,6 +40,7 @@ import type {
 } from "@/lib/declarative-form-types";
 
 import { FieldProperties } from "./field-properties";
+import { BuilderInset, BuilderSectionTitle } from "./panel-shell";
 import { SectionProperties } from "./section-properties";
 import {
   BUILDER_FIELD_TYPES,
@@ -124,17 +125,17 @@ function InlineEditorCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-border bg-card shadow-xs transition-colors",
-        isExpanded && "border-foreground/15 bg-muted/10",
+        "overflow-hidden rounded-xl border border-border bg-background transition-colors",
+        isExpanded && "border-foreground/15 bg-muted/5",
         className,
       )}
     >
-      <div className="flex items-center gap-2 px-2 py-2">
+      <div className="flex items-center gap-2 px-3 py-2">
         {dragHandle}
 
         <button
           type="button"
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-2 text-left outline-none transition-colors hover:bg-accent/50 focus-visible:bg-accent/50"
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-2 text-left outline-none transition-colors hover:bg-accent/30 focus-visible:bg-accent/30"
           onClick={onToggle}
           aria-expanded={isExpanded}
         >
@@ -158,7 +159,7 @@ function InlineEditorCard({
 
       {isExpanded ? (
         <>
-          <div className="border-t border-border px-4 py-4">
+          <div className="border-t border-border px-4 py-3">
             {children}
           </div>
           {footer ? <div className="border-t border-border px-4 py-3">{footer}</div> : null}
@@ -254,7 +255,7 @@ function SortableFieldCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(isDragging && "z-10 opacity-85 shadow-lg")}
+      className={cn(isDragging && "z-10 opacity-90 shadow-sm")}
     >
       <InlineEditorCard
         title={getFieldDisplayLabel(field)}
@@ -543,9 +544,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="min-w-0 flex-1 space-y-1.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Section
-          </p>
+          <BuilderSectionTitle>Section</BuilderSectionTitle>
           <Select
             value={activeSectionIndex !== null ? String(activeSectionIndex) : undefined}
             onValueChange={(value) => handleSelectSection(Number(value))}
@@ -571,9 +570,9 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
       </div>
 
       {!activeSection ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 px-4 py-6 text-sm text-muted-foreground">
+        <BuilderInset variant="dashed" className="px-4 py-6">
           No sections yet. Add a section to start building your form.
-        </div>
+        </BuilderInset>
       ) : (
         <div className="space-y-3">
           <InlineEditorCard
@@ -627,9 +626,9 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="rounded-xl border border-dashed border-border bg-muted/10 px-4 py-6 text-sm text-muted-foreground">
+            <BuilderInset variant="dashed" className="px-4 py-6">
               No fields in this section yet.
-            </div>
+            </BuilderInset>
           )}
 
           <AddFieldButton disabled={false} onAddField={handleAddField} />
