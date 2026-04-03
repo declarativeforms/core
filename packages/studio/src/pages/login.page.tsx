@@ -20,7 +20,7 @@ export function LoginPage() {
           </div>
         ) : (
           <img
-            src="/logo/icon.png"
+            src="/android-chrome-192x192.png"
             alt="Declarative Forms"
             className="size-12"
             onError={() => setLogoError(true)}
