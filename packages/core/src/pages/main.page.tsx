@@ -39,6 +39,7 @@ export function MainPage() {
   const langParam = searchParams.get("lang");
 
   const submissionIdRef = useRef(submissionId);
+  const isCompletingRef = useRef(false);
 
   useEffect(() => {
     submissionIdRef.current = submissionId;
@@ -204,29 +205,49 @@ export function MainPage() {
         }
 
         case "complete": {
-          const id = await submitToBackend(state.data, false);
-          const finalSubmissionId = id ?? submissionIdRef.current;
-          updateProgressQuery({
-            submissionId: finalSubmissionId,
-            step: "done",
-          });
-          navigate(
-            withLang(
-              finalSubmissionId
-                ? `thank-you?submission_id=${finalSubmissionId}`
-                : "thank-you",
-            ),
-          );
+          if (isCompletingRef.current) {
+            return;
+          }
+          isCompletingRef.current = true;
+
+          try {
+            const id = await submitToBackend(state.data, false);
+            const finalSubmissionId = id ?? submissionIdRef.current;
+            updateProgressQuery({
+              submissionId: finalSubmissionId,
+              step: "done",
+            });
+            navigate(
+              withLang(
+                finalSubmissionId
+                  ? `thank-you?submission_id=${finalSubmissionId}`
+                  : "thank-you",
+              ),
+            );
+          } catch (error) {
+            isCompletingRef.current = false;
+            throw error;
+          }
           break;
         }
 
         case "redirect": {
-          const id = await submitToBackend(state.data, false);
-          updateProgressQuery({
-            submissionId: id ?? submissionIdRef.current,
-            step: "done",
-          });
-          window.location.href = effect.url;
+          if (isCompletingRef.current) {
+            return;
+          }
+          isCompletingRef.current = true;
+
+          try {
+            const id = await submitToBackend(state.data, false);
+            updateProgressQuery({
+              submissionId: id ?? submissionIdRef.current,
+              step: "done",
+            });
+            window.location.href = effect.url;
+          } catch (error) {
+            isCompletingRef.current = false;
+            throw error;
+          }
           break;
         }
       }
