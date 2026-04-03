@@ -12,6 +12,7 @@ import {
   PageShell,
   ResultsPanel,
   SharePanel,
+  TabPageHeader,
   Tabs,
   TabsContent,
   TabsList,
@@ -343,7 +344,11 @@ export function FormEditorPage() {
           </div>
 
           <TabsContent value="settings" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-xl">
+            <div className="mx-auto w-full max-w-xl space-y-6">
+              <TabPageHeader
+                title="Settings"
+                description="Configure your form's general properties, appearance, and integrations."
+              />
               <FormProperties
                 form={editorState.form}
                 onChange={(nextForm) => {
@@ -357,7 +362,11 @@ export function FormEditorPage() {
           </TabsContent>
 
           <TabsContent value="edit" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-xl">
+            <div className="mx-auto w-full max-w-xl space-y-6">
+              <TabPageHeader
+                title="Edit"
+                description="Add and arrange the fields in your form."
+              />
               <FormBuilder
                 form={editorState.form}
                 onChange={(nextForm) => {
@@ -371,7 +380,11 @@ export function FormEditorPage() {
           </TabsContent>
 
           <TabsContent value="completion" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <div className="mx-auto w-full max-w-xl">
+            <div className="mx-auto w-full max-w-xl space-y-6">
+              <TabPageHeader
+                title="Completion"
+                description="Configure what users see after completing the form."
+              />
               <CompletionEditor
                 form={editorState.form}
                 onChange={(nextForm) => {
@@ -385,11 +398,19 @@ export function FormEditorPage() {
           </TabsContent>
 
           <TabsContent value="share" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <SharePanel formId={persistedFormId} />
+            <div className="mx-auto w-full max-w-3xl space-y-6">
+              <TabPageHeader
+                title="Share"
+                description="Share your form via link, embed code, or QR code."
+              />
+              <SharePanel formId={persistedFormId} />
+            </div>
           </TabsContent>
 
           <TabsContent value="results" className="mt-0 min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-            <ResultsPanel formId={persistedFormId} />
+            <div className="mx-auto w-full max-w-3xl">
+              <ResultsPanel formId={persistedFormId} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

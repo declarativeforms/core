@@ -5,4 +5,5 @@ export * from "./page-header";
 export * from "./page-shell";
 export * from "./results-panel";
 export * from "./share-panel";
+export * from "./tab-page-header";
 export * from "./ui";

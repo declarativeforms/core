@@ -41,7 +41,7 @@ export function SharePanel({ formId }: SharePanelProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-4xl flex-col gap-4">
+    <div className="flex w-full min-w-0 flex-col gap-4">
       <Card className="min-w-0 overflow-hidden rounded-xl border-border shadow-sm">
         <CardHeader className="gap-1 px-4 pb-4 sm:px-6">
           <CardTitle className="text-base font-semibold">Share link</CardTitle>
