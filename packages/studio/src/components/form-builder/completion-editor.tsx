@@ -258,6 +258,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
           <Button
             type="button"
             variant="outline"
+            size="sm"
             className="w-full justify-start"
             onClick={handleSwitchToConditional}
           >
@@ -313,6 +314,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
           <Button
             type="button"
             variant="outline"
+            size="sm"
             className="w-full justify-start"
             onClick={handleAddRule}
           >
@@ -323,6 +325,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
           <Button
             type="button"
             variant="ghost"
+            size="sm"
             className="w-full text-muted-foreground"
             onClick={handleSwitchToSimple}
           >

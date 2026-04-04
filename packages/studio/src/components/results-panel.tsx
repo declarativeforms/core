@@ -135,7 +135,7 @@ export function ResultsPanel({ formId, showHeader = true }: ResultsPanelProps) {
           title="Responses"
           description={`${submissions.length} ${submissions.length === 1 ? "response" : "responses"}`}
           actions={
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" size="sm">
               <Download />
               Export
             </Button>

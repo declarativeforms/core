@@ -184,6 +184,7 @@ function AddFieldButton({
         <Button
           type="button"
           variant="outline"
+          size="sm"
           className="w-full justify-start"
           disabled={disabled}
         >
@@ -563,7 +564,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
           </Select>
         </div>
 
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={handleAddSection}>
+        <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={handleAddSection}>
           <Plus />
           Add Section
         </Button>

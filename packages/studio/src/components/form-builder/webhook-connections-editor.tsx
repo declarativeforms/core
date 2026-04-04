@@ -180,6 +180,7 @@ export function WebhookConnectionsEditor({
       <Button
         type="button"
         variant="outline"
+        size="sm"
         className="w-full justify-start"
         onClick={() => {
           handleUpdateWebhookConnections([

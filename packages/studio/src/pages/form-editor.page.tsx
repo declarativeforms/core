@@ -292,7 +292,7 @@ export function FormEditorPage() {
           title="Unable to load form"
           description="Studio couldn’t fetch this form from the API."
           action={
-            <Button asChild type="button" variant="outline">
+            <Button asChild type="button" variant="outline" size="sm">
               <Link to="/">Back to dashboard</Link>
             </Button>
           }
@@ -436,7 +436,7 @@ export function FormEditorPage() {
               description="Review submissions and inspect the data captured by this form."
               maxWidth="3xl"
               actions={
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" size="sm">
                   <Download />
                   Export
                 </Button>
