@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, FileText, Loader2, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -264,6 +264,7 @@ export function FormEditorPage() {
     return (
       <PageShell className="items-center justify-center">
         <EmptyState
+          icon={createForm.isError ? <FileText className="size-5" /> : <Loader2 className="size-5 animate-spin" />}
           title={createForm.isError ? "Unable to create form" : "Creating form..."}
           description={
             createForm.isError
@@ -278,7 +279,7 @@ export function FormEditorPage() {
   if (isLoading && hydratedFormIdRef.current !== currentFormId) {
     return (
       <PageShell className="items-center justify-center">
-        <EmptyState title="Loading form..." description="Fetching the latest form definition." />
+        <EmptyState icon={<Loader2 className="size-5 animate-spin" />} title="Loading form..." description="Fetching the latest form definition." />
       </PageShell>
     );
   }
@@ -287,6 +288,7 @@ export function FormEditorPage() {
     return (
       <PageShell className="items-center justify-center">
         <EmptyState
+          icon={<FileText className="size-5" />}
           title="Unable to load form"
           description="Studio couldn’t fetch this form from the API."
           action={

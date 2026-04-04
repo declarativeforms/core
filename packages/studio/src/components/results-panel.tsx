@@ -106,9 +106,9 @@ export function ResultsPanel({ formId, showHeader = true }: ResultsPanelProps) {
 
   if (isError) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <EmptyState
-          icon={<FileText className="size-6" />}
+          icon={<FileText className="size-5" />}
           title="Unable to load responses"
           description="Try again in a moment. Studio couldn’t fetch submissions from the API."
         />
@@ -118,9 +118,9 @@ export function ResultsPanel({ formId, showHeader = true }: ResultsPanelProps) {
 
   if (submissions.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <EmptyState
-          icon={<FileText className="size-6" />}
+          icon={<FileText className="size-5" />}
           title="No responses yet"
           description="Responses will appear here once people start submitting this form."
         />

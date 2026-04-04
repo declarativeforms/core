@@ -250,7 +250,7 @@ export function SectionProperties({
       <div className="space-y-2">
         <Label>After this section</Label>
         <Select value={currentMode} onValueChange={handleModeChange}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -272,7 +272,7 @@ export function SectionProperties({
             </p>
           ) : (
             <Select value={parseNextSectionId(section)} onValueChange={handleSectionIdChange}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -338,7 +338,7 @@ export function SectionProperties({
                     value={rule.go}
                     onValueChange={(value) => handleUpdateConditionalRule(index, "go", value)}
                   >
-                    <SelectTrigger className="text-xs">
+                    <SelectTrigger className="w-full text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -368,7 +368,7 @@ export function SectionProperties({
           <BuilderInset variant="dashed" className="space-y-2">
             <BuilderSectionTitle className="leading-none">Otherwise</BuilderSectionTitle>
             <Select value={elseFallback} onValueChange={handleElseFallbackChange}>
-              <SelectTrigger className="text-xs">
+              <SelectTrigger className="w-full text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
