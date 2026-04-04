@@ -278,7 +278,7 @@ function SortableFieldCard({
         }
         footer={
           <div className="flex justify-end">
-            <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
+            <Button type="button" variant="outline" size="sm" onClick={onDelete}>
               <Trash2 />
               Delete Field
             </Button>
