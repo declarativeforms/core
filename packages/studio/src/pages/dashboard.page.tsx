@@ -4,10 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 import {
   Button,
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   EmptyState,
   PageHeader,
   PageShell,
@@ -49,7 +45,13 @@ function DashboardPrimaryAction({
   onCreate: () => void;
 }) {
   return (
-    <Button type="button" onClick={onCreate} disabled={isPending}>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={onCreate}
+      disabled={isPending}
+    >
       <Plus />
       {isPending ? "Creating..." : "New Form"}
     </Button>
@@ -59,7 +61,9 @@ function DashboardPrimaryAction({
 function DashboardPageSection({ children }: { children: ReactNode }) {
   return (
     <PageShell className="overflow-y-auto">
-      <div className="flex min-h-full flex-col gap-5">{children}</div>
+      <div className="mx-auto flex w-full max-w-3xl min-h-full flex-col gap-5">
+        {children}
+      </div>
     </PageShell>
   );
 }
@@ -94,16 +98,19 @@ export function DashboardPage() {
           }
         />
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Card key={index}>
-              <CardHeader className="space-y-2">
-                <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
-                <div className="h-4 w-full animate-pulse rounded bg-muted" />
-                <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
+        <div className="rounded-lg border border-border">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-4 border-b border-border px-3 py-3 last:border-b-0"
+            >
+              <div className="size-4 animate-pulse rounded bg-muted" />
+              <div className="flex min-w-0 flex-1 items-center gap-2">
                 <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
-              </CardHeader>
-            </Card>
+                <div className="hidden h-3 w-1/4 animate-pulse rounded bg-muted sm:block" />
+              </div>
+              <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+            </div>
           ))}
         </div>
       </DashboardPageSection>
@@ -126,7 +133,7 @@ export function DashboardPage() {
         <EmptyState
           title="Unable to load forms"
           description="Try again in a moment. Studio couldn’t fetch forms from the API."
-          className="max-w-xl items-start text-left"
+          className="mx-auto"
         />
       </DashboardPageSection>
     );
@@ -147,9 +154,9 @@ export function DashboardPage() {
       {forms.length === 0 ? (
         <div className="flex flex-1 items-center justify-center">
           <EmptyState
-            icon={<FileText className="size-6" />}
+            icon={<FileText className="size-5" />}
             title="No forms yet"
-            description="Create your first form to start collecting responses and shaping your workflow."
+            description="Create your first form to start collecting responses."
             action={
               <DashboardPrimaryAction
                 isPending={createForm.isPending}
@@ -159,13 +166,13 @@ export function DashboardPage() {
           />
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-lg border border-border">
           {forms.map((form) => (
-            <Card
+            <div
               key={form.id}
               role="link"
               tabIndex={0}
-              className="cursor-pointer transition-colors duration-150 hover:border-foreground/10 hover:bg-muted/20"
+              className="flex items-center gap-4 border-b border-border px-3 py-3 last:border-b-0 transition-colors duration-100 hover:bg-muted/40 cursor-pointer"
               onClick={() => navigate(`/forms/${form.id}`)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -174,21 +181,21 @@ export function DashboardPage() {
                 }
               }}
             >
-              <CardHeader className="gap-3 pb-4">
-                <div className="flex items-start justify-between gap-3">
-                  <CardTitle className="text-base font-semibold leading-6">
-                    {getFormTitle(form.title)}
-                  </CardTitle>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {timeAgo(form.updated_at ?? form.created_at ?? new Date())}
+              <FileText className="size-4 shrink-0 text-muted-foreground" />
+              <div className="flex min-w-0 flex-1 items-baseline gap-2">
+                <span className="truncate text-sm font-semibold text-foreground hover:underline">
+                  {getFormTitle(form.title)}
+                </span>
+                {getFormDescription(form.description) ? (
+                  <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+                    {getFormDescription(form.description)}
                   </span>
-                </div>
-
-                <CardDescription className="line-clamp-2 min-h-10 text-sm leading-6 text-muted-foreground">
-                  {getFormDescription(form.description) || "No description yet."}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+                ) : null}
+              </div>
+              <span className="shrink-0 text-xs text-muted-foreground whitespace-nowrap">
+                {timeAgo(form.updated_at ?? form.created_at ?? new Date())}
+              </span>
+            </div>
           ))}
         </div>
       )}
