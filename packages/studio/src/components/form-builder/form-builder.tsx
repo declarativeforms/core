@@ -184,6 +184,7 @@ function AddFieldButton({
         <Button
           type="button"
           variant="outline"
+          size="sm"
           className="w-full justify-start"
           disabled={disabled}
         >
@@ -278,7 +279,7 @@ function SortableFieldCard({
         }
         footer={
           <div className="flex justify-end">
-            <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
+            <Button type="button" variant="outline" size="sm" onClick={onDelete}>
               <Trash2 />
               Delete Field
             </Button>
@@ -563,7 +564,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
           </Select>
         </div>
 
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={handleAddSection}>
+        <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={handleAddSection}>
           <Plus />
           Add Section
         </Button>

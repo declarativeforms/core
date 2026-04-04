@@ -153,7 +153,7 @@ export function LocalizedTextEditor({
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-xs"
+                size="icon-sm"
                 aria-label="Remove locale"
                 onClick={() => handleRemoveEntry(index)}
               >

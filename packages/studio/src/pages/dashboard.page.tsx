@@ -131,6 +131,7 @@ export function DashboardPage() {
         />
 
         <EmptyState
+          icon={<FileText className="size-5" />}
           title="Unable to load forms"
           description="Try again in a moment. Studio couldn’t fetch forms from the API."
           className="mx-auto"

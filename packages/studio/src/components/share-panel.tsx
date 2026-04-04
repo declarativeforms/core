@@ -52,7 +52,7 @@ export function SharePanel({ formId }: SharePanelProps) {
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Input readOnly value={shareUrl} className="font-mono text-sm" />
-            <Button type="button" onClick={handleCopy} className="sm:w-28">
+            <Button type="button" variant="outline" onClick={handleCopy} className="sm:w-28">
               <Copy />
               {copied ? "Copied!" : "Copy"}
             </Button>
