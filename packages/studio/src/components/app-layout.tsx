@@ -21,13 +21,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-dvh w-full flex-col bg-muted/30 text-foreground">
-      <header className="flex h-16 shrink-0 items-center justify-between bg-[#0d1117] px-4 md:px-6">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:px-6">
         <Link
           to="/"
-          className="flex items-center gap-3 text-white transition-opacity hover:opacity-80"
+          className="flex items-center gap-3 text-foreground transition-opacity hover:opacity-80"
         >
           {logoError ? (
-            <div className="flex size-8 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">
+            <div className="flex size-8 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground">
               DF
             </div>
           ) : (
@@ -39,10 +39,10 @@ export function AppLayout({ children }: AppLayoutProps) {
             />
           )}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">
+            <span className="text-sm font-semibold text-foreground">
               Declarative Forms
             </span>
-            <span className="rounded-full border border-white/20 px-2 py-0.5 text-xs font-medium text-white/70">
+            <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
               Studio
             </span>
           </div>
@@ -50,7 +50,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <span className="text-xs font-medium text-white/70">
+            <span className="text-xs font-medium text-muted-foreground">
               {user.login}
             </span>
           ) : null}
@@ -60,7 +60,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             variant="ghost"
             size="icon-sm"
             aria-label="Sign out"
-            className="text-white/70 hover:bg-white/10 hover:text-white"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={handleLogout}
           >
             <LogOut />
