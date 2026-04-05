@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks";
 import {
   CallbackPage,
   DashboardPage,
+  DemoPage,
   FormEditorPage,
   LoginPage,
   NotFoundPage,
@@ -18,6 +19,7 @@ function App() {
       <main id="main-content" className="h-dvh bg-background">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/demo" element={<DemoPage />} />
           <Route path="/auth/callback" element={<CallbackPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

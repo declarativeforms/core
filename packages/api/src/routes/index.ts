@@ -1,3 +1,4 @@
+export * from './auth-demo-post';
 export * from './auth-github-post';
 export * from './auth-me-get';
 export * from './files-upload-post';
