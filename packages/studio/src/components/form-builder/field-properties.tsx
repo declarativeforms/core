@@ -437,7 +437,7 @@ function OptionsEditor({
                     placeholder={`Option ${index + 1}`}
                   />
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label>Value</Label>
                     <Input
                       value={advancedOption.value ?? ""}
@@ -501,6 +501,7 @@ function OptionsEditor({
         type="button"
         variant="outline"
         size="sm"
+        className="w-full justify-start"
         onClick={() => {
           updateOptions([
             ...options,
@@ -754,7 +755,7 @@ export function FieldProperties({
 
   const content = (
     <>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label htmlFor="field-id">Field ID</Label>
         <Input
           id="field-id"
@@ -768,7 +769,7 @@ export function FieldProperties({
         />
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label htmlFor="field-type">Field Type</Label>
         <Input id="field-type" value={getFieldTypeLabel(currentType)} disabled />
       </div>
@@ -799,7 +800,7 @@ export function FieldProperties({
         defaultLocale={defaultLocale}
       />
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <Label htmlFor="field-visible-when">Visible When</Label>
         <Textarea
           id="field-visible-when"

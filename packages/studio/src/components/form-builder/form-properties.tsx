@@ -38,7 +38,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
 
       <div className="space-y-3 border-t border-border pt-4">
         <BuilderSectionTitle>Localization</BuilderSectionTitle>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>Default locale</Label>
           <Input
             value={locale}
@@ -60,7 +60,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
       <div className="space-y-3 border-t border-border pt-4">
         <BuilderSectionTitle>Scheduling</BuilderSectionTitle>
         <div className="space-y-3">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Start date</Label>
             <Input
               type="date"
@@ -74,7 +74,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
             </p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>End date</Label>
             <Input
               type="date"
@@ -92,7 +92,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
 
       <div className="space-y-3 border-t border-border pt-4">
         <BuilderSectionTitle>Analytics</BuilderSectionTitle>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>Mixpanel token</Label>
           <Input
             value={mixpanelToken}
@@ -116,7 +116,7 @@ export function FormProperties({ form, onChange }: FormPropertiesProps) {
 
       <div className="space-y-3 border-t border-border pt-4">
         <BuilderSectionTitle>Appearance</BuilderSectionTitle>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>Primary color</Label>
           <div className="flex items-center gap-2">
             <input

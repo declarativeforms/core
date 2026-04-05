@@ -101,7 +101,7 @@ export function LocalizedTextEditor({
 
   if (mode === "simple") {
     return (
-      <div className={cn("space-y-1.5", className)}>
+      <div className={cn("space-y-2", className)}>
         <div className="flex items-center justify-between gap-3">
           <Label htmlFor={id} className={labelClassName}>
             {label}
@@ -162,7 +162,7 @@ export function LocalizedTextEditor({
             </div>
 
             <div className="space-y-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Locale code</Label>
                 <Input
                   value={entry.locale}
@@ -172,7 +172,7 @@ export function LocalizedTextEditor({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Value</Label>
                 <InputComponent
                   value={entry.value}

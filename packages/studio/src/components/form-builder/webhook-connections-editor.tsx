@@ -122,7 +122,7 @@ export function WebhookConnectionsEditor({
               </div>
 
               <div className="space-y-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label>Webhook URL</Label>
                   <Input
                     value={connection.url ?? ""}
@@ -143,7 +143,7 @@ export function WebhookConnectionsEditor({
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label>When</Label>
                   <Input
                     value={connection.when ?? ""}

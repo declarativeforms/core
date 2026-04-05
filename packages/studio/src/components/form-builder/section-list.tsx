@@ -27,6 +27,7 @@ export function SectionList({
         <Button
           type="button"
           variant="outline"
+          size="sm"
           className="w-full justify-start"
           onClick={onAddSection}
         >

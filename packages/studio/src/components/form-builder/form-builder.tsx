@@ -544,7 +544,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="min-w-0 flex-1 space-y-2">
           <BuilderSectionTitle>Section</BuilderSectionTitle>
           <Select
             value={activeSectionIndex !== null ? String(activeSectionIndex) : undefined}
@@ -564,7 +564,7 @@ export function FormBuilder({ form, onChange }: FormBuilderProps) {
           </Select>
         </div>
 
-        <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={handleAddSection}>
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={handleAddSection}>
           <Plus />
           Add Section
         </Button>
