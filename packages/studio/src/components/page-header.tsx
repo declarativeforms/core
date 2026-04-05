@@ -16,7 +16,7 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between", className)}>
+    <div className={cn("flex flex-row items-start justify-between gap-3", className)}>
       <div className="min-w-0 space-y-1">
         <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         {description ? (
