@@ -287,7 +287,7 @@ export function CompletionEditor({ form, onChange }: CompletionEditorProps) {
                   </Button>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs">Condition (expression)</Label>
                   <Input
                     value={rule.when}

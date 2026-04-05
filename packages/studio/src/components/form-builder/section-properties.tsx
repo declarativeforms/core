@@ -322,7 +322,7 @@ export function SectionProperties({
                   </Button>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs">When (expression)</Label>
                   <Input
                     value={rule.when}
@@ -332,7 +332,7 @@ export function SectionProperties({
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs">Go to</Label>
                   <Select
                     value={rule.go}
