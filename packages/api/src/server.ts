@@ -5,6 +5,7 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import * as qs from 'qs';
 import {
+  AUTH_DEMO_POST,
   AUTH_GITHUB_POST,
   AUTH_ME_GET,
   FILES_UPLOAD_POST,
@@ -91,6 +92,7 @@ export async function startServer() {
     routePrefix: '/docs',
   });
 
+  server.route(AUTH_DEMO_POST);
   server.route(AUTH_GITHUB_POST);
   server.route(AUTH_ME_GET);
   server.route(FILES_UPLOAD_POST);
