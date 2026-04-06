@@ -1,4 +1,4 @@
-import type { IDeclarativeForm } from "@/lib/declarative-form-types";
+import type { IDeclarativeForm } from "@declarativeforms/types";
 
 const DEFAULT_FORM_TEMPLATE: IDeclarativeForm = {
   version: 1,

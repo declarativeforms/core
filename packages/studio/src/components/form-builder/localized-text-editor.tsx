@@ -1,7 +1,7 @@
 import { Languages, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import type { ILocalizedText } from "@/lib/declarative-form-types";
+import type { ILocalizedText } from "@declarativeforms/types";
 import {
   buildLocalizedTextFromEntries,
   createNextLocaleKey,

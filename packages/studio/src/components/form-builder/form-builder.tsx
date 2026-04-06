@@ -37,7 +37,7 @@ import type {
   IDeclarativeForm,
   IDeclarativeFormField,
   IDeclarativeFormSection,
-} from "@/lib/declarative-form-types";
+} from "@declarativeforms/types";
 
 import { FieldProperties } from "./field-properties";
 import { BuilderInset, BuilderSectionTitle } from "./panel-shell";

@@ -9,7 +9,7 @@ import {
   TabPageHeader,
 } from "@/components";
 import { useSubmissions } from "@/hooks";
-import type { ISubmission } from "@/lib/declarative-form-types";
+import type { ISubmission } from "@declarativeforms/types";
 import { cn } from "@/lib/utils";
 
 function formatSubmittedAt(value: string) {

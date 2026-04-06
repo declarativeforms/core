@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 
-import type { IDeclarativeFormSection } from "@/lib/declarative-form-types";
+import type { IDeclarativeFormSection } from "@declarativeforms/types";
 import {
   Button,
   Input,

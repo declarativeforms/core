@@ -1,6 +1,6 @@
 import { Layers, Plus } from "lucide-react";
 
-import type { IDeclarativeFormSection } from "@/lib/declarative-form-types";
+import type { IDeclarativeFormSection } from "@declarativeforms/types";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 

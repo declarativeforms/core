@@ -8,7 +8,6 @@ import {
   DemoPage,
   FormEditorPage,
   LoginPage,
-  NotFoundPage,
 } from "./pages";
 
 function App() {
@@ -35,7 +34,7 @@ function App() {
           <Route path="/forms/:formId" element={<FormEditorPage />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/auth/callback" element={<CallbackPage />} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppLayout>
     </main>

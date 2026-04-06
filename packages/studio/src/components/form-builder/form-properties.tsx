@@ -1,4 +1,4 @@
-import type { IDeclarativeForm } from "@/lib/declarative-form-types";
+import type { IDeclarativeForm } from "@declarativeforms/types";
 import { Input, Label } from "@/components/ui";
 
 import { LocalizedTextEditor } from "./localized-text-editor";

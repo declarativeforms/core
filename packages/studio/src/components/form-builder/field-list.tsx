@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import type { IDeclarativeFormField } from "@/lib/declarative-form-types";
+import type { IDeclarativeFormField } from "@declarativeforms/types";
 import {
   Button,
   Dialog,

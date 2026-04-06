@@ -11,7 +11,7 @@ import type {
   IDeclarativeFormRatingField,
   IDeclarativeFormSelectField,
   IDeclarativeFormValidator,
-} from "@/lib/declarative-form-types";
+} from "@declarativeforms/types";
 import {
   Button,
   Checkbox,

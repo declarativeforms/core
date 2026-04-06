@@ -1,4 +1,4 @@
-import type { ILocalizedText } from "./declarative-form-types";
+import type { ILocalizedText } from "@declarativeforms/types";
 
 export type LocalizedTextEntry = {
   locale: string;

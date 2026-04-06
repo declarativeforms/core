@@ -10,7 +10,7 @@ import {
 } from "@/components";
 import { useCreateForm, useForms } from "@/hooks";
 import { createEmptyFormDefinition } from "@/lib/default-form";
-import type { ILocalizedText } from "@/lib/declarative-form-types";
+import type { ILocalizedText } from "@declarativeforms/types";
 import { timeAgo } from "@/lib/utils";
 
 function getTextValue(value: ILocalizedText | undefined) {
@@ -29,37 +29,7 @@ function getTextValue(value: ILocalizedText | undefined) {
   return typeof firstTextValue === "string" ? firstTextValue.trim() : "";
 }
 
-// TODO: Remove this function, it can be inlined
-function getFormTitle(value: ILocalizedText | undefined) {
-  return getTextValue(value) || "Untitled Form";
-}
 
-// TODO: Remove this function, it can be inlined
-function getFormDescription(value: ILocalizedText | undefined) {
-  return getTextValue(value);
-}
-
-// TODO: Remove this function, it can be inlined
-function DashboardPrimaryAction({
-  isPending,
-  onCreate,
-}: {
-  isPending: boolean;
-  onCreate: () => void;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={onCreate}
-      disabled={isPending}
-    >
-      <Plus />
-      {isPending ? "Creating..." : "New Form"}
-    </Button>
-  );
-}
 
 function DashboardPageSection({ children }: { children: ReactNode }) {
   return (
@@ -94,10 +64,16 @@ export function DashboardPage() {
         <PageHeader
           title="Forms"
           actions={
-            <DashboardPrimaryAction
-              isPending={createForm.isPending}
-              onCreate={handleCreateForm}
-            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCreateForm}
+              disabled={createForm.isPending}
+            >
+              <Plus />
+              {createForm.isPending ? "Creating..." : "New Form"}
+            </Button>
           }
         />
 
@@ -126,10 +102,16 @@ export function DashboardPage() {
         <PageHeader
           title="Forms"
           actions={
-            <DashboardPrimaryAction
-              isPending={createForm.isPending}
-              onCreate={handleCreateForm}
-            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCreateForm}
+              disabled={createForm.isPending}
+            >
+              <Plus />
+              {createForm.isPending ? "Creating..." : "New Form"}
+            </Button>
           }
         />
 
@@ -148,10 +130,16 @@ export function DashboardPage() {
       <PageHeader
         title="Forms"
         actions={
-          <DashboardPrimaryAction
-            isPending={createForm.isPending}
-            onCreate={handleCreateForm}
-          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCreateForm}
+            disabled={createForm.isPending}
+          >
+            <Plus />
+            {createForm.isPending ? "Creating..." : "New Form"}
+          </Button>
         }
       />
 
@@ -162,10 +150,16 @@ export function DashboardPage() {
             title="No forms yet"
             description="Create your first form to start collecting responses."
             action={
-              <DashboardPrimaryAction
-                isPending={createForm.isPending}
-                onCreate={handleCreateForm}
-              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCreateForm}
+                disabled={createForm.isPending}
+              >
+                <Plus />
+                {createForm.isPending ? "Creating..." : "New Form"}
+              </Button>
             }
           />
         </div>
@@ -188,11 +182,11 @@ export function DashboardPage() {
               <FileText className="size-4 shrink-0 text-muted-foreground" />
               <div className="flex min-w-0 flex-1 items-baseline gap-2">
                 <span className="truncate text-sm font-semibold text-foreground hover:underline">
-                  {getFormTitle(form.title)}
+                  {getTextValue(form.title) || "Untitled Form"}
                 </span>
-                {getFormDescription(form.description) ? (
+                {getTextValue(form.description) ? (
                   <span className="hidden truncate text-xs text-muted-foreground sm:inline">
-                    {getFormDescription(form.description)}
+                    {getTextValue(form.description)}
                   </span>
                 ) : null}
               </div>

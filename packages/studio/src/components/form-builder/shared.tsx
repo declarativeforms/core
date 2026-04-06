@@ -27,7 +27,7 @@ import type {
   DeclarativeFieldType,
   IDeclarativeFormField,
   IDeclarativeFormOption,
-} from "@/lib/declarative-form-types";
+} from "@declarativeforms/types";
 import { getLocalizedTextPreview } from "@/lib/localized-text";
 
 export const BUILDER_FIELD_TYPES = [

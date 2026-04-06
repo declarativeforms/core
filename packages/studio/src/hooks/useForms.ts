@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getBackendUrl } from "@/lib/api";
 import { getAuthHeaders } from "@/lib/auth";
-import type { IDeclarativeForm, ISubmission } from "@/lib/declarative-form-types";
+import type { IDeclarativeForm, ISubmission } from "@declarativeforms/types";
 
 export const studioFormsKeys = {
   all: ["studio", "forms"] as const,

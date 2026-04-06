@@ -25,7 +25,7 @@ import {
   useUpdateForm,
 } from "@/hooks";
 import { createEmptyFormDefinition } from "@/lib/default-form";
-import type { IDeclarativeForm } from "@/lib/declarative-form-types";
+import type { IDeclarativeForm } from "@declarativeforms/types";
 import {
   getLocalizedTextPreview,
   updateLocalizedTextAtLocale,
@@ -350,8 +350,7 @@ export function FormEditorPage() {
         </div>
 
         <Tabs defaultValue="edit" className="flex min-h-0 flex-1 flex-col gap-0">
-          {/* TODO: these tabs should only be scrollable horizontally but they seem to be scrollable vertically as well, fix it. */}
-          <div className="shrink-0 overflow-x-auto border-b border-border bg-background px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="shrink-0 overflow-x-auto overflow-y-hidden border-b border-border bg-background px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <TabsList variant="line" className="h-11 w-auto gap-1 p-0">
               <TabsTrigger value="settings" className="px-3">
                 Settings

@@ -1,6 +1,6 @@
 import { Plus, Trash2, Webhook } from "lucide-react";
 
-import type { IConnection, IWebhookConnection } from "@/lib/declarative-form-types";
+import type { IConnection, IWebhookConnection } from "@declarativeforms/types";
 import { Button, Input, Label } from "@/components/ui";
 
 import { BuilderInset, BuilderSectionTitle } from "./panel-shell";

@@ -5,7 +5,7 @@ import type {
   IDeclarativeFormCompletion,
   IDeclarativeFormCompletionRule,
   ILocalizedText,
-} from "@/lib/declarative-form-types";
+} from "@declarativeforms/types";
 import { hasLocalizedTextContent } from "@/lib/localized-text";
 import { Button, Input, Label } from "@/components/ui";
 
