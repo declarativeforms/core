@@ -1,11 +1,25 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Copy, ExternalLink, FileText, Pencil, Save } from "lucide-react";
-import { useEffect } from "react";
+import {
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  File,
+  FileText,
+  Pencil,
+  Save,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
 import {
   Button,
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
   Field,
   FieldGroup,
   FieldLabel,
@@ -14,6 +28,7 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
+  ItemHeader,
   ItemTitle,
   PageShell,
   Tabs,
@@ -23,10 +38,18 @@ import {
   Textarea,
 } from "@/components";
 import { getBackendUrl } from "@/lib/api";
-import type { IDeclarativeForm } from "@declarativeforms/types";
+import { getLocalizedTextPreview } from "@/lib/localized-text";
+import type {
+  IDeclarativeForm,
+  IDeclarativeFormSection,
+} from "@declarativeforms/types";
 
 export function FormEditorPage() {
   const params = useParams();
+  const [sections, setSections] = useState<IDeclarativeFormSection[]>([]);
+  const [expandedSectionIndex, setExpandedSectionIndex] = useState<
+    number | null
+  >(null);
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -87,6 +110,10 @@ export function FormEditorPage() {
       start_date: getForm.data.start_date ?? "",
       title: getForm.data.title,
     } as any);
+    setSections(getForm.data.sections ?? []);
+    setExpandedSectionIndex(
+      (getForm.data.sections ?? []).length > 0 ? 0 : null,
+    );
   }, [getForm.data]);
 
   if (!getForm.data) {
@@ -191,6 +218,7 @@ export function FormEditorPage() {
                     ...getForm.data.theme,
                     primary: values.primary || undefined,
                   },
+                  sections,
                   title: values.title,
                 });
               })}
@@ -279,30 +307,124 @@ export function FormEditorPage() {
             </form>
           </TabsContent>
 
-          <TabsContent className="flex py-6 flex-col gap-y-3" value="edit">
-            <Item variant="outline">
-              <ItemContent>
-                <ItemTitle>Section #1</ItemTitle>
-                <ItemDescription>3 fields</ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <Button variant="outline" size="icon-sm">
-                  <Pencil />
-                </Button>
-              </ItemActions>
-            </Item>
+          <TabsContent className="flex flex-col gap-y-3 py-6" value="edit">
+            {sections.length > 0 ? (
+              sections.map((section, index) => {
+                const isExpanded = expandedSectionIndex === index;
 
-            <Item variant="outline">
-              <ItemContent>
-                <ItemTitle>Section #2</ItemTitle>
-                <ItemDescription>3 fields</ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <Button variant="outline" size="icon-sm">
-                  <Pencil />
-                </Button>
-              </ItemActions>
-            </Item>
+                return (
+                  <Item
+                    key={section.id ?? `section-${index}`}
+                    variant="outline"
+                    className={
+                      isExpanded ? "border-foreground/15 bg-muted/5" : ""
+                    }
+                  >
+                    <ItemHeader>
+                      <ItemContent>
+                        <ItemTitle>{section.title as any}</ItemTitle>
+                        <ItemDescription>
+                          {section.id || `section_${index + 1}`} •{" "}
+                          {section.fields?.length ?? 0}{" "}
+                          {(section.fields?.length ?? 0) === 1
+                            ? "field"
+                            : "fields"}
+                        </ItemDescription>
+                      </ItemContent>
+
+                      <ItemActions>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() =>
+                            setExpandedSectionIndex((current) =>
+                              current === index ? null : index,
+                            )
+                          }
+                        >
+                          <ChevronDown
+                            className={
+                              isExpanded
+                                ? "rotate-180 transition-transform"
+                                : "transition-transform"
+                            }
+                          />
+                        </Button>
+                      </ItemActions>
+                    </ItemHeader>
+
+                    {isExpanded ? (
+                      <div className="basis-full border-t border-border pt-4">
+                        <FieldGroup className="mb-3">
+                          <Field>
+                            <FieldLabel>Title</FieldLabel>
+                            <Input
+                              value={
+                                typeof section.title === "string"
+                                  ? section.title
+                                  : ""
+                              }
+                              onChange={(event) =>
+                                setSections((current) =>
+                                  current.map((sectionItem, sectionIndex) =>
+                                    sectionIndex === index
+                                      ? {
+                                          ...sectionItem,
+                                          title: event.target.value,
+                                        }
+                                      : sectionItem,
+                                  ),
+                                )
+                              }
+                            />
+                          </Field>
+                        </FieldGroup>
+
+                        <FieldLabel className="mb-3">Fields</FieldLabel>
+
+                        <Item className="mb-3" variant="outline">
+                          <ItemHeader>
+                            <ItemContent>
+                              <ItemTitle>First Name</ItemTitle>
+                              <ItemDescription>
+                                short_text • first_name
+                              </ItemDescription>
+                            </ItemContent>
+                          </ItemHeader>
+                        </Item>
+
+                        <Item variant="outline">
+                          <ItemHeader>
+                            <ItemContent>
+                              <ItemTitle>First Name</ItemTitle>
+                              <ItemDescription>
+                                short_text • first_name
+                              </ItemDescription>
+                            </ItemContent>
+                          </ItemHeader>
+                        </Item>
+                      </div>
+                    ) : null}
+                  </Item>
+                );
+              })
+            ) : (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <File />
+                  </EmptyMedia>
+                  <EmptyTitle>No Sections Yet</EmptyTitle>
+                  <EmptyDescription>
+                    Add sections to start editing your form structure.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button variant="outline">Add Section</Button>
+                </EmptyContent>
+              </Empty>
+            )}
           </TabsContent>
         </Tabs>
       </div>

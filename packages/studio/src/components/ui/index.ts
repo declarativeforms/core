@@ -2,6 +2,7 @@ export * from "./button";
 export * from "./card";
 export * from "./checkbox";
 export * from "./dialog";
+export * from "./empty";
 export * from "./field";
 export * from "./input";
 export * from "./item";
