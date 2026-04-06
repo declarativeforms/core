@@ -46,21 +46,23 @@ import type {
 
 export function FormEditorPage() {
   const params = useParams();
-  const [sections, setSections] = useState<IDeclarativeFormSection[]>([]);
   const [expandedSectionIndex, setExpandedSectionIndex] = useState<
     number | null
   >(null);
 
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
       description: "",
       end_date: "",
       mixpanel: "",
       primary: "",
+      sections: [] as Array<IDeclarativeFormSection>,
       start_date: "",
       title: "",
     },
   });
+
+  const sections = watch("sections");
 
   const getForm = useQuery({
     queryKey: ["studio", "forms", params.formId],
@@ -107,10 +109,11 @@ export function FormEditorPage() {
       end_date: getForm.data.end_date ?? "",
       mixpanel: getForm.data.measurements?.mixpanel ?? "",
       primary: getForm.data.theme?.primary ?? "",
+      sections: getForm.data.sections ?? [],
       start_date: getForm.data.start_date ?? "",
       title: getForm.data.title,
     } as any);
-    setSections(getForm.data.sections ?? []);
+
     setExpandedSectionIndex(
       (getForm.data.sections ?? []).length > 0 ? 0 : null,
     );
@@ -218,7 +221,7 @@ export function FormEditorPage() {
                     ...getForm.data.theme,
                     primary: values.primary || undefined,
                   },
-                  sections,
+                  sections: values.sections,
                   title: values.title,
                 });
               })}
@@ -366,8 +369,9 @@ export function FormEditorPage() {
                                   : ""
                               }
                               onChange={(event) =>
-                                setSections((current) =>
-                                  current.map((sectionItem, sectionIndex) =>
+                                setValue(
+                                  "sections",
+                                  sections.map((sectionItem, sectionIndex) =>
                                     sectionIndex === index
                                       ? {
                                           ...sectionItem,
@@ -390,8 +394,9 @@ export function FormEditorPage() {
                                       key={field.id ?? `field-${fieldIndex}`}
                                       field={field}
                                       onChange={(x) =>
-                                        setSections((current) =>
-                                          current.map(
+                                        setValue(
+                                          "sections",
+                                          sections.map(
                                             (sectionItem, sectionIndex) =>
                                               sectionIndex === index
                                                 ? {
