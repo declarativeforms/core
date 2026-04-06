@@ -2,19 +2,12 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type PageHeaderProps = {
-  title: string;
-  description?: string;
-  actions?: ReactNode;
-  className?: string;
-};
-
 export function PageHeader({
   title,
   description,
   actions,
   className,
-}: PageHeaderProps) {
+}: { title: string; description?: string; actions?: ReactNode; className?: string }) {
   return (
     <div className={cn("flex flex-row items-start justify-between gap-3", className)}>
       <div className="min-w-0 space-y-1">

@@ -29,14 +29,17 @@ function getTextValue(value: ILocalizedText | undefined) {
   return typeof firstTextValue === "string" ? firstTextValue.trim() : "";
 }
 
+// TODO: Remove this function, it can be inlined
 function getFormTitle(value: ILocalizedText | undefined) {
   return getTextValue(value) || "Untitled Form";
 }
 
+// TODO: Remove this function, it can be inlined
 function getFormDescription(value: ILocalizedText | undefined) {
   return getTextValue(value);
 }
 
+// TODO: Remove this function, it can be inlined
 function DashboardPrimaryAction({
   isPending,
   onCreate,

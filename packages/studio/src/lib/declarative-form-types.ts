@@ -1,3 +1,4 @@
+// TODO: Instead of importing this like this, import directly from the declarativeforms/types where needed. We should be able to remove this file.
 export type ILocalizedText = import("@declarativeforms/types").ILocalizedText;
 export type DeclarativeFieldType =
   import("@declarativeforms/types").DeclarativeFieldType;

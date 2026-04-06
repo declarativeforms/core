@@ -11,6 +11,7 @@ export function CallbackPage() {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const [error, setError] = useState(false);
+  // TODO: remove this ref, the useEffect should only be called once. Remove the dependencies of login, navigate in the useEffect
   const exchangedRef = useRef(false);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function CallbackPage() {
     });
   }, [searchParams, login, navigate]);
 
+  // TODO: remove the error state, you can return null if an error happens. We dont want to handle it now.
   if (error) {
     return (
       <PageShell className="items-center justify-center">
@@ -61,6 +63,7 @@ export function CallbackPage() {
     );
   }
 
+   // TODO: return null here, no need to display anything to the user.
   return (
     <PageShell className="items-center justify-center">
       <div className="space-y-1 text-center">

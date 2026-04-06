@@ -9,7 +9,9 @@ import { getBackendUrl } from "@/lib/api";
 export function DemoPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  // TODO: remove the error state.
   const [error, setError] = useState(false);
+  // TODO: remove this ref, the useEffect should only be called once. Remove the dependencies of login and navigate in the useEffect
   const requestedRef = useRef(false);
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export function DemoPage() {
       });
   }, [login, navigate]);
 
+  // TODO: remove the error state completely, it's okay to return null if an error happens.
   if (error) {
     return (
       <PageShell className="items-center justify-center">
@@ -63,6 +66,7 @@ export function DemoPage() {
     );
   }
 
+  // TODO: return null here, no need to display anything to the user.
   return (
     <PageShell className="items-center justify-center">
       <div className="space-y-1 text-center">

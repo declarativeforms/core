@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { Button, EmptyState, PageShell } from "@/components";
 
+// TODO: instead of having a not found page, where the not found page is being used, just redirect the user to the dashboard page.
 export function NotFoundPage() {
   useEffect(() => {
     document.title = "404 — Studio";

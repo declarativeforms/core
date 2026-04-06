@@ -12,11 +12,6 @@ import { useSubmissions } from "@/hooks";
 import type { ISubmission } from "@/lib/declarative-form-types";
 import { cn } from "@/lib/utils";
 
-type ResultsPanelProps = {
-  formId: string;
-  showHeader?: boolean;
-};
-
 function formatSubmittedAt(value: string) {
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium",
@@ -74,7 +69,7 @@ function StatusBadge({ status }: { status: ISubmission["status"] }) {
   );
 }
 
-export function ResultsPanel({ formId, showHeader = true }: ResultsPanelProps) {
+export function ResultsPanel({ formId, showHeader = true }: { formId: string; showHeader?: boolean }) {
   const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(
     null,
   );

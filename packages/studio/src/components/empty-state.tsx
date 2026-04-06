@@ -2,21 +2,13 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type EmptyStateProps = {
-  title: string;
-  description?: string;
-  icon?: ReactNode;
-  action?: ReactNode;
-  className?: string;
-};
-
 export function EmptyState({
   title,
   description,
   icon,
   action,
   className,
-}: EmptyStateProps) {
+}: { title: string; description?: string; icon?: ReactNode; action?: ReactNode; className?: string }) {
   return (
     <div
       className={cn(

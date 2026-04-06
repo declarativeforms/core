@@ -3,10 +3,6 @@ import { useEffect, useState } from "react";
 
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from "@/components";
 
-type SharePanelProps = {
-  formId: string;
-};
-
 function buildShareUrl(formId: string) {
   return `https://frms.dev/${formId}`;
 }
@@ -15,7 +11,7 @@ function buildEmbedCode(formId: string) {
   return `<iframe src="${buildShareUrl(formId)}?embed=true" width="100%" height="600" frameborder="0"></iframe>`;
 }
 
-export function SharePanel({ formId }: SharePanelProps) {
+export function SharePanel({ formId }: { formId: string }) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {

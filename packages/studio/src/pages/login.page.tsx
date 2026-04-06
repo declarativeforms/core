@@ -5,6 +5,7 @@ import { Button, PageShell } from "@/components";
 import { getGitHubOAuthUrl } from "@/lib/auth";
 
 export function LoginPage() {
+  // TODO: Remove this logo error, just load the image and if it fails, it fails. No need to handle it.
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
