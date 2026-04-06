@@ -5,5 +5,6 @@ export * from './forms';
 export * from './oauth';
 export * from './one-time-pin';
 export * from './studio-forms';
+export * from './studio-magic-link';
 export * from './submissions';
 export * from './turnstile';
