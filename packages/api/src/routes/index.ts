@@ -1,5 +1,7 @@
 export * from './auth-demo-post';
 export * from './auth-github-post';
+export * from './auth-magic-link-send-post';
+export * from './auth-magic-link-verify-post';
 export * from './auth-me-get';
 export * from './files-upload-post';
 export * from './forms-id-get';

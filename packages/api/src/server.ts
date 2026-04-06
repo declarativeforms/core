@@ -7,6 +7,8 @@ import * as qs from 'qs';
 import {
   AUTH_DEMO_POST,
   AUTH_GITHUB_POST,
+  AUTH_MAGIC_LINK_SEND_POST,
+  AUTH_MAGIC_LINK_VERIFY_POST,
   AUTH_ME_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
@@ -94,6 +96,8 @@ export async function startServer() {
 
   server.route(AUTH_DEMO_POST);
   server.route(AUTH_GITHUB_POST);
+  server.route(AUTH_MAGIC_LINK_SEND_POST);
+  server.route(AUTH_MAGIC_LINK_VERIFY_POST);
   server.route(AUTH_ME_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
