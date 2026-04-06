@@ -78,3 +78,40 @@ export async function exchangeCodeForToken(
 
   return data;
 }
+
+export async function sendMagicLink(
+  email: string,
+  redirectUrl: string,
+): Promise<{ request_id: string; resend_after_seconds: number } | null> {
+  const response = await fetch(getBackendUrl("auth/magic-link/send"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, redirect_url: redirectUrl }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as {
+    request_id: string;
+    resend_after_seconds: number;
+  };
+}
+
+export async function verifyMagicLink(
+  requestId: string,
+  token: string,
+): Promise<{ token: string; user: AuthUser } | null> {
+  const response = await fetch(getBackendUrl("auth/magic-link/verify"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ request_id: requestId, token }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as { token: string; user: AuthUser };
+}
