@@ -20,6 +20,7 @@ import {
   EmptyMedia,
   EmptyTitle,
   Field,
+  SectionField,
   FieldGroup,
   FieldLabel,
   Input,
@@ -38,9 +39,7 @@ import {
   Textarea,
 } from "@/components";
 import { getBackendUrl } from "@/lib/api";
-import { getLocalizedTextPreview } from "@/lib/localized-text";
 import type {
-  IDeclarativeFormField,
   IDeclarativeForm,
   IDeclarativeFormSection,
 } from "@declarativeforms/types";
@@ -51,9 +50,6 @@ export function FormEditorPage() {
   const [expandedSectionIndex, setExpandedSectionIndex] = useState<
     number | null
   >(null);
-  const [expandedFieldIndexes, setExpandedFieldIndexes] = useState<
-    Record<number, number | null>
-  >({});
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -118,7 +114,6 @@ export function FormEditorPage() {
     setExpandedSectionIndex(
       (getForm.data.sections ?? []).length > 0 ? 0 : null,
     );
-    setExpandedFieldIndexes({});
   }, [getForm.data]);
 
   if (!getForm.data) {
@@ -391,136 +386,34 @@ export function FormEditorPage() {
                               {(section.fields ?? []).length > 0 ? (
                                 (section.fields ?? []).map(
                                   (field, fieldIndex) => (
-                                    <Item
+                                    <SectionField
                                       key={field.id ?? `field-${fieldIndex}`}
-                                      variant="outline"
-                                      className={
-                                        expandedFieldIndexes[index] ===
-                                        fieldIndex
-                                          ? "border-foreground/15 bg-muted/5"
-                                          : ""
+                                      field={field}
+                                      onChange={(x) =>
+                                        setSections((current) =>
+                                          current.map(
+                                            (sectionItem, sectionIndex) =>
+                                              sectionIndex === index
+                                                ? {
+                                                    ...sectionItem,
+                                                    fields: (
+                                                      sectionItem.fields ?? []
+                                                    ).map(
+                                                      (
+                                                        fieldItem,
+                                                        currentFieldIndex,
+                                                      ) =>
+                                                        currentFieldIndex ===
+                                                        fieldIndex
+                                                          ? x
+                                                          : fieldItem,
+                                                    ),
+                                                  }
+                                                : sectionItem,
+                                          ),
+                                        )
                                       }
-                                    >
-                                      <ItemHeader>
-                                        <button
-                                          type="button"
-                                          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-none transition-colors hover:bg-accent/30 focus-visible:bg-accent/30"
-                                          onClick={() =>
-                                            setExpandedFieldIndexes(
-                                              (current) => ({
-                                                ...current,
-                                                [index]:
-                                                  current[index] === fieldIndex
-                                                    ? null
-                                                    : fieldIndex,
-                                              }),
-                                            )
-                                          }
-                                          aria-expanded={
-                                            expandedFieldIndexes[index] ===
-                                            fieldIndex
-                                          }
-                                        >
-                                          <ItemContent>
-                                            <ItemTitle>
-                                              {field.label as any}
-                                            </ItemTitle>
-                                            <ItemDescription>
-                                              {field.type as any}
-                                              {field.id ? ` • ${field.id}` : ""}
-                                            </ItemDescription>
-                                          </ItemContent>
-                                        </button>
-
-                                        <ItemActions>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon-sm"
-                                            onClick={() =>
-                                              setExpandedFieldIndexes(
-                                                (current) => ({
-                                                  ...current,
-                                                  [index]:
-                                                    current[index] ===
-                                                    fieldIndex
-                                                      ? null
-                                                      : fieldIndex,
-                                                }),
-                                              )
-                                            }
-                                            aria-label={
-                                              expandedFieldIndexes[index] ===
-                                              fieldIndex
-                                                ? "Collapse field"
-                                                : "Expand field"
-                                            }
-                                            title={
-                                              expandedFieldIndexes[index] ===
-                                              fieldIndex
-                                                ? "Collapse field"
-                                                : "Expand field"
-                                            }
-                                          >
-                                            <ChevronDown
-                                              className={
-                                                expandedFieldIndexes[index] ===
-                                                fieldIndex
-                                                  ? "rotate-180 transition-transform"
-                                                  : "transition-transform"
-                                              }
-                                            />
-                                          </Button>
-                                        </ItemActions>
-                                      </ItemHeader>
-
-                                      {expandedFieldIndexes[index] ===
-                                      fieldIndex ? (
-                                        <div className="basis-full border-t border-border pt-4">
-                                          <FieldGroup>
-                                            <Field>
-                                              <FieldLabel>Field ID</FieldLabel>
-                                              <Input
-                                                value={field.id ?? ""}
-                                                disabled
-                                              />
-                                            </Field>
-
-                                            <Field>
-                                              <FieldLabel>
-                                                Field Type
-                                              </FieldLabel>
-                                              <Input
-                                                value={field.type}
-                                                disabled
-                                              />
-                                            </Field>
-
-                                            <Field>
-                                              <FieldLabel>Label</FieldLabel>
-                                              <Input
-                                                value={getLocalizedTextPreview(
-                                                  field.label,
-                                                )}
-                                                disabled
-                                              />
-                                            </Field>
-
-                                            <Field>
-                                              <FieldLabel>
-                                                Placeholder
-                                              </FieldLabel>
-                                              <Input
-                                                value={getLocalizedTextPreview(
-                                                  field.placeholder,
-                                                )}
-                                                disabled
-                                              />
-                                            </Field>
-                                          </FieldGroup>
-                                        </div>
-                                      ) : null}
-                                    </Item>
+                                    />
                                   ),
                                 )
                               ) : (
