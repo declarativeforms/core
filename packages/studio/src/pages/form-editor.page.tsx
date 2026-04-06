@@ -5,7 +5,6 @@ import {
   ExternalLink,
   File,
   FileText,
-  Pencil,
   Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,6 +27,7 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
+  ItemGroup,
   ItemHeader,
   ItemTitle,
   PageShell,
@@ -38,7 +38,6 @@ import {
   Textarea,
 } from "@/components";
 import { getBackendUrl } from "@/lib/api";
-import { getLocalizedTextPreview } from "@/lib/localized-text";
 import type {
   IDeclarativeForm,
   IDeclarativeFormSection,
@@ -356,7 +355,7 @@ export function FormEditorPage() {
 
                     {isExpanded ? (
                       <div className="basis-full border-t border-border pt-4">
-                        <FieldGroup className="mb-3">
+                        <FieldGroup>
                           <Field>
                             <FieldLabel>Title</FieldLabel>
                             <Input
@@ -379,31 +378,44 @@ export function FormEditorPage() {
                               }
                             />
                           </Field>
+
+                          <Field>
+                            <FieldLabel>Fields</FieldLabel>
+                            <ItemGroup className="gap-3">
+                              {(section.fields ?? []).length > 0 ? (
+                                (section.fields ?? []).map(
+                                  (field, fieldIndex) => (
+                                    <Item
+                                      key={field.id ?? `field-${fieldIndex}`}
+                                      variant="outline"
+                                    >
+                                      <ItemHeader>
+                                        <ItemContent>
+                                          <ItemTitle>
+                                            {field.label as any}
+                                          </ItemTitle>
+                                          <ItemDescription>
+                                            {field.type as any}
+                                            {field.id ? ` • ${field.id}` : ""}
+                                          </ItemDescription>
+                                        </ItemContent>
+                                      </ItemHeader>
+                                    </Item>
+                                  ),
+                                )
+                              ) : (
+                                <Item variant="outline" className="bg-muted/10">
+                                  <ItemContent>
+                                    <ItemTitle>No fields yet</ItemTitle>
+                                    <ItemDescription>
+                                      This section does not have any fields yet.
+                                    </ItemDescription>
+                                  </ItemContent>
+                                </Item>
+                              )}
+                            </ItemGroup>
+                          </Field>
                         </FieldGroup>
-
-                        <FieldLabel className="mb-3">Fields</FieldLabel>
-
-                        <Item className="mb-3" variant="outline">
-                          <ItemHeader>
-                            <ItemContent>
-                              <ItemTitle>First Name</ItemTitle>
-                              <ItemDescription>
-                                short_text • first_name
-                              </ItemDescription>
-                            </ItemContent>
-                          </ItemHeader>
-                        </Item>
-
-                        <Item variant="outline">
-                          <ItemHeader>
-                            <ItemContent>
-                              <ItemTitle>First Name</ItemTitle>
-                              <ItemDescription>
-                                short_text • first_name
-                              </ItemDescription>
-                            </ItemContent>
-                          </ItemHeader>
-                        </Item>
                       </div>
                     ) : null}
                   </Item>
