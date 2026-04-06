@@ -104,13 +104,11 @@ export async function verifyStudioMagicLinkToken(
     throw new Error('AUTH_JWT_SECRET is not configured');
   }
 
-  const emailPrefix = record.email.split('@')[0];
-
   const jwtToken = jwt.sign(
     {
       github_id: 0,
       login: record.email,
-      name: emailPrefix,
+      name: null,
       avatar_url: '',
     },
     secret,
@@ -122,7 +120,7 @@ export async function verifyStudioMagicLinkToken(
     user: {
       id: 0,
       login: record.email,
-      name: emailPrefix,
+      name: null,
       avatar_url: '',
     },
   };
