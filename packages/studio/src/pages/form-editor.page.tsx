@@ -176,56 +176,56 @@ export function FormEditorPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="settings">
-          <div className="overflow-x-auto">
-            <TabsList
-              variant="line"
-              className="flex w-max min-w-full flex-nowrap justify-start"
-            >
-              <TabsTrigger value="settings" className="shrink-0">
-                Settings
-              </TabsTrigger>
-              <TabsTrigger value="edit" className="shrink-0">
-                Edit
-              </TabsTrigger>
-              <TabsTrigger value="completion" className="shrink-0">
-                Completion
-              </TabsTrigger>
-              <TabsTrigger value="connections" className="shrink-0">
-                Connections
-              </TabsTrigger>
-              <TabsTrigger value="results" className="shrink-0">
-                Results
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <form
+          id="form-settings"
+          onSubmit={handleSubmit(async (values) => {
+            if (!getForm.data) {
+              return;
+            }
 
-          <TabsContent className="py-6" value="settings">
-            <form
-              id="form-settings"
-              onSubmit={handleSubmit(async (values) => {
-                if (!getForm.data) {
-                  return;
-                }
+            await putForm.mutateAsync({
+              ...getForm.data,
+              description: values.description,
+              end_date: values.end_date || undefined,
+              measurements: {
+                ...getForm.data.measurements,
+                mixpanel: values.mixpanel || undefined,
+              },
+              start_date: values.start_date || undefined,
+              theme: {
+                ...getForm.data.theme,
+                primary: values.primary || undefined,
+              },
+              sections: values.sections,
+              title: values.title,
+            });
+          })}
+        >
+          <Tabs defaultValue="settings">
+            <div className="overflow-x-auto">
+              <TabsList
+                variant="line"
+                className="flex w-max min-w-full flex-nowrap justify-start"
+              >
+                <TabsTrigger value="settings" className="shrink-0">
+                  Settings
+                </TabsTrigger>
+                <TabsTrigger value="edit" className="shrink-0">
+                  Edit
+                </TabsTrigger>
+                <TabsTrigger value="completion" className="shrink-0">
+                  Completion
+                </TabsTrigger>
+                <TabsTrigger value="connections" className="shrink-0">
+                  Connections
+                </TabsTrigger>
+                <TabsTrigger value="results" className="shrink-0">
+                  Results
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-                await putForm.mutateAsync({
-                  ...getForm.data,
-                  description: values.description,
-                  end_date: values.end_date || undefined,
-                  measurements: {
-                    ...getForm.data.measurements,
-                    mixpanel: values.mixpanel || undefined,
-                  },
-                  start_date: values.start_date || undefined,
-                  theme: {
-                    ...getForm.data.theme,
-                    primary: values.primary || undefined,
-                  },
-                  sections: values.sections,
-                  title: values.title,
-                });
-              })}
-            >
+            <TabsContent className="py-6" value="settings">
               <FieldGroup>
                 <Controller
                   name="title"
@@ -307,156 +307,160 @@ export function FormEditorPage() {
                   )}
                 />
               </FieldGroup>
-            </form>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent className="flex flex-col gap-y-3 py-6" value="edit">
-            {sections.length > 0 ? (
-              sections.map((section, index) => {
-                const isExpanded = expandedSectionIndex === index;
+            <TabsContent className="flex flex-col gap-y-3 py-6" value="edit">
+              {sections.length > 0 ? (
+                sections.map((section, index) => {
+                  const isExpanded = expandedSectionIndex === index;
 
-                return (
-                  <Item
-                    key={section.id ?? `section-${index}`}
-                    variant="outline"
-                    className={
-                      isExpanded ? "border-foreground/15 bg-muted/5" : ""
-                    }
-                  >
-                    <ItemHeader>
-                      <ItemContent>
-                        <ItemTitle>{section.title as any}</ItemTitle>
-                        <ItemDescription>
-                          {section.id || `section_${index + 1}`} •{" "}
-                          {section.fields?.length ?? 0}{" "}
-                          {(section.fields?.length ?? 0) === 1
-                            ? "field"
-                            : "fields"}
-                        </ItemDescription>
-                      </ItemContent>
+                  return (
+                    <Item
+                      key={section.id ?? `section-${index}`}
+                      variant="outline"
+                      className={
+                        isExpanded ? "border-foreground/15 bg-muted/5" : ""
+                      }
+                    >
+                      <ItemHeader>
+                        <ItemContent>
+                          <ItemTitle>{section.title as any}</ItemTitle>
+                          <ItemDescription>
+                            {section.id || `section_${index + 1}`} •{" "}
+                            {section.fields?.length ?? 0}{" "}
+                            {(section.fields?.length ?? 0) === 1
+                              ? "field"
+                              : "fields"}
+                          </ItemDescription>
+                        </ItemContent>
 
-                      <ItemActions>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() =>
-                            setExpandedSectionIndex((current) =>
-                              current === index ? null : index,
-                            )
-                          }
-                        >
-                          <ChevronDown
-                            className={
-                              isExpanded
-                                ? "rotate-180 transition-transform"
-                                : "transition-transform"
+                        <ItemActions>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() =>
+                              setExpandedSectionIndex((current) =>
+                                current === index ? null : index,
+                              )
                             }
-                          />
-                        </Button>
-                      </ItemActions>
-                    </ItemHeader>
-
-                    {isExpanded ? (
-                      <div className="basis-full border-t border-border pt-4">
-                        <FieldGroup>
-                          <Field>
-                            <FieldLabel>Title</FieldLabel>
-                            <Input
-                              value={
-                                typeof section.title === "string"
-                                  ? section.title
-                                  : ""
-                              }
-                              onChange={(event) =>
-                                setValue(
-                                  "sections",
-                                  sections.map((sectionItem, sectionIndex) =>
-                                    sectionIndex === index
-                                      ? {
-                                          ...sectionItem,
-                                          title: event.target.value,
-                                        }
-                                      : sectionItem,
-                                  ),
-                                )
+                          >
+                            <ChevronDown
+                              className={
+                                isExpanded
+                                  ? "rotate-180 transition-transform"
+                                  : "transition-transform"
                               }
                             />
-                          </Field>
+                          </Button>
+                        </ItemActions>
+                      </ItemHeader>
 
-                          <Field>
-                            <FieldLabel>Fields</FieldLabel>
-                            <ItemGroup className="gap-3">
-                              {(section.fields ?? []).length > 0 ? (
-                                (section.fields ?? []).map(
-                                  (field, fieldIndex) => (
-                                    <SectionField
-                                      key={field.id ?? `field-${fieldIndex}`}
-                                      field={field}
-                                      onChange={(x) =>
-                                        setValue(
-                                          "sections",
-                                          sections.map(
-                                            (sectionItem, sectionIndex) =>
-                                              sectionIndex === index
-                                                ? {
-                                                    ...sectionItem,
-                                                    fields: (
-                                                      sectionItem.fields ?? []
-                                                    ).map(
-                                                      (
-                                                        fieldItem,
-                                                        currentFieldIndex,
-                                                      ) =>
-                                                        currentFieldIndex ===
-                                                        fieldIndex
-                                                          ? x
-                                                          : fieldItem,
-                                                    ),
-                                                  }
-                                                : sectionItem,
-                                          ),
-                                        )
-                                      }
-                                    />
-                                  ),
-                                )
-                              ) : (
-                                <Item variant="outline" className="bg-muted/10">
-                                  <ItemContent>
-                                    <ItemTitle>No fields yet</ItemTitle>
-                                    <ItemDescription>
-                                      This section does not have any fields yet.
-                                    </ItemDescription>
-                                  </ItemContent>
-                                </Item>
-                              )}
-                            </ItemGroup>
-                          </Field>
-                        </FieldGroup>
-                      </div>
-                    ) : null}
-                  </Item>
-                );
-              })
-            ) : (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <File />
-                  </EmptyMedia>
-                  <EmptyTitle>No Sections Yet</EmptyTitle>
-                  <EmptyDescription>
-                    Add sections to start editing your form structure.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button variant="outline">Add Section</Button>
-                </EmptyContent>
-              </Empty>
-            )}
-          </TabsContent>
-        </Tabs>
+                      {isExpanded ? (
+                        <div className="basis-full border-t border-border pt-4">
+                          <FieldGroup>
+                            <Field>
+                              <FieldLabel>Title</FieldLabel>
+                              <Input
+                                value={
+                                  typeof section.title === "string"
+                                    ? section.title
+                                    : ""
+                                }
+                                onChange={(event) =>
+                                  setValue(
+                                    "sections",
+                                    sections.map((sectionItem, sectionIndex) =>
+                                      sectionIndex === index
+                                        ? {
+                                            ...sectionItem,
+                                            title: event.target.value,
+                                          }
+                                        : sectionItem,
+                                    ),
+                                  )
+                                }
+                              />
+                            </Field>
+
+                            <Field>
+                              <FieldLabel>Fields</FieldLabel>
+                              <ItemGroup className="gap-3">
+                                {(section.fields ?? []).length > 0 ? (
+                                  (section.fields ?? []).map(
+                                    (field, fieldIndex) => (
+                                      <SectionField
+                                        key={`field-${fieldIndex}`}
+                                        field={field}
+                                        onChange={(x) =>
+                                          setValue(
+                                            "sections",
+                                            sections.map(
+                                              (sectionItem, sectionIndex) =>
+                                                sectionIndex === index
+                                                  ? {
+                                                      ...sectionItem,
+                                                      fields: (
+                                                        sectionItem.fields ?? []
+                                                      ).map(
+                                                        (
+                                                          fieldItem,
+                                                          currentFieldIndex,
+                                                        ) =>
+                                                          currentFieldIndex ===
+                                                          fieldIndex
+                                                            ? x
+                                                            : fieldItem,
+                                                      ),
+                                                    }
+                                                  : sectionItem,
+                                            ),
+                                          )
+                                        }
+                                      />
+                                    ),
+                                  )
+                                ) : (
+                                  <Item
+                                    variant="outline"
+                                    className="bg-muted/10"
+                                  >
+                                    <ItemContent>
+                                      <ItemTitle>No fields yet</ItemTitle>
+                                      <ItemDescription>
+                                        This section does not have any fields
+                                        yet.
+                                      </ItemDescription>
+                                    </ItemContent>
+                                  </Item>
+                                )}
+                              </ItemGroup>
+                            </Field>
+                          </FieldGroup>
+                        </div>
+                      ) : null}
+                    </Item>
+                  );
+                })
+              ) : (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <File />
+                    </EmptyMedia>
+                    <EmptyTitle>No Sections Yet</EmptyTitle>
+                    <EmptyDescription>
+                      Add sections to start editing your form structure.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button variant="outline">Add Section</Button>
+                  </EmptyContent>
+                </Empty>
+              )}
+            </TabsContent>
+          </Tabs>
+        </form>
       </div>
     </PageShell>
   );
