@@ -8,7 +8,7 @@ export async function findStudioForm(
 
   return container.db
     .collection<IDeclarativeForm>('studio_forms')
-    .findOne({ id });
+    .findOne({ id }, { projection: { _id: 0 } });
 }
 
 export async function findStudioForms(): Promise<Array<IDeclarativeForm>> {
@@ -16,7 +16,7 @@ export async function findStudioForms(): Promise<Array<IDeclarativeForm>> {
 
   return container.db
     .collection<IDeclarativeForm>('studio_forms')
-    .find({})
+    .find({}, { projection: { _id: 0 } })
     .sort({ updated_at: -1, created_at: -1 })
     .toArray();
 }
