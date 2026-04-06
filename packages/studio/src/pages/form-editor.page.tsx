@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Copy, ExternalLink, FileText, Save } from "lucide-react";
+import { Copy, ExternalLink, FileText, Pencil, Save } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -10,6 +10,11 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
   PageShell,
   Tabs,
   TabsContent,
@@ -100,7 +105,7 @@ export function FormEditorPage() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="icon-sm"
               aria-label="Copy form link"
               title="Copy form link"
               onClick={async () =>
@@ -114,7 +119,7 @@ export function FormEditorPage() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="icon-sm"
               aria-label="Open form preview"
               title="Open form preview"
               onClick={() =>
@@ -130,7 +135,7 @@ export function FormEditorPage() {
             <Button
               type="submit"
               variant="outline"
-              size="sm"
+              size="icon-sm"
               form="form-settings"
               disabled={putForm.isPending}
               aria-label="Save form"
@@ -260,19 +265,44 @@ export function FormEditorPage() {
                         <input
                           type="color"
                           value={field.value || "#6366f1"}
-                          onChange={(event) => field.onChange(event.target.value)}
+                          onChange={(event) =>
+                            field.onChange(event.target.value)
+                          }
                           className="size-9 shrink-0 cursor-pointer rounded-md border border-border bg-background p-0.5"
                         />
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                        />
+                        <Input {...field} value={field.value ?? ""} />
                       </div>
                     </Field>
                   )}
                 />
               </FieldGroup>
             </form>
+          </TabsContent>
+
+          <TabsContent className="flex py-6 flex-col gap-y-3" value="edit">
+            <Item variant="outline">
+              <ItemContent>
+                <ItemTitle>Section #1</ItemTitle>
+                <ItemDescription>3 fields</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button variant="outline" size="icon-sm">
+                  <Pencil />
+                </Button>
+              </ItemActions>
+            </Item>
+
+            <Item variant="outline">
+              <ItemContent>
+                <ItemTitle>Section #2</ItemTitle>
+                <ItemDescription>3 fields</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button variant="outline" size="icon-sm">
+                  <Pencil />
+                </Button>
+              </ItemActions>
+            </Item>
           </TabsContent>
         </Tabs>
       </div>

@@ -4,6 +4,7 @@ export * from "./checkbox";
 export * from "./dialog";
 export * from "./field";
 export * from "./input";
+export * from "./item";
 export * from "./label";
 export * from "./select";
 export * from "./separator";
