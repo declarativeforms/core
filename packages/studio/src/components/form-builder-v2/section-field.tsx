@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -19,9 +19,19 @@ import type { IDeclarativeFormField } from "@declarativeforms/types";
 export function SectionField({
   field,
   onChange,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
 }: {
   field: IDeclarativeFormField;
   onChange: (field: IDeclarativeFormField) => void;
+  onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -47,6 +57,35 @@ export function SectionField({
         </button>
 
         <ItemActions>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+          >
+            <ChevronUp />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+          >
+            <ChevronDown />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onDelete}
+          >
+            <Trash2 />
+          </Button>
+
           <Button
             type="button"
             variant="ghost"

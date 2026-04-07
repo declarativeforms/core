@@ -612,6 +612,10 @@ export function Section({
                     <SectionField
                       key={`field-${fieldIndex}`}
                       field={field}
+                      canMoveUp={fieldIndex > 0}
+                      canMoveDown={
+                        fieldIndex < (section.fields ?? []).length - 1
+                      }
                       onChange={(x) =>
                         onChange({
                           ...section,
@@ -621,6 +625,39 @@ export function Section({
                           ),
                         })
                       }
+                      onDelete={() =>
+                        onChange({
+                          ...section,
+                          fields: (section.fields ?? []).filter(
+                            (_, currentFieldIndex) =>
+                              currentFieldIndex !== fieldIndex,
+                          ),
+                        })
+                      }
+                      onMoveUp={() => {
+                        const nextFields = [...(section.fields ?? [])];
+                        const previousField = nextFields[fieldIndex - 1];
+
+                        nextFields[fieldIndex - 1] = nextFields[fieldIndex];
+                        nextFields[fieldIndex] = previousField;
+
+                        onChange({
+                          ...section,
+                          fields: nextFields,
+                        });
+                      }}
+                      onMoveDown={() => {
+                        const nextFields = [...(section.fields ?? [])];
+                        const nextField = nextFields[fieldIndex + 1];
+
+                        nextFields[fieldIndex + 1] = nextFields[fieldIndex];
+                        nextFields[fieldIndex] = nextField;
+
+                        onChange({
+                          ...section,
+                          fields: nextFields,
+                        });
+                      }}
                     />
                   ))
                 ) : (
