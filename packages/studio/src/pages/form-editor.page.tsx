@@ -1,10 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Copy, ExternalLink, File, FileText, Save } from "lucide-react";
-import { useEffect } from "react";
+import { ChevronDown, Copy, ExternalLink, File, FileText, Save } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
 import {
+  Badge,
   Button,
   Empty,
   EmptyContent,
@@ -16,6 +17,13 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemHeader,
+  ItemTitle,
   PageShell,
   Section,
   Tabs,
@@ -28,6 +36,7 @@ import { getBackendUrl } from "@/lib/api";
 import type {
   IDeclarativeForm,
   IDeclarativeFormSection,
+  ISubmission,
 } from "@declarativeforms/types";
 
 function createSectionId(sections: IDeclarativeFormSection[]) {
@@ -43,8 +52,26 @@ function createSectionId(sections: IDeclarativeFormSection[]) {
   return `section_${index}`;
 }
 
+function formatSubmittedAt(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function truncateSubmissionId(value: string) {
+  if (value.length <= 12) {
+    return value;
+  }
+
+  return `${value.slice(0, 8)}...${value.slice(-4)}`;
+}
+
 export function FormEditorPage() {
   const params = useParams();
+  const [expandedSubmissionId, setExpandedSubmissionId] = useState<
+    string | null
+  >(null);
 
   const { control, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
@@ -93,6 +120,23 @@ export function FormEditorPage() {
 
       return (await response.json()) as IDeclarativeForm;
     },
+  });
+
+  const getSubmissions = useQuery({
+    queryKey: ["studio", "forms", params.formId, "submissions"],
+    queryFn: async () => {
+      const response = await fetch(
+        getBackendUrl(`studio/forms/${params.formId}/submissions`),
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("studio_auth_token")}`,
+          },
+        },
+      );
+
+      return (await response.json()) as ISubmission[];
+    },
+    enabled: Boolean(params.formId),
   });
 
   useEffect(() => {
@@ -374,18 +418,101 @@ export function FormEditorPage() {
             </TabsContent>
 
             <TabsContent className="py-6" value="results">
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <File />
-                  </EmptyMedia>
-                  <EmptyTitle>No Results Yet</EmptyTitle>
-                  <EmptyDescription>
-                    Form submissions will appear here once responses start
-                    coming in.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              {getSubmissions.isLoading ? null : getSubmissions.isError ? (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <File />
+                    </EmptyMedia>
+                    <EmptyTitle>Unable To Load Results</EmptyTitle>
+                    <EmptyDescription>
+                      Studio couldn&apos;t fetch form submissions from the API.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (getSubmissions.data ?? []).length === 0 ? (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <File />
+                    </EmptyMedia>
+                    <EmptyTitle>No Results Yet</EmptyTitle>
+                    <EmptyDescription>
+                      Form submissions will appear here once responses start
+                      coming in.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                <ItemGroup className="gap-3">
+                  {(getSubmissions.data ?? []).map((submission) => {
+                    const isExpanded = expandedSubmissionId === submission.id;
+
+                    return (
+                      <Item
+                        key={submission.id}
+                        variant="outline"
+                        className={
+                          isExpanded ? "border-foreground/15 bg-muted/5" : ""
+                        }
+                      >
+                        <ItemHeader>
+                          <ItemContent>
+                            <ItemTitle>
+                              {truncateSubmissionId(submission.id)}
+                            </ItemTitle>
+                            <ItemDescription>
+                              {formatSubmittedAt(submission.created_at)}
+                            </ItemDescription>
+                          </ItemContent>
+
+                          <ItemActions>
+                            <Badge
+                              variant={
+                                submission.status === "completed"
+                                  ? "completed"
+                                  : "partial"
+                              }
+                            >
+                              {submission.status}
+                            </Badge>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() =>
+                                setExpandedSubmissionId((current) =>
+                                  current === submission.id
+                                    ? null
+                                    : submission.id,
+                                )
+                              }
+                            >
+                              <ChevronDown
+                                className={
+                                  isExpanded
+                                    ? "rotate-180 transition-transform"
+                                    : "transition-transform"
+                                }
+                              />
+                            </Button>
+                          </ItemActions>
+                        </ItemHeader>
+
+                        {isExpanded ? (
+                          <div className="basis-full border-t border-border pt-4">
+                            <pre className="overflow-x-auto rounded-lg border border-border bg-background p-3 text-sm text-foreground">
+                              <code>
+                                {JSON.stringify(submission.data, null, 2)}
+                              </code>
+                            </pre>
+                          </div>
+                        ) : null}
+                      </Item>
+                    );
+                  })}
+                </ItemGroup>
+              )}
             </TabsContent>
           </Tabs>
         </form>
