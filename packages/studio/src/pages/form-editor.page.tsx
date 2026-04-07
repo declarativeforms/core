@@ -201,7 +201,7 @@ export function FormEditorPage() {
             });
           })}
         >
-          <Tabs defaultValue="settings">
+          <Tabs defaultValue="edit">
             <div className="overflow-x-auto">
               <TabsList
                 variant="line"
