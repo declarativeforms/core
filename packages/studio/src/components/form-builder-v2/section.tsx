@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -29,6 +29,11 @@ type NextMode =
   | "conditional"
   | "external"
   | "done";
+
+type ConditionalRule = {
+  when: string;
+  go: string;
+};
 
 function parseNextMode(section: IDeclarativeFormSection): NextMode {
   const next = section.next;
@@ -121,6 +126,134 @@ export function Section({
   const elseFallback = parseElseFallback(section);
   const nextSectionId = parseNextSectionId(section);
 
+  const handleModeChange = (mode: NextMode) => {
+    switch (mode) {
+      case "next_in_order":
+        onChange({ ...section, next: undefined });
+        break;
+      case "done":
+        onChange({ ...section, next: "done" });
+        break;
+      case "section":
+        onChange({ ...section, next: otherSections[0]?.id ?? "done" });
+        break;
+      case "external":
+        onChange({ ...section, next: "https://" });
+        break;
+      case "conditional":
+        onChange({
+          ...section,
+          next: [
+            { when: "", go: otherSections[0]?.id ?? "done" },
+            { else: "done" },
+          ],
+        });
+        break;
+    }
+  };
+
+  const handleSectionIdChange = (sectionId: string) => {
+    onChange({ ...section, next: sectionId });
+  };
+
+  const handleExternalUrlChange = (url: string) => {
+    onChange({ ...section, next: url });
+  };
+
+  const handleUpdateConditionalRule = (
+    ruleIndex: number,
+    field: keyof ConditionalRule,
+    value: string,
+  ) => {
+    if (!Array.isArray(section.next)) {
+      return;
+    }
+
+    const whenGoRules = section.next.filter(
+      (rule): rule is { when?: string; go?: string } =>
+        "when" in rule || "go" in rule,
+    );
+    const elseRule = section.next.find(
+      (rule): rule is { else?: string } => "else" in rule,
+    ) ?? { else: "done" };
+
+    if (ruleIndex < whenGoRules.length) {
+      whenGoRules[ruleIndex] = {
+        ...whenGoRules[ruleIndex],
+        [field]: value,
+      };
+    }
+
+    onChange({
+      ...section,
+      next: [...whenGoRules, elseRule],
+    });
+  };
+
+  const handleAddConditionalRule = () => {
+    if (!Array.isArray(section.next)) {
+      return;
+    }
+
+    const whenGoRules = section.next.filter(
+      (rule): rule is { when?: string; go?: string } =>
+        "when" in rule || "go" in rule,
+    );
+    const elseRule = section.next.find(
+      (rule): rule is { else?: string } => "else" in rule,
+    ) ?? { else: "done" };
+
+    onChange({
+      ...section,
+      next: [
+        ...whenGoRules,
+        { when: "", go: otherSections[0]?.id ?? "done" },
+        elseRule,
+      ],
+    });
+  };
+
+  const handleRemoveConditionalRule = (ruleIndex: number) => {
+    if (!Array.isArray(section.next)) {
+      return;
+    }
+
+    const whenGoRules = section.next.filter(
+      (rule): rule is { when?: string; go?: string } =>
+        "when" in rule || "go" in rule,
+    );
+    const elseRule = section.next.find(
+      (rule): rule is { else?: string } => "else" in rule,
+    ) ?? { else: "done" };
+    const updatedWhenGo = whenGoRules.filter((_, index) => index !== ruleIndex);
+
+    if (updatedWhenGo.length === 0) {
+      onChange({ ...section, next: undefined });
+      return;
+    }
+
+    onChange({
+      ...section,
+      next: [...updatedWhenGo, elseRule],
+    });
+  };
+
+  const handleElseFallbackChange = (value: string) => {
+    if (!Array.isArray(section.next)) {
+      return;
+    }
+
+    const whenGoRules = section.next.filter(
+      (rule): rule is { when?: string; go?: string } =>
+        "when" in rule || "go" in rule,
+    );
+
+    onChange({
+      ...section,
+      next: [...whenGoRules, { else: value }],
+    });
+  };
+
   return (
     <Item
       variant="outline"
@@ -185,7 +318,7 @@ export function Section({
 
             <Field>
               <FieldLabel>After this section</FieldLabel>
-              <Select value={currentMode} disabled>
+              <Select value={currentMode} onValueChange={handleModeChange}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -206,40 +339,48 @@ export function Section({
             {currentMode === "section" ? (
               <Field>
                 <FieldLabel>Target section</FieldLabel>
-                <Select
-                  value={
-                    nextSectionId && nextSectionId !== "done"
-                      ? nextSectionId
-                      : "done"
-                  }
-                  disabled
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {otherSections.map((sectionItem, sectionIndex) => (
-                      <SelectItem
-                        key={sectionItem.id ?? `section-option-${sectionIndex}`}
-                        value={sectionItem.id ?? ""}
-                      >
-                        {typeof sectionItem.title === "string"
-                          ? sectionItem.title
-                          : sectionItem.id}
-                      </SelectItem>
-                    ))}
-                    {nextSectionId &&
-                    nextSectionId !== "done" &&
-                    !otherSections.some(
-                      (sectionItem) => sectionItem.id === nextSectionId,
-                    ) ? (
-                      <SelectItem value={nextSectionId}>
-                        {nextSectionId}
-                      </SelectItem>
-                    ) : null}
-                    <SelectItem value="done">Complete form</SelectItem>
-                  </SelectContent>
-                </Select>
+                {otherSections.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Add more sections to enable navigation.
+                  </p>
+                ) : (
+                  <Select
+                    value={
+                      nextSectionId && nextSectionId !== "done"
+                        ? nextSectionId
+                        : "done"
+                    }
+                    onValueChange={handleSectionIdChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {otherSections.map((sectionItem, sectionIndex) => (
+                        <SelectItem
+                          key={
+                            sectionItem.id ?? `section-option-${sectionIndex}`
+                          }
+                          value={sectionItem.id ?? ""}
+                        >
+                          {typeof sectionItem.title === "string"
+                            ? sectionItem.title
+                            : sectionItem.id}
+                        </SelectItem>
+                      ))}
+                      {nextSectionId &&
+                      nextSectionId !== "done" &&
+                      !otherSections.some(
+                        (sectionItem) => sectionItem.id === nextSectionId,
+                      ) ? (
+                        <SelectItem value={nextSectionId}>
+                          {nextSectionId}
+                        </SelectItem>
+                      ) : null}
+                      <SelectItem value="done">Complete form</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </Field>
             ) : null}
 
@@ -249,14 +390,27 @@ export function Section({
                 <Input
                   value={parseExternalUrl(section)}
                   placeholder="https://example.com"
-                  disabled
+                  onChange={(event) =>
+                    handleExternalUrlChange(event.target.value)
+                  }
                 />
               </Field>
             ) : null}
 
             {currentMode === "conditional" ? (
               <Field>
-                <FieldLabel>Conditional logic</FieldLabel>
+                <div className="flex items-center justify-between gap-3">
+                  <FieldLabel>Conditional logic</FieldLabel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddConditionalRule}
+                  >
+                    <Plus />
+                    Add Rule
+                  </Button>
+                </div>
                 <div className="space-y-3">
                   {conditionalRules.map((rule, ruleIndex) => (
                     <Item
@@ -265,9 +419,21 @@ export function Section({
                       className="bg-muted/10"
                     >
                       <div className="flex basis-full flex-col gap-3">
-                        <p className="text-sm font-medium text-foreground">
-                          Rule {ruleIndex + 1}
-                        </p>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium text-foreground">
+                            Rule {ruleIndex + 1}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() =>
+                              handleRemoveConditionalRule(ruleIndex)
+                            }
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
 
                         <FieldGroup>
                           <Field>
@@ -275,13 +441,29 @@ export function Section({
                             <Input
                               value={rule.when}
                               placeholder="{{data.field_id}} === 'yes'"
-                              disabled
+                              className="font-mono text-xs"
+                              onChange={(event) =>
+                                handleUpdateConditionalRule(
+                                  ruleIndex,
+                                  "when",
+                                  event.target.value,
+                                )
+                              }
                             />
                           </Field>
 
                           <Field>
                             <FieldLabel>Go to</FieldLabel>
-                            <Select value={rule.go || "done"} disabled>
+                            <Select
+                              value={rule.go || "done"}
+                              onValueChange={(value) =>
+                                handleUpdateConditionalRule(
+                                  ruleIndex,
+                                  "go",
+                                  value,
+                                )
+                              }
+                            >
                               <SelectTrigger className="w-full">
                                 <SelectValue />
                               </SelectTrigger>
@@ -323,7 +505,10 @@ export function Section({
 
                   <Field>
                     <FieldLabel>Else</FieldLabel>
-                    <Select value={elseFallback} disabled>
+                    <Select
+                      value={elseFallback}
+                      onValueChange={handleElseFallbackChange}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
