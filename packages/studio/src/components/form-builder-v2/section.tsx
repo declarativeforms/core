@@ -21,13 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components";
-import {
-  BUILDER_FIELD_TYPES,
-  createDefaultField,
-  getFieldTypeLabel,
-  type SupportedFieldType,
-} from "@/components/form-builder/shared";
-import type { IDeclarativeFormSection } from "@declarativeforms/types";
+import type {
+  DeclarativeFieldType,
+  IDeclarativeFormField,
+  IDeclarativeFormSection,
+} from "@declarativeforms/types";
 
 type NextMode =
   | "next_in_order"
@@ -40,6 +38,34 @@ type ConditionalRule = {
   when: string;
   go: string;
 };
+
+const BUILDER_FIELD_TYPES = [
+  "address",
+  "address_country",
+  "address_locality",
+  "address_region",
+  "camera",
+  "short_text",
+  "long_text",
+  "email",
+  "number",
+  "date",
+  "date_month",
+  "dropdown",
+  "geolocation",
+  "hidden",
+  "single_select",
+  "multiple_select",
+  "rating",
+  "file_upload",
+  "signature",
+  "time",
+  "turnstile",
+  "url",
+  "mobile_number",
+] as const satisfies readonly DeclarativeFieldType[];
+
+type SupportedFieldType = (typeof BUILDER_FIELD_TYPES)[number];
 
 function parseNextMode(section: IDeclarativeFormSection): NextMode {
   const next = section.next;
@@ -123,6 +149,34 @@ function createFieldId(
   }
 
   return `${type}_${index}`;
+}
+
+function createDefaultField(type: SupportedFieldType, id: string) {
+  const baseField = {
+    id,
+    type,
+    label: "Untitled Field",
+    placeholder: "",
+    validators: [],
+  };
+
+  switch (type) {
+    case "dropdown":
+      return {
+        ...baseField,
+        options: ["Option 1", "Option 2"],
+      } as IDeclarativeFormField;
+
+    case "single_select":
+    case "multiple_select":
+      return {
+        ...baseField,
+        options: ["Option 1", "Option 2"],
+      } as IDeclarativeFormField;
+
+    default:
+      return baseField as IDeclarativeFormField;
+  }
 }
 
 export function Section({
@@ -591,7 +645,7 @@ export function Section({
                   <SelectContent>
                     {BUILDER_FIELD_TYPES.map((fieldType) => (
                       <SelectItem key={fieldType} value={fieldType}>
-                        {getFieldTypeLabel(fieldType)}
+                        {fieldType}
                       </SelectItem>
                     ))}
                   </SelectContent>
