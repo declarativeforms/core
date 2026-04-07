@@ -30,6 +30,19 @@ import type {
   IDeclarativeFormSection,
 } from "@declarativeforms/types";
 
+function createSectionId(sections: IDeclarativeFormSection[]) {
+  const existingIds = new Set(
+    sections.map((section) => section.id).filter(Boolean),
+  );
+  let index = sections.length + 1;
+
+  while (existingIds.has(`section_${index}`)) {
+    index += 1;
+  }
+
+  return `section_${index}`;
+}
+
 export function FormEditorPage() {
   const params = useParams();
 
@@ -290,24 +303,44 @@ export function FormEditorPage() {
 
             <TabsContent className="flex flex-col gap-y-3 py-6" value="edit">
               {sections.length > 0 ? (
-                sections.map((section, index) => {
-                  return (
-                    <Section
-                      key={section.id ?? `section-${index}`}
-                      section={section}
-                      index={index}
-                      sections={sections}
-                      onChange={(nextSection) =>
-                        setValue(
-                          "sections",
-                          sections.map((sectionItem, sectionIndex) =>
-                            sectionIndex === index ? nextSection : sectionItem,
-                          ),
-                        )
-                      }
-                    />
-                  );
-                })
+                <>
+                  {sections.map((section, index) => {
+                    return (
+                      <Section
+                        key={section.id ?? `section-${index}`}
+                        section={section}
+                        index={index}
+                        sections={sections}
+                        onChange={(nextSection) =>
+                          setValue(
+                            "sections",
+                            sections.map((sectionItem, sectionIndex) =>
+                              sectionIndex === index ? nextSection : sectionItem,
+                            ),
+                          )
+                        }
+                      />
+                    );
+                  })}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setValue("sections", [
+                        ...sections,
+                        {
+                          id: createSectionId(sections),
+                          title: "",
+                          fields: [],
+                        },
+                      ])
+                    }
+                  >
+                    <File />
+                    Add Section
+                  </Button>
+                </>
               ) : (
                 <Empty>
                   <EmptyHeader>
@@ -320,10 +353,39 @@ export function FormEditorPage() {
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
-                    <Button variant="outline">Add Section</Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setValue("sections", [
+                          {
+                            id: createSectionId(sections),
+                            title: "",
+                            fields: [],
+                          },
+                        ])
+                      }
+                    >
+                      Add Section
+                    </Button>
                   </EmptyContent>
                 </Empty>
               )}
+            </TabsContent>
+
+            <TabsContent className="py-6" value="results">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <File />
+                  </EmptyMedia>
+                  <EmptyTitle>No Results Yet</EmptyTitle>
+                  <EmptyDescription>
+                    Form submissions will appear here once responses start
+                    coming in.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             </TabsContent>
           </Tabs>
         </form>

@@ -21,6 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components";
+import {
+  BUILDER_FIELD_TYPES,
+  createDefaultField,
+  getFieldTypeLabel,
+  type SupportedFieldType,
+} from "@/components/form-builder/shared";
 import type { IDeclarativeFormSection } from "@declarativeforms/types";
 
 type NextMode =
@@ -105,6 +111,20 @@ function parseElseFallback(section: IDeclarativeFormSection): string {
   return elseRule?.else ?? "done";
 }
 
+function createFieldId(
+  fields: NonNullable<IDeclarativeFormSection["fields"]>,
+  type: SupportedFieldType,
+) {
+  const existingIds = new Set(fields.map((field) => field.id).filter(Boolean));
+  let index = fields.length + 1;
+
+  while (existingIds.has(`${type}_${index}`)) {
+    index += 1;
+  }
+
+  return `${type}_${index}`;
+}
+
 export function Section({
   section,
   index,
@@ -117,6 +137,8 @@ export function Section({
   onChange: (nextSection: IDeclarativeFormSection) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [newFieldType, setNewFieldType] =
+    useState<SupportedFieldType>("short_text");
   const currentMode = parseNextMode(section);
   const otherSections = sections.filter(
     (sectionItem, sectionIndex) =>
@@ -251,6 +273,19 @@ export function Section({
     onChange({
       ...section,
       next: [...whenGoRules, { else: value }],
+    });
+  };
+
+  const handleAddField = () => {
+    const fields = section.fields ?? [];
+    const nextField = createDefaultField(
+      newFieldType,
+      createFieldId(fields, newFieldType),
+    );
+
+    onChange({
+      ...section,
+      fields: [...fields, nextField],
     });
   };
 
@@ -543,6 +578,34 @@ export function Section({
 
             <Field>
               <FieldLabel>Fields</FieldLabel>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={newFieldType}
+                  onValueChange={(value) =>
+                    setNewFieldType(value as SupportedFieldType)
+                  }
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BUILDER_FIELD_TYPES.map((fieldType) => (
+                      <SelectItem key={fieldType} value={fieldType}>
+                        {getFieldTypeLabel(fieldType)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddField}
+                >
+                  <Plus />
+                  Add Field
+                </Button>
+              </div>
               <ItemGroup className="gap-3">
                 {(section.fields ?? []).length > 0 ? (
                   (section.fields ?? []).map((field, fieldIndex) => (

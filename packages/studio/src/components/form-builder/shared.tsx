@@ -176,7 +176,7 @@ export function createDefaultField(type: SupportedFieldType, id: string) {
   const baseField = {
     id,
     type,
-    label: "",
+    label: "Untitled Field",
     placeholder: "",
     validators: [],
   };
