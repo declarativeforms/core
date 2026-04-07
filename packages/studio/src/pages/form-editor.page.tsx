@@ -1,13 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  ChevronDown,
-  Copy,
-  ExternalLink,
-  File,
-  FileText,
-  Save,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { Copy, ExternalLink, File, FileText, Save } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
@@ -20,18 +13,11 @@ import {
   EmptyMedia,
   EmptyTitle,
   Field,
-  SectionField,
   FieldGroup,
   FieldLabel,
   Input,
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemHeader,
-  ItemTitle,
   PageShell,
+  Section,
   Tabs,
   TabsContent,
   TabsList,
@@ -46,9 +32,6 @@ import type {
 
 export function FormEditorPage() {
   const params = useParams();
-  const [expandedSectionIndex, setExpandedSectionIndex] = useState<
-    number | null
-  >(null);
 
   const { control, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
@@ -113,10 +96,6 @@ export function FormEditorPage() {
       start_date: getForm.data.start_date ?? "",
       title: getForm.data.title,
     } as any);
-
-    setExpandedSectionIndex(
-      (getForm.data.sections ?? []).length > 0 ? 0 : null,
-    );
   }, [getForm.data]);
 
   if (!getForm.data) {
@@ -312,134 +291,21 @@ export function FormEditorPage() {
             <TabsContent className="flex flex-col gap-y-3 py-6" value="edit">
               {sections.length > 0 ? (
                 sections.map((section, index) => {
-                  const isExpanded = expandedSectionIndex === index;
-
                   return (
-                    <Item
+                    <Section
                       key={section.id ?? `section-${index}`}
-                      variant="outline"
-                      className={
-                        isExpanded ? "border-foreground/15 bg-muted/5" : ""
+                      section={section}
+                      index={index}
+                      sections={sections}
+                      onChange={(nextSection) =>
+                        setValue(
+                          "sections",
+                          sections.map((sectionItem, sectionIndex) =>
+                            sectionIndex === index ? nextSection : sectionItem,
+                          ),
+                        )
                       }
-                    >
-                      <ItemHeader>
-                        <ItemContent>
-                          <ItemTitle>{section.title as any}</ItemTitle>
-                          <ItemDescription>
-                            {section.id || `section_${index + 1}`} •{" "}
-                            {section.fields?.length ?? 0}{" "}
-                            {(section.fields?.length ?? 0) === 1
-                              ? "field"
-                              : "fields"}
-                          </ItemDescription>
-                        </ItemContent>
-
-                        <ItemActions>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() =>
-                              setExpandedSectionIndex((current) =>
-                                current === index ? null : index,
-                              )
-                            }
-                          >
-                            <ChevronDown
-                              className={
-                                isExpanded
-                                  ? "rotate-180 transition-transform"
-                                  : "transition-transform"
-                              }
-                            />
-                          </Button>
-                        </ItemActions>
-                      </ItemHeader>
-
-                      {isExpanded ? (
-                        <div className="basis-full border-t border-border pt-4">
-                          <FieldGroup>
-                            <Field>
-                              <FieldLabel>Title</FieldLabel>
-                              <Input
-                                value={
-                                  typeof section.title === "string"
-                                    ? section.title
-                                    : ""
-                                }
-                                onChange={(event) =>
-                                  setValue(
-                                    "sections",
-                                    sections.map((sectionItem, sectionIndex) =>
-                                      sectionIndex === index
-                                        ? {
-                                            ...sectionItem,
-                                            title: event.target.value,
-                                          }
-                                        : sectionItem,
-                                    ),
-                                  )
-                                }
-                              />
-                            </Field>
-
-                            <Field>
-                              <FieldLabel>Fields</FieldLabel>
-                              <ItemGroup className="gap-3">
-                                {(section.fields ?? []).length > 0 ? (
-                                  (section.fields ?? []).map(
-                                    (field, fieldIndex) => (
-                                      <SectionField
-                                        key={`field-${fieldIndex}`}
-                                        field={field}
-                                        onChange={(x) =>
-                                          setValue(
-                                            "sections",
-                                            sections.map(
-                                              (sectionItem, sectionIndex) =>
-                                                sectionIndex === index
-                                                  ? {
-                                                      ...sectionItem,
-                                                      fields: (
-                                                        sectionItem.fields ?? []
-                                                      ).map(
-                                                        (
-                                                          fieldItem,
-                                                          currentFieldIndex,
-                                                        ) =>
-                                                          currentFieldIndex ===
-                                                          fieldIndex
-                                                            ? x
-                                                            : fieldItem,
-                                                      ),
-                                                    }
-                                                  : sectionItem,
-                                            ),
-                                          )
-                                        }
-                                      />
-                                    ),
-                                  )
-                                ) : (
-                                  <Item
-                                    variant="outline"
-                                    className="bg-muted/10"
-                                  >
-                                    <ItemContent>
-                                      <ItemTitle>No fields yet</ItemTitle>
-                                      <ItemDescription>
-                                        This section does not have any fields
-                                        yet.
-                                      </ItemDescription>
-                                    </ItemContent>
-                                  </Item>
-                                )}
-                              </ItemGroup>
-                            </Field>
-                          </FieldGroup>
-                        </div>
-                      ) : null}
-                    </Item>
+                    />
                   );
                 })
               ) : (
