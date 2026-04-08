@@ -98,7 +98,7 @@ export function LoginPage() {
                 setSearchParams({});
               }}
             >
-              <ArrowLeft className="size-4" />
+              <ArrowLeft />
               Back to sign in
             </Button>
           </div>
