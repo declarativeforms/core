@@ -1,17 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  Copy,
-  ExternalLink,
-  File,
-  FileText,
-  Save,
-} from "lucide-react";
+import { Copy, ExternalLink, File, FileText, Save } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
 import {
   Button,
+  Completion,
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -35,6 +30,8 @@ import {
 import { getBackendUrl } from "@/lib/api";
 import type {
   IDeclarativeForm,
+  IDeclarativeFormCompletion,
+  IDeclarativeFormCompletionRule,
   IDeclarativeFormSection,
   ISubmission,
 } from "@declarativeforms/types";
@@ -57,6 +54,10 @@ export function FormEditorPage() {
 
   const { control, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
+      completion: undefined as
+        | IDeclarativeFormCompletion
+        | Array<IDeclarativeFormCompletionRule>
+        | undefined,
       description: "",
       end_date: "",
       mixpanel: "",
@@ -68,6 +69,7 @@ export function FormEditorPage() {
   });
 
   const sections = watch("sections");
+  const completion = watch("completion");
 
   const getForm = useQuery({
     queryKey: ["studio", "forms", params.formId],
@@ -127,6 +129,7 @@ export function FormEditorPage() {
     }
 
     reset({
+      completion: getForm.data.completion,
       description: getForm.data.description,
       end_date: getForm.data.end_date ?? "",
       mixpanel: getForm.data.measurements?.mixpanel ?? "",
@@ -203,6 +206,7 @@ export function FormEditorPage() {
 
             await putForm.mutateAsync({
               ...getForm.data,
+              completion: values.completion,
               description: values.description,
               end_date: values.end_date || undefined,
               measurements: {
@@ -409,6 +413,15 @@ export function FormEditorPage() {
                   </EmptyContent>
                 </Empty>
               )}
+            </TabsContent>
+
+            <TabsContent className="py-6" value="completion">
+              <Completion
+                completion={completion}
+                onChange={(nextCompletion) =>
+                  setValue("completion", nextCompletion)
+                }
+              />
             </TabsContent>
 
             <TabsContent className="py-6" value="results">
