@@ -47,7 +47,7 @@ function DashboardPageSection({ children }: { children: ReactNode }) {
 export function DashboardPage() {
   const navigate = useNavigate();
   const createForm = useCreateForm();
-  const { data: forms = [], isLoading, isError } = useForms();
+  const { data: forms = [], isLoading } = useForms();
 
   useEffect(() => {
     document.title = "Dashboard — Studio";

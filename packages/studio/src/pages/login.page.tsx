@@ -1,5 +1,5 @@
 import { Github, Mail, ArrowLeft, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 
@@ -14,27 +14,19 @@ import {
 import { Input } from "@/components/ui";
 import { getGitHubOAuthUrl, sendMagicLink } from "@/lib/auth";
 
-type LoginFormValues = {
-  email: string;
-};
-
 export function LoginPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isSending, setIsSending] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const linkError = searchParams.get("error");
-  const isSent = searchParams.get("sent") === "1";
-  const sentEmail = searchParams.get("email") ?? "";
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting },
+  } = useForm({
     defaultValues: {
-      email: sentEmail,
+      email: searchParams.get("email") ?? "",
     },
   });
 
@@ -42,32 +34,7 @@ export function LoginPage() {
     document.title = "Sign in — Declarative Forms Studio";
   }, []);
 
-  const handleSendMagicLink = handleSubmit(async ({ email }) => {
-    setIsSending(true);
-    setSubmitError(null);
-
-    try {
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      const result = await sendMagicLink(email, redirectUrl);
-
-      if (!result) {
-        setSubmitError("Unable to send sign-in link. Please try again.");
-        return;
-      }
-
-      reset({ email });
-      setSearchParams({
-        email,
-        sent: "1",
-      });
-    } catch {
-      setSubmitError("Unable to send sign-in link. Please try again.");
-    } finally {
-      setIsSending(false);
-    }
-  });
-
-  if (isSent) {
+  if (searchParams.get("sent") === "1" && !searchParams.get("error")) {
     return (
       <PageShell className="items-center justify-center bg-muted/30">
         <div className="flex w-full max-w-sm flex-col items-center text-center">
@@ -83,8 +50,10 @@ export function LoginPage() {
 
           <p className="mt-2 text-sm text-muted-foreground">
             We sent a sign-in link to{" "}
-            <span className="font-medium text-foreground">{sentEmail}</span>.
-            Click the link in the email to sign in.
+            <span className="font-medium text-foreground">
+              {searchParams.get("email") ?? ""}
+            </span>
+            . Click the link in the email to sign in.
           </p>
 
           <div className="mt-4 w-full">
@@ -94,7 +63,6 @@ export function LoginPage() {
               className="w-full"
               onClick={() => {
                 reset({ email: "" });
-                setSubmitError(null);
                 setSearchParams({});
               }}
             >
@@ -150,7 +118,29 @@ export function LoginPage() {
           <div className="h-px flex-1 bg-border" />
         </div>
 
-        <form className="mt-4 w-full" onSubmit={handleSendMagicLink}>
+        <form
+          className="mt-4 w-full"
+          onSubmit={handleSubmit(async ({ email }) => {
+            clearErrors("root");
+
+            const redirectUrl = `${window.location.origin}/auth/callback`;
+            const result = await sendMagicLink(email, redirectUrl);
+
+            if (!result) {
+              setError("root", {
+                message: "Unable to send sign-in link. Please try again.",
+              });
+
+              return;
+            }
+
+            reset({ email });
+            setSearchParams({
+              email,
+              sent: "1",
+            });
+          })}
+        >
           <FieldGroup className="gap-3">
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -160,35 +150,22 @@ export function LoginPage() {
                 placeholder="name@example.com"
                 {...register("email", {
                   required: "Email is required.",
-                  onChange: () => setSubmitError(null),
+                  onChange: () => clearErrors("root"),
                 })}
               />
-              <FieldError errors={[errors.email]} />
             </Field>
 
             <Button
               type="submit"
               variant="outline"
               className="w-full"
-              disabled={isSending}
+              disabled={isSubmitting}
             >
-              {isSending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Mail className="size-4" />
-              )}
-              {isSending ? "Sending..." : "Continue with Email"}
+              <Mail />
+              Continue with Email
             </Button>
           </FieldGroup>
         </form>
-
-        {submitError && <FieldError className="mt-2">{submitError}</FieldError>}
-
-        {linkError === "invalid_link" && !submitError && (
-          <p className="mt-2 text-xs text-destructive">
-            That sign-in link is invalid or has expired. Please try again.
-          </p>
-        )}
 
         <p className="mt-3 text-xs text-muted-foreground">
           By continuing, you agree to our terms of service.
