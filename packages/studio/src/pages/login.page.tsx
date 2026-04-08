@@ -1,42 +1,71 @@
 import { Github, Mail, ArrowLeft, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 
-import { Button, PageShell } from "@/components";
+import {
+  Button,
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  PageShell,
+} from "@/components";
 import { Input } from "@/components/ui";
 import { getGitHubOAuthUrl, sendMagicLink } from "@/lib/auth";
 
+type LoginFormValues = {
+  email: string;
+};
+
 export function LoginPage() {
-  const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isSending, setIsSending] = useState(false);
-  const [isSent, setIsSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const linkError = searchParams.get("error");
+  const isSent = searchParams.get("sent") === "1";
+  const sentEmail = searchParams.get("email") ?? "";
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    defaultValues: {
+      email: sentEmail,
+    },
+  });
 
   useEffect(() => {
     document.title = "Sign in — Declarative Forms Studio";
   }, []);
 
-  const handleSendMagicLink = async () => {
-    if (!email) return;
-
+  const handleSendMagicLink = handleSubmit(async ({ email }) => {
     setIsSending(true);
-    setError(null);
+    setSubmitError(null);
 
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-    const result = await sendMagicLink(email, redirectUrl);
+    try {
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      const result = await sendMagicLink(email, redirectUrl);
 
-    setIsSending(false);
+      if (!result) {
+        setSubmitError("Unable to send sign-in link. Please try again.");
+        return;
+      }
 
-    if (!result) {
-      setError("Unable to send sign-in link. Please try again.");
-      return;
+      reset({ email });
+      setSearchParams({
+        email,
+        sent: "1",
+      });
+    } catch {
+      setSubmitError("Unable to send sign-in link. Please try again.");
+    } finally {
+      setIsSending(false);
     }
-
-    setIsSent(true);
-  };
+  });
 
   if (isSent) {
     return (
@@ -54,7 +83,7 @@ export function LoginPage() {
 
           <p className="mt-2 text-sm text-muted-foreground">
             We sent a sign-in link to{" "}
-            <span className="font-medium text-foreground">{email}</span>.
+            <span className="font-medium text-foreground">{sentEmail}</span>.
             Click the link in the email to sign in.
           </p>
 
@@ -64,8 +93,9 @@ export function LoginPage() {
               variant="outline"
               className="w-full"
               onClick={() => {
-                setIsSent(false);
-                setEmail("");
+                reset({ email: "" });
+                setSubmitError(null);
+                setSearchParams({});
               }}
             >
               <ArrowLeft className="size-4" />
@@ -109,7 +139,7 @@ export function LoginPage() {
               window.location.href = getGitHubOAuthUrl();
             }}
           >
-            <Github className="size-4" />
+            <Github />
             Continue with GitHub
           </Button>
         </div>
@@ -120,43 +150,41 @@ export function LoginPage() {
           <div className="h-px flex-1 bg-border" />
         </div>
 
-        <form
-          className="mt-4 w-full space-y-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSendMagicLink();
-          }}
-        >
-          <Input
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            required
-          />
-          <Button
-            type="submit"
-            variant="outline"
-            className="w-full"
-            disabled={isSending || !email}
-          >
-            {isSending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Mail className="size-4" />
-            )}
-            {isSending ? "Sending..." : "Continue with Email"}
-          </Button>
+        <form className="mt-4 w-full" onSubmit={handleSendMagicLink}>
+          <FieldGroup className="gap-3">
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                {...register("email", {
+                  required: "Email is required.",
+                  onChange: () => setSubmitError(null),
+                })}
+              />
+              <FieldError errors={[errors.email]} />
+            </Field>
+
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full"
+              disabled={isSending}
+            >
+              {isSending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Mail className="size-4" />
+              )}
+              {isSending ? "Sending..." : "Continue with Email"}
+            </Button>
+          </FieldGroup>
         </form>
 
-        {error && (
-          <p className="mt-2 text-xs text-destructive">{error}</p>
-        )}
+        {submitError && <FieldError className="mt-2">{submitError}</FieldError>}
 
-        {linkError === "invalid_link" && !error && (
+        {linkError === "invalid_link" && !submitError && (
           <p className="mt-2 text-xs text-destructive">
             That sign-in link is invalid or has expired. Please try again.
           </p>

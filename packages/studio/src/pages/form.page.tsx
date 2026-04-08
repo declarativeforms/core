@@ -91,7 +91,7 @@ function replaceDeletedSectionReference(
   };
 }
 
-export function FormEditorPage() {
+export function FormPage() {
   const params = useParams();
 
   const { control, handleSubmit, reset, setValue, watch } = useForm({

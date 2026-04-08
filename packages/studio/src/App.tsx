@@ -6,7 +6,7 @@ import {
   CallbackPage,
   DashboardPage,
   DemoPage,
-  FormEditorPage,
+  FormPage,
   LoginPage,
 } from "./pages";
 
@@ -31,7 +31,7 @@ function App() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/forms/:formId" element={<FormEditorPage />} />
+          <Route path="/forms/:formId" element={<FormPage />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/auth/callback" element={<CallbackPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
