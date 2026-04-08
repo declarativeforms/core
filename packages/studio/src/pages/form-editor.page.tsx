@@ -49,6 +49,48 @@ function createSectionId(sections: IDeclarativeFormSection[]) {
   return `section_${index}`;
 }
 
+function moveItem<T>(items: T[], fromIndex: number, toIndex: number) {
+  const nextItems = [...items];
+  const [item] = nextItems.splice(fromIndex, 1);
+
+  if (item === undefined) {
+    return items;
+  }
+
+  nextItems.splice(toIndex, 0, item);
+  return nextItems;
+}
+
+function replaceDeletedSectionReference(
+  section: IDeclarativeFormSection,
+  deletedSectionId: string,
+) {
+  if (typeof section.next === "string") {
+    return section.next === deletedSectionId
+      ? { ...section, next: "done" }
+      : section;
+  }
+
+  if (!Array.isArray(section.next)) {
+    return section;
+  }
+
+  return {
+    ...section,
+    next: section.next.map((rule) => {
+      if ("when" in rule) {
+        return rule.go === deletedSectionId ? { ...rule, go: "done" } : rule;
+      }
+
+      if ("else" in rule) {
+        return rule.else === deletedSectionId ? { else: "done" } : rule;
+      }
+
+      return rule;
+    }),
+  };
+}
+
 export function FormEditorPage() {
   const params = useParams();
 
@@ -143,6 +185,23 @@ export function FormEditorPage() {
   if (!getForm.data) {
     return null;
   }
+
+  const handleMoveSection = (fromIndex: number, toIndex: number) => {
+    setValue("sections", moveItem(sections, fromIndex, toIndex));
+  };
+
+  const handleDeleteSection = (sectionIndex: number) => {
+    const deletedSection = sections[sectionIndex];
+    const nextSections = sections
+      .filter((_, currentSectionIndex) => currentSectionIndex !== sectionIndex)
+      .map((section) =>
+        deletedSection?.id
+          ? replaceDeletedSectionReference(section, deletedSection.id)
+          : section,
+      );
+
+    setValue("sections", nextSections);
+  };
 
   return (
     <PageShell className="overflow-y-auto">
@@ -351,6 +410,8 @@ export function FormEditorPage() {
                         section={section}
                         index={index}
                         sections={sections}
+                        canMoveUp={index > 0}
+                        canMoveDown={index < sections.length - 1}
                         onChange={(nextSection) =>
                           setValue(
                             "sections",
@@ -361,6 +422,9 @@ export function FormEditorPage() {
                             ),
                           )
                         }
+                        onMoveUp={() => handleMoveSection(index, index - 1)}
+                        onMoveDown={() => handleMoveSection(index, index + 1)}
+                        onDelete={() => handleDeleteSection(index)}
                       />
                     );
                   })}
@@ -373,7 +437,7 @@ export function FormEditorPage() {
                         ...sections,
                         {
                           id: createSectionId(sections),
-                          title: "",
+                          title: "Untitled Section",
                           fields: [],
                         },
                       ])

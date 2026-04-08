@@ -1,4 +1,4 @@
-import { ChevronDown, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -183,12 +183,22 @@ export function Section({
   section,
   index,
   sections,
+  canMoveUp,
+  canMoveDown,
   onChange,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
 }: {
   section: IDeclarativeFormSection;
   index: number;
   sections: IDeclarativeFormSection[];
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   onChange: (nextSection: IDeclarativeFormSection) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onDelete: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newFieldType, setNewFieldType] =
@@ -363,7 +373,40 @@ export function Section({
             type="button"
             variant="ghost"
             size="icon-sm"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+            aria-label="Move section up"
+          >
+            <ChevronUp />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+            aria-label="Move section down"
+          >
+            <ChevronDown />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onDelete}
+            aria-label="Delete section"
+          >
+            <Trash2 />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setIsExpanded((current) => !current)}
+            aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
             <ChevronDown
               className={

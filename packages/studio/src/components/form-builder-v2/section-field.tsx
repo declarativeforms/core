@@ -181,9 +181,7 @@ function withRequiredValidatorMessage(
   const validators = getValidators(field);
   const index = validators.findIndex(isRequiredValidator);
   const nextValidator: RequiredValidator =
-    message.trim() === ""
-      ? "required"
-      : { type: "required", message };
+    message.trim() === "" ? "required" : { type: "required", message };
 
   if (index >= 0) {
     validators[index] = nextValidator;
@@ -272,9 +270,11 @@ function getValidatorValue(
 
   switch (type) {
     case "pattern":
-      return validator.type === "pattern" ? validator.regex ?? "" : "";
+      return validator.type === "pattern" ? (validator.regex ?? "") : "";
     case "expression":
-      return validator.type === "expression" ? validator.expression ?? "" : "";
+      return validator.type === "expression"
+        ? (validator.expression ?? "")
+        : "";
     case "min":
     case "max":
     case "min_length":
@@ -348,10 +348,7 @@ export function SectionField({
         >
           <ItemContent>
             <ItemTitle>{field.label as any}</ItemTitle>
-            <ItemDescription>
-              {field.type as any}
-              {field.id ? ` • ${field.id}` : ""}
-            </ItemDescription>
+            <ItemDescription>{field.type as any}</ItemDescription>
           </ItemContent>
         </button>
 
@@ -362,6 +359,7 @@ export function SectionField({
             size="icon-sm"
             onClick={onMoveUp}
             disabled={!canMoveUp}
+            aria-label="Move field up"
           >
             <ChevronUp />
           </Button>
@@ -372,6 +370,7 @@ export function SectionField({
             size="icon-sm"
             onClick={onMoveDown}
             disabled={!canMoveDown}
+            aria-label="Move field down"
           >
             <ChevronDown />
           </Button>
@@ -381,6 +380,7 @@ export function SectionField({
             variant="ghost"
             size="icon-sm"
             onClick={onDelete}
+            aria-label="Delete field"
           >
             <Trash2 />
           </Button>
@@ -390,6 +390,7 @@ export function SectionField({
             variant="ghost"
             size="icon-sm"
             onClick={() => setIsExpanded((current) => !current)}
+            aria-label={isExpanded ? "Collapse field" : "Expand field"}
           >
             <ChevronDown
               className={
@@ -449,6 +450,19 @@ export function SectionField({
               />
             </Field>
 
+            <Field>
+              <FieldLabel>Visible When</FieldLabel>
+              <Textarea
+                value={field.visible_when ?? ""}
+                onChange={(event) =>
+                  onChange({
+                    ...field,
+                    visible_when: event.target.value || undefined,
+                  })
+                }
+              />
+            </Field>
+
             {isChoiceField(field) ? (
               <Field>
                 <FieldLabel>Options</FieldLabel>
@@ -464,10 +478,7 @@ export function SectionField({
                           onChange({
                             ...field,
                             options: choiceOptions.map(
-                              (
-                                currentOption: string,
-                                optionIndex: number,
-                              ) =>
+                              (currentOption: string, optionIndex: number) =>
                                 optionIndex === index
                                   ? event.target.value
                                   : currentOption,
@@ -707,7 +718,8 @@ export function SectionField({
             isRatingField(field) ||
             isAddressField(field) ||
             isCameraField(field) ||
-            isDropdownField(field) ? (
+            isDropdownField(field) ||
+            isSelectField(field) ? (
               <Field>
                 <FieldLabel>Field Settings</FieldLabel>
                 <div className="space-y-3">
@@ -839,6 +851,25 @@ export function SectionField({
                         />
                         <p className="text-sm font-medium text-foreground">
                           Searchable
+                        </p>
+                      </div>
+                    </Item>
+                  ) : null}
+
+                  {isSelectField(field) ? (
+                    <Item variant="outline" className="bg-muted/10">
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={field.allow_other === true}
+                          onCheckedChange={(checked) =>
+                            onChange({
+                              ...field,
+                              allow_other: checked === true,
+                            })
+                          }
+                        />
+                        <p className="text-sm font-medium text-foreground">
+                          Allow &quot;Other&quot; option
                         </p>
                       </div>
                     </Item>
