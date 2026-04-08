@@ -93,6 +93,16 @@ export function buildValidationRules(
       continue;
     }
 
+    if (validator.type === "required") {
+      rules.push({
+        type: "required",
+        message:
+          resolveLocalizedText(validator.message, locale) ||
+          interpolateTemplate(messages.required, {}, { label }),
+      });
+      continue;
+    }
+
     switch (validator.type) {
       case "pattern":
         if (!validator.regex) break;

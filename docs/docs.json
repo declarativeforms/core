@@ -25,8 +25,7 @@
           {
             "group": "Getting Started",
             "pages": [
-              "getting-started/create-a-form",
-              "getting-started/use-the-starter-repository"
+              "getting-started/create-a-form"
             ]
           },
           {
@@ -58,7 +57,6 @@
           {
             "group": "Examples",
             "pages": [
-              "examples/test-a-form-in-the-playground",
               "examples/add-another-section",
               "examples/show-or-hide-a-field",
               "examples/customize-the-thank-you-page",

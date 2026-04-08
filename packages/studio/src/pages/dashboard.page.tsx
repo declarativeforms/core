@@ -4,7 +4,12 @@ import { useNavigate } from "react-router-dom";
 
 import {
   Button,
-  EmptyState,
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
   PageHeader,
   PageShell,
 } from "@/components";
@@ -29,8 +34,6 @@ function getTextValue(value: ILocalizedText | undefined) {
   return typeof firstTextValue === "string" ? firstTextValue.trim() : "";
 }
 
-
-
 function DashboardPageSection({ children }: { children: ReactNode }) {
   return (
     <PageShell className="overflow-y-auto">
@@ -44,7 +47,7 @@ function DashboardPageSection({ children }: { children: ReactNode }) {
 export function DashboardPage() {
   const navigate = useNavigate();
   const createForm = useCreateForm();
-  const { data: forms = [], isLoading, isError } = useForms();
+  const { data: forms = [], isLoading } = useForms();
 
   useEffect(() => {
     document.title = "Dashboard — Studio";
@@ -96,35 +99,6 @@ export function DashboardPage() {
     );
   }
 
-  if (isError) {
-    return (
-      <DashboardPageSection>
-        <PageHeader
-          title="Forms"
-          actions={
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleCreateForm}
-              disabled={createForm.isPending}
-            >
-              <Plus />
-              {createForm.isPending ? "Creating..." : "New Form"}
-            </Button>
-          }
-        />
-
-        <EmptyState
-          icon={<FileText className="size-5" />}
-          title="Unable to load forms"
-          description="Try again in a moment. Studio couldn’t fetch forms from the API."
-          className="mx-auto"
-        />
-      </DashboardPageSection>
-    );
-  }
-
   return (
     <DashboardPageSection>
       <PageHeader
@@ -145,11 +119,17 @@ export function DashboardPage() {
 
       {forms.length === 0 ? (
         <div className="flex flex-1 items-center justify-center">
-          <EmptyState
-            icon={<FileText className="size-5" />}
-            title="No forms yet"
-            description="Create your first form to start collecting responses."
-            action={
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FileText className="size-5" />
+              </EmptyMedia>
+              <EmptyTitle>No forms yet</EmptyTitle>
+              <EmptyDescription>
+                Create your first form to start collecting responses.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
               <Button
                 type="button"
                 variant="outline"
@@ -160,8 +140,8 @@ export function DashboardPage() {
                 <Plus />
                 {createForm.isPending ? "Creating..." : "New Form"}
               </Button>
-            }
-          />
+            </EmptyContent>
+          </Empty>
         </div>
       ) : (
         <div className="rounded-lg border border-border">
