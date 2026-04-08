@@ -1,4 +1,4 @@
-import { Github, Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { Github, Mail, ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
@@ -6,7 +6,6 @@ import { useSearchParams } from "react-router-dom";
 import {
   Button,
   Field,
-  FieldError,
   FieldGroup,
   FieldLabel,
   PageShell,
@@ -23,7 +22,7 @@ export function LoginPage() {
     reset,
     setError,
     clearErrors,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm({
     defaultValues: {
       email: searchParams.get("email") ?? "",
