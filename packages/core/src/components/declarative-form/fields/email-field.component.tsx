@@ -257,86 +257,85 @@ export function EmailField({
   return (
     <div className="space-y-2">
       <div className="relative">
-          <Input
-            {...controllerField}
-            className={cn("text-sm/4", {
-              "bg-muted/60 border-muted-foreground/30 text-muted-foreground pr-10 cursor-not-allowed":
-                isVerified,
-              "pr-20": !isVerified,
-            })}
-            placeholder={field.placeholder || t("email.placeholder_otp")}
-            type="email"
-            value={emailValue}
-            onChange={(event) => onEmailChange(event.target.value)}
-            required={field.required}
-            aria-required={field.required}
-            aria-readonly={isVerified}
-            readOnly={isVerified}
-            minLength={minLength}
-            maxLength={maxLength}
-          />
+        <Input
+          {...controllerField}
+          className={cn("text-sm/4", {
+            "bg-muted/60 border-muted-foreground/30 text-muted-foreground pr-10 cursor-not-allowed":
+              isVerified,
+            "pr-20": !isVerified,
+          })}
+          placeholder={field.placeholder || t("email.placeholder_otp")}
+          type="email"
+          value={emailValue}
+          onChange={(event) => onEmailChange(event.target.value)}
+          required={field.required}
+          aria-required={field.required}
+          aria-readonly={isVerified}
+          readOnly={isVerified}
+          minLength={minLength}
+          maxLength={maxLength}
+        />
 
-          {isVerified && (
-            <span className="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center">
-              <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
-            </span>
-          )}
+        {isVerified && (
+          <span className="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center">
+            <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
+          </span>
+        )}
 
-          {!isVerified && (
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
-              disabled={
-                isSending ||
-                !isEmailValid(emailValue) ||
-                (otpRequestId !== "" && secondsUntilResend > 0)
-              }
-              onClick={() => {
-                void sendOtp();
-              }}
-            >
-              {otpRequestId
-                ? secondsUntilResend > 0
-                  ? t("email.otp.resend_in_seconds", {
-                      seconds: secondsUntilResend,
-                    })
-                  : t("email.otp.resend")
-                : t("email.otp.send_code")}
-            </button>
-          )}
-        </div>
-
-        {!isVerified && otpRequestId ? (
-          <div className="relative">
-            <Input
-              value={otpCode}
-              onChange={(event) =>
-                setOtpCode(sanitizeOtpCode(event.target.value))
-              }
-              placeholder={t("email.otp.verification_code_placeholder")}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              className="pr-10 text-sm/4"
-              aria-label={t("email.otp.verification_code_aria_label")}
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
-              disabled={isVerifying || otpCode.length === 0}
-              aria-label={t("email.otp.verify")}
-              onClick={() => {
-                void verifyOtp();
-              }}
-            >
-              <Check className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        ) : null}
-
-        <p className="text-sm text-destructive" aria-live="polite">
-          {statusMessage ?? ""}
-        </p>
+        {!isVerified && (
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
+            disabled={
+              isSending ||
+              !isEmailValid(emailValue) ||
+              (otpRequestId !== "" && secondsUntilResend > 0)
+            }
+            onClick={() => {
+              void sendOtp();
+            }}
+          >
+            {otpRequestId
+              ? secondsUntilResend > 0
+                ? t("email.otp.resend_in_seconds", {
+                    seconds: secondsUntilResend,
+                  })
+                : t("email.otp.resend")
+              : t("email.otp.send_code")}
+          </button>
+        )}
       </div>
+
+      {!isVerified && otpRequestId ? (
+        <div className="relative">
+          <Input
+            value={otpCode}
+            onChange={(event) =>
+              setOtpCode(sanitizeOtpCode(event.target.value))
+            }
+            placeholder={t("email.otp.verification_code_placeholder")}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            className="pr-10 text-sm/4"
+            aria-label={t("email.otp.verification_code_aria_label")}
+          />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:opacity-50"
+            disabled={isVerifying || otpCode.length === 0}
+            aria-label={t("email.otp.verify")}
+            onClick={() => {
+              void verifyOtp();
+            }}
+          >
+            <Check className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
+      <p className="text-sm text-destructive" aria-live="polite">
+        {statusMessage ?? ""}
+      </p>
     </div>
   );
 }
