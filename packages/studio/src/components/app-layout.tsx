@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Button } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
 import { useAuth } from "@/hooks";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -24,9 +24,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <span className="text-sm font-semibold text-foreground">
               Declarative Forms
             </span>
-            <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
-              Studio
-            </span>
+            <Badge>Studio</Badge>
           </div>
         </Link>
 

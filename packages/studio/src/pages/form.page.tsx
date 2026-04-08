@@ -334,16 +334,16 @@ export function FormPage() {
                   )}
                 />
 
-                <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+                <div className="grid min-w-0 gap-3 overflow-hidden sm:grid-cols-2">
                   <Controller
                     name="start_date"
                     control={control}
                     render={({ field }) => (
-                      <Field className="min-w-0">
+                      <Field className="min-w-0 overflow-hidden">
                         <FieldLabel>Start date</FieldLabel>
                         <Input
                           type="datetime-local"
-                          className="w-full min-w-0"
+                          className="w-full min-w-0 max-w-full"
                           {...field}
                         />
                       </Field>
@@ -354,11 +354,11 @@ export function FormPage() {
                     name="end_date"
                     control={control}
                     render={({ field }) => (
-                      <Field className="min-w-0">
+                      <Field className="min-w-0 overflow-hidden">
                         <FieldLabel>End date</FieldLabel>
                         <Input
                           type="datetime-local"
-                          className="w-full min-w-0"
+                          className="w-full min-w-0 max-w-full"
                           {...field}
                         />
                       </Field>
