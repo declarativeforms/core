@@ -1,5 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronDown, Copy, ExternalLink, File, FileText, Save } from "lucide-react";
+import {
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  File,
+  FileText,
+  Save,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -252,9 +259,9 @@ export function FormEditorPage() {
                 <TabsTrigger value="completion" className="shrink-0">
                   Completion
                 </TabsTrigger>
-                <TabsTrigger value="connections" className="shrink-0">
+                {/* <TabsTrigger value="connections" className="shrink-0">
                   Connections
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger value="results" className="shrink-0">
                   Results
                 </TabsTrigger>
@@ -369,7 +376,9 @@ export function FormEditorPage() {
                           setValue(
                             "sections",
                             sections.map((sectionItem, sectionIndex) =>
-                              sectionIndex === index ? nextSection : sectionItem,
+                              sectionIndex === index
+                                ? nextSection
+                                : sectionItem,
                             ),
                           )
                         }
@@ -428,19 +437,8 @@ export function FormEditorPage() {
             </TabsContent>
 
             <TabsContent className="py-6" value="results">
-              {getSubmissions.isLoading ? null : getSubmissions.isError ? (
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <File />
-                    </EmptyMedia>
-                    <EmptyTitle>Unable To Load Results</EmptyTitle>
-                    <EmptyDescription>
-                      Studio couldn&apos;t fetch form submissions from the API.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              ) : (getSubmissions.data ?? []).length === 0 ? (
+              {getSubmissions.isLoading ? null : (getSubmissions.data ?? [])
+                  .length === 0 ? (
                 <Empty>
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
