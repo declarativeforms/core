@@ -58,7 +58,6 @@
           {
             "group": "Examples",
             "pages": [
-              "examples/test-a-form-in-the-playground",
               "examples/add-another-section",
               "examples/show-or-hide-a-field",
               "examples/customize-the-thank-you-page",

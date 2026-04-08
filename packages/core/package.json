@@ -11,9 +11,6 @@
     "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
-    "@codemirror/lang-yaml": "^6.1.3",
-    "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.41.0",
     "@declarativeforms/common": "*",
     "@declarativeforms/runtime": "*",
     "@declarativeforms/types": "*",
@@ -32,10 +29,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "codemirror": "^6.0.2",
     "framer-motion": "^12.38.0",
     "handlebars": "^4.7.9",
-    "js-yaml": "^4.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.7.0",
     "mixpanel-browser": "^2.77.0",
@@ -52,7 +47,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/google.maps": "^3.58.1",
-    "@types/js-yaml": "^4.0.9",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
