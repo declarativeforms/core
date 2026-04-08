@@ -25,7 +25,8 @@ sections:
         label: "Email address"
         placeholder: "jane@example.com"
         validators:
-          - required
+          - type: required
+            message: "Please enter your email address."
 
       - id: confirm_email
         type: email
@@ -88,3 +89,5 @@ connections:
 ```
 
 The `expression` validator can reference any field by its `id` through the `data` object. This lets you compare two fields in the same section — like matching email addresses — or validate a field in a later section against one submitted earlier — like ensuring a departure date falls after the arrival date.
+
+The `required` validator can be written either as `- required` or as an object with `type: required` when you want to provide a custom message.

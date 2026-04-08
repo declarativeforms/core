@@ -238,7 +238,7 @@ export function FormEditorPage() {
           })}
         >
           <Tabs defaultValue="edit">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-hidden">
               <TabsList
                 variant="line"
                 className="flex w-max min-w-full flex-nowrap justify-start"
@@ -289,27 +289,37 @@ export function FormEditorPage() {
                   )}
                 />
 
-                <Controller
-                  name="start_date"
-                  control={control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>Start date</FieldLabel>
-                      <Input type="datetime-local" {...field} />
-                    </Field>
-                  )}
-                />
+                <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+                  <Controller
+                    name="start_date"
+                    control={control}
+                    render={({ field }) => (
+                      <Field className="min-w-0">
+                        <FieldLabel>Start date</FieldLabel>
+                        <Input
+                          type="datetime-local"
+                          className="w-full min-w-0"
+                          {...field}
+                        />
+                      </Field>
+                    )}
+                  />
 
-                <Controller
-                  name="end_date"
-                  control={control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>End date</FieldLabel>
-                      <Input type="datetime-local" {...field} />
-                    </Field>
-                  )}
-                />
+                  <Controller
+                    name="end_date"
+                    control={control}
+                    render={({ field }) => (
+                      <Field className="min-w-0">
+                        <FieldLabel>End date</FieldLabel>
+                        <Input
+                          type="datetime-local"
+                          className="w-full min-w-0"
+                          {...field}
+                        />
+                      </Field>
+                    )}
+                  />
+                </div>
 
                 <Controller
                   name="mixpanel"

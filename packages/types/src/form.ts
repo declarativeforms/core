@@ -65,6 +65,10 @@ export type IDeclarativeFormOption =
 export type IDeclarativeFormValidator =
   | "required"
   | {
+      type: "required";
+      message?: ILocalizedText;
+    }
+  | {
       type?: "pattern";
       regex?: string;
       message?: ILocalizedText;

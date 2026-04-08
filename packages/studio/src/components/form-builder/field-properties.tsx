@@ -48,7 +48,15 @@ type ObjectValidatorType =
   | "max_length"
   | "expression";
 
-type ObjectValidator = Exclude<IDeclarativeFormValidator, "required">;
+type RequiredValidatorObject = Extract<
+  IDeclarativeFormValidator,
+  { type: "required" }
+>;
+type RequiredValidator = "required" | RequiredValidatorObject;
+type ObjectValidator = Extract<
+  IDeclarativeFormValidator,
+  { type?: ObjectValidatorType }
+>;
 type PatternValidator = Extract<ObjectValidator, { type?: "pattern" }>;
 type ExpressionValidator = Extract<ObjectValidator, { type?: "expression" }>;
 type MinValidator = Extract<ObjectValidator, { type?: "min" }>;
@@ -200,6 +208,21 @@ function getValidators(field: IDeclarativeFormField): IDeclarativeFormValidator[
   return [...(field.validators ?? [])];
 }
 
+function isRequiredValidator(
+  validator: IDeclarativeFormValidator,
+): validator is RequiredValidator {
+  return (
+    validator === "required" ||
+    (typeof validator === "object" && validator.type === "required")
+  );
+}
+
+function getRequiredValidator(
+  field: IDeclarativeFormField,
+): RequiredValidator | undefined {
+  return getValidators(field).find(isRequiredValidator);
+}
+
 function getObjectValidator(
   field: IDeclarativeFormField,
   type: ObjectValidatorType,
@@ -257,7 +280,7 @@ function withoutValidator(
     ...field,
     validators: getValidators(field).filter((validator) => {
       if (type === "required") {
-        return validator !== "required";
+        return !isRequiredValidator(validator);
       }
 
       return !(typeof validator === "object" && validator.type === type);
@@ -266,16 +289,46 @@ function withoutValidator(
 }
 
 function withRequiredValidator(field: IDeclarativeFormField): IDeclarativeFormField {
-  const validators = getValidators(field);
-
-  if (validators.includes("required")) {
+  if (getRequiredValidator(field)) {
     return field;
   }
 
   return {
     ...field,
-    validators: [...validators, "required" as const],
+    validators: [...getValidators(field), "required" as const],
   };
+}
+
+function withRequiredValidatorMessage(
+  field: IDeclarativeFormField,
+  message: string,
+): IDeclarativeFormField {
+  const validators = getValidators(field);
+  const index = validators.findIndex(isRequiredValidator);
+  const nextValidator: RequiredValidator =
+    message.trim() === ""
+      ? "required"
+      : { type: "required", message };
+
+  if (index >= 0) {
+    validators[index] = nextValidator;
+  } else {
+    validators.push(nextValidator);
+  }
+
+  return {
+    ...field,
+    validators,
+  };
+}
+
+function getRequiredValidatorMessage(field: IDeclarativeFormField) {
+  const validator = getRequiredValidator(field);
+  return validator &&
+    typeof validator === "object" &&
+    typeof validator.message === "string"
+    ? validator.message
+    : "";
 }
 
 function getValidatorValue(
@@ -533,28 +586,42 @@ function ValidatorEditor({
   return (
     <div className="space-y-3">
       <BuilderInset variant="default">
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="field-required"
-            checked={(field.validators ?? []).some(
-              (validator) => validator === "required",
-            )}
-            onCheckedChange={(checked) => {
-              if (checked === true) {
-                onChange(withRequiredValidator(field));
-                return;
-              }
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="field-required"
+              checked={!!getRequiredValidator(field)}
+              onCheckedChange={(checked) => {
+                if (checked === true) {
+                  onChange(withRequiredValidator(field));
+                  return;
+                }
 
-              onChange(withoutValidator(field, "required"));
-            }}
-          />
+                onChange(withoutValidator(field, "required"));
+              }}
+            />
 
-          <div className="space-y-1">
-            <Label htmlFor="field-required">Required</Label>
-            <p className="text-xs text-muted-foreground">
-              Require respondents to fill this field before submitting.
-            </p>
+            <div className="space-y-1">
+              <Label htmlFor="field-required">Required</Label>
+              <p className="text-xs text-muted-foreground">
+                Require respondents to fill this field before submitting.
+              </p>
+            </div>
           </div>
+
+          {getRequiredValidator(field) ? (
+            <div className="space-y-2">
+              <Label>Message</Label>
+              <Input
+                value={getRequiredValidatorMessage(field)}
+                onChange={(event) =>
+                  onChange(
+                    withRequiredValidatorMessage(field, event.target.value),
+                  )
+                }
+              />
+            </div>
+          ) : null}
         </div>
       </BuilderInset>
 

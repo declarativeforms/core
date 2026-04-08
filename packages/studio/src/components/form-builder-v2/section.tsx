@@ -520,7 +520,7 @@ export function Section({
                               handleRemoveConditionalRule(ruleIndex)
                             }
                           >
-                            <Trash2 className="size-3.5" />
+                            <Trash2 />
                           </Button>
                         </div>
 
