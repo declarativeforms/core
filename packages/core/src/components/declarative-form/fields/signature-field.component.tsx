@@ -2,7 +2,6 @@ import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
-import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../supporting/use-form-i18n";
 import { useUploadBlob } from "../supporting/use-upload-blob";
 import { cn } from "@/lib/utils";
@@ -178,8 +177,7 @@ export function SignatureField({
   };
 
   return (
-    <FormControl>
-      <div className="space-y-2">
+    <div className="space-y-2">
         <div
           className={cn(
             "border border-dashed rounded-md min-h-[160px] transition-colors",
@@ -231,6 +229,5 @@ export function SignatureField({
           {errorMessage ?? ""}
         </p>
       </div>
-    </FormControl>
   );
 }

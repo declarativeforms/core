@@ -3,7 +3,6 @@ import { useState, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../../supporting/field-support";
 import { buildFieldValidation } from "../../supporting/validation";
-import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../../supporting/use-form-i18n";
 import { uploadFile } from "@/lib/file-upload";
 import { cn } from "@/lib/utils";
@@ -148,8 +147,7 @@ export function FileUploadField({
   };
 
   return (
-    <FormControl>
-      <div className="space-y-2">
+    <div className="space-y-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -215,6 +213,5 @@ export function FileUploadField({
           </div>
         )}
       </div>
-    </FormControl>
   );
 }

@@ -4,9 +4,8 @@ import type { DeclarativeFieldComponentProps } from "../supporting/field-support
 import { buildFieldValidation } from "../supporting/validation";
 import { HtmlText } from "../supporting/html-text";
 import {
-  FormControl,
-  FormItem,
-  FormLabel,
+  Field,
+  FieldLabel,
   Input,
   RadioGroup,
   RadioGroupItem,
@@ -54,57 +53,51 @@ export function SingleSelectField({
   const radioValue = isOtherMode ? OTHER_VALUE : controllerField.value;
 
   return (
-    <FormControl>
-      <RadioGroup
-        onValueChange={handleValueChange}
-        value={radioValue}
-        className="gap-2"
-        aria-required={field.required}
-      >
-        {options?.map((option) => {
-          const isSelected = controllerField.value === option.value;
+    <RadioGroup
+      onValueChange={handleValueChange}
+      value={radioValue}
+      className="gap-2"
+      aria-required={field.required}
+    >
+      {options?.map((option) => {
+        const isSelected = controllerField.value === option.value;
 
-          return (
-            <FormItem key={option.value}>
-              <FormLabel
-                className={cn(
-                  "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
-                  { "border-ring": isSelected }
-                )}
-              >
-                <FormControl>
-                  <RadioGroupItem value={option.value} />
-                </FormControl>
-                <HtmlText html={option.label} />
-              </FormLabel>
-            </FormItem>
-          );
-        })}
-        {allowOther && (
-          <FormItem>
-            <FormLabel
+        return (
+          <Field key={option.value}>
+            <FieldLabel
               className={cn(
                 "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
-                { "border-ring": isOtherMode }
+                { "border-ring": isSelected }
               )}
             >
-              <FormControl>
-                <RadioGroupItem value={OTHER_VALUE} />
-              </FormControl>
-              <span>{t("select.other")}</span>
-            </FormLabel>
-            {isOtherMode && (
-              <Input
-                className="mt-2 text-sm/4"
-                placeholder={t("select.other_placeholder")}
-                value={otherText}
-                onChange={handleOtherTextChange}
-                autoFocus
-              />
+              <RadioGroupItem value={option.value} />
+              <HtmlText html={option.label} />
+            </FieldLabel>
+          </Field>
+        );
+      })}
+      {allowOther && (
+        <Field>
+          <FieldLabel
+            className={cn(
+              "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
+              { "border-ring": isOtherMode }
             )}
-          </FormItem>
-        )}
-      </RadioGroup>
-    </FormControl>
+          >
+            <RadioGroupItem value={OTHER_VALUE} />
+            <span>{t("select.other")}</span>
+          </FieldLabel>
+          {isOtherMode && (
+            <Input
+              className="mt-2 text-sm/4"
+              placeholder={t("select.other_placeholder")}
+              value={otherText}
+              onChange={handleOtherTextChange}
+              autoFocus
+            />
+          )}
+        </Field>
+      )}
+    </RadioGroup>
   );
 }

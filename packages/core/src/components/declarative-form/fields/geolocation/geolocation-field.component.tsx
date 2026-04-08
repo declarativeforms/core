@@ -2,7 +2,6 @@ import { AlertCircle, Loader2, MapPin, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../../supporting/field-support";
-import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { useFormI18n } from "../../supporting/use-form-i18n";
 import type { TranslationKey } from "@/i18n/messages/en";
@@ -171,8 +170,7 @@ export function GeolocationField({
   const hasCoords = state.status === "refining" || state.status === "success";
 
   return (
-    <FormControl>
-      <div className="space-y-3">
+    <div className="space-y-3">
         {state.status === "idle" && (
           <div
             role="button"
@@ -271,6 +269,5 @@ export function GeolocationField({
           </div>
         )}
       </div>
-    </FormControl>
   );
 }

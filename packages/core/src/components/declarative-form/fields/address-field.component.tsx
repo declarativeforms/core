@@ -17,7 +17,6 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -111,22 +110,19 @@ export function AddressField({
   // Fallback for when API is not loaded
   if (!isApiLoaded) {
     return (
-      <FormControl>
-        <Input
-          {...controllerField}
-          className="text-sm/4"
-          placeholder={field.placeholder || t("address.placeholder")}
-          required={field.required}
-          aria-required={field.required}
-        />
-      </FormControl>
+      <Input
+        {...controllerField}
+        className="text-sm/4"
+        placeholder={field.placeholder || t("address.placeholder")}
+        required={field.required}
+        aria-required={field.required}
+      />
     );
   }
 
   // Main render with autocomplete
   return (
-    <FormControl>
-      <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
+    <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="relative w-full" aria-busy={loading}>
             <Input
@@ -189,6 +185,5 @@ export function AddressField({
           </Command>
         </PopoverContent>
       </Popover>
-    </FormControl>
   );
 }

@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import {
+  Controller,
   type FieldValues,
   type UseFormReturn,
 } from "react-hook-form";
 
-import { FormField, FormItem, FormLabel, FormMessage } from "../../ui";
+import { Field, FieldLabel as BaseFieldLabel, FieldError } from "../../ui";
 import { useI18n } from "@/i18n";
 import type { CompiledField } from "@declarativeforms/runtime";
 import { buildFieldValidation } from "../supporting/validation";
@@ -14,14 +15,14 @@ import { fieldRegistry } from "./field-registry";
 
 function FieldLabel({ field }: { field: CompiledField }) {
   return (
-    <FormLabel className="text-sm/4.5">
+    <BaseFieldLabel className="text-sm/4.5">
       <HtmlText html={field.label} />
       {field.required ? (
         <span className="font-medium text-red-500" aria-hidden="true">
           *
         </span>
       ) : null}
-    </FormLabel>
+    </BaseFieldLabel>
   );
 }
 
@@ -54,11 +55,11 @@ export function DeclarativeFormField(props: {
   const isHiddenField = compiledField.type === "hidden";
 
   return (
-    <FormField
+    <Controller
       control={props.form.control}
       name={compiledField.id}
       rules={rules}
-      render={({ field }) =>
+      render={({ field, fieldState }) =>
         isHiddenField ? (
           <FieldErrorBoundary fieldId={compiledField.id}>
             <Renderer
@@ -68,7 +69,7 @@ export function DeclarativeFormField(props: {
             />
           </FieldErrorBoundary>
         ) : (
-          <FormItem>
+          <Field>
             <FieldLabel field={compiledField} />
             <FieldErrorBoundary fieldId={compiledField.id}>
               <Renderer
@@ -77,8 +78,8 @@ export function DeclarativeFormField(props: {
                 form={props.form}
               />
             </FieldErrorBoundary>
-            <FormMessage />
-          </FormItem>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
         )
       }
     />

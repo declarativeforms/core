@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef } from "react";
 
 import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
 import { useWaitForGlobal } from "../supporting/use-wait-for-global";
-import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
 declare global {
@@ -76,8 +75,7 @@ export function TurnstileField({
   }, [scriptLoaded, sitekey]);
 
   return (
-    <FormControl>
-      <div>
+    <div>
         {!scriptLoaded && (
           <div
             className={cn(
@@ -97,6 +95,5 @@ export function TurnstileField({
         )}
         <div ref={containerRef} />
       </div>
-    </FormControl>
   );
 }

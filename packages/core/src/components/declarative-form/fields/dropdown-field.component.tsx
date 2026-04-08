@@ -11,7 +11,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  FormControl,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -48,15 +47,13 @@ export function DropdownField({
       onValueChange={controllerField.onChange}
       value={controllerField.value}
     >
-      <FormControl>
-        <SelectTrigger className="w-full text-sm/4" aria-required={field.required}>
-          <SelectValue
-            placeholder={
-              field.placeholder || t("dropdown.select_a", { label: field.label })
-            }
-          />
-        </SelectTrigger>
-      </FormControl>
+      <SelectTrigger className="w-full text-sm/4" aria-required={field.required}>
+        <SelectValue
+          placeholder={
+            field.placeholder || t("dropdown.select_a", { label: field.label })
+          }
+        />
+      </SelectTrigger>
       <SelectContent>
         {options?.map((option) => (
           <SelectItem key={option.value} value={option.value}>
@@ -81,8 +78,7 @@ function SearchableDropdown({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <FormControl>
-        <PopoverTrigger asChild>
+      <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
@@ -99,7 +95,6 @@ function SearchableDropdown({
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-      </FormControl>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command>
           <CommandInput placeholder={t("dropdown.search")} />

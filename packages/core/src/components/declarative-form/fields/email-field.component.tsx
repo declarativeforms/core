@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
 import { buildFieldValidation } from "../supporting/validation";
 import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
-import { FormControl, Input } from "@/components/ui";
+import { Input } from "@/components/ui";
 import { useFormI18n } from "../supporting/use-form-i18n";
 import { cn } from "@/lib/utils";
 import { sendEmailOtp, verifyEmailOtp } from "./email/api";
@@ -241,25 +241,22 @@ export function EmailField({
 
   if (!otpEnabled) {
     return (
-      <FormControl>
-        <Input
-          {...controllerField}
-          className="text-sm/4"
-          placeholder={field.placeholder || t("email.placeholder_default")}
-          type="email"
-          required={field.required}
-          aria-required={field.required}
-          minLength={minLength}
-          maxLength={maxLength}
-        />
-      </FormControl>
+      <Input
+        {...controllerField}
+        className="text-sm/4"
+        placeholder={field.placeholder || t("email.placeholder_default")}
+        type="email"
+        required={field.required}
+        aria-required={field.required}
+        minLength={minLength}
+        maxLength={maxLength}
+      />
     );
   }
 
   return (
-    <FormControl>
-      <div className="space-y-2">
-        <div className="relative">
+    <div className="space-y-2">
+      <div className="relative">
           <Input
             {...controllerField}
             className={cn("text-sm/4", {
@@ -340,6 +337,6 @@ export function EmailField({
           {statusMessage ?? ""}
         </p>
       </div>
-    </FormControl>
+    </div>
   );
 }

@@ -7,12 +7,11 @@ import { HtmlText } from "../supporting/html-text";
 import { stripHtml } from "@declarativeforms/common";
 import {
   Checkbox,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
+  Field,
+  FieldLabel,
   Input,
 } from "@/components/ui";
+import { Controller } from "react-hook-form";
 import { useFormI18n } from "../supporting/use-form-i18n";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +78,7 @@ export function MultipleSelectField({
     >
       {helperText && <p id={helperTextId} className="text-sm text-muted-foreground">{helperText}</p>}
       {options?.map((option) => (
-        <FormField
+        <Controller
           key={option.value}
           control={form.control}
           name={field.id}
@@ -91,53 +90,51 @@ export function MultipleSelectField({
             const selections = selectedValues.length;
 
             return (
-              <FormItem>
-                <FormLabel
+              <Field>
+                <FieldLabel
                   className={cn(
                     "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
                     { "border-ring": isChecked }
                   )}
                 >
-                  <FormControl>
-                    <Checkbox
-                      checked={isChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        if (checked) {
-                          const newValue = [...selectedValues, option.value];
-                          // Prevent exceeding max selections
-                          if (
-                            maxSelections &&
-                            newValue.length > maxSelections
-                          ) {
-                            return;
-                          }
-                          formField.onChange(newValue);
-                        } else {
-                          formField.onChange(
-                            selectedValues.filter(
-                              (value) => value !== option.value
-                            )
-                          );
-                        }
-                      }}
-                      disabled={
-                        !!(
+                  <Checkbox
+                    checked={isChecked}
+                    onCheckedChange={(checked: boolean) => {
+                      if (checked) {
+                        const newValue = [...selectedValues, option.value];
+                        // Prevent exceeding max selections
+                        if (
                           maxSelections &&
-                          !isChecked &&
-                          selections >= maxSelections
-                        )
+                          newValue.length > maxSelections
+                        ) {
+                          return;
+                        }
+                        formField.onChange(newValue);
+                      } else {
+                        formField.onChange(
+                          selectedValues.filter(
+                            (value) => value !== option.value
+                          )
+                        );
                       }
-                    />
-                  </FormControl>
+                    }}
+                    disabled={
+                      !!(
+                        maxSelections &&
+                        !isChecked &&
+                        selections >= maxSelections
+                      )
+                    }
+                  />
                   <HtmlText html={option.label} className="flex-1" />
-                </FormLabel>
-              </FormItem>
+                </FieldLabel>
+              </Field>
             );
           }}
         />
       ))}
       {allowOther && (
-        <FormField
+        <Controller
           control={form.control}
           name={field.id}
           render={({ field: formField }) => {
@@ -147,42 +144,40 @@ export function MultipleSelectField({
             const selections = selectedValues.length;
 
             return (
-              <FormItem>
-                <FormLabel
+              <Field>
+                <FieldLabel
                   className={cn(
                     "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
                     { "border-ring": isOtherChecked }
                   )}
                 >
-                  <FormControl>
-                    <Checkbox
-                      checked={isOtherChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        if (checked) {
-                          const text = otherText || "";
-                          const newValue = [...selectedValues.filter((v: string) => optionValues.has(v)), text];
-                          if (maxSelections && newValue.length > maxSelections) {
-                            return;
-                          }
-                          formField.onChange(newValue);
-                        } else {
-                          formField.onChange(
-                            selectedValues.filter((v: string) => optionValues.has(v))
-                          );
-                          setOtherText("");
+                  <Checkbox
+                    checked={isOtherChecked}
+                    onCheckedChange={(checked: boolean) => {
+                      if (checked) {
+                        const text = otherText || "";
+                        const newValue = [...selectedValues.filter((v: string) => optionValues.has(v)), text];
+                        if (maxSelections && newValue.length > maxSelections) {
+                          return;
                         }
-                      }}
-                      disabled={
-                        !!(
-                          maxSelections &&
-                          !isOtherChecked &&
-                          selections >= maxSelections
-                        )
+                        formField.onChange(newValue);
+                      } else {
+                        formField.onChange(
+                          selectedValues.filter((v: string) => optionValues.has(v))
+                        );
+                        setOtherText("");
                       }
-                    />
-                  </FormControl>
+                    }}
+                    disabled={
+                      !!(
+                        maxSelections &&
+                        !isOtherChecked &&
+                        selections >= maxSelections
+                      )
+                    }
+                  />
                   <span className="flex-1">{t("select.other")}</span>
-                </FormLabel>
+                </FieldLabel>
                 {isOtherChecked && (
                   <Input
                     className="mt-2 text-sm/4"
@@ -197,7 +192,7 @@ export function MultipleSelectField({
                     autoFocus
                   />
                 )}
-              </FormItem>
+              </Field>
             );
           }}
         />

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
 import type { CompiledCameraField } from "@declarativeforms/runtime";
 import { Button } from "@/components/ui/button";
-import { FormControl } from "@/components/ui";
 import { useFormI18n } from "../supporting/use-form-i18n";
 import { useUploadBlob } from "../supporting/use-upload-blob";
 import { cn } from "@/lib/utils";
@@ -144,8 +143,7 @@ export function CameraField({
   };
 
   return (
-    <FormControl>
-      <div className="space-y-2">
+    <div className="space-y-2">
         <canvas ref={canvasRef} className="hidden" />
 
         {state === "idle" && (
@@ -267,6 +265,5 @@ export function CameraField({
           </div>
         )}
       </div>
-    </FormControl>
   );
 }
