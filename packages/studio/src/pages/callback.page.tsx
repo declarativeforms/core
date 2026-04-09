@@ -11,11 +11,11 @@ export function CallbackPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const magicLinkToken = searchParams.get("magic_link_token");
+    const token = searchParams.get("token");
     const requestId = searchParams.get("request_id");
 
-    if (magicLinkToken && requestId) {
-      verifyMagicLink(requestId, magicLinkToken).then((result) => {
+    if (token && requestId) {
+      verifyMagicLink(requestId, token).then((result) => {
         if (!result) {
           navigate("/login?error=invalid_link", { replace: true });
           return;

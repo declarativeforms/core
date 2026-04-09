@@ -62,7 +62,7 @@ export async function createStudioMagicLinkRequest(
   await insertStudioMagicLinkRequest(record);
 
   const separator = redirectUrl.includes('?') ? '&' : '?';
-  const link = `${redirectUrl}${separator}magic_link_token=${token}&request_id=${record.id}`;
+  const link = `${redirectUrl}${separator}token=${token}&request_id=${record.id}`;
 
   await sendMagicLinkEmail(email, link);
 

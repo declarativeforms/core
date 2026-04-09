@@ -1,5 +1,4 @@
 import { FileText, Plus } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -10,6 +9,13 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+  ItemDescription,
   PageHeader,
   PageShell,
 } from "@/components";
@@ -34,113 +40,110 @@ function getTextValue(value: ILocalizedText | undefined) {
   return typeof firstTextValue === "string" ? firstTextValue.trim() : "";
 }
 
-function DashboardPageSection({ children }: { children: ReactNode }) {
-  return (
-    <PageShell className="overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-3xl min-h-full flex-col gap-5">
-        {children}
-      </div>
-    </PageShell>
-  );
-}
-
 export function DashboardPage() {
   const navigate = useNavigate();
   const createForm = useCreateForm();
-  const { data: forms } = useForms();
+  const formsQuery = useForms();
 
-  const handleCreateForm = async () => {
-    const form = await createForm.mutateAsync(createEmptyFormDefinition());
-
-    if (form.id) {
-      navigate(`/forms/${form.id}`);
-    }
-  };
-
-  if (!forms) {
+  if (!formsQuery.data) {
     return null;
   }
 
   return (
-    <DashboardPageSection>
-      <PageHeader
-        title="Forms"
-        description="Create and manage the forms you publish from Studio."
-        actions={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleCreateForm}
-            disabled={createForm.isPending}
-          >
-            <Plus />
-            New Form
-          </Button>
-        }
-      />
+    <PageShell className="overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-3xl min-h-full flex-col gap-5">
+        <PageHeader
+          title="Forms"
+          description="Create and manage the forms you publish from Studio."
+          actions={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const form = await createForm.mutateAsync(
+                  createEmptyFormDefinition(),
+                );
 
-      {forms.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <FileText className="size-5" />
-              </EmptyMedia>
-              <EmptyTitle>No forms yet</EmptyTitle>
-              <EmptyDescription>
-                Create your first form to start collecting responses.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="bg-background/80 shadow-sm hover:bg-background"
-                onClick={handleCreateForm}
-                disabled={createForm.isPending}
-              >
-                <Plus />
-                {createForm.isPending ? "Creating..." : "New Form"}
-              </Button>
-            </EmptyContent>
-          </Empty>
-        </div>
-      ) : (
-        <div className="rounded-2xl bg-background/80 shadow-sm ring-1 ring-border/70 backdrop-blur-sm">
-          {forms.map((form) => (
-            <div
-              key={form.id}
-              role="link"
-              tabIndex={0}
-              className="cursor-pointer flex items-center gap-4 border-b border-border/80 px-4 py-3.5 last:border-b-0 transition-colors duration-100"
-              onClick={() => navigate(`/forms/${form.id}`)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
+                if (form.id) {
                   navigate(`/forms/${form.id}`);
                 }
               }}
+              disabled={createForm.isPending}
             >
-              <FileText className="size-4 shrink-0 text-muted-foreground" />
-              <div className="flex min-w-0 flex-1 items-baseline gap-2">
-                <span className="truncate text-sm font-semibold text-foreground hover:underline">
-                  {getTextValue(form.title) || "Untitled Form"}
-                </span>
-                {getTextValue(form.description) ? (
-                  <span className="hidden truncate text-xs text-muted-foreground sm:inline">
-                    {getTextValue(form.description)}
+              <Plus />
+              New Form
+            </Button>
+          }
+        />
+
+        {formsQuery.data.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FileText className="size-5" />
+                </EmptyMedia>
+                <EmptyTitle>No forms yet</EmptyTitle>
+                <EmptyDescription>
+                  Create your first form to start collecting responses.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="bg-background/80 shadow-sm hover:bg-background"
+                  onClick={async () => {
+                    const form = await createForm.mutateAsync(
+                      createEmptyFormDefinition(),
+                    );
+
+                    if (form.id) {
+                      navigate(`/forms/${form.id}`);
+                    }
+                  }}
+                  disabled={createForm.isPending}
+                >
+                  <Plus />
+                  {createForm.isPending ? "Creating..." : "New Form"}
+                </Button>
+              </EmptyContent>
+            </Empty>
+          </div>
+        ) : (
+          <ItemGroup className="gap-y-3">
+            {formsQuery.data.map((form) => (
+              <Item
+                className="bg-background/80 shadow-sm ring-1 ring-border/60"
+                key={form.id}
+                size="sm"
+                onClick={() => navigate(`/forms/${form.id}`)}
+              >
+                <ItemMedia>
+                  <FileText className="size-4 shrink-0 text-muted-foreground" />
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>
+                    {getTextValue(form.title) || "Untitled Form"}
+                  </ItemTitle>
+                  {getTextValue(form.description) ? (
+                    <ItemDescription className="hidden sm:inline">
+                      {getTextValue(form.description)}
+                    </ItemDescription>
+                  ) : null}
+                </ItemContent>
+                <ItemActions>
+                  <span className="shrink-0 text-xs text-muted-foreground whitespace-nowrap">
+                    {timeAgo(form.updated_at ?? form.created_at ?? new Date())}
                   </span>
-                ) : null}
-              </div>
-              <span className="shrink-0 text-xs text-muted-foreground whitespace-nowrap">
-                {timeAgo(form.updated_at ?? form.created_at ?? new Date())}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </DashboardPageSection>
+                </ItemActions>
+              </Item>
+            ))}
+          </ItemGroup>
+        )}
+      </div>
+    </PageShell>
   );
 }
