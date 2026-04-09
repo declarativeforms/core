@@ -155,7 +155,7 @@ export function DashboardPage() {
               key={form.id}
               role="link"
               tabIndex={0}
-              className="cursor-pointer flex items-center gap-4 border-b border-border/80 px-4 py-3.5 last:border-b-0 transition-colors duration-100 hover:bg-background"
+              className="cursor-pointer flex items-center gap-4 border-b border-border/80 px-4 py-3.5 last:border-b-0 transition-colors duration-100"
               onClick={() => navigate(`/forms/${form.id}`)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
