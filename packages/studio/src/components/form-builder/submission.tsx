@@ -34,7 +34,11 @@ export function Submission({ submission }: { submission: ISubmission }) {
   return (
     <Item
       variant="outline"
-      className={isExpanded ? "border-foreground/15 bg-muted/5" : ""}
+      className={
+        isExpanded
+          ? "bg-background shadow-sm ring-1 ring-border/80"
+          : "bg-background/80 shadow-sm ring-1 ring-border/60 transition-colors hover:bg-background"
+      }
     >
       <ItemHeader>
         <ItemContent>
@@ -71,7 +75,7 @@ export function Submission({ submission }: { submission: ISubmission }) {
 
       {isExpanded ? (
         <div className="basis-full border-t border-border pt-4">
-          <pre className="overflow-x-auto rounded-lg border border-border bg-background p-3 text-sm text-foreground">
+          <pre className="overflow-x-auto rounded-xl bg-muted/20 p-4 text-sm text-foreground ring-1 ring-border/60">
             <code>{JSON.stringify(submission.data, null, 2)}</code>
           </pre>
         </div>

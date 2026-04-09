@@ -5,6 +5,7 @@ import {
   Button,
   Checkbox,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
@@ -27,6 +28,7 @@ import type {
   IDeclarativeFormDropdownField,
   IDeclarativeFormEmailField,
   IDeclarativeFormField,
+  ILocalizedText,
   IDeclarativeFormOption,
   IDeclarativeFormRatingField,
   IDeclarativeFormSelectField,
@@ -312,6 +314,40 @@ function getOptionString(option: IDeclarativeFormOption) {
   return option.value ?? "";
 }
 
+function readTextValue(value: ILocalizedText | undefined) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  return (
+    Object.values(value).find(
+      (entry): entry is string => typeof entry === "string",
+    ) ?? ""
+  );
+}
+
+function getFieldSummary(field: IDeclarativeFormField) {
+  const parts: string[] = [field.type ?? "field"];
+
+  if (field.placeholder) {
+    parts.push("Has placeholder");
+  }
+
+  if (hasRequiredValidator(field)) {
+    parts.push("Required");
+  }
+
+  if (isChoiceField(field) && (field.options?.length ?? 0) > 0) {
+    parts.push(`${field.options?.length ?? 0} options`);
+  }
+
+  return parts.join(" • ");
+}
+
 export function SectionField({
   field,
   onChange,
@@ -337,7 +373,11 @@ export function SectionField({
   return (
     <Item
       variant="outline"
-      className={isExpanded ? "border-foreground/15 bg-muted/5" : ""}
+      className={
+        isExpanded
+          ? "bg-background shadow-sm ring-1 ring-border/80"
+          : "bg-background/80 shadow-sm ring-1 ring-border/60 transition-colors hover:bg-background"
+      }
     >
       <ItemHeader>
         <button
@@ -347,8 +387,10 @@ export function SectionField({
           aria-expanded={isExpanded}
         >
           <ItemContent>
-            <ItemTitle>{field.label as any}</ItemTitle>
-            <ItemDescription>{field.type as any}</ItemDescription>
+            <ItemTitle>
+              {readTextValue(field.label) || "Untitled Field"}
+            </ItemTitle>
+            <ItemDescription>{getFieldSummary(field)}</ItemDescription>
           </ItemContent>
         </button>
 
@@ -359,7 +401,6 @@ export function SectionField({
             size="icon-sm"
             onClick={onMoveUp}
             disabled={!canMoveUp}
-            aria-label="Move field up"
           >
             <ChevronUp />
           </Button>
@@ -370,7 +411,6 @@ export function SectionField({
             size="icon-sm"
             onClick={onMoveDown}
             disabled={!canMoveDown}
-            aria-label="Move field down"
           >
             <ChevronDown />
           </Button>
@@ -380,7 +420,6 @@ export function SectionField({
             variant="ghost"
             size="icon-sm"
             onClick={onDelete}
-            aria-label="Delete field"
           >
             <Trash2 />
           </Button>
@@ -390,7 +429,6 @@ export function SectionField({
             variant="ghost"
             size="icon-sm"
             onClick={() => setIsExpanded((current) => !current)}
-            aria-label={isExpanded ? "Collapse field" : "Expand field"}
           >
             <ChevronDown
               className={
@@ -405,479 +443,581 @@ export function SectionField({
 
       {isExpanded ? (
         <div className="basis-full border-t border-border pt-4">
-          <FieldGroup>
-            <Field>
-              <FieldLabel>Field ID</FieldLabel>
-              <Input
-                value={field.id ?? ""}
-                onChange={(event) =>
-                  onChange({
-                    ...field,
-                    id: event.target.value || undefined,
-                  })
-                }
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>Field Type</FieldLabel>
-              <Input value={field.type} disabled />
-            </Field>
-
-            <Field>
-              <FieldLabel>Label</FieldLabel>
-              <Input
-                value={field.label as any}
-                onChange={(event) =>
-                  onChange({
-                    ...field,
-                    label: event.target.value,
-                  })
-                }
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>Placeholder</FieldLabel>
-              <Input
-                value={field.placeholder as any}
-                onChange={(event) =>
-                  onChange({
-                    ...field,
-                    placeholder: event.target.value,
-                  })
-                }
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>Visible When</FieldLabel>
-              <Textarea
-                value={field.visible_when ?? ""}
-                onChange={(event) =>
-                  onChange({
-                    ...field,
-                    visible_when: event.target.value || undefined,
-                  })
-                }
-              />
-            </Field>
-
-            {isChoiceField(field) ? (
+          <div className="rounded-xl bg-muted/20 p-4">
+            <FieldGroup>
               <Field>
-                <FieldLabel>Options</FieldLabel>
-                <div className="space-y-3">
-                  {choiceOptions.map((option: string, index: number) => (
-                    <div
-                      key={`${field.id ?? "field"}-option-${index}`}
-                      className="flex items-center gap-2"
-                    >
-                      <Input
-                        value={option}
-                        onChange={(event) =>
-                          onChange({
-                            ...field,
-                            options: choiceOptions.map(
-                              (currentOption: string, optionIndex: number) =>
-                                optionIndex === index
-                                  ? event.target.value
-                                  : currentOption,
-                            ),
-                          })
-                        }
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() =>
-                          onChange({
-                            ...field,
-                            options: choiceOptions.filter(
-                              (_: string, optionIndex: number) =>
-                                optionIndex !== index,
-                            ),
-                          })
-                        }
-                      >
-                        <Trash2 />
-                      </Button>
-                    </div>
-                  ))}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() =>
-                      onChange({
-                        ...field,
-                        options: [
-                          ...choiceOptions,
-                          `Option ${choiceOptions.length + 1}`,
-                        ],
-                      })
-                    }
-                  >
-                    <Plus />
-                    Add Option
-                  </Button>
-                </div>
+                <FieldLabel>Field ID</FieldLabel>
+                <FieldDescription>
+                  Use a stable ID if this field is referenced in logic, URLs, or
+                  downstream workflows.
+                </FieldDescription>
+                <Input
+                  className="bg-background shadow-sm"
+                  value={field.id ?? ""}
+                  onChange={(event) =>
+                    onChange({
+                      ...field,
+                      id: event.target.value || undefined,
+                    })
+                  }
+                />
               </Field>
-            ) : null}
 
-            <Field>
-              <div className="space-y-3">
-                <Item variant="outline" className="bg-muted/10">
-                  <div className="flex basis-full flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={hasRequiredValidator(field)}
-                        onCheckedChange={(checked) =>
-                          onChange(
-                            checked === true
-                              ? withRequiredValidator(field)
-                              : withoutValidator(field, "required"),
-                          )
-                        }
-                      />
-                      <p className="text-sm font-medium text-foreground">
-                        Required
-                      </p>
-                    </div>
+              <Field>
+                <FieldLabel>Field Type</FieldLabel>
+                <FieldDescription>
+                  Field type is fixed after creation. Add a new field if you
+                  need a different input.
+                </FieldDescription>
+                <Input
+                  className="bg-background shadow-sm"
+                  value={field.type}
+                  disabled
+                />
+              </Field>
 
-                    {hasRequiredValidator(field) ? (
-                      <Field>
-                        <FieldLabel>Message</FieldLabel>
+              <Field>
+                <FieldLabel>Label</FieldLabel>
+                <FieldDescription>
+                  This is the question or prompt shown to respondents.
+                </FieldDescription>
+                <Input
+                  className="bg-background shadow-sm"
+                  value={readTextValue(field.label)}
+                  onChange={(event) =>
+                    onChange({
+                      ...field,
+                      label: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Placeholder</FieldLabel>
+                <FieldDescription>
+                  Optional. Use placeholder text to suggest the expected answer
+                  format.
+                </FieldDescription>
+                <Input
+                  className="bg-background shadow-sm"
+                  value={readTextValue(field.placeholder)}
+                  onChange={(event) =>
+                    onChange({
+                      ...field,
+                      placeholder: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Visible When</FieldLabel>
+                <FieldDescription>
+                  Add an expression to show this field only when certain answers
+                  are present.
+                </FieldDescription>
+                <Textarea
+                  className="bg-background shadow-sm"
+                  value={field.visible_when ?? ""}
+                  onChange={(event) =>
+                    onChange({
+                      ...field,
+                      visible_when: event.target.value || undefined,
+                    })
+                  }
+                />
+              </Field>
+
+              {isChoiceField(field) ? (
+                <Field>
+                  <FieldLabel>Options</FieldLabel>
+                  <FieldDescription>
+                    Keep option labels concise and distinct so people can scan
+                    them quickly.
+                  </FieldDescription>
+                  <div className="space-y-3">
+                    {choiceOptions.map((option: string, index: number) => (
+                      <div
+                        key={`${field.id ?? "field"}-option-${index}`}
+                        className="flex items-center gap-2"
+                      >
                         <Input
-                          value={getRequiredValidatorMessage(field)}
+                          className="bg-background shadow-sm"
+                          value={option}
                           onChange={(event) =>
-                            onChange(
-                              withRequiredValidatorMessage(
-                                field,
-                                event.target.value,
+                            onChange({
+                              ...field,
+                              options: choiceOptions.map(
+                                (currentOption: string, optionIndex: number) =>
+                                  optionIndex === index
+                                    ? event.target.value
+                                    : currentOption,
                               ),
+                            })
+                          }
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() =>
+                            onChange({
+                              ...field,
+                              options: choiceOptions.filter(
+                                (_: string, optionIndex: number) =>
+                                  optionIndex !== index,
+                              ),
+                            })
+                          }
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-background shadow-sm hover:bg-background"
+                      onClick={() =>
+                        onChange({
+                          ...field,
+                          options: [
+                            ...choiceOptions,
+                            `Option ${choiceOptions.length + 1}`,
+                          ],
+                        })
+                      }
+                    >
+                      <Plus />
+                      Add Option
+                    </Button>
+                  </div>
+                </Field>
+              ) : null}
+
+              <Field>
+                <FieldDescription>
+                  Add only the validation rules you need. Each enabled rule can
+                  include its own error message.
+                </FieldDescription>
+                <div className="space-y-3">
+                  <Item
+                    variant="outline"
+                    className="bg-background shadow-sm ring-1 ring-border/60"
+                  >
+                    <div className="flex basis-full flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={hasRequiredValidator(field)}
+                          onCheckedChange={(checked) =>
+                            onChange(
+                              checked === true
+                                ? withRequiredValidator(field)
+                                : withoutValidator(field, "required"),
                             )
                           }
                         />
-                      </Field>
-                    ) : null}
-                  </div>
-                </Item>
+                        <p className="text-sm font-medium text-foreground">
+                          Required
+                        </p>
+                      </div>
 
-                {objectValidatorDefinitions.map((definition) => {
-                  const validator = getObjectValidator(field, definition.type);
-                  const isEnabled = !!validator;
-
-                  return (
-                    <Item
-                      key={definition.type}
-                      variant="outline"
-                      className="bg-muted/10"
-                    >
-                      <div className="flex basis-full flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={isEnabled}
-                            onCheckedChange={(checked) =>
+                      {hasRequiredValidator(field) ? (
+                        <Field>
+                          <FieldLabel>Message</FieldLabel>
+                          <FieldDescription>
+                            Customize the message shown when this required field
+                            is left empty.
+                          </FieldDescription>
+                          <Input
+                            className="bg-background shadow-sm"
+                            value={getRequiredValidatorMessage(field)}
+                            onChange={(event) =>
                               onChange(
-                                checked === true
-                                  ? withUpdatedValidator(
-                                      field,
-                                      validator ??
-                                        createObjectValidator(definition.type),
-                                    )
-                                  : withoutValidator(field, definition.type),
+                                withRequiredValidatorMessage(
+                                  field,
+                                  event.target.value,
+                                ),
                               )
                             }
                           />
-                          <p className="text-sm font-medium text-foreground">
-                            {definition.title}
-                          </p>
-                        </div>
+                        </Field>
+                      ) : null}
+                    </div>
+                  </Item>
 
-                        {isEnabled ? (
-                          <FieldGroup>
-                            <Field>
-                              <FieldLabel>{definition.valueLabel}</FieldLabel>
-                              {definition.valueType === "textarea" ? (
-                                <Textarea
-                                  value={getValidatorValue(
-                                    validator,
-                                    definition.type,
-                                  )}
-                                  onChange={(event) => {
-                                    const nextValidator =
-                                      validator ??
-                                      createObjectValidator(definition.type);
+                  {objectValidatorDefinitions.map((definition) => {
+                    const validator = getObjectValidator(
+                      field,
+                      definition.type,
+                    );
+                    const isEnabled = !!validator;
 
-                                    if (definition.type === "expression") {
-                                      onChange(
-                                        withUpdatedValidator(field, {
-                                          ...nextValidator,
-                                          expression: event.target.value,
-                                        }),
-                                      );
-                                      return;
+                    return (
+                      <Item
+                        key={definition.type}
+                        variant="outline"
+                        className="bg-background shadow-sm ring-1 ring-border/60"
+                      >
+                        <div className="flex basis-full flex-col gap-3">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={isEnabled}
+                              onCheckedChange={(checked) =>
+                                onChange(
+                                  checked === true
+                                    ? withUpdatedValidator(
+                                        field,
+                                        validator ??
+                                          createObjectValidator(
+                                            definition.type,
+                                          ),
+                                      )
+                                    : withoutValidator(field, definition.type),
+                                )
+                              }
+                            />
+                            <p className="text-sm font-medium text-foreground">
+                              {definition.title}
+                            </p>
+                          </div>
+
+                          {isEnabled ? (
+                            <FieldGroup>
+                              <Field>
+                                <FieldLabel>{definition.valueLabel}</FieldLabel>
+                                <FieldDescription>
+                                  {definition.type === "pattern"
+                                    ? "Define the raw value this field should match."
+                                    : definition.type === "expression"
+                                      ? "Write the expression that must evaluate as valid."
+                                      : "Set the value used by this validation rule."}
+                                </FieldDescription>
+                                {definition.valueType === "textarea" ? (
+                                  <Textarea
+                                    className="bg-background shadow-sm"
+                                    value={getValidatorValue(
+                                      validator,
+                                      definition.type,
+                                    )}
+                                    onChange={(event) => {
+                                      const nextValidator =
+                                        validator ??
+                                        createObjectValidator(definition.type);
+
+                                      if (definition.type === "expression") {
+                                        onChange(
+                                          withUpdatedValidator(field, {
+                                            ...nextValidator,
+                                            expression: event.target.value,
+                                          }),
+                                        );
+                                        return;
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type={
+                                      definition.valueType === "number"
+                                        ? "number"
+                                        : "text"
                                     }
-                                  }}
-                                />
-                              ) : (
-                                <Input
-                                  type={
-                                    definition.valueType === "number"
-                                      ? "number"
-                                      : "text"
-                                  }
-                                  value={getValidatorValue(
-                                    validator,
-                                    definition.type,
-                                  )}
-                                  onChange={(event) => {
-                                    const nextValidator =
-                                      validator ??
-                                      createObjectValidator(definition.type);
-                                    if (
-                                      definition.type === "pattern" &&
-                                      nextValidator.type === "pattern"
-                                    ) {
-                                      onChange(
-                                        withUpdatedValidator(field, {
-                                          ...nextValidator,
-                                          regex: event.target.value,
-                                        }),
-                                      );
-                                      return;
-                                    }
-
-                                    if ("value" in nextValidator) {
+                                    className="bg-background shadow-sm"
+                                    value={getValidatorValue(
+                                      validator,
+                                      definition.type,
+                                    )}
+                                    onChange={(event) => {
+                                      const nextValidator =
+                                        validator ??
+                                        createObjectValidator(definition.type);
                                       if (
-                                        (definition.type === "min_length" ||
-                                          definition.type === "max_length") &&
-                                        (nextValidator.type === "min_length" ||
-                                          nextValidator.type === "max_length")
+                                        definition.type === "pattern" &&
+                                        nextValidator.type === "pattern"
                                       ) {
                                         onChange(
                                           withUpdatedValidator(field, {
                                             ...nextValidator,
-                                            value:
-                                              event.target.value === ""
-                                                ? undefined
-                                                : Number(event.target.value),
+                                            regex: event.target.value,
                                           }),
                                         );
                                         return;
                                       }
 
-                                      if (
-                                        nextValidator.type === "min" ||
-                                        nextValidator.type === "max"
-                                      ) {
-                                        onChange(
-                                          withUpdatedValidator(field, {
-                                            ...nextValidator,
-                                            value: event.target.value,
-                                          }),
-                                        );
+                                      if ("value" in nextValidator) {
+                                        if (
+                                          (definition.type === "min_length" ||
+                                            definition.type === "max_length") &&
+                                          (nextValidator.type ===
+                                            "min_length" ||
+                                            nextValidator.type === "max_length")
+                                        ) {
+                                          onChange(
+                                            withUpdatedValidator(field, {
+                                              ...nextValidator,
+                                              value:
+                                                event.target.value === ""
+                                                  ? undefined
+                                                  : Number(event.target.value),
+                                            }),
+                                          );
+                                          return;
+                                        }
+
+                                        if (
+                                          nextValidator.type === "min" ||
+                                          nextValidator.type === "max"
+                                        ) {
+                                          onChange(
+                                            withUpdatedValidator(field, {
+                                              ...nextValidator,
+                                              value: event.target.value,
+                                            }),
+                                          );
+                                        }
                                       }
-                                    }
+                                    }}
+                                  />
+                                )}
+                              </Field>
+
+                              <Field>
+                                <FieldLabel>Message</FieldLabel>
+                                <FieldDescription>
+                                  This message is shown when the validation rule
+                                  fails.
+                                </FieldDescription>
+                                <Input
+                                  className="bg-background shadow-sm"
+                                  value={getValidatorMessage(validator)}
+                                  onChange={(event) => {
+                                    const nextValidator =
+                                      validator ??
+                                      createObjectValidator(definition.type);
+
+                                    onChange(
+                                      withUpdatedValidator(field, {
+                                        ...nextValidator,
+                                        message: event.target.value,
+                                      }),
+                                    );
                                   }}
                                 />
-                              )}
-                            </Field>
-
-                            <Field>
-                              <FieldLabel>Message</FieldLabel>
-                              <Input
-                                value={getValidatorMessage(validator)}
-                                onChange={(event) => {
-                                  const nextValidator =
-                                    validator ??
-                                    createObjectValidator(definition.type);
-
-                                  onChange(
-                                    withUpdatedValidator(field, {
-                                      ...nextValidator,
-                                      message: event.target.value,
-                                    }),
-                                  );
-                                }}
-                              />
-                            </Field>
-                          </FieldGroup>
-                        ) : null}
-                      </div>
-                    </Item>
-                  );
-                })}
-              </div>
-            </Field>
-
-            {isEmailField(field) ||
-            isRatingField(field) ||
-            isAddressField(field) ||
-            isCameraField(field) ||
-            isDropdownField(field) ||
-            isSelectField(field) ? (
-              <Field>
-                <FieldLabel>Field Settings</FieldLabel>
-                <div className="space-y-3">
-                  {isEmailField(field) ? (
-                    <>
-                      <Item variant="outline" className="bg-muted/10">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={field.otp === true}
-                            onCheckedChange={(checked) =>
-                              onChange({
-                                ...field,
-                                otp: checked === true,
-                              })
-                            }
-                          />
-                          <p className="text-sm font-medium text-foreground">
-                            Enable OTP
-                          </p>
+                              </Field>
+                            </FieldGroup>
+                          ) : null}
                         </div>
                       </Item>
-
-                      <Item variant="outline" className="bg-muted/10">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={field.block_free_email === true}
-                            onCheckedChange={(checked) =>
-                              onChange({
-                                ...field,
-                                block_free_email: checked === true,
-                              })
-                            }
-                          />
-                          <p className="text-sm font-medium text-foreground">
-                            Block free email providers
-                          </p>
-                        </div>
-                      </Item>
-                    </>
-                  ) : null}
-
-                  {isRatingField(field) ? (
-                    <FieldGroup>
-                      <Field>
-                        <FieldLabel>Min Label</FieldLabel>
-                        <Input
-                          value={field.min_label as any}
-                          onChange={(event) =>
-                            onChange({
-                              ...field,
-                              min_label: event.target.value,
-                            })
-                          }
-                        />
-                      </Field>
-
-                      <Field>
-                        <FieldLabel>Max Label</FieldLabel>
-                        <Input
-                          value={field.max_label as any}
-                          onChange={(event) =>
-                            onChange({
-                              ...field,
-                              max_label: event.target.value,
-                            })
-                          }
-                        />
-                      </Field>
-                    </FieldGroup>
-                  ) : null}
-
-                  {isAddressField(field) ? (
-                    <Field>
-                      <FieldLabel>Output Format</FieldLabel>
-                      <Select
-                        value={field.outputFormat ?? "string"}
-                        onValueChange={(value) =>
-                          onChange({
-                            ...field,
-                            outputFormat: value as "string" | "structured",
-                          })
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="string">string</SelectItem>
-                          <SelectItem value="structured">structured</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  ) : null}
-
-                  {isCameraField(field) ? (
-                    <Field>
-                      <FieldLabel>Facing Mode</FieldLabel>
-                      <Select
-                        value={field.facing_mode ?? "rear"}
-                        onValueChange={(value) =>
-                          onChange({
-                            ...field,
-                            facing_mode: value as "front" | "rear",
-                          })
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="front">front</SelectItem>
-                          <SelectItem value="rear">rear</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  ) : null}
-
-                  {isDropdownField(field) ? (
-                    <Item variant="outline" className="bg-muted/10">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={field.searchable === true}
-                          onCheckedChange={(checked) =>
-                            onChange({
-                              ...field,
-                              searchable: checked === true,
-                            })
-                          }
-                        />
-                        <p className="text-sm font-medium text-foreground">
-                          Searchable
-                        </p>
-                      </div>
-                    </Item>
-                  ) : null}
-
-                  {isSelectField(field) ? (
-                    <Item variant="outline" className="bg-muted/10">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={field.allow_other === true}
-                          onCheckedChange={(checked) =>
-                            onChange({
-                              ...field,
-                              allow_other: checked === true,
-                            })
-                          }
-                        />
-                        <p className="text-sm font-medium text-foreground">
-                          Allow &quot;Other&quot; option
-                        </p>
-                      </div>
-                    </Item>
-                  ) : null}
+                    );
+                  })}
                 </div>
               </Field>
-            ) : null}
-          </FieldGroup>
+
+              {isEmailField(field) ||
+              isRatingField(field) ||
+              isAddressField(field) ||
+              isCameraField(field) ||
+              isDropdownField(field) ||
+              isSelectField(field) ? (
+                <Field>
+                  <FieldLabel>Field Settings</FieldLabel>
+                  <FieldDescription>
+                    Adjust behavior for this field type without changing the
+                    form layout.
+                  </FieldDescription>
+                  <div className="space-y-3">
+                    {isEmailField(field) ? (
+                      <>
+                        <Item
+                          variant="outline"
+                          className="bg-background shadow-sm ring-1 ring-border/60"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={field.otp === true}
+                              onCheckedChange={(checked) =>
+                                onChange({
+                                  ...field,
+                                  otp: checked === true,
+                                })
+                              }
+                            />
+                            <p className="text-sm font-medium text-foreground">
+                              Enable OTP
+                            </p>
+                          </div>
+                        </Item>
+
+                        <Item
+                          variant="outline"
+                          className="bg-background shadow-sm ring-1 ring-border/60"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={field.block_free_email === true}
+                              onCheckedChange={(checked) =>
+                                onChange({
+                                  ...field,
+                                  block_free_email: checked === true,
+                                })
+                              }
+                            />
+                            <p className="text-sm font-medium text-foreground">
+                              Block free email providers
+                            </p>
+                          </div>
+                        </Item>
+                      </>
+                    ) : null}
+
+                    {isRatingField(field) ? (
+                      <FieldGroup>
+                        <Field>
+                          <FieldLabel>Min Label</FieldLabel>
+                          <FieldDescription>
+                            Optional label shown on the low end of the rating
+                            scale.
+                          </FieldDescription>
+                          <Input
+                            className="bg-background shadow-sm"
+                            value={readTextValue(field.min_label)}
+                            onChange={(event) =>
+                              onChange({
+                                ...field,
+                                min_label: event.target.value,
+                              })
+                            }
+                          />
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>Max Label</FieldLabel>
+                          <FieldDescription>
+                            Optional label shown on the high end of the rating
+                            scale.
+                          </FieldDescription>
+                          <Input
+                            className="bg-background shadow-sm"
+                            value={readTextValue(field.max_label)}
+                            onChange={(event) =>
+                              onChange({
+                                ...field,
+                                max_label: event.target.value,
+                              })
+                            }
+                          />
+                        </Field>
+                      </FieldGroup>
+                    ) : null}
+
+                    {isAddressField(field) ? (
+                      <Field>
+                        <FieldLabel>Output Format</FieldLabel>
+                        <FieldDescription>
+                          Choose whether this field stores a readable string or
+                          a structured object.
+                        </FieldDescription>
+                        <Select
+                          value={field.outputFormat ?? "string"}
+                          onValueChange={(value) =>
+                            onChange({
+                              ...field,
+                              outputFormat: value as "string" | "structured",
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-full bg-background shadow-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="string">string</SelectItem>
+                            <SelectItem value="structured">
+                              structured
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    ) : null}
+
+                    {isCameraField(field) ? (
+                      <Field>
+                        <FieldLabel>Facing Mode</FieldLabel>
+                        <FieldDescription>
+                          Pick the default camera direction for devices that
+                          support multiple lenses.
+                        </FieldDescription>
+                        <Select
+                          value={field.facing_mode ?? "rear"}
+                          onValueChange={(value) =>
+                            onChange({
+                              ...field,
+                              facing_mode: value as "front" | "rear",
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-full bg-background shadow-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="front">front</SelectItem>
+                            <SelectItem value="rear">rear</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    ) : null}
+
+                    {isDropdownField(field) ? (
+                      <Item
+                        variant="outline"
+                        className="bg-background shadow-sm ring-1 ring-border/60"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={field.searchable === true}
+                            onCheckedChange={(checked) =>
+                              onChange({
+                                ...field,
+                                searchable: checked === true,
+                              })
+                            }
+                          />
+                          <p className="text-sm font-medium text-foreground">
+                            Searchable
+                          </p>
+                        </div>
+                      </Item>
+                    ) : null}
+
+                    {isSelectField(field) ? (
+                      <Item
+                        variant="outline"
+                        className="bg-background shadow-sm ring-1 ring-border/60"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={field.allow_other === true}
+                            onCheckedChange={(checked) =>
+                              onChange({
+                                ...field,
+                                allow_other: checked === true,
+                              })
+                            }
+                          />
+                          <p className="text-sm font-medium text-foreground">
+                            Allow &quot;Other&quot; option
+                          </p>
+                        </div>
+                      </Item>
+                    ) : null}
+                  </div>
+                </Field>
+              ) : null}
+            </FieldGroup>
+          </div>
         </div>
       ) : null}
     </Item>

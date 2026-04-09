@@ -5,9 +5,11 @@ import {
   Button,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
@@ -28,6 +30,7 @@ import {
 import type {
   DeclarativeFieldType,
   IDeclarativeFormField,
+  ILocalizedText,
   IDeclarativeFormSection,
 } from "@declarativeforms/types";
 
@@ -70,6 +73,104 @@ const BUILDER_FIELD_TYPES = [
 ] as const satisfies readonly DeclarativeFieldType[];
 
 type SupportedFieldType = (typeof BUILDER_FIELD_TYPES)[number];
+
+const FIELD_TYPE_DETAILS: Record<
+  SupportedFieldType,
+  { title: string; description: string }
+> = {
+  address: {
+    title: "Address",
+    description: "Collect a full address in one field.",
+  },
+  address_country: {
+    title: "Country",
+    description: "Capture a country only.",
+  },
+  address_locality: {
+    title: "City or locality",
+    description: "Capture a city, town, or locality.",
+  },
+  address_region: {
+    title: "Region or state",
+    description: "Capture a region, province, or state.",
+  },
+  camera: {
+    title: "Camera",
+    description: "Ask respondents to take a photo.",
+  },
+  short_text: {
+    title: "Short text",
+    description: "Single-line input for concise answers.",
+  },
+  long_text: {
+    title: "Long text",
+    description: "Multi-line input for longer responses.",
+  },
+  email: {
+    title: "Email",
+    description: "Collect an email address with validation.",
+  },
+  number: {
+    title: "Number",
+    description: "Accept numeric values only.",
+  },
+  date: {
+    title: "Date",
+    description: "Ask for a calendar date.",
+  },
+  date_month: {
+    title: "Month",
+    description: "Collect a month and year.",
+  },
+  dropdown: {
+    title: "Dropdown",
+    description: "Compact single-choice selection.",
+  },
+  geolocation: {
+    title: "Geolocation",
+    description: "Capture the respondent's location.",
+  },
+  hidden: {
+    title: "Hidden",
+    description: "Store data without showing a visible input.",
+  },
+  single_select: {
+    title: "Single select",
+    description: "Show one selectable choice from a list.",
+  },
+  multiple_select: {
+    title: "Multiple select",
+    description: "Let respondents select more than one option.",
+  },
+  rating: {
+    title: "Rating",
+    description: "Collect a score or satisfaction rating.",
+  },
+  file_upload: {
+    title: "File upload",
+    description: "Request files or documents.",
+  },
+  signature: {
+    title: "Signature",
+    description: "Capture a drawn signature.",
+  },
+  time: {
+    title: "Time",
+    description: "Ask for a time of day.",
+  },
+  turnstile: {
+    title: "Turnstile",
+    description: "Protect the form from bots.",
+  },
+  url: {
+    title: "URL",
+    description: "Collect a website or link.",
+  },
+  mobile_number: {
+    title: "Mobile number",
+    description: "Collect a phone number.",
+  },
+};
 
 function parseNextMode(section: IDeclarativeFormSection): NextMode {
   const next = section.next;
@@ -181,6 +282,48 @@ function createDefaultField(type: SupportedFieldType, id: string) {
     default:
       return baseField as IDeclarativeFormField;
   }
+}
+
+function readTextValue(value: ILocalizedText | undefined) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  return (
+    Object.values(value).find(
+      (entry): entry is string => typeof entry === "string",
+    ) ?? ""
+  );
+}
+
+function getSectionFlowSummary(section: IDeclarativeFormSection) {
+  const next = section.next;
+
+  if (next === undefined || next === null) {
+    return "Continues to the next section";
+  }
+
+  if (next === "done") {
+    return "Completes the form";
+  }
+
+  if (typeof next === "string") {
+    if (next.startsWith("https://")) {
+      return "Redirects to a URL";
+    }
+
+    return "Routes to another section";
+  }
+
+  if (Array.isArray(next) && next.length > 0) {
+    return "Uses conditional routing";
+  }
+
+  return "Continues to the next section";
 }
 
 export function Section({
@@ -357,15 +500,22 @@ export function Section({
   return (
     <Item
       variant="outline"
-      className={isExpanded ? "border-foreground/15 bg-muted/5" : ""}
+      className={
+        isExpanded
+          ? "bg-background shadow-sm ring-1 ring-border/80"
+          : "bg-background/80 shadow-sm ring-1 ring-border/60 transition-colors hover:bg-background"
+      }
     >
       <ItemHeader>
         <ItemContent>
-          <ItemTitle>{section.title as any}</ItemTitle>
+          <ItemTitle>
+            {readTextValue(section.title) || "Untitled Section"}
+          </ItemTitle>
           <ItemDescription>
             {section.id || `section_${index + 1}`} •{" "}
             {section.fields?.length ?? 0}{" "}
-            {(section.fields?.length ?? 0) === 1 ? "field" : "fields"}
+            {(section.fields?.length ?? 0) === 1 ? "field" : "fields"} •{" "}
+            {getSectionFlowSummary(section)}
           </ItemDescription>
         </ItemContent>
 
@@ -376,7 +526,6 @@ export function Section({
             size="icon-sm"
             onClick={onMoveUp}
             disabled={!canMoveUp}
-            aria-label="Move section up"
           >
             <ChevronUp />
           </Button>
@@ -387,7 +536,6 @@ export function Section({
             size="icon-sm"
             onClick={onMoveDown}
             disabled={!canMoveDown}
-            aria-label="Move section down"
           >
             <ChevronDown />
           </Button>
@@ -397,7 +545,6 @@ export function Section({
             variant="ghost"
             size="icon-sm"
             onClick={onDelete}
-            aria-label="Delete section"
           >
             <Trash2 />
           </Button>
@@ -407,7 +554,6 @@ export function Section({
             variant="ghost"
             size="icon-sm"
             onClick={() => setIsExpanded((current) => !current)}
-            aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
             <ChevronDown
               className={
@@ -422,234 +568,96 @@ export function Section({
 
       {isExpanded ? (
         <div className="basis-full border-t border-border pt-4">
-          <FieldGroup>
-            <Field>
-              <FieldLabel>Title</FieldLabel>
-              <Input
-                value={typeof section.title === "string" ? section.title : ""}
-                onChange={(event) =>
-                  onChange({
-                    ...section,
-                    title: event.target.value,
-                  })
-                }
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>Section ID</FieldLabel>
-              <Input
-                value={section.id ?? ""}
-                onChange={(event) =>
-                  onChange({
-                    ...section,
-                    id: event.target.value || undefined,
-                  })
-                }
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>After this section</FieldLabel>
-              <Select value={currentMode} onValueChange={handleModeChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="next_in_order">
-                    Continue to next section
-                  </SelectItem>
-                  <SelectItem value="section">
-                    Go to specific section
-                  </SelectItem>
-                  <SelectItem value="conditional">Conditional logic</SelectItem>
-                  <SelectItem value="external">Redirect to URL</SelectItem>
-                  <SelectItem value="done">Complete form</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {currentMode === "section" ? (
+          <div className="rounded-xl bg-muted/20 p-4">
+            <FieldGroup>
               <Field>
-                <FieldLabel>Target section</FieldLabel>
-                {otherSections.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Add more sections to enable navigation.
-                  </p>
-                ) : (
-                  <Select
-                    value={
-                      nextSectionId && nextSectionId !== "done"
-                        ? nextSectionId
-                        : "done"
-                    }
-                    onValueChange={handleSectionIdChange}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {otherSections.map((sectionItem, sectionIndex) => (
-                        <SelectItem
-                          key={
-                            sectionItem.id ?? `section-option-${sectionIndex}`
-                          }
-                          value={sectionItem.id ?? ""}
-                        >
-                          {typeof sectionItem.title === "string"
-                            ? sectionItem.title
-                            : sectionItem.id}
-                        </SelectItem>
-                      ))}
-                      {nextSectionId &&
-                      nextSectionId !== "done" &&
-                      !otherSections.some(
-                        (sectionItem) => sectionItem.id === nextSectionId,
-                      ) ? (
-                        <SelectItem value={nextSectionId}>
-                          {nextSectionId}
-                        </SelectItem>
-                      ) : null}
-                      <SelectItem value="done">Complete form</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </Field>
-            ) : null}
-
-            {currentMode === "external" ? (
-              <Field>
-                <FieldLabel>Redirect URL</FieldLabel>
+                <FieldLabel>Title</FieldLabel>
+                <FieldDescription>
+                  Use a clear section title so respondents understand what comes
+                  next.
+                </FieldDescription>
                 <Input
-                  value={parseExternalUrl(section)}
-                  placeholder="https://example.com"
+                  className="bg-background shadow-sm"
+                  value={typeof section.title === "string" ? section.title : ""}
                   onChange={(event) =>
-                    handleExternalUrlChange(event.target.value)
+                    onChange({
+                      ...section,
+                      title: event.target.value,
+                    })
                   }
                 />
               </Field>
-            ) : null}
 
-            {currentMode === "conditional" ? (
               <Field>
-                <div className="flex items-center justify-between gap-3">
-                  <FieldLabel>Conditional logic</FieldLabel>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddConditionalRule}
-                  >
-                    <Plus />
-                    Add Rule
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {conditionalRules.map((rule, ruleIndex) => (
-                    <Item
-                      key={`conditional-rule-${ruleIndex}`}
-                      variant="outline"
-                      className="bg-muted/10"
-                    >
-                      <div className="flex basis-full flex-col gap-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-medium text-foreground">
-                            Rule {ruleIndex + 1}
-                          </p>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() =>
-                              handleRemoveConditionalRule(ruleIndex)
-                            }
-                          >
-                            <Trash2 />
-                          </Button>
-                        </div>
+                <FieldLabel>Section ID</FieldLabel>
+                <FieldDescription>
+                  This ID is used for navigation rules and internal references.
+                </FieldDescription>
+                <Input
+                  className="bg-background shadow-sm"
+                  value={section.id ?? ""}
+                  onChange={(event) =>
+                    onChange({
+                      ...section,
+                      id: event.target.value || undefined,
+                    })
+                  }
+                />
+              </Field>
 
-                        <FieldGroup>
-                          <Field>
-                            <FieldLabel>When (expression)</FieldLabel>
-                            <Input
-                              value={rule.when}
-                              placeholder="{{data.field_id}} === 'yes'"
-                              className="font-mono text-xs"
-                              onChange={(event) =>
-                                handleUpdateConditionalRule(
-                                  ruleIndex,
-                                  "when",
-                                  event.target.value,
-                                )
-                              }
-                            />
-                          </Field>
+              <Field>
+                <FieldLabel>After this section</FieldLabel>
+                <FieldDescription>
+                  Choose what happens after a respondent finishes this section.
+                </FieldDescription>
+                <Select value={currentMode} onValueChange={handleModeChange}>
+                  <SelectTrigger className="w-full bg-background shadow-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="next_in_order">
+                      Continue to next section
+                    </SelectItem>
+                    <SelectItem value="section">
+                      Go to specific section
+                    </SelectItem>
+                    <SelectItem value="conditional">
+                      Conditional logic
+                    </SelectItem>
+                    <SelectItem value="external">Redirect to URL</SelectItem>
+                    <SelectItem value="done">Complete form</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
 
-                          <Field>
-                            <FieldLabel>Go to</FieldLabel>
-                            <Select
-                              value={rule.go || "done"}
-                              onValueChange={(value) =>
-                                handleUpdateConditionalRule(
-                                  ruleIndex,
-                                  "go",
-                                  value,
-                                )
-                              }
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {otherSections.map(
-                                  (sectionItem, sectionIndex) => (
-                                    <SelectItem
-                                      key={
-                                        sectionItem.id ??
-                                        `conditional-option-${sectionIndex}`
-                                      }
-                                      value={sectionItem.id ?? ""}
-                                    >
-                                      {typeof sectionItem.title === "string"
-                                        ? sectionItem.title
-                                        : sectionItem.id}
-                                    </SelectItem>
-                                  ),
-                                )}
-                                {rule.go &&
-                                rule.go !== "done" &&
-                                !otherSections.some(
-                                  (sectionItem) => sectionItem.id === rule.go,
-                                ) ? (
-                                  <SelectItem value={rule.go}>
-                                    {rule.go}
-                                  </SelectItem>
-                                ) : null}
-                                <SelectItem value="done">
-                                  Complete form
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </Field>
-                        </FieldGroup>
-                      </div>
-                    </Item>
-                  ))}
-
-                  <Field>
-                    <FieldLabel>Else</FieldLabel>
+              {currentMode === "section" ? (
+                <Field>
+                  <FieldLabel>Target section</FieldLabel>
+                  <FieldDescription>
+                    Send respondents to a specific section instead of following
+                    the default order.
+                  </FieldDescription>
+                  {otherSections.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Add more sections to enable navigation.
+                    </p>
+                  ) : (
                     <Select
-                      value={elseFallback}
-                      onValueChange={handleElseFallbackChange}
+                      value={
+                        nextSectionId && nextSectionId !== "done"
+                          ? nextSectionId
+                          : "done"
+                      }
+                      onValueChange={handleSectionIdChange}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full bg-background shadow-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {otherSections.map((sectionItem, sectionIndex) => (
                           <SelectItem
                             key={
-                              sectionItem.id ?? `else-option-${sectionIndex}`
+                              sectionItem.id ?? `section-option-${sectionIndex}`
                             }
                             value={sectionItem.id ?? ""}
                           >
@@ -658,121 +666,320 @@ export function Section({
                               : sectionItem.id}
                           </SelectItem>
                         ))}
-                        {elseFallback !== "done" &&
+                        {nextSectionId &&
+                        nextSectionId !== "done" &&
                         !otherSections.some(
-                          (sectionItem) => sectionItem.id === elseFallback,
+                          (sectionItem) => sectionItem.id === nextSectionId,
                         ) ? (
-                          <SelectItem value={elseFallback}>
-                            {elseFallback}
+                          <SelectItem value={nextSectionId}>
+                            {nextSectionId}
                           </SelectItem>
                         ) : null}
                         <SelectItem value="done">Complete form</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Field>
-                </div>
-              </Field>
-            ) : null}
+                  )}
+                </Field>
+              ) : null}
 
-            <Field>
-              <FieldLabel>Fields</FieldLabel>
-              <Dialog open={isAddFieldOpen} onOpenChange={setIsAddFieldOpen}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setIsAddFieldOpen(true)}
-                >
-                  <Plus />
-                  Add Field
-                </Button>
-                <DialogContent className="max-h-[min(80vh,40rem)] sm:max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Add Field</DialogTitle>
-                  </DialogHeader>
-                  <div className="overflow-y-auto pr-1">
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {BUILDER_FIELD_TYPES.map((fieldType) => (
-                        <Button
-                          key={fieldType}
-                          variant="outline"
-                          className="w-full justify-start"
-                          onClick={() => handleAddField(fieldType)}
-                        >
-                          {fieldType}
-                        </Button>
-                      ))}
+              {currentMode === "external" ? (
+                <Field>
+                  <FieldLabel>Redirect URL</FieldLabel>
+                  <FieldDescription>
+                    Use a full HTTPS URL for the destination after this section.
+                  </FieldDescription>
+                  <Input
+                    className="bg-background shadow-sm"
+                    value={parseExternalUrl(section)}
+                    placeholder="https://example.com"
+                    onChange={(event) =>
+                      handleExternalUrlChange(event.target.value)
+                    }
+                  />
+                </Field>
+              ) : null}
+
+              {currentMode === "conditional" ? (
+                <Field>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <FieldLabel>Conditional logic</FieldLabel>
+                      <FieldDescription>
+                        Evaluate rules in order. The first match decides where
+                        the respondent goes next.
+                      </FieldDescription>
                     </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="bg-background shadow-sm hover:bg-background"
+                      onClick={handleAddConditionalRule}
+                    >
+                      <Plus />
+                      Add Rule
+                    </Button>
                   </div>
-                </DialogContent>
-              </Dialog>
-              <ItemGroup className="gap-3">
-                {(section.fields ?? []).length > 0 ? (
-                  (section.fields ?? []).map((field, fieldIndex) => (
-                    <SectionField
-                      key={`field-${fieldIndex}`}
-                      field={field}
-                      canMoveUp={fieldIndex > 0}
-                      canMoveDown={
-                        fieldIndex < (section.fields ?? []).length - 1
-                      }
-                      onChange={(x) =>
-                        onChange({
-                          ...section,
-                          fields: (section.fields ?? []).map(
-                            (fieldItem, currentFieldIndex) =>
-                              currentFieldIndex === fieldIndex ? x : fieldItem,
-                          ),
-                        })
-                      }
-                      onDelete={() =>
-                        onChange({
-                          ...section,
-                          fields: (section.fields ?? []).filter(
-                            (_, currentFieldIndex) =>
-                              currentFieldIndex !== fieldIndex,
-                          ),
-                        })
-                      }
-                      onMoveUp={() => {
-                        const nextFields = [...(section.fields ?? [])];
-                        const previousField = nextFields[fieldIndex - 1];
+                  <div className="space-y-3">
+                    {conditionalRules.map((rule, ruleIndex) => (
+                      <Item
+                        key={`conditional-rule-${ruleIndex}`}
+                        variant="outline"
+                        className="bg-background shadow-sm ring-1 ring-border/60"
+                      >
+                        <div className="flex basis-full flex-col gap-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-medium text-foreground">
+                              Rule {ruleIndex + 1}
+                            </p>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() =>
+                                handleRemoveConditionalRule(ruleIndex)
+                              }
+                            >
+                              <Trash2 />
+                            </Button>
+                          </div>
 
-                        nextFields[fieldIndex - 1] = nextFields[fieldIndex];
-                        nextFields[fieldIndex] = previousField;
+                          <FieldGroup>
+                            <Field>
+                              <FieldLabel>When (expression)</FieldLabel>
+                              <FieldDescription>
+                                Write an expression based on earlier answers,
+                                such as a field value check.
+                              </FieldDescription>
+                              <Input
+                                value={rule.when}
+                                placeholder="{{data.field_id}} === 'yes'"
+                                className="bg-background font-mono text-xs shadow-sm"
+                                onChange={(event) =>
+                                  handleUpdateConditionalRule(
+                                    ruleIndex,
+                                    "when",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </Field>
 
-                        onChange({
-                          ...section,
-                          fields: nextFields,
-                        });
-                      }}
-                      onMoveDown={() => {
-                        const nextFields = [...(section.fields ?? [])];
-                        const nextField = nextFields[fieldIndex + 1];
+                            <Field>
+                              <FieldLabel>Go to</FieldLabel>
+                              <FieldDescription>
+                                Choose the destination when this rule matches.
+                              </FieldDescription>
+                              <Select
+                                value={rule.go || "done"}
+                                onValueChange={(value) =>
+                                  handleUpdateConditionalRule(
+                                    ruleIndex,
+                                    "go",
+                                    value,
+                                  )
+                                }
+                              >
+                                <SelectTrigger className="w-full bg-background shadow-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {otherSections.map(
+                                    (sectionItem, sectionIndex) => (
+                                      <SelectItem
+                                        key={
+                                          sectionItem.id ??
+                                          `conditional-option-${sectionIndex}`
+                                        }
+                                        value={sectionItem.id ?? ""}
+                                      >
+                                        {typeof sectionItem.title === "string"
+                                          ? sectionItem.title
+                                          : sectionItem.id}
+                                      </SelectItem>
+                                    ),
+                                  )}
+                                  {rule.go &&
+                                  rule.go !== "done" &&
+                                  !otherSections.some(
+                                    (sectionItem) => sectionItem.id === rule.go,
+                                  ) ? (
+                                    <SelectItem value={rule.go}>
+                                      {rule.go}
+                                    </SelectItem>
+                                  ) : null}
+                                  <SelectItem value="done">
+                                    Complete form
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </Field>
+                          </FieldGroup>
+                        </div>
+                      </Item>
+                    ))}
 
-                        nextFields[fieldIndex + 1] = nextFields[fieldIndex];
-                        nextFields[fieldIndex] = nextField;
+                    <Field>
+                      <FieldLabel>Else</FieldLabel>
+                      <FieldDescription>
+                        Fallback destination when none of the conditions match.
+                      </FieldDescription>
+                      <Select
+                        value={elseFallback}
+                        onValueChange={handleElseFallbackChange}
+                      >
+                        <SelectTrigger className="w-full bg-background shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {otherSections.map((sectionItem, sectionIndex) => (
+                            <SelectItem
+                              key={
+                                sectionItem.id ?? `else-option-${sectionIndex}`
+                              }
+                              value={sectionItem.id ?? ""}
+                            >
+                              {typeof sectionItem.title === "string"
+                                ? sectionItem.title
+                                : sectionItem.id}
+                            </SelectItem>
+                          ))}
+                          {elseFallback !== "done" &&
+                          !otherSections.some(
+                            (sectionItem) => sectionItem.id === elseFallback,
+                          ) ? (
+                            <SelectItem value={elseFallback}>
+                              {elseFallback}
+                            </SelectItem>
+                          ) : null}
+                          <SelectItem value="done">Complete form</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                </Field>
+              ) : null}
 
-                        onChange({
-                          ...section,
-                          fields: nextFields,
-                        });
-                      }}
-                    />
-                  ))
-                ) : (
-                  <Item variant="outline" className="bg-muted/10">
-                    <ItemContent>
-                      <ItemTitle>No fields yet</ItemTitle>
-                      <ItemDescription>
-                        This section does not have any fields yet.
-                      </ItemDescription>
-                    </ItemContent>
-                  </Item>
-                )}
-              </ItemGroup>
-            </Field>
-          </FieldGroup>
+              <Field>
+                <FieldLabel>Fields</FieldLabel>
+                <FieldDescription>
+                  Add and reorder the questions that belong to this section.
+                </FieldDescription>
+                <Dialog open={isAddFieldOpen} onOpenChange={setIsAddFieldOpen}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full bg-background shadow-sm hover:bg-background"
+                    onClick={() => setIsAddFieldOpen(true)}
+                  >
+                    <Plus />
+                    Add Field
+                  </Button>
+                  <DialogContent className="max-h-[min(80vh,40rem)] sm:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Add Field</DialogTitle>
+                      <DialogDescription>
+                        Pick the input that best matches the answer you want to
+                        collect. You can refine labels, validation, and advanced
+                        settings after adding it.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="overflow-y-auto pr-1">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {BUILDER_FIELD_TYPES.map((fieldType) => (
+                          <Button
+                            key={fieldType}
+                            variant="outline"
+                            className="h-auto w-full justify-start bg-background px-4 py-3 text-left shadow-sm hover:bg-muted/20"
+                            onClick={() => handleAddField(fieldType)}
+                          >
+                            <div className="space-y-1">
+                              <div className="text-sm font-medium text-foreground">
+                                {FIELD_TYPE_DETAILS[fieldType].title}
+                              </div>
+                              <div className="text-xs leading-5 text-muted-foreground">
+                                {FIELD_TYPE_DETAILS[fieldType].description}
+                              </div>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <ItemGroup className="gap-3">
+                  {(section.fields ?? []).length > 0 ? (
+                    (section.fields ?? []).map((field, fieldIndex) => (
+                      <SectionField
+                        key={`field-${fieldIndex}`}
+                        field={field}
+                        canMoveUp={fieldIndex > 0}
+                        canMoveDown={
+                          fieldIndex < (section.fields ?? []).length - 1
+                        }
+                        onChange={(x) =>
+                          onChange({
+                            ...section,
+                            fields: (section.fields ?? []).map(
+                              (fieldItem, currentFieldIndex) =>
+                                currentFieldIndex === fieldIndex
+                                  ? x
+                                  : fieldItem,
+                            ),
+                          })
+                        }
+                        onDelete={() =>
+                          onChange({
+                            ...section,
+                            fields: (section.fields ?? []).filter(
+                              (_, currentFieldIndex) =>
+                                currentFieldIndex !== fieldIndex,
+                            ),
+                          })
+                        }
+                        onMoveUp={() => {
+                          const nextFields = [...(section.fields ?? [])];
+                          const previousField = nextFields[fieldIndex - 1];
+
+                          nextFields[fieldIndex - 1] = nextFields[fieldIndex];
+                          nextFields[fieldIndex] = previousField;
+
+                          onChange({
+                            ...section,
+                            fields: nextFields,
+                          });
+                        }}
+                        onMoveDown={() => {
+                          const nextFields = [...(section.fields ?? [])];
+                          const nextField = nextFields[fieldIndex + 1];
+
+                          nextFields[fieldIndex + 1] = nextFields[fieldIndex];
+                          nextFields[fieldIndex] = nextField;
+
+                          onChange({
+                            ...section,
+                            fields: nextFields,
+                          });
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Item
+                      variant="outline"
+                      className="bg-background/75 shadow-sm ring-1 ring-dashed ring-border/70"
+                    >
+                      <ItemContent>
+                        <ItemTitle>No fields yet</ItemTitle>
+                        <ItemDescription>
+                          This section does not have any fields yet.
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
+                  )}
+                </ItemGroup>
+              </Field>
+            </FieldGroup>
+          </div>
         </div>
       ) : null}
     </Item>

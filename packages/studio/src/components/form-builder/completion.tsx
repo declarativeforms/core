@@ -3,6 +3,7 @@ import { Plus, Trash2 } from "lucide-react";
 import {
   Button,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
@@ -53,9 +54,11 @@ function readText(value: ILocalizedText | undefined) {
     return "";
   }
 
-  return Object.values(value).find(
-    (entry): entry is string => typeof entry === "string",
-  ) ?? "";
+  return (
+    Object.values(value).find(
+      (entry): entry is string => typeof entry === "string",
+    ) ?? ""
+  );
 }
 
 function parseSimpleCompletion(completion: CompletionValue): ParsedCompletion {
@@ -71,7 +74,9 @@ function parseSimpleCompletion(completion: CompletionValue): ParsedCompletion {
   };
 }
 
-function parseCompletionRules(completion: CompletionValue): ParsedCompletionRule[] {
+function parseCompletionRules(
+  completion: CompletionValue,
+): ParsedCompletionRule[] {
   if (!Array.isArray(completion)) {
     return [];
   }
@@ -142,7 +147,11 @@ function CompletionFields({
     <>
       <Field>
         <FieldLabel>Title</FieldLabel>
+        <FieldDescription>
+          The main message shown after a successful submission.
+        </FieldDescription>
         <Input
+          className="bg-background shadow-sm"
           value={completion.title}
           placeholder="Thank you!"
           onChange={(event) =>
@@ -156,9 +165,12 @@ function CompletionFields({
 
       <Field>
         <FieldLabel>Message</FieldLabel>
+        <FieldDescription>
+          Add a short follow-up message so respondents know what happens next.
+        </FieldDescription>
         <Textarea
           rows={6}
-          className="min-h-24 resize-none"
+          className="min-h-24 resize-none bg-background shadow-sm"
           value={completion.message}
           placeholder="Thanks for submitting your response."
           onChange={(event) =>
@@ -172,7 +184,11 @@ function CompletionFields({
 
       <Field>
         <FieldLabel>Button label</FieldLabel>
+        <FieldDescription>
+          Optional. Add a call to action for the next step.
+        </FieldDescription>
         <Input
+          className="bg-background shadow-sm"
           value={completion.buttonLabel}
           placeholder="Visit our website"
           onChange={(event) =>
@@ -186,7 +202,12 @@ function CompletionFields({
 
       <Field>
         <FieldLabel>Button URL</FieldLabel>
+        <FieldDescription>
+          Optional. Use a full URL if the completion state should link somewhere
+          else.
+        </FieldDescription>
         <Input
+          className="bg-background shadow-sm"
           value={completion.buttonUrl}
           placeholder="https://example.com"
           onChange={(event) =>
@@ -286,7 +307,7 @@ export function Completion({
         <Button
           type="button"
           variant="outline"
-          className="w-full justify-start"
+          className="w-full justify-start bg-background shadow-sm hover:bg-background"
           onClick={handleSwitchToConditional}
         >
           <Plus />
@@ -300,7 +321,11 @@ export function Completion({
     <div className="space-y-3">
       <ItemGroup className="gap-3">
         {conditionalRules.map((rule, index) => (
-          <Item key={`completion-rule-${index}`} variant="outline">
+          <Item
+            key={`completion-rule-${index}`}
+            variant="outline"
+            className="bg-background shadow-sm ring-1 ring-border/60"
+          >
             <ItemHeader>
               <ItemContent>
                 <ItemTitle>
@@ -329,10 +354,14 @@ export function Completion({
               <FieldGroup>
                 <Field>
                   <FieldLabel>Condition (expression)</FieldLabel>
+                  <FieldDescription>
+                    Leave empty to use this rule as the default completion
+                    state.
+                  </FieldDescription>
                   <Input
+                    className="bg-background font-mono text-xs shadow-sm"
                     value={rule.when}
                     placeholder="Leave empty for default"
-                    className="font-mono text-xs"
                     onChange={(event) =>
                       handleUpdateRule(index, {
                         ...rule,
@@ -360,7 +389,7 @@ export function Completion({
       <Button
         type="button"
         variant="outline"
-        className="w-full justify-start"
+        className="w-full justify-start bg-background shadow-sm hover:bg-background"
         onClick={handleAddRule}
       >
         <Plus />

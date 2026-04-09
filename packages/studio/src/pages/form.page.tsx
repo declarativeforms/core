@@ -14,6 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
@@ -33,8 +34,39 @@ import type {
   IDeclarativeFormCompletion,
   IDeclarativeFormCompletionRule,
   IDeclarativeFormSection,
+  ILocalizedText,
   ISubmission,
 } from "@declarativeforms/types";
+
+type FormValues = {
+  completion:
+    | IDeclarativeFormCompletion
+    | Array<IDeclarativeFormCompletionRule>
+    | undefined;
+  description: string;
+  end_date: string;
+  mixpanel: string;
+  primary: string;
+  sections: Array<IDeclarativeFormSection>;
+  start_date: string;
+  title: string;
+};
+
+function readTextValue(value: ILocalizedText | undefined) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  return (
+    Object.values(value).find(
+      (entry): entry is string => typeof entry === "string",
+    ) ?? ""
+  );
+}
 
 function createSectionId(sections: IDeclarativeFormSection[]) {
   const existingIds = new Set(
@@ -94,21 +126,23 @@ function replaceDeletedSectionReference(
 export function FormPage() {
   const params = useParams();
 
-  const { control, handleSubmit, reset, setValue, watch } = useForm({
-    defaultValues: {
-      completion: undefined as
-        | IDeclarativeFormCompletion
-        | Array<IDeclarativeFormCompletionRule>
-        | undefined,
-      description: "",
-      end_date: "",
-      mixpanel: "",
-      primary: "",
-      sections: [] as Array<IDeclarativeFormSection>,
-      start_date: "",
-      title: "",
+  const { control, handleSubmit, reset, setValue, watch } = useForm<FormValues>(
+    {
+      defaultValues: {
+        completion: undefined as
+          | IDeclarativeFormCompletion
+          | Array<IDeclarativeFormCompletionRule>
+          | undefined,
+        description: "",
+        end_date: "",
+        mixpanel: "",
+        primary: "",
+        sections: [] as Array<IDeclarativeFormSection>,
+        start_date: "",
+        title: "",
+      },
     },
-  });
+  );
 
   const sections = watch("sections");
   const completion = watch("completion");
@@ -172,15 +206,15 @@ export function FormPage() {
 
     reset({
       completion: getForm.data.completion,
-      description: getForm.data.description,
+      description: readTextValue(getForm.data.description),
       end_date: getForm.data.end_date ?? "",
       mixpanel: getForm.data.measurements?.mixpanel ?? "",
       primary: getForm.data.theme?.primary ?? "",
       sections: getForm.data.sections ?? [],
       start_date: getForm.data.start_date ?? "",
-      title: getForm.data.title,
-    } as any);
-  }, [getForm.data]);
+      title: readTextValue(getForm.data.title),
+    });
+  }, [getForm.data, reset]);
 
   if (!getForm.data) {
     return null;
@@ -206,11 +240,19 @@ export function FormPage() {
   return (
     <PageShell className="overflow-y-auto">
       <div className="mx-auto w-full max-w-xl">
-        <div className="mb-5 flex items-center justify-between">
-          <h1 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <FileText className="size-5 text-muted-foreground" />
-            {getForm.data.title as any}
-          </h1>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="min-w-0 space-y-1">
+            <h1 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+              <FileText className="size-5 text-muted-foreground" />
+              <span className="truncate">
+                {readTextValue(getForm.data.title) || "Untitled Form"}
+              </span>
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Refine your form settings, structure, and completion flow without
+              leaving this page.
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button
               type="button"
@@ -286,7 +328,7 @@ export function FormPage() {
             <div className="overflow-x-auto overflow-y-hidden">
               <TabsList
                 variant="line"
-                className="flex w-max min-w-full flex-nowrap justify-start"
+                className="flex w-max min-w-full flex-nowrap justify-start rounded-xl bg-background/80 px-1.5 py-1 shadow-sm ring-1 ring-border/70 backdrop-blur-sm"
               >
                 <TabsTrigger value="settings" className="shrink-0">
                   Settings
@@ -297,9 +339,6 @@ export function FormPage() {
                 <TabsTrigger value="completion" className="shrink-0">
                   Completion
                 </TabsTrigger>
-                {/* <TabsTrigger value="connections" className="shrink-0">
-                  Connections
-                </TabsTrigger> */}
                 <TabsTrigger value="results" className="shrink-0">
                   Results
                 </TabsTrigger>
@@ -314,7 +353,14 @@ export function FormPage() {
                   render={({ field }) => (
                     <Field>
                       <FieldLabel>Title</FieldLabel>
-                      <Input {...field} />
+                      <FieldDescription>
+                        The main heading shown on the live form and in Studio.
+                      </FieldDescription>
+                      <Input
+                        {...field}
+                        className="bg-background/80 shadow-sm"
+                        placeholder="Quarterly feedback survey"
+                      />
                     </Field>
                   )}
                 />
@@ -325,9 +371,14 @@ export function FormPage() {
                   render={({ field }) => (
                     <Field>
                       <FieldLabel>Description</FieldLabel>
+                      <FieldDescription>
+                        Add a short introduction so respondents know what this
+                        form is for.
+                      </FieldDescription>
                       <Textarea
                         rows={6}
-                        className="min-h-24 resize-none"
+                        className="min-h-24 resize-none bg-background/80 shadow-sm"
+                        placeholder="Share a brief summary, expected completion time, or what happens after submission."
                         {...field}
                       />
                     </Field>
@@ -343,7 +394,7 @@ export function FormPage() {
                         <FieldLabel>Start date</FieldLabel>
                         <Input
                           type="datetime-local"
-                          className="w-full min-w-0 max-w-full"
+                          className="w-full min-w-0 max-w-full bg-background/80 shadow-sm"
                           {...field}
                         />
                       </Field>
@@ -358,7 +409,7 @@ export function FormPage() {
                         <FieldLabel>End date</FieldLabel>
                         <Input
                           type="datetime-local"
-                          className="w-full min-w-0 max-w-full"
+                          className="w-full min-w-0 max-w-full bg-background/80 shadow-sm"
                           {...field}
                         />
                       </Field>
@@ -372,7 +423,11 @@ export function FormPage() {
                   render={({ field }) => (
                     <Field>
                       <FieldLabel>Mixpanel token</FieldLabel>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        className="bg-background/80 shadow-sm"
+                        placeholder="3f1f7b3a2e6d..."
+                      />
                     </Field>
                   )}
                 />
@@ -390,9 +445,14 @@ export function FormPage() {
                           onChange={(event) =>
                             field.onChange(event.target.value)
                           }
-                          className="size-9 shrink-0 cursor-pointer rounded-md border border-border bg-background p-0.5"
+                          className="size-9 shrink-0 cursor-pointer rounded-md border border-border bg-background p-0.5 shadow-sm"
                         />
-                        <Input {...field} value={field.value ?? ""} />
+                        <Input
+                          {...field}
+                          value={field.value ?? ""}
+                          className="bg-background/80 shadow-sm"
+                          placeholder="#111827"
+                        />
                       </div>
                     </Field>
                   )}
@@ -432,6 +492,7 @@ export function FormPage() {
                   <Button
                     type="button"
                     variant="outline"
+                    className="bg-background/80 shadow-sm hover:bg-background"
                     onClick={() =>
                       setValue("sections", [
                         ...sections,
@@ -462,6 +523,7 @@ export function FormPage() {
                     <Button
                       type="button"
                       variant="outline"
+                      className="bg-background/80 shadow-sm hover:bg-background"
                       onClick={() =>
                         setValue("sections", [
                           {

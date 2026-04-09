@@ -10,7 +10,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   return (
     <div className="flex h-dvh w-full flex-col bg-muted/30 text-foreground">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:px-6">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/80 bg-background/90 px-4 backdrop-blur-sm md:px-6">
         <Link
           to="/"
           className="flex items-center gap-3 text-foreground transition-opacity hover:opacity-80"
@@ -40,7 +40,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             variant="ghost"
             size="icon-sm"
             aria-label="Sign out"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="text-muted-foreground hover:bg-background hover:text-foreground"
             onClick={() => {
               logout();
               navigate("/login", { replace: true });

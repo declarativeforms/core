@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import {
   Button,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   PageShell,
@@ -36,7 +37,7 @@ export function LoginPage() {
   if (searchParams.get("sent") === "1" && !searchParams.get("error")) {
     return (
       <PageShell className="items-center justify-center bg-muted/30">
-        <div className="flex w-full max-w-sm flex-col items-center text-center">
+        <div className="flex w-full max-w-sm flex-col items-center rounded-3xl bg-background/80 px-6 py-8 text-center shadow-sm ring-1 ring-border/70 backdrop-blur-sm">
           <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
             <Mail className="size-6 text-primary" />
           </div>
@@ -59,7 +60,7 @@ export function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full bg-background shadow-sm hover:bg-background"
               onClick={() => {
                 reset({ email: "" });
                 setSearchParams({});
@@ -80,7 +81,7 @@ export function LoginPage() {
 
   return (
     <PageShell className="items-center justify-center bg-muted/30">
-      <div className="flex w-full max-w-sm flex-col items-center text-center">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-3xl bg-background/80 px-6 py-8 text-center shadow-sm ring-1 ring-border/70 backdrop-blur-sm">
         <img
           src="/android-chrome-192x192.png"
           alt="Declarative Forms"
@@ -95,13 +96,14 @@ export function LoginPage() {
         </div>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with GitHub to get started.
+          Sign in with GitHub to manage forms, submissions, and completion
+          flows from one place.
         </p>
 
         <div className="mt-4 w-full">
           <Button
             type="button"
-            className="w-full"
+            className="w-full shadow-sm"
             onClick={() => {
               window.location.href = getGitHubOAuthUrl();
             }}
@@ -143,10 +145,14 @@ export function LoginPage() {
           <FieldGroup className="gap-3">
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
+              <FieldDescription>
+                Use email if you prefer a passwordless sign-in link.
+              </FieldDescription>
               <Input
                 id="email"
                 type="email"
                 placeholder="name@example.com"
+                className="bg-background shadow-sm"
                 {...register("email", {
                   required: "Email is required.",
                   onChange: () => clearErrors("root"),
@@ -157,7 +163,7 @@ export function LoginPage() {
             <Button
               type="submit"
               variant="outline"
-              className="w-full"
+              className="w-full bg-background shadow-sm hover:bg-background"
               disabled={isSubmitting}
             >
               <Mail />

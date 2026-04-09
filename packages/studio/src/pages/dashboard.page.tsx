@@ -66,11 +66,13 @@ export function DashboardPage() {
       <DashboardPageSection>
         <PageHeader
           title="Forms"
+          description="Create, revisit, and manage the forms you publish from Studio."
           actions={
             <Button
               type="button"
               variant="outline"
               size="sm"
+              className="bg-background/80 shadow-sm hover:bg-background"
               onClick={handleCreateForm}
               disabled={createForm.isPending}
             >
@@ -80,11 +82,11 @@ export function DashboardPage() {
           }
         />
 
-        <div className="rounded-lg border border-border">
+        <div className="rounded-2xl bg-background/80 shadow-sm ring-1 ring-border/70 backdrop-blur-sm">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 border-b border-border px-3 py-3 last:border-b-0"
+              className="flex items-center gap-4 border-b border-border/80 px-4 py-3.5 last:border-b-0"
             >
               <div className="size-4 animate-pulse rounded bg-muted" />
               <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -103,11 +105,13 @@ export function DashboardPage() {
     <DashboardPageSection>
       <PageHeader
         title="Forms"
+        description="Create, revisit, and manage the forms you publish from Studio."
         actions={
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="bg-background/80 shadow-sm hover:bg-background"
             onClick={handleCreateForm}
             disabled={createForm.isPending}
           >
@@ -134,6 +138,7 @@ export function DashboardPage() {
                 type="button"
                 variant="outline"
                 size="sm"
+                className="bg-background/80 shadow-sm hover:bg-background"
                 onClick={handleCreateForm}
                 disabled={createForm.isPending}
               >
@@ -144,13 +149,13 @@ export function DashboardPage() {
           </Empty>
         </div>
       ) : (
-        <div className="rounded-lg border border-border">
+        <div className="rounded-2xl bg-background/80 shadow-sm ring-1 ring-border/70 backdrop-blur-sm">
           {forms.map((form) => (
             <div
               key={form.id}
               role="link"
               tabIndex={0}
-              className="flex items-center gap-4 border-b border-border px-3 py-3 last:border-b-0 transition-colors duration-100 hover:bg-muted/40 cursor-pointer"
+              className="cursor-pointer flex items-center gap-4 border-b border-border/80 px-4 py-3.5 last:border-b-0 transition-colors duration-100 hover:bg-background"
               onClick={() => navigate(`/forms/${form.id}`)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
