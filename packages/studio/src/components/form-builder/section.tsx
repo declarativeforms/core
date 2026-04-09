@@ -3,6 +3,10 @@ import { useState } from "react";
 
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   Field,
   FieldGroup,
   FieldLabel,
@@ -201,8 +205,7 @@ export function Section({
   onDelete: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [newFieldType, setNewFieldType] =
-    useState<SupportedFieldType>("short_text");
+  const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
   const currentMode = parseNextMode(section);
   const otherSections = sections.filter(
     (sectionItem, sectionIndex) =>
@@ -340,17 +343,15 @@ export function Section({
     });
   };
 
-  const handleAddField = () => {
+  const handleAddField = (type: SupportedFieldType) => {
     const fields = section.fields ?? [];
-    const nextField = createDefaultField(
-      newFieldType,
-      createFieldId(fields, newFieldType),
-    );
+    const nextField = createDefaultField(type, createFieldId(fields, type));
 
     onChange({
       ...section,
       fields: [...fields, nextField],
     });
+    setIsAddFieldOpen(false);
   };
 
   return (
@@ -675,34 +676,36 @@ export function Section({
 
             <Field>
               <FieldLabel>Fields</FieldLabel>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={newFieldType}
-                  onValueChange={(value) =>
-                    setNewFieldType(value as SupportedFieldType)
-                  }
-                >
-                  <SelectTrigger className="flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BUILDER_FIELD_TYPES.map((fieldType) => (
-                      <SelectItem key={fieldType} value={fieldType}>
-                        {fieldType}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
+              <Dialog open={isAddFieldOpen} onOpenChange={setIsAddFieldOpen}>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleAddField}
+                  className="w-full"
+                  onClick={() => setIsAddFieldOpen(true)}
                 >
                   <Plus />
                   Add Field
                 </Button>
-              </div>
+                <DialogContent className="max-h-[min(80vh,40rem)] sm:max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add Field</DialogTitle>
+                  </DialogHeader>
+                  <div className="overflow-y-auto pr-1">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {BUILDER_FIELD_TYPES.map((fieldType) => (
+                        <Button
+                          key={fieldType}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => handleAddField(fieldType)}
+                        >
+                          {fieldType}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <ItemGroup className="gap-3">
                 {(section.fields ?? []).length > 0 ? (
                   (section.fields ?? []).map((field, fieldIndex) => (
