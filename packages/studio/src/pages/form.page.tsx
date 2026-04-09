@@ -358,7 +358,7 @@ export function FormPage() {
                       </FieldDescription>
                       <Input
                         {...field}
-                        className="bg-background/80 shadow-sm"
+                        className="bg-background/80"
                         placeholder="Quarterly feedback survey"
                       />
                     </Field>
@@ -377,7 +377,7 @@ export function FormPage() {
                       </FieldDescription>
                       <Textarea
                         rows={6}
-                        className="min-h-24 resize-none bg-background/80 shadow-sm"
+                        className="min-h-24 resize-none bg-background/80"
                         placeholder="Share a brief summary, expected completion time, or what happens after submission."
                         {...field}
                       />
@@ -385,7 +385,7 @@ export function FormPage() {
                   )}
                 />
 
-                <div className="grid min-w-0 gap-3 overflow-hidden sm:grid-cols-2">
+                {/* <div className="grid min-w-0 gap-3 overflow-hidden sm:grid-cols-2">
                   <Controller
                     name="start_date"
                     control={control}
@@ -394,7 +394,7 @@ export function FormPage() {
                         <FieldLabel>Start date</FieldLabel>
                         <Input
                           type="datetime-local"
-                          className="w-full min-w-0 max-w-full bg-background/80 shadow-sm"
+                          className="w-full min-w-0 max-w-full bg-background/80"
                           {...field}
                         />
                       </Field>
@@ -409,13 +409,13 @@ export function FormPage() {
                         <FieldLabel>End date</FieldLabel>
                         <Input
                           type="datetime-local"
-                          className="w-full min-w-0 max-w-full bg-background/80 shadow-sm"
+                          className="w-full min-w-0 max-w-full bg-background/80"
                           {...field}
                         />
                       </Field>
                     )}
                   />
-                </div>
+                </div> */}
 
                 <Controller
                   name="mixpanel"
@@ -425,7 +425,7 @@ export function FormPage() {
                       <FieldLabel>Mixpanel token</FieldLabel>
                       <Input
                         {...field}
-                        className="bg-background/80 shadow-sm"
+                        className="bg-background/80"
                         placeholder="3f1f7b3a2e6d..."
                       />
                     </Field>
@@ -445,12 +445,12 @@ export function FormPage() {
                           onChange={(event) =>
                             field.onChange(event.target.value)
                           }
-                          className="size-9 shrink-0 cursor-pointer rounded-md border border-border bg-background p-0.5 shadow-sm"
+                          className="size-9 shrink-0 cursor-pointer rounded-md border border-border bg-background p-0.5"
                         />
                         <Input
                           {...field}
                           value={field.value ?? ""}
-                          className="bg-background/80 shadow-sm"
+                          className="bg-background/80"
                           placeholder="#111827"
                         />
                       </div>
@@ -492,7 +492,6 @@ export function FormPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="bg-background/80 shadow-sm hover:bg-background"
                     onClick={() =>
                       setValue("sections", [
                         ...sections,
@@ -523,7 +522,6 @@ export function FormPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="bg-background/80 shadow-sm hover:bg-background"
                       onClick={() =>
                         setValue("sections", [
                           {

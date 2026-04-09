@@ -9,10 +9,6 @@ export function CallbackPage() {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
-  useEffect(() => {
-    document.title = "Signing in… — Studio";
-  }, []);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const magicLinkToken = searchParams.get("magic_link_token");

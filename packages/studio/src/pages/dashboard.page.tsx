@@ -47,11 +47,7 @@ function DashboardPageSection({ children }: { children: ReactNode }) {
 export function DashboardPage() {
   const navigate = useNavigate();
   const createForm = useCreateForm();
-  const { data: forms = [], isLoading } = useForms();
-
-  useEffect(() => {
-    document.title = "Dashboard — Studio";
-  }, []);
+  const { data: forms } = useForms();
 
   const handleCreateForm = async () => {
     const form = await createForm.mutateAsync(createEmptyFormDefinition());
@@ -61,62 +57,25 @@ export function DashboardPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <DashboardPageSection>
-        <PageHeader
-          title="Forms"
-          description="Create, revisit, and manage the forms you publish from Studio."
-          actions={
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="bg-background/80 shadow-sm hover:bg-background"
-              onClick={handleCreateForm}
-              disabled={createForm.isPending}
-            >
-              <Plus />
-              {createForm.isPending ? "Creating..." : "New Form"}
-            </Button>
-          }
-        />
-
-        <div className="rounded-2xl bg-background/80 shadow-sm ring-1 ring-border/70 backdrop-blur-sm">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-4 border-b border-border/80 px-4 py-3.5 last:border-b-0"
-            >
-              <div className="size-4 animate-pulse rounded bg-muted" />
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
-                <div className="hidden h-3 w-1/4 animate-pulse rounded bg-muted sm:block" />
-              </div>
-              <div className="h-3 w-16 animate-pulse rounded bg-muted" />
-            </div>
-          ))}
-        </div>
-      </DashboardPageSection>
-    );
+  if (!forms) {
+    return null;
   }
 
   return (
     <DashboardPageSection>
       <PageHeader
         title="Forms"
-        description="Create, revisit, and manage the forms you publish from Studio."
+        description="Create and manage the forms you publish from Studio."
         actions={
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="bg-background/80 shadow-sm hover:bg-background"
             onClick={handleCreateForm}
             disabled={createForm.isPending}
           >
             <Plus />
-            {createForm.isPending ? "Creating..." : "New Form"}
+            New Form
           </Button>
         }
       />

@@ -8,10 +8,6 @@ export function DemoPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  useEffect(() => {
-    document.title = "Demo — Studio";
-  }, []);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetch(getBackendUrl("auth/demo"), { method: "POST" })
@@ -22,7 +18,12 @@ export function DemoPage() {
 
         return response.json() as Promise<{
           token: string;
-          user: { id: number; login: string; name: string | null; avatar_url: string };
+          user: {
+            id: number;
+            login: string;
+            name: string | null;
+            avatar_url: string;
+          };
         }>;
       })
       .then((data) => {
