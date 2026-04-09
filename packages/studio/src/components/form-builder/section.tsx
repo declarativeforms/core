@@ -695,7 +695,7 @@ export function Section({
                       {BUILDER_FIELD_TYPES.map((fieldType) => (
                         <Button
                           key={fieldType}
-                          variant="ghost"
+                          variant="outline"
                           className="w-full justify-start"
                           onClick={() => handleAddField(fieldType)}
                         >
