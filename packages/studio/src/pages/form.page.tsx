@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import {
   Button,
   Completion,
+  Connections,
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -43,6 +44,7 @@ type FormValues = {
     | IDeclarativeFormCompletion
     | Array<IDeclarativeFormCompletionRule>
     | undefined;
+  connections: IDeclarativeForm["connections"];
   description: string;
   end_date: string;
   mixpanel: string;
@@ -133,6 +135,7 @@ export function FormPage() {
           | IDeclarativeFormCompletion
           | Array<IDeclarativeFormCompletionRule>
           | undefined,
+        connections: [] as IDeclarativeForm["connections"],
         description: "",
         end_date: "",
         mixpanel: "",
@@ -146,6 +149,7 @@ export function FormPage() {
 
   const sections = watch("sections");
   const completion = watch("completion");
+  const connections = watch("connections");
 
   const getForm = useQuery({
     queryKey: ["studio", "forms", params.formId],
@@ -206,6 +210,7 @@ export function FormPage() {
 
     reset({
       completion: getForm.data.completion,
+      connections: getForm.data.connections ?? [],
       description: readTextValue(getForm.data.description),
       end_date: getForm.data.end_date ?? "",
       mixpanel: getForm.data.measurements?.mixpanel ?? "",
@@ -308,6 +313,7 @@ export function FormPage() {
             await putForm.mutateAsync({
               ...getForm.data,
               completion: values.completion,
+              connections: values.connections,
               description: values.description,
               end_date: values.end_date || undefined,
               measurements: {
@@ -338,6 +344,9 @@ export function FormPage() {
                 </TabsTrigger>
                 <TabsTrigger value="completion" className="shrink-0">
                   Completion
+                </TabsTrigger>
+                <TabsTrigger value="connections" className="shrink-0">
+                  Connections
                 </TabsTrigger>
                 <TabsTrigger value="results" className="shrink-0">
                   Results
@@ -544,6 +553,15 @@ export function FormPage() {
                 completion={completion}
                 onChange={(nextCompletion) =>
                   setValue("completion", nextCompletion)
+                }
+              />
+            </TabsContent>
+
+            <TabsContent className="py-6" value="connections">
+              <Connections
+                connections={connections}
+                onChange={(nextConnections) =>
+                  setValue("connections", nextConnections)
                 }
               />
             </TabsContent>
