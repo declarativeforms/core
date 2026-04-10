@@ -184,9 +184,6 @@ function CompletionFields({
 
       <Field>
         <FieldLabel>Button label</FieldLabel>
-        <FieldDescription>
-          Optional. Add a call to action for the next step.
-        </FieldDescription>
         <Input
           className="bg-background shadow-sm"
           value={completion.buttonLabel}
@@ -202,10 +199,6 @@ function CompletionFields({
 
       <Field>
         <FieldLabel>Button URL</FieldLabel>
-        <FieldDescription>
-          Optional. Use a full URL if the completion state should link somewhere
-          else.
-        </FieldDescription>
         <Input
           className="bg-background shadow-sm"
           value={completion.buttonUrl}
@@ -354,10 +347,6 @@ export function Completion({
               <FieldGroup>
                 <Field>
                   <FieldLabel>Condition (expression)</FieldLabel>
-                  <FieldDescription>
-                    Leave empty to use this rule as the default completion
-                    state.
-                  </FieldDescription>
                   <Input
                     className="bg-background font-mono text-xs shadow-sm"
                     value={rule.when}

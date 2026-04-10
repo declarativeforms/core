@@ -333,14 +333,6 @@ function readTextValue(value: ILocalizedText | undefined) {
 function getFieldSummary(field: IDeclarativeFormField) {
   const parts: string[] = [field.type ?? "field"];
 
-  if (field.placeholder) {
-    parts.push("Has placeholder");
-  }
-
-  if (hasRequiredValidator(field)) {
-    parts.push("Required");
-  }
-
   if (isChoiceField(field) && (field.options?.length ?? 0) > 0) {
     parts.push(`${field.options?.length ?? 0} options`);
   }
@@ -371,10 +363,7 @@ export function SectionField({
     : [];
 
   return (
-    <Item
-      variant="outline"
-      className="bg-white"
-    >
+    <Item variant="outline" className="bg-white">
       <ItemHeader>
         <button
           type="button"
@@ -461,10 +450,6 @@ export function SectionField({
 
               <Field>
                 <FieldLabel>Field Type</FieldLabel>
-                <FieldDescription>
-                  Field type is fixed after creation. Add a new field if you
-                  need a different input.
-                </FieldDescription>
                 <Input
                   className="bg-background shadow-sm"
                   value={field.type}
@@ -474,9 +459,6 @@ export function SectionField({
 
               <Field>
                 <FieldLabel>Label</FieldLabel>
-                <FieldDescription>
-                  This is the question or prompt shown to respondents.
-                </FieldDescription>
                 <Input
                   className="bg-background shadow-sm"
                   value={readTextValue(field.label)}
@@ -491,10 +473,6 @@ export function SectionField({
 
               <Field>
                 <FieldLabel>Placeholder</FieldLabel>
-                <FieldDescription>
-                  Optional. Use placeholder text to suggest the expected answer
-                  format.
-                </FieldDescription>
                 <Input
                   className="bg-background shadow-sm"
                   value={readTextValue(field.placeholder)}
@@ -595,15 +573,8 @@ export function SectionField({
               ) : null}
 
               <Field>
-                <FieldDescription>
-                  Add only the validation rules you need. Each enabled rule can
-                  include its own error message.
-                </FieldDescription>
                 <div className="space-y-3">
-                  <Item
-                    variant="outline"
-                    className="bg-white"
-                  >
+                  <Item variant="outline" className="bg-white">
                     <div className="flex basis-full flex-col gap-3">
                       <div className="flex items-center gap-3">
                         <Checkbox
@@ -624,10 +595,6 @@ export function SectionField({
                       {hasRequiredValidator(field) ? (
                         <Field>
                           <FieldLabel>Message</FieldLabel>
-                          <FieldDescription>
-                            Customize the message shown when this required field
-                            is left empty.
-                          </FieldDescription>
                           <Input
                             className="bg-background shadow-sm"
                             value={getRequiredValidatorMessage(field)}
@@ -685,13 +652,6 @@ export function SectionField({
                             <FieldGroup>
                               <Field>
                                 <FieldLabel>{definition.valueLabel}</FieldLabel>
-                                <FieldDescription>
-                                  {definition.type === "pattern"
-                                    ? "Define the raw value this field should match."
-                                    : definition.type === "expression"
-                                      ? "Write the expression that must evaluate as valid."
-                                      : "Set the value used by this validation rule."}
-                                </FieldDescription>
                                 {definition.valueType === "textarea" ? (
                                   <Textarea
                                     className="bg-background shadow-sm"
@@ -783,10 +743,6 @@ export function SectionField({
 
                               <Field>
                                 <FieldLabel>Message</FieldLabel>
-                                <FieldDescription>
-                                  This message is shown when the validation rule
-                                  fails.
-                                </FieldDescription>
                                 <Input
                                   className="bg-background shadow-sm"
                                   value={getValidatorMessage(validator)}
@@ -820,18 +776,10 @@ export function SectionField({
               isDropdownField(field) ||
               isSelectField(field) ? (
                 <Field>
-                  <FieldLabel>Field Settings</FieldLabel>
-                  <FieldDescription>
-                    Adjust behavior for this field type without changing the
-                    form layout.
-                  </FieldDescription>
                   <div className="space-y-3">
                     {isEmailField(field) ? (
                       <>
-                        <Item
-                          variant="outline"
-                          className="bg-white"
-                        >
+                        <Item variant="outline" className="bg-white">
                           <div className="flex items-center gap-3">
                             <Checkbox
                               checked={field.otp === true}
@@ -848,10 +796,7 @@ export function SectionField({
                           </div>
                         </Item>
 
-                        <Item
-                          variant="outline"
-                          className="bg-white"
-                        >
+                        <Item variant="outline" className="bg-white">
                           <div className="flex items-center gap-3">
                             <Checkbox
                               checked={field.block_free_email === true}
@@ -874,10 +819,6 @@ export function SectionField({
                       <FieldGroup>
                         <Field>
                           <FieldLabel>Min Label</FieldLabel>
-                          <FieldDescription>
-                            Optional label shown on the low end of the rating
-                            scale.
-                          </FieldDescription>
                           <Input
                             className="bg-background shadow-sm"
                             value={readTextValue(field.min_label)}
@@ -892,10 +833,6 @@ export function SectionField({
 
                         <Field>
                           <FieldLabel>Max Label</FieldLabel>
-                          <FieldDescription>
-                            Optional label shown on the high end of the rating
-                            scale.
-                          </FieldDescription>
                           <Input
                             className="bg-background shadow-sm"
                             value={readTextValue(field.max_label)}
@@ -913,10 +850,6 @@ export function SectionField({
                     {isAddressField(field) ? (
                       <Field>
                         <FieldLabel>Output Format</FieldLabel>
-                        <FieldDescription>
-                          Choose whether this field stores a readable string or
-                          a structured object.
-                        </FieldDescription>
                         <Select
                           value={field.outputFormat ?? "string"}
                           onValueChange={(value) =>
@@ -942,10 +875,6 @@ export function SectionField({
                     {isCameraField(field) ? (
                       <Field>
                         <FieldLabel>Facing Mode</FieldLabel>
-                        <FieldDescription>
-                          Pick the default camera direction for devices that
-                          support multiple lenses.
-                        </FieldDescription>
                         <Select
                           value={field.facing_mode ?? "rear"}
                           onValueChange={(value) =>
@@ -967,10 +896,7 @@ export function SectionField({
                     ) : null}
 
                     {isDropdownField(field) ? (
-                      <Item
-                        variant="outline"
-                        className="bg-white"
-                      >
+                      <Item variant="outline" className="bg-white">
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={field.searchable === true}
@@ -989,10 +915,7 @@ export function SectionField({
                     ) : null}
 
                     {isSelectField(field) ? (
-                      <Item
-                        variant="outline"
-                        className="bg-white"
-                      >
+                      <Item variant="outline" className="bg-white">
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={field.allow_other === true}

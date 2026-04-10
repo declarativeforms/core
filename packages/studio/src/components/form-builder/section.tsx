@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
@@ -498,10 +497,7 @@ export function Section({
   };
 
   return (
-    <Item
-      variant="outline"
-      className="bg-white"
-    >
+    <Item variant="outline" className="bg-white">
       <ItemHeader>
         <ItemContent>
           <ItemTitle>
@@ -568,10 +564,6 @@ export function Section({
             <FieldGroup>
               <Field>
                 <FieldLabel>Title</FieldLabel>
-                <FieldDescription>
-                  Use a clear section title so respondents understand what comes
-                  next.
-                </FieldDescription>
                 <Input
                   className="bg-background shadow-sm"
                   value={typeof section.title === "string" ? section.title : ""}
@@ -586,9 +578,6 @@ export function Section({
 
               <Field>
                 <FieldLabel>Section ID</FieldLabel>
-                <FieldDescription>
-                  This ID is used for navigation rules and internal references.
-                </FieldDescription>
                 <Input
                   className="bg-background shadow-sm"
                   value={section.id ?? ""}
@@ -603,9 +592,6 @@ export function Section({
 
               <Field>
                 <FieldLabel>After this section</FieldLabel>
-                <FieldDescription>
-                  Choose what happens after a respondent finishes this section.
-                </FieldDescription>
                 <Select value={currentMode} onValueChange={handleModeChange}>
                   <SelectTrigger className="w-full bg-background shadow-sm">
                     <SelectValue />
@@ -629,10 +615,6 @@ export function Section({
               {currentMode === "section" ? (
                 <Field>
                   <FieldLabel>Target section</FieldLabel>
-                  <FieldDescription>
-                    Send respondents to a specific section instead of following
-                    the default order.
-                  </FieldDescription>
                   {otherSections.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                       Add more sections to enable navigation.
@@ -681,9 +663,6 @@ export function Section({
               {currentMode === "external" ? (
                 <Field>
                   <FieldLabel>Redirect URL</FieldLabel>
-                  <FieldDescription>
-                    Use a full HTTPS URL for the destination after this section.
-                  </FieldDescription>
                   <Input
                     className="bg-background shadow-sm"
                     value={parseExternalUrl(section)}
@@ -700,10 +679,6 @@ export function Section({
                   <div className="flex items-center justify-between gap-3">
                     <div className="space-y-1">
                       <FieldLabel>Conditional logic</FieldLabel>
-                      <FieldDescription>
-                        Evaluate rules in order. The first match decides where
-                        the respondent goes next.
-                      </FieldDescription>
                     </div>
                     <Button
                       type="button"
@@ -743,10 +718,6 @@ export function Section({
                           <FieldGroup>
                             <Field>
                               <FieldLabel>When (expression)</FieldLabel>
-                              <FieldDescription>
-                                Write an expression based on earlier answers,
-                                such as a field value check.
-                              </FieldDescription>
                               <Input
                                 value={rule.when}
                                 placeholder="{{data.field_id}} === 'yes'"
@@ -763,9 +734,6 @@ export function Section({
 
                             <Field>
                               <FieldLabel>Go to</FieldLabel>
-                              <FieldDescription>
-                                Choose the destination when this rule matches.
-                              </FieldDescription>
                               <Select
                                 value={rule.go || "done"}
                                 onValueChange={(value) =>
@@ -817,9 +785,6 @@ export function Section({
 
                     <Field>
                       <FieldLabel>Else</FieldLabel>
-                      <FieldDescription>
-                        Fallback destination when none of the conditions match.
-                      </FieldDescription>
                       <Select
                         value={elseFallback}
                         onValueChange={handleElseFallbackChange}
@@ -858,9 +823,6 @@ export function Section({
 
               <Field>
                 <FieldLabel>Fields</FieldLabel>
-                <FieldDescription>
-                  Add and reorder the questions that belong to this section.
-                </FieldDescription>
                 <Dialog open={isAddFieldOpen} onOpenChange={setIsAddFieldOpen}>
                   <Button
                     type="button"
@@ -960,10 +922,7 @@ export function Section({
                       />
                     ))
                   ) : (
-                    <Item
-                      variant="outline"
-                      className="bg-white"
-                    >
+                    <Item variant="outline" className="bg-white">
                       <ItemContent>
                         <ItemTitle>No fields yet</ItemTitle>
                         <ItemDescription>
