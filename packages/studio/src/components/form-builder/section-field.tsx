@@ -373,11 +373,7 @@ export function SectionField({
   return (
     <Item
       variant="outline"
-      className={
-        isExpanded
-          ? "bg-background shadow-sm ring-1 ring-border/80"
-          : "bg-background/80 shadow-sm ring-1 ring-border/60 transition-colors hover:bg-background"
-      }
+      className="bg-white"
     >
       <ItemHeader>
         <button
@@ -606,7 +602,7 @@ export function SectionField({
                 <div className="space-y-3">
                   <Item
                     variant="outline"
-                    className="bg-background shadow-sm ring-1 ring-border/60"
+                    className="bg-white"
                   >
                     <div className="flex basis-full flex-col gap-3">
                       <div className="flex items-center gap-3">
@@ -660,7 +656,7 @@ export function SectionField({
                       <Item
                         key={definition.type}
                         variant="outline"
-                        className="bg-background shadow-sm ring-1 ring-border/60"
+                        className="bg-white"
                       >
                         <div className="flex basis-full flex-col gap-3">
                           <div className="flex items-center gap-3">
@@ -834,7 +830,7 @@ export function SectionField({
                       <>
                         <Item
                           variant="outline"
-                          className="bg-background shadow-sm ring-1 ring-border/60"
+                          className="bg-white"
                         >
                           <div className="flex items-center gap-3">
                             <Checkbox
@@ -854,7 +850,7 @@ export function SectionField({
 
                         <Item
                           variant="outline"
-                          className="bg-background shadow-sm ring-1 ring-border/60"
+                          className="bg-white"
                         >
                           <div className="flex items-center gap-3">
                             <Checkbox
@@ -973,7 +969,7 @@ export function SectionField({
                     {isDropdownField(field) ? (
                       <Item
                         variant="outline"
-                        className="bg-background shadow-sm ring-1 ring-border/60"
+                        className="bg-white"
                       >
                         <div className="flex items-center gap-3">
                           <Checkbox
@@ -995,7 +991,7 @@ export function SectionField({
                     {isSelectField(field) ? (
                       <Item
                         variant="outline"
-                        className="bg-background shadow-sm ring-1 ring-border/60"
+                        className="bg-white"
                       >
                         <div className="flex items-center gap-3">
                           <Checkbox

@@ -34,11 +34,7 @@ export function Submission({ submission }: { submission: ISubmission }) {
   return (
     <Item
       variant="outline"
-      className={
-        isExpanded
-          ? "bg-background shadow-sm ring-1 ring-border/80"
-          : "bg-background/80 shadow-sm ring-1 ring-border/60 transition-colors hover:bg-background"
-      }
+      className="bg-white"
     >
       <ItemHeader>
         <ItemContent>

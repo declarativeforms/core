@@ -500,11 +500,7 @@ export function Section({
   return (
     <Item
       variant="outline"
-      className={
-        isExpanded
-          ? "bg-background shadow-sm ring-1 ring-border/80"
-          : "bg-background/80 shadow-sm ring-1 ring-border/60 transition-colors hover:bg-background"
-      }
+      className="bg-white"
     >
       <ItemHeader>
         <ItemContent>
@@ -725,7 +721,7 @@ export function Section({
                       <Item
                         key={`conditional-rule-${ruleIndex}`}
                         variant="outline"
-                        className="bg-background shadow-sm ring-1 ring-border/60"
+                        className="bg-white"
                       >
                         <div className="flex basis-full flex-col gap-3">
                           <div className="flex items-center justify-between gap-3">
@@ -966,7 +962,7 @@ export function Section({
                   ) : (
                     <Item
                       variant="outline"
-                      className="bg-background/75 shadow-sm ring-1 ring-dashed ring-border/70"
+                      className="bg-white"
                     >
                       <ItemContent>
                         <ItemTitle>No fields yet</ItemTitle>

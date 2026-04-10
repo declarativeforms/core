@@ -324,7 +324,7 @@ export function Completion({
           <Item
             key={`completion-rule-${index}`}
             variant="outline"
-            className="bg-background shadow-sm ring-1 ring-border/60"
+            className="bg-white"
           >
             <ItemHeader>
               <ItemContent>

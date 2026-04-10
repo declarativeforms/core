@@ -116,7 +116,8 @@ export function DashboardPage() {
           <ItemGroup className="gap-y-3">
             {formsQuery.data.map((form) => (
               <Item
-                className="bg-background/80 shadow-sm ring-1 ring-border/60"
+                variant="outline"
+                className="bg-white"
                 key={form.id}
                 size="sm"
                 onClick={() => navigate(`/forms/${form.id}`)}
