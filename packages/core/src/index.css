@@ -123,6 +123,19 @@
   }
 }
 
+/* Normalize native date/time input sizing on iOS Safari */
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+
+  &::-webkit-date-and-time-value {
+    text-align: left;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
