@@ -299,32 +299,6 @@ function readTextValue(value: ILocalizedText | undefined) {
   );
 }
 
-function getSectionFlowSummary(section: IDeclarativeFormSection) {
-  const next = section.next;
-
-  if (next === undefined || next === null) {
-    return "Continues to the next section";
-  }
-
-  if (next === "done") {
-    return "Completes the form";
-  }
-
-  if (typeof next === "string") {
-    if (next.startsWith("https://")) {
-      return "Redirects to a URL";
-    }
-
-    return "Routes to another section";
-  }
-
-  if (Array.isArray(next) && next.length > 0) {
-    return "Uses conditional routing";
-  }
-
-  return "Continues to the next section";
-}
-
 export function Section({
   section,
   index,
@@ -506,8 +480,7 @@ export function Section({
           <ItemDescription>
             {section.id || `section_${index + 1}`} •{" "}
             {section.fields?.length ?? 0}{" "}
-            {(section.fields?.length ?? 0) === 1 ? "field" : "fields"} •{" "}
-            {getSectionFlowSummary(section)}
+            {(section.fields?.length ?? 0) === 1 ? "field" : "fields"}
           </ItemDescription>
         </ItemContent>
 

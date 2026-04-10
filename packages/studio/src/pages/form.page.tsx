@@ -328,7 +328,7 @@ export function FormPage() {
             <div className="overflow-x-auto overflow-y-hidden">
               <TabsList
                 variant="line"
-                className="flex w-max min-w-full flex-nowrap justify-start rounded-xl bg-background/80 px-1.5 py-1 shadow-sm ring-1 ring-border/70 backdrop-blur-sm"
+                className="flex w-max min-w-full flex-nowrap justify-start rounded-xl px-1.5 py-1 shadow-sm"
               >
                 <TabsTrigger value="settings" className="shrink-0">
                   Settings
