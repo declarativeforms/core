@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Copy, ExternalLink, File, FileText, Save } from "lucide-react";
+import { Check, Copy, ExternalLink, File, FileText, Save } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -53,6 +53,20 @@ type FormValues = {
   start_date: string;
   title: string;
 };
+
+function getFormValues(form: IDeclarativeForm): FormValues {
+  return {
+    completion: form.completion,
+    connections: form.connections ?? [],
+    description: readTextValue(form.description),
+    end_date: form.end_date ?? "",
+    mixpanel: form.measurements?.mixpanel ?? "",
+    primary: form.theme?.primary ?? "",
+    sections: form.sections ?? [],
+    start_date: form.start_date ?? "",
+    title: readTextValue(form.title),
+  };
+}
 
 function readTextValue(value: ILocalizedText | undefined) {
   if (typeof value === "string") {
@@ -128,24 +142,29 @@ function replaceDeletedSectionReference(
 export function FormPage() {
   const params = useParams();
 
-  const { control, handleSubmit, reset, setValue, watch } = useForm<FormValues>(
-    {
-      defaultValues: {
-        completion: undefined as
-          | IDeclarativeFormCompletion
-          | Array<IDeclarativeFormCompletionRule>
-          | undefined,
-        connections: [] as IDeclarativeForm["connections"],
-        description: "",
-        end_date: "",
-        mixpanel: "",
-        primary: "",
-        sections: [] as Array<IDeclarativeFormSection>,
-        start_date: "",
-        title: "",
-      },
+  const {
+    control,
+    formState: { isDirty },
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+  } = useForm<FormValues>({
+    defaultValues: {
+      completion: undefined as
+        | IDeclarativeFormCompletion
+        | Array<IDeclarativeFormCompletionRule>
+        | undefined,
+      connections: [] as IDeclarativeForm["connections"],
+      description: "",
+      end_date: "",
+      mixpanel: "",
+      primary: "",
+      sections: [] as Array<IDeclarativeFormSection>,
+      start_date: "",
+      title: "",
     },
-  );
+  });
 
   const sections = watch("sections");
   const completion = watch("completion");
@@ -208,17 +227,7 @@ export function FormPage() {
       return;
     }
 
-    reset({
-      completion: getForm.data.completion,
-      connections: getForm.data.connections ?? [],
-      description: readTextValue(getForm.data.description),
-      end_date: getForm.data.end_date ?? "",
-      mixpanel: getForm.data.measurements?.mixpanel ?? "",
-      primary: getForm.data.theme?.primary ?? "",
-      sections: getForm.data.sections ?? [],
-      start_date: getForm.data.start_date ?? "",
-      title: readTextValue(getForm.data.title),
-    });
+    reset(getFormValues(getForm.data));
   }, [getForm.data, reset]);
 
   if (!getForm.data) {
@@ -226,7 +235,9 @@ export function FormPage() {
   }
 
   const handleMoveSection = (fromIndex: number, toIndex: number) => {
-    setValue("sections", moveItem(sections, fromIndex, toIndex));
+    setValue("sections", moveItem(sections, fromIndex, toIndex), {
+      shouldDirty: true,
+    });
   };
 
   const handleDeleteSection = (sectionIndex: number) => {
@@ -239,7 +250,7 @@ export function FormPage() {
           : section,
       );
 
-    setValue("sections", nextSections);
+    setValue("sections", nextSections, { shouldDirty: true });
   };
 
   return (
@@ -295,10 +306,10 @@ export function FormPage() {
               size="icon-sm"
               form="form-settings"
               disabled={putForm.isPending}
-              aria-label="Save form"
-              title="Save form"
+              aria-label={isDirty ? "Save form" : "No changes to save"}
+              title={isDirty ? "Save form" : "No changes to save"}
             >
-              <Save />
+              {isDirty ? <Save /> : <Check />}
             </Button>
           </div>
         </div>
@@ -306,11 +317,11 @@ export function FormPage() {
         <form
           id="form-settings"
           onSubmit={handleSubmit(async (values) => {
-            if (!getForm.data) {
+            if (!getForm.data || !isDirty) {
               return;
             }
 
-            await putForm.mutateAsync({
+            const savedForm = await putForm.mutateAsync({
               ...getForm.data,
               completion: values.completion,
               connections: values.connections,
@@ -328,6 +339,8 @@ export function FormPage() {
               sections: values.sections,
               title: values.title,
             });
+
+            reset(getFormValues(savedForm));
           })}
         >
           <Tabs defaultValue="edit">
@@ -489,6 +502,7 @@ export function FormPage() {
                                 ? nextSection
                                 : sectionItem,
                             ),
+                            { shouldDirty: true },
                           )
                         }
                         onMoveUp={() => handleMoveSection(index, index - 1)}
@@ -502,14 +516,18 @@ export function FormPage() {
                     type="button"
                     variant="outline"
                     onClick={() =>
-                      setValue("sections", [
-                        ...sections,
-                        {
-                          id: createSectionId(sections),
-                          title: "Untitled Section",
-                          fields: [],
-                        },
-                      ])
+                      setValue(
+                        "sections",
+                        [
+                          ...sections,
+                          {
+                            id: createSectionId(sections),
+                            title: "Untitled Section",
+                            fields: [],
+                          },
+                        ],
+                        { shouldDirty: true },
+                      )
                     }
                   >
                     <File />
@@ -532,13 +550,17 @@ export function FormPage() {
                       type="button"
                       variant="outline"
                       onClick={() =>
-                        setValue("sections", [
-                          {
-                            id: createSectionId(sections),
-                            title: "",
-                            fields: [],
-                          },
-                        ])
+                        setValue(
+                          "sections",
+                          [
+                            {
+                              id: createSectionId(sections),
+                              title: "",
+                              fields: [],
+                            },
+                          ],
+                          { shouldDirty: true },
+                        )
                       }
                     >
                       Add Section
@@ -552,7 +574,7 @@ export function FormPage() {
               <Completion
                 completion={completion}
                 onChange={(nextCompletion) =>
-                  setValue("completion", nextCompletion)
+                  setValue("completion", nextCompletion, { shouldDirty: true })
                 }
               />
             </TabsContent>
@@ -561,7 +583,9 @@ export function FormPage() {
               <Connections
                 connections={connections}
                 onChange={(nextConnections) =>
-                  setValue("connections", nextConnections)
+                  setValue("connections", nextConnections, {
+                    shouldDirty: true,
+                  })
                 }
               />
             </TabsContent>
