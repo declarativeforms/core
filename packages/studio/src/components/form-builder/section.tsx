@@ -806,7 +806,7 @@ export function Section({
                     <Plus />
                     Add Field
                   </Button>
-                  <DialogContent className="max-h-[min(80vh,40rem)] sm:max-w-2xl">
+                  <DialogContent className="max-h-[min(80vh,40rem)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden sm:max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>Add Field</DialogTitle>
                       <DialogDescription>
@@ -815,7 +815,7 @@ export function Section({
                         settings after adding it.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="overflow-y-auto pr-1">
+                    <div className="min-h-0 overflow-y-auto pr-1">
                       <div className="grid gap-2 sm:grid-cols-2">
                         {BUILDER_FIELD_TYPES.map((fieldType) => (
                           <Button
