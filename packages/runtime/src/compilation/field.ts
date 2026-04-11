@@ -137,6 +137,15 @@ export function compileField(
     case "turnstile":
       return { ...base, type: field.type };
 
+    case "file_upload":
+      return {
+        ...base,
+        type: field.type,
+        ...(field.accepted_mime_types !== undefined && {
+          accepted_mime_types: field.accepted_mime_types,
+        }),
+      };
+
     default:
       return { ...base, type: field.type };
   }

@@ -103,6 +103,9 @@ const enMessageSource = {
   "file_upload.up_to_files": "Up to {{max}} files",
   "file_upload.max_reached":
     "Maximum number of files ({{max}}) reached",
+  "file_upload.accepted_types": "Accepted: {{types}}",
+  "file_upload.invalid_type":
+    "This file type is not accepted. Allowed types: {{types}}",
   "file_upload.upload_failed": "Upload failed",
   "file_upload.uploading": "Uploading",
   "file_upload.remove_file": "Remove {{name}}",

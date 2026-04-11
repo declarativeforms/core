@@ -9,6 +9,8 @@ sections:
       - id: question_1
         type: file_upload
         label: "Upload your resume"
+        accepted_mime_types:
+          - application/pdf
         validators:
           - required
           - type: min

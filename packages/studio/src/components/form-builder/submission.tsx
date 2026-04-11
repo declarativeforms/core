@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Copy } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -30,6 +30,13 @@ function truncateSubmissionId(value: string) {
 
 export function Submission({ submission }: { submission: ISubmission }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(JSON.stringify(submission.data, null, 2));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <Item
@@ -52,6 +59,16 @@ export function Submission({ submission }: { submission: ISubmission }) {
           >
             {submission.status}
           </Badge>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Copy submission"
+            title="Copy submission"
+            onClick={handleCopy}
+          >
+            {copied ? <Check className="text-emerald-600" /> : <Copy />}
+          </Button>
           <Button
             type="button"
             variant="ghost"

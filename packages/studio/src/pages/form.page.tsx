@@ -5,6 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
 import {
+  Badge,
   Button,
   Completion,
   Connections,
@@ -363,6 +364,11 @@ export function FormPage() {
                 </TabsTrigger>
                 <TabsTrigger value="results" className="shrink-0">
                   Results
+                  {!getSubmissions.isLoading ? (
+                    <Badge className="ml-1.5" variant="default">
+                      {(getSubmissions.data ?? []).length}
+                    </Badge>
+                  ) : null}
                 </TabsTrigger>
               </TabsList>
             </div>

@@ -13,6 +13,7 @@ export type {
   IDeclarativeFormGeolocationField,
   IDeclarativeFormCameraField,
   IDeclarativeFormTurnstileField,
+  IDeclarativeFormFileUploadField,
   IDeclarativeFormGenericField,
   IDeclarativeFormField,
   IDeclarativeFormSection,

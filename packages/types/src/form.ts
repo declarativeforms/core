@@ -153,11 +153,15 @@ export type IDeclarativeFormTurnstileField = IDeclarativeFormFieldBase & {
   type?: "turnstile";
 };
 
+export type IDeclarativeFormFileUploadField = IDeclarativeFormFieldBase & {
+  type?: "file_upload";
+  accepted_mime_types?: string[];
+};
+
 export type IDeclarativeFormGenericField = IDeclarativeFormFieldBase & {
   type?:
     | "date"
     | "date_month"
-    | "file_upload"
     | "hidden"
     | "long_text"
     | "mobile_number"
@@ -177,6 +181,7 @@ export type IDeclarativeFormField =
   | IDeclarativeFormGeolocationField
   | IDeclarativeFormCameraField
   | IDeclarativeFormTurnstileField
+  | IDeclarativeFormFileUploadField
   | IDeclarativeFormGenericField;
 
 export type IDeclarativeFormSection = {

@@ -108,6 +108,9 @@ export const esMessages: TranslationMessages = {
   "file_upload.up_to_files": "Hasta {{max}} archivos",
   "file_upload.max_reached":
     "Número máximo de archivos ({{max}}) alcanzado",
+  "file_upload.accepted_types": "Aceptados: {{types}}",
+  "file_upload.invalid_type":
+    "Este tipo de archivo no está permitido. Tipos permitidos: {{types}}",
   "file_upload.upload_failed": "Error al subir",
   "file_upload.uploading": "Subiendo",
   "file_upload.remove_file": "Eliminar {{name}}",

@@ -17,6 +17,10 @@ sections:
         type: file_upload
         label: "Question 1"
         placeholder: "Upload one or more files"
+        accepted_mime_types:
+          - application/pdf
+          - image/png
+          - image/jpeg
         validators:
           - required
           - type: min
@@ -31,3 +35,7 @@ sections:
 
     next: done
 ```
+
+Use `accepted_mime_types` to limit uploads to specific MIME types. For example,
+`application/pdf` only allows PDFs, while `image/*` allows any image type the
+browser reports with an image MIME type.

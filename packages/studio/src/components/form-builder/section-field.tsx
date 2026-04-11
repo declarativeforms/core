@@ -28,6 +28,7 @@ import type {
   IDeclarativeFormDropdownField,
   IDeclarativeFormEmailField,
   IDeclarativeFormField,
+  IDeclarativeFormFileUploadField,
   ILocalizedText,
   IDeclarativeFormOption,
   IDeclarativeFormRatingField,
@@ -142,6 +143,12 @@ function isCameraField(
   field: IDeclarativeFormField,
 ): field is IDeclarativeFormCameraField {
   return field.type === "camera";
+}
+
+function isFileUploadField(
+  field: IDeclarativeFormField,
+): field is IDeclarativeFormFileUploadField {
+  return field.type === "file_upload";
 }
 
 function getValidators(field: IDeclarativeFormField) {
@@ -777,6 +784,7 @@ export function SectionField({
                 isRatingField(field) ||
                 isAddressField(field) ||
                 isCameraField(field) ||
+                isFileUploadField(field) ||
                 isDropdownField(field) ||
                 isSelectField(field) ? (
                   <Field>
@@ -896,6 +904,36 @@ export function SectionField({
                               <SelectItem value="rear">rear</SelectItem>
                             </SelectContent>
                           </Select>
+                        </Field>
+                      ) : null}
+
+                      {isFileUploadField(field) ? (
+                        <Field>
+                          <FieldLabel>Accepted MIME Types</FieldLabel>
+                          <FieldDescription>
+                            Enter one MIME type per line, for example
+                            {" "}image/png or application/pdf.
+                          </FieldDescription>
+                          <Textarea
+                            rows={4}
+                            className="bg-background shadow-sm"
+                            value={(field.accepted_mime_types ?? []).join("\n")}
+                            placeholder={"image/png\nimage/jpeg\napplication/pdf"}
+                            onChange={(event) => {
+                              const acceptedMimeTypes = event.target.value
+                                .split("\n")
+                                .map((value) => value.trim())
+                                .filter(Boolean);
+
+                              onChange({
+                                ...field,
+                                accepted_mime_types:
+                                  acceptedMimeTypes.length > 0
+                                    ? acceptedMimeTypes
+                                    : undefined,
+                              });
+                            }}
+                          />
                         </Field>
                       ) : null}
 

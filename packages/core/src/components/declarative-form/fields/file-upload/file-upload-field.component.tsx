@@ -8,6 +8,27 @@ import { uploadFile } from "@/lib/file-upload";
 import { cn } from "@/lib/utils";
 import { FilePreview, type FileMetadata } from "./file-preview.component";
 
+function acceptsMimeType(file: File, acceptedMimeTypes: string[]) {
+  if (acceptedMimeTypes.length === 0) {
+    return true;
+  }
+
+  return acceptedMimeTypes.some((acceptedType) => {
+    const normalized = acceptedType.trim().toLowerCase();
+
+    if (!normalized || !file.type) {
+      return false;
+    }
+
+    if (normalized.endsWith("/*")) {
+      const prefix = normalized.slice(0, normalized.length - 1);
+      return file.type.toLowerCase().startsWith(prefix);
+    }
+
+    return file.type.toLowerCase() === normalized;
+  });
+}
+
 export function FileUploadField({
   field,
   controllerField,
@@ -16,6 +37,9 @@ export function FileUploadField({
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const acceptedMimeTypes =
+    field.type === "file_upload" ? (field.accepted_mime_types ?? []) : [];
+  const acceptedMimeTypesLabel = acceptedMimeTypes.join(", ");
 
   const { minBound, maxBound } = buildFieldValidation(field);
   const maxFiles = maxBound ?? 1;
@@ -37,9 +61,34 @@ export function FileUploadField({
   };
 
   const handleFiles = async (newFiles: File[]) => {
+    const acceptedFiles: File[] = [];
+
+    for (const file of newFiles) {
+      if (acceptsMimeType(file, acceptedMimeTypes)) {
+        acceptedFiles.push(file);
+        continue;
+      }
+
+      const metadata: FileMetadata = {
+        url: `invalid-${Date.now()}-${Math.random()}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        status: "error",
+        error: t("file_upload.invalid_type", {
+          types: acceptedMimeTypesLabel,
+        }),
+      };
+      setFileMetadata((prev) => [...prev, metadata]);
+    }
+
+    if (acceptedFiles.length === 0) {
+      return;
+    }
+
     const error = validateFile();
     if (error) {
-      for (const file of newFiles) {
+      for (const file of acceptedFiles) {
         const metadata: FileMetadata = {
           url: "",
           name: file.name,
@@ -53,7 +102,7 @@ export function FileUploadField({
       return;
     }
 
-    for (const file of newFiles) {
+    for (const file of acceptedFiles) {
       const tempId = `temp-${Date.now()}-${Math.random()}`;
       const metadata: FileMetadata = {
         url: tempId,
@@ -143,6 +192,14 @@ export function FileUploadField({
       requirements.push(t("file_upload.up_to_files", { max: String(maxFiles) }));
     }
 
+    if (acceptedMimeTypes.length > 0) {
+      requirements.push(
+        t("file_upload.accepted_types", {
+          types: acceptedMimeTypesLabel,
+        }),
+      );
+    }
+
     return requirements.join(" • ");
   };
 
@@ -151,6 +208,7 @@ export function FileUploadField({
         <input
           ref={fileInputRef}
           type="file"
+          accept={acceptedMimeTypesLabel || undefined}
           multiple={maxFiles > 1}
           onChange={handleInputChange}
           className="sr-only"

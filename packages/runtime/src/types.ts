@@ -73,12 +73,16 @@ export type CompiledTurnstileField = CompiledFieldBase & {
   type: "turnstile";
 };
 
+export type CompiledFileUploadField = CompiledFieldBase & {
+  type: "file_upload";
+  accepted_mime_types?: string[];
+};
+
 export type CompiledGenericField = CompiledFieldBase & {
   type: Extract<
     DeclarativeFieldType,
     | "date"
     | "date_month"
-    | "file_upload"
     | "hidden"
     | "long_text"
     | "mobile_number"
@@ -99,6 +103,7 @@ export type CompiledField =
   | CompiledGeolocationField
   | CompiledCameraField
   | CompiledTurnstileField
+  | CompiledFileUploadField
   | CompiledGenericField;
 
 export type CompiledSection = {
