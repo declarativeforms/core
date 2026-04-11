@@ -533,7 +533,7 @@ export function Section({
 
       {isExpanded ? (
         <div className="basis-full border-t border-border pt-4">
-          <div className="rounded-xl bg-muted/20 p-4">
+          <div className="rounded-xl bg-muted/20 px-3 py-4 sm:p-4">
             <FieldGroup>
               <Field>
                 <FieldLabel>Title</FieldLabel>

@@ -428,7 +428,7 @@ export function SectionField({
 
       {isExpanded ? (
         <div className="basis-full border-t border-border pt-4">
-          <div className="rounded-xl bg-muted/20 p-4">
+          <div className="rounded-xl bg-muted/20 px-3 py-4 sm:p-4">
             <FieldGroup>
               <Field>
                 <FieldLabel>Field ID</FieldLabel>
@@ -572,369 +572,374 @@ export function SectionField({
                 </Field>
               ) : null}
 
-              <Field>
-                <div className="space-y-3">
-                  <Item variant="outline" className="bg-white">
-                    <div className="flex basis-full flex-col gap-3">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={hasRequiredValidator(field)}
-                          onCheckedChange={(checked) =>
-                            onChange(
-                              checked === true
-                                ? withRequiredValidator(field)
-                                : withoutValidator(field, "required"),
-                            )
-                          }
-                        />
-                        <p className="text-sm font-medium text-foreground">
-                          Required
-                        </p>
-                      </div>
-
-                      {hasRequiredValidator(field) ? (
-                        <Field>
-                          <FieldLabel>Message</FieldLabel>
-                          <Input
-                            className="bg-background shadow-sm"
-                            value={getRequiredValidatorMessage(field)}
-                            onChange={(event) =>
+              <div className="space-y-3">
+                <Field>
+                  <div className="space-y-3">
+                    <Item variant="outline" className="bg-white">
+                      <div className="flex basis-full flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={hasRequiredValidator(field)}
+                            onCheckedChange={(checked) =>
                               onChange(
-                                withRequiredValidatorMessage(
-                                  field,
-                                  event.target.value,
-                                ),
+                                checked === true
+                                  ? withRequiredValidator(field)
+                                  : withoutValidator(field, "required"),
                               )
                             }
                           />
-                        </Field>
-                      ) : null}
-                    </div>
-                  </Item>
+                          <p className="text-sm font-medium text-foreground">
+                            Required
+                          </p>
+                        </div>
 
-                  {objectValidatorDefinitions.map((definition) => {
-                    const validator = getObjectValidator(
-                      field,
-                      definition.type,
-                    );
-                    const isEnabled = !!validator;
-
-                    return (
-                      <Item
-                        key={definition.type}
-                        variant="outline"
-                        className="bg-white"
-                      >
-                        <div className="flex basis-full flex-col gap-3">
-                          <div className="flex items-center gap-3">
-                            <Checkbox
-                              checked={isEnabled}
-                              onCheckedChange={(checked) =>
+                        {hasRequiredValidator(field) ? (
+                          <Field>
+                            <FieldLabel>Message</FieldLabel>
+                            <Input
+                              className="bg-background shadow-sm"
+                              value={getRequiredValidatorMessage(field)}
+                              onChange={(event) =>
                                 onChange(
-                                  checked === true
-                                    ? withUpdatedValidator(
-                                        field,
-                                        validator ??
-                                          createObjectValidator(
-                                            definition.type,
-                                          ),
-                                      )
-                                    : withoutValidator(field, definition.type),
+                                  withRequiredValidatorMessage(
+                                    field,
+                                    event.target.value,
+                                  ),
                                 )
                               }
                             />
-                            <p className="text-sm font-medium text-foreground">
-                              {definition.title}
-                            </p>
-                          </div>
+                          </Field>
+                        ) : null}
+                      </div>
+                    </Item>
 
-                          {isEnabled ? (
-                            <FieldGroup>
-                              <Field>
-                                <FieldLabel>{definition.valueLabel}</FieldLabel>
-                                {definition.valueType === "textarea" ? (
-                                  <Textarea
-                                    className="bg-background shadow-sm"
-                                    value={getValidatorValue(
-                                      validator,
-                                      definition.type,
-                                    )}
-                                    onChange={(event) => {
-                                      const nextValidator =
-                                        validator ??
-                                        createObjectValidator(definition.type);
+                    {objectValidatorDefinitions.map((definition) => {
+                      const validator = getObjectValidator(
+                        field,
+                        definition.type,
+                      );
+                      const isEnabled = !!validator;
 
-                                      if (definition.type === "expression") {
-                                        onChange(
-                                          withUpdatedValidator(field, {
-                                            ...nextValidator,
-                                            expression: event.target.value,
-                                          }),
-                                        );
-                                        return;
+                      return (
+                        <Item
+                          key={definition.type}
+                          variant="outline"
+                          className="bg-white"
+                        >
+                          <div className="flex basis-full flex-col gap-3">
+                            <div className="flex items-center gap-3">
+                              <Checkbox
+                                checked={isEnabled}
+                                onCheckedChange={(checked) =>
+                                  onChange(
+                                    checked === true
+                                      ? withUpdatedValidator(
+                                          field,
+                                          validator ??
+                                            createObjectValidator(
+                                              definition.type,
+                                            ),
+                                        )
+                                      : withoutValidator(field, definition.type),
+                                  )
+                                }
+                              />
+                              <p className="text-sm font-medium text-foreground">
+                                {definition.title}
+                              </p>
+                            </div>
+
+                            {isEnabled ? (
+                              <FieldGroup>
+                                <Field>
+                                  <FieldLabel>{definition.valueLabel}</FieldLabel>
+                                  {definition.valueType === "textarea" ? (
+                                    <Textarea
+                                      className="bg-background shadow-sm"
+                                      value={getValidatorValue(
+                                        validator,
+                                        definition.type,
+                                      )}
+                                      onChange={(event) => {
+                                        const nextValidator =
+                                          validator ??
+                                          createObjectValidator(definition.type);
+
+                                        if (definition.type === "expression") {
+                                          onChange(
+                                            withUpdatedValidator(field, {
+                                              ...nextValidator,
+                                              expression: event.target.value,
+                                            }),
+                                          );
+                                          return;
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <Input
+                                      type={
+                                        definition.valueType === "number"
+                                          ? "number"
+                                          : "text"
                                       }
-                                    }}
-                                  />
-                                ) : (
-                                  <Input
-                                    type={
-                                      definition.valueType === "number"
-                                        ? "number"
-                                        : "text"
-                                    }
-                                    className="bg-background shadow-sm"
-                                    value={getValidatorValue(
-                                      validator,
-                                      definition.type,
-                                    )}
-                                    onChange={(event) => {
-                                      const nextValidator =
-                                        validator ??
-                                        createObjectValidator(definition.type);
-                                      if (
-                                        definition.type === "pattern" &&
-                                        nextValidator.type === "pattern"
-                                      ) {
-                                        onChange(
-                                          withUpdatedValidator(field, {
-                                            ...nextValidator,
-                                            regex: event.target.value,
-                                          }),
-                                        );
-                                        return;
-                                      }
-
-                                      if ("value" in nextValidator) {
+                                      className="bg-background shadow-sm"
+                                      value={getValidatorValue(
+                                        validator,
+                                        definition.type,
+                                      )}
+                                      onChange={(event) => {
+                                        const nextValidator =
+                                          validator ??
+                                          createObjectValidator(definition.type);
                                         if (
-                                          (definition.type === "min_length" ||
-                                            definition.type === "max_length") &&
-                                          (nextValidator.type ===
-                                            "min_length" ||
-                                            nextValidator.type === "max_length")
+                                          definition.type === "pattern" &&
+                                          nextValidator.type === "pattern"
                                         ) {
                                           onChange(
                                             withUpdatedValidator(field, {
                                               ...nextValidator,
-                                              value:
-                                                event.target.value === ""
-                                                  ? undefined
-                                                  : Number(event.target.value),
+                                              regex: event.target.value,
                                             }),
                                           );
                                           return;
                                         }
 
-                                        if (
-                                          nextValidator.type === "min" ||
-                                          nextValidator.type === "max"
-                                        ) {
-                                          onChange(
-                                            withUpdatedValidator(field, {
-                                              ...nextValidator,
-                                              value: event.target.value,
-                                            }),
-                                          );
+                                        if ("value" in nextValidator) {
+                                          if (
+                                            (definition.type === "min_length" ||
+                                              definition.type === "max_length") &&
+                                            (nextValidator.type ===
+                                              "min_length" ||
+                                              nextValidator.type ===
+                                                "max_length")
+                                          ) {
+                                            onChange(
+                                              withUpdatedValidator(field, {
+                                                ...nextValidator,
+                                                value:
+                                                  event.target.value === ""
+                                                    ? undefined
+                                                    : Number(
+                                                        event.target.value,
+                                                      ),
+                                              }),
+                                            );
+                                            return;
+                                          }
+
+                                          if (
+                                            nextValidator.type === "min" ||
+                                            nextValidator.type === "max"
+                                          ) {
+                                            onChange(
+                                              withUpdatedValidator(field, {
+                                                ...nextValidator,
+                                                value: event.target.value,
+                                              }),
+                                            );
+                                          }
                                         }
-                                      }
+                                      }}
+                                    />
+                                  )}
+                                </Field>
+
+                                <Field>
+                                  <FieldLabel>Message</FieldLabel>
+                                  <Input
+                                    className="bg-background shadow-sm"
+                                    value={getValidatorMessage(validator)}
+                                    onChange={(event) => {
+                                      const nextValidator =
+                                        validator ??
+                                        createObjectValidator(definition.type);
+
+                                      onChange(
+                                        withUpdatedValidator(field, {
+                                          ...nextValidator,
+                                          message: event.target.value,
+                                        }),
+                                      );
                                     }}
                                   />
-                                )}
-                              </Field>
-
-                              <Field>
-                                <FieldLabel>Message</FieldLabel>
-                                <Input
-                                  className="bg-background shadow-sm"
-                                  value={getValidatorMessage(validator)}
-                                  onChange={(event) => {
-                                    const nextValidator =
-                                      validator ??
-                                      createObjectValidator(definition.type);
-
-                                    onChange(
-                                      withUpdatedValidator(field, {
-                                        ...nextValidator,
-                                        message: event.target.value,
-                                      }),
-                                    );
-                                  }}
-                                />
-                              </Field>
-                            </FieldGroup>
-                          ) : null}
-                        </div>
-                      </Item>
-                    );
-                  })}
-                </div>
-              </Field>
-
-              {isEmailField(field) ||
-              isRatingField(field) ||
-              isAddressField(field) ||
-              isCameraField(field) ||
-              isDropdownField(field) ||
-              isSelectField(field) ? (
-                <Field>
-                  <div className="space-y-3">
-                    {isEmailField(field) ? (
-                      <>
-                        <Item variant="outline" className="bg-white">
-                          <div className="flex items-center gap-3">
-                            <Checkbox
-                              checked={field.otp === true}
-                              onCheckedChange={(checked) =>
-                                onChange({
-                                  ...field,
-                                  otp: checked === true,
-                                })
-                              }
-                            />
-                            <p className="text-sm font-medium text-foreground">
-                              Enable OTP
-                            </p>
+                                </Field>
+                              </FieldGroup>
+                            ) : null}
                           </div>
                         </Item>
-
-                        <Item variant="outline" className="bg-white">
-                          <div className="flex items-center gap-3">
-                            <Checkbox
-                              checked={field.block_free_email === true}
-                              onCheckedChange={(checked) =>
-                                onChange({
-                                  ...field,
-                                  block_free_email: checked === true,
-                                })
-                              }
-                            />
-                            <p className="text-sm font-medium text-foreground">
-                              Block free email providers
-                            </p>
-                          </div>
-                        </Item>
-                      </>
-                    ) : null}
-
-                    {isRatingField(field) ? (
-                      <FieldGroup>
-                        <Field>
-                          <FieldLabel>Min Label</FieldLabel>
-                          <Input
-                            className="bg-background shadow-sm"
-                            value={readTextValue(field.min_label)}
-                            onChange={(event) =>
-                              onChange({
-                                ...field,
-                                min_label: event.target.value,
-                              })
-                            }
-                          />
-                        </Field>
-
-                        <Field>
-                          <FieldLabel>Max Label</FieldLabel>
-                          <Input
-                            className="bg-background shadow-sm"
-                            value={readTextValue(field.max_label)}
-                            onChange={(event) =>
-                              onChange({
-                                ...field,
-                                max_label: event.target.value,
-                              })
-                            }
-                          />
-                        </Field>
-                      </FieldGroup>
-                    ) : null}
-
-                    {isAddressField(field) ? (
-                      <Field>
-                        <FieldLabel>Output Format</FieldLabel>
-                        <Select
-                          value={field.outputFormat ?? "string"}
-                          onValueChange={(value) =>
-                            onChange({
-                              ...field,
-                              outputFormat: value as "string" | "structured",
-                            })
-                          }
-                        >
-                          <SelectTrigger className="w-full bg-background shadow-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="string">string</SelectItem>
-                            <SelectItem value="structured">
-                              structured
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                    ) : null}
-
-                    {isCameraField(field) ? (
-                      <Field>
-                        <FieldLabel>Facing Mode</FieldLabel>
-                        <Select
-                          value={field.facing_mode ?? "rear"}
-                          onValueChange={(value) =>
-                            onChange({
-                              ...field,
-                              facing_mode: value as "front" | "rear",
-                            })
-                          }
-                        >
-                          <SelectTrigger className="w-full bg-background shadow-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="front">front</SelectItem>
-                            <SelectItem value="rear">rear</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                    ) : null}
-
-                    {isDropdownField(field) ? (
-                      <Item variant="outline" className="bg-white">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={field.searchable === true}
-                            onCheckedChange={(checked) =>
-                              onChange({
-                                ...field,
-                                searchable: checked === true,
-                              })
-                            }
-                          />
-                          <p className="text-sm font-medium text-foreground">
-                            Searchable
-                          </p>
-                        </div>
-                      </Item>
-                    ) : null}
-
-                    {isSelectField(field) ? (
-                      <Item variant="outline" className="bg-white">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={field.allow_other === true}
-                            onCheckedChange={(checked) =>
-                              onChange({
-                                ...field,
-                                allow_other: checked === true,
-                              })
-                            }
-                          />
-                          <p className="text-sm font-medium text-foreground">
-                            Allow &quot;Other&quot; option
-                          </p>
-                        </div>
-                      </Item>
-                    ) : null}
+                      );
+                    })}
                   </div>
                 </Field>
-              ) : null}
+
+                {isEmailField(field) ||
+                isRatingField(field) ||
+                isAddressField(field) ||
+                isCameraField(field) ||
+                isDropdownField(field) ||
+                isSelectField(field) ? (
+                  <Field>
+                    <div className="space-y-3">
+                      {isEmailField(field) ? (
+                        <>
+                          <Item variant="outline" className="bg-white">
+                            <div className="flex items-center gap-3">
+                              <Checkbox
+                                checked={field.otp === true}
+                                onCheckedChange={(checked) =>
+                                  onChange({
+                                    ...field,
+                                    otp: checked === true,
+                                  })
+                                }
+                              />
+                              <p className="text-sm font-medium text-foreground">
+                                Enable OTP
+                              </p>
+                            </div>
+                          </Item>
+
+                          <Item variant="outline" className="bg-white">
+                            <div className="flex items-center gap-3">
+                              <Checkbox
+                                checked={field.block_free_email === true}
+                                onCheckedChange={(checked) =>
+                                  onChange({
+                                    ...field,
+                                    block_free_email: checked === true,
+                                  })
+                                }
+                              />
+                              <p className="text-sm font-medium text-foreground">
+                                Block free email providers
+                              </p>
+                            </div>
+                          </Item>
+                        </>
+                      ) : null}
+
+                      {isRatingField(field) ? (
+                        <FieldGroup>
+                          <Field>
+                            <FieldLabel>Min Label</FieldLabel>
+                            <Input
+                              className="bg-background shadow-sm"
+                              value={readTextValue(field.min_label)}
+                              onChange={(event) =>
+                                onChange({
+                                  ...field,
+                                  min_label: event.target.value,
+                                })
+                              }
+                            />
+                          </Field>
+
+                          <Field>
+                            <FieldLabel>Max Label</FieldLabel>
+                            <Input
+                              className="bg-background shadow-sm"
+                              value={readTextValue(field.max_label)}
+                              onChange={(event) =>
+                                onChange({
+                                  ...field,
+                                  max_label: event.target.value,
+                                })
+                              }
+                            />
+                          </Field>
+                        </FieldGroup>
+                      ) : null}
+
+                      {isAddressField(field) ? (
+                        <Field>
+                          <FieldLabel>Output Format</FieldLabel>
+                          <Select
+                            value={field.outputFormat ?? "string"}
+                            onValueChange={(value) =>
+                              onChange({
+                                ...field,
+                                outputFormat: value as "string" | "structured",
+                              })
+                            }
+                          >
+                            <SelectTrigger className="w-full bg-background shadow-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="string">string</SelectItem>
+                              <SelectItem value="structured">
+                                structured
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      ) : null}
+
+                      {isCameraField(field) ? (
+                        <Field>
+                          <FieldLabel>Facing Mode</FieldLabel>
+                          <Select
+                            value={field.facing_mode ?? "rear"}
+                            onValueChange={(value) =>
+                              onChange({
+                                ...field,
+                                facing_mode: value as "front" | "rear",
+                              })
+                            }
+                          >
+                            <SelectTrigger className="w-full bg-background shadow-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="front">front</SelectItem>
+                              <SelectItem value="rear">rear</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      ) : null}
+
+                      {isDropdownField(field) ? (
+                        <Item variant="outline" className="bg-white">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={field.searchable === true}
+                              onCheckedChange={(checked) =>
+                                onChange({
+                                  ...field,
+                                  searchable: checked === true,
+                                })
+                              }
+                            />
+                            <p className="text-sm font-medium text-foreground">
+                              Searchable
+                            </p>
+                          </div>
+                        </Item>
+                      ) : null}
+
+                      {isSelectField(field) ? (
+                        <Item variant="outline" className="bg-white">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={field.allow_other === true}
+                              onCheckedChange={(checked) =>
+                                onChange({
+                                  ...field,
+                                  allow_other: checked === true,
+                                })
+                              }
+                            />
+                            <p className="text-sm font-medium text-foreground">
+                              Allow &quot;Other&quot; option
+                            </p>
+                          </div>
+                        </Item>
+                      ) : null}
+                    </div>
+                  </Field>
+                ) : null}
+              </div>
             </FieldGroup>
           </div>
         </div>
