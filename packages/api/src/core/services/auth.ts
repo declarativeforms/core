@@ -3,11 +3,12 @@ import { fetchGitHubUser } from '../gateways';
 
 const AUTH_JWT_EXPIRY = '7d';
 
-type AuthUser = {
+export type AuthUser = {
   github_id: number;
   login: string;
   name: string | null;
   avatar_url: string;
+  email: string | null;
 };
 
 export function decodeToken(token: string): (jwt.JwtPayload & AuthUser) | null {
@@ -66,6 +67,7 @@ export async function findTokenAndUserByCode(
       login: user.login,
       name: user.name,
       avatar_url: user.avatar_url,
+      email: user.email,
     } satisfies AuthUser,
     secret,
     { expiresIn: AUTH_JWT_EXPIRY },
@@ -92,5 +94,6 @@ export async function findUserByToken(token: string): Promise<AuthUser | null> {
     login: user.login,
     name: user.name,
     avatar_url: user.avatar_url,
+    email: user.email,
   };
 }

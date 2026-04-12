@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { deleteStudioFormById } from '../core';
+import { deleteStudioFormById, findUserByToken, parseAuthorizationHeader } from '../core';
 
 export const STUDIO_FORMS_ID_DELETE: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -8,12 +8,10 @@ export const STUDIO_FORMS_ID_DELETE: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const didDelete = await deleteStudioFormById(request.params.id);
+    const token = parseAuthorizationHeader(request.headers.authorization);
+    const user = token ? await findUserByToken(token) : null;
 
-    if (!didDelete) {
-      reply.status(404).send();
-      return;
-    }
+    await deleteStudioFormById(request.params.id, user?.email ?? null);
 
     reply.status(204).send();
   },
@@ -31,7 +29,6 @@ export const STUDIO_FORMS_ID_DELETE: RouteOptions<any, any, any, any> = {
     },
     response: {
       204: { type: 'null' },
-      404: { type: 'null' },
     },
   },
 };

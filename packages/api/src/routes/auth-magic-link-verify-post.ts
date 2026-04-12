@@ -52,6 +52,7 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
               login: { type: 'string' },
               name: { type: 'string', nullable: true },
               avatar_url: { type: 'string' },
+              email: { type: 'string', nullable: true },
             },
           },
         },

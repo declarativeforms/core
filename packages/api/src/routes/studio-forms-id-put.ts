@@ -1,21 +1,23 @@
-import type { IDeclarativeForm } from '@declarativeforms/types';
+import type { IStudioForm } from '@declarativeforms/types';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { updateStudioFormById } from '../core';
+import { findUserByToken, parseAuthorizationHeader, updateStudioFormById } from '../core';
 
 export const STUDIO_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
   handler: async (
     request: FastifyRequest<{
       Params: { id: string };
-      Body: IDeclarativeForm;
+      Body: IStudioForm;
     }>,
     reply: FastifyReply,
   ) => {
-    const form = await updateStudioFormById(request.params.id, request.body);
+    const token = parseAuthorizationHeader(request.headers.authorization);
+    const user = token ? await findUserByToken(token) : null;
 
-    if (!form) {
-      reply.status(404).send();
-      return;
-    }
+    const form = await updateStudioFormById(
+      request.params.id,
+      request.body,
+      user?.email ?? null,
+    );
 
     reply.status(200).send(form);
   },
@@ -40,7 +42,6 @@ export const STUDIO_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
         type: 'object',
         additionalProperties: true,
       },
-      404: { type: 'null' },
     },
   },
 };

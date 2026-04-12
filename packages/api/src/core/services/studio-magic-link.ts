@@ -75,7 +75,7 @@ export async function createStudioMagicLinkRequest(
 export async function verifyStudioMagicLinkToken(
   requestId: string,
   token: string,
-): Promise<{ token: string; user: { id: number; login: string; name: string | null; avatar_url: string } } | null> {
+): Promise<{ token: string; user: { id: number; login: string; name: string | null; avatar_url: string; email: string | null } } | null> {
   const record = await findStudioMagicLinkRequest(requestId);
 
   if (!record) {
@@ -110,6 +110,7 @@ export async function verifyStudioMagicLinkToken(
       login: record.email,
       name: null,
       avatar_url: '',
+      email: record.email,
     },
     secret,
     { expiresIn: AUTH_JWT_EXPIRY },
@@ -122,6 +123,7 @@ export async function verifyStudioMagicLinkToken(
       login: record.email,
       name: null,
       avatar_url: '',
+      email: record.email,
     },
   };
 }

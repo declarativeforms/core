@@ -1,6 +1,6 @@
 export async function fetchGitHubUser(
   accessToken: string,
-): Promise<{ id: number; login: string; name: string | null; avatar_url: string } | null> {
+): Promise<{ id: number; login: string; name: string | null; avatar_url: string; email: string | null } | null> {
   const response = await fetch('https://api.github.com/user', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -19,6 +19,7 @@ export async function fetchGitHubUser(
     login: data.login,
     name: data.name || null,
     avatar_url: data.avatar_url,
+    email: data.email || null,
   };
 }
 

@@ -1,15 +1,15 @@
 import { faker } from '@faker-js/faker';
-import type { IDeclarativeForm } from '@declarativeforms/types';
+import type { IDeclarativeForm, IStudioForm } from '@declarativeforms/types';
 import {
   deleteForm,
   deleteStudioForm,
   findForm,
+  findStudioForm,
   findStudioForms,
   insertStudioForm,
   replaceStudioForm,
   upsertForm,
 } from '../repositories';
-import { findFormById } from './forms';
 
 async function generateStudioFormId(): Promise<string> {
   while (true) {
@@ -22,20 +22,27 @@ async function generateStudioFormId(): Promise<string> {
   }
 }
 
-export async function listStudioForms(): Promise<Array<IDeclarativeForm>> {
-  return findStudioForms();
+export async function listStudioForms(
+  email?: string | null,
+): Promise<Array<IStudioForm>> {
+  if (!email) {
+    return [];
+  }
+  return findStudioForms(email);
 }
 
 export async function createStudioForm(
   form: IDeclarativeForm,
-): Promise<IDeclarativeForm> {
+  creatorEmail: string,
+): Promise<IStudioForm> {
   const now = new Date().toISOString();
   const id = await generateStudioFormId();
-  const nextForm: IDeclarativeForm = {
+  const nextForm: IStudioForm = {
     ...form,
     id,
     created_at: now,
     updated_at: now,
+    collaborators: [creatorEmail],
   };
 
   await insertStudioForm(nextForm);
@@ -50,19 +57,25 @@ export async function createStudioForm(
 
 export async function updateStudioFormById(
   id: string,
-  form: IDeclarativeForm,
-): Promise<IDeclarativeForm | null> {
-  const existing = await findFormById(id);
+  form: IDeclarativeForm & { collaborators?: string[] },
+  actorEmail: string | null,
+): Promise<IStudioForm> {
+  const existing = await findStudioForm(id);
 
   if (!existing) {
-    return null;
+    throw new Error(`Studio form not found: ${id}`);
   }
 
-  const nextForm: IDeclarativeForm = {
+  if (!actorEmail || !existing.collaborators.includes(actorEmail)) {
+    throw new Error(`Not authorized to update studio form: ${id}`);
+  }
+
+  const nextForm: IStudioForm = {
     ...form,
     id,
     created_at: existing.created_at,
     updated_at: new Date().toISOString(),
+    collaborators: form.collaborators ?? existing.collaborators,
   };
 
   await replaceStudioForm(id, nextForm);
@@ -70,12 +83,20 @@ export async function updateStudioFormById(
   return nextForm;
 }
 
-export async function deleteStudioFormById(id: string): Promise<boolean> {
-  const deleted = await deleteStudioForm(id);
+export async function deleteStudioFormById(
+  id: string,
+  actorEmail: string | null,
+): Promise<void> {
+  const existing = await findStudioForm(id);
 
-  if (deleted) {
-    await deleteForm(id);
+  if (!existing) {
+    throw new Error(`Studio form not found: ${id}`);
   }
 
-  return deleted;
+  if (!actorEmail || !existing.collaborators.includes(actorEmail)) {
+    throw new Error(`Not authorized to delete studio form: ${id}`);
+  }
+
+  await deleteStudioForm(id);
+  await deleteForm(id);
 }

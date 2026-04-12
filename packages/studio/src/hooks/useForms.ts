@@ -2,7 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getBackendUrl } from "@/lib/api";
 import { getAuthHeaders } from "@/lib/auth";
-import type { IDeclarativeForm, ISubmission } from "@declarativeforms/types";
+import type {
+  IDeclarativeForm,
+  IStudioForm,
+  ISubmission,
+} from "@declarativeforms/types";
 
 export const studioFormsKeys = {
   all: ["studio", "forms"] as const,
@@ -29,7 +33,7 @@ export function useForms() {
       const response = await fetch(getBackendUrl("studio/forms"), {
         headers: getAuthHeaders(),
       });
-      return parseJsonResponse<IDeclarativeForm[]>(response);
+      return parseJsonResponse<IStudioForm[]>(response);
     },
   });
 }
@@ -41,7 +45,7 @@ export function useForm(id: string) {
       const response = await fetch(getBackendUrl(`studio/forms/${id}`), {
         headers: getAuthHeaders(),
       });
-      return parseJsonResponse<IDeclarativeForm>(response);
+      return parseJsonResponse<IStudioForm>(response);
     },
     enabled: Boolean(id) && id !== "new",
   });
@@ -61,7 +65,7 @@ export function useCreateForm() {
         body: JSON.stringify(form),
       });
 
-      return parseJsonResponse<IDeclarativeForm>(response);
+      return parseJsonResponse<IStudioForm>(response);
     },
     onSuccess: (form) => {
       if (!form.id) {
@@ -78,7 +82,7 @@ export function useUpdateForm() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { id: string; form: IDeclarativeForm }) => {
+    mutationFn: async (input: { id: string; form: IStudioForm }) => {
       const response = await fetch(getBackendUrl(`studio/forms/${input.id}`), {
         method: "PUT",
         headers: {
@@ -88,7 +92,7 @@ export function useUpdateForm() {
         body: JSON.stringify(input.form),
       });
 
-      return parseJsonResponse<IDeclarativeForm>(response);
+      return parseJsonResponse<IStudioForm>(response);
     },
     onSuccess: (form, input) => {
       queryClient.setQueryData(studioFormsKeys.detail(input.id), form);

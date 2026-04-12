@@ -8,6 +8,7 @@ export type AuthUser = {
   login: string;
   name: string | null;
   avatar_url: string;
+  email: string | null;
 };
 
 export function getStoredToken(): string | null {

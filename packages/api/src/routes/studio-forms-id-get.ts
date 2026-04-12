@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { findFormById } from '../core';
+import { findFormById, findUserByToken, parseAuthorizationHeader } from '../core';
 
 export const STUDIO_FORMS_ID_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -13,6 +13,16 @@ export const STUDIO_FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     if (!form) {
       reply.status(404).send();
       return;
+    }
+
+    const collaborators = (form as { collaborators?: string[] }).collaborators;
+
+    if (collaborators && collaborators.length > 0) {
+      const token = parseAuthorizationHeader(request.headers.authorization);
+      const user = token ? await findUserByToken(token) : null;
+      if (!user?.email || !collaborators.includes(user.email)) {
+        throw new Error(`Not authorized to view studio form: ${request.params.id}`);
+      }
     }
 
     reply.status(200).send(form);

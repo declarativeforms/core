@@ -1,16 +1,19 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { listStudioForms } from '../core';
+import { findUserByToken, listStudioForms, parseAuthorizationHeader } from '../core';
 
 export const STUDIO_FORMS_GET: RouteOptions<any, any, any, any> = {
-  handler: async (_request: FastifyRequest, reply: FastifyReply) => {
-    const forms = await listStudioForms();
+  handler: async (request: FastifyRequest, reply: FastifyReply) => {
+    const token = parseAuthorizationHeader(request.headers.authorization);
+    const user = token ? await findUserByToken(token) : null;
+
+    const forms = await listStudioForms(user?.email ?? null);
     reply.status(200).send(forms);
   },
   method: 'GET',
   url: '/api/v1/studio/forms',
   schema: {
     tags: ['studio'],
-    summary: 'List all studio forms',
+    summary: 'List studio forms for the authenticated user',
     response: {
       200: {
         type: 'array',

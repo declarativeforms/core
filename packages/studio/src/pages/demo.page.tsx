@@ -23,6 +23,7 @@ export function DemoPage() {
             login: string;
             name: string | null;
             avatar_url: string;
+            email: string | null;
           };
         }>;
       })

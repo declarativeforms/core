@@ -1,6 +1,6 @@
 import type { IDeclarativeForm } from '@declarativeforms/types';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { createStudioForm } from '../core';
+import { createStudioForm, findUserByToken, parseAuthorizationHeader } from '../core';
 
 export const STUDIO_FORMS_POST: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -9,7 +9,15 @@ export const STUDIO_FORMS_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const form = await createStudioForm(request.body);
+    const token = parseAuthorizationHeader(request.headers.authorization);
+    const user = token ? await findUserByToken(token) : null;
+
+    if (!user?.email) {
+      reply.status(401).send({ error: 'Unauthorized' });
+      return;
+    }
+
+    const form = await createStudioForm(request.body, user.email);
     reply.status(201).send(form);
   },
   method: 'POST',

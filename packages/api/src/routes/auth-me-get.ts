@@ -22,6 +22,7 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
       login: user.login,
       name: user.name,
       avatar_url: user.avatar_url,
+      email: user.email,
     });
   },
   method: 'GET',
@@ -37,6 +38,7 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
           login: { type: 'string' },
           name: { type: 'string', nullable: true },
           avatar_url: { type: 'string' },
+          email: { type: 'string', nullable: true },
         },
       },
       401: {

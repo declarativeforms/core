@@ -238,8 +238,6 @@ export type IDeclarativeFormTheme = {
 
 export type IDeclarativeForm = {
   id?: string;
-  created_at?: string;
-  updated_at?: string;
   version?: number;
   title?: ILocalizedText;
   description?: ILocalizedText;
@@ -255,4 +253,11 @@ export type IDeclarativeForm = {
   locale?: string;
   measurements?: { mixpanel?: string };
   theme?: IDeclarativeFormTheme;
+};
+
+export type IStudioForm = IDeclarativeForm & {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  collaborators: string[];
 };

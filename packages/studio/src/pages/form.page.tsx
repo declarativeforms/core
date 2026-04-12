@@ -1,6 +1,14 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Copy, ExternalLink, File, FileText, Save } from "lucide-react";
-import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  File,
+  FileText,
+  Save,
+  Share2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 
@@ -19,6 +27,7 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
+  FormShareDialog,
   Input,
   ItemGroup,
   PageShell,
@@ -30,6 +39,7 @@ import {
   TabsTrigger,
   Textarea,
 } from "@/components";
+import { useAuth } from "@/hooks/useAuth";
 import { getBackendUrl } from "@/lib/api";
 import type {
   IDeclarativeForm,
@@ -37,6 +47,7 @@ import type {
   IDeclarativeFormCompletionRule,
   IDeclarativeFormSection,
   ILocalizedText,
+  IStudioForm,
   ISubmission,
 } from "@declarativeforms/types";
 
@@ -142,6 +153,9 @@ function replaceDeletedSectionReference(
 
 export function FormPage() {
   const params = useParams();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const {
     control,
@@ -183,13 +197,13 @@ export function FormPage() {
         },
       );
 
-      return (await response.json()) as IDeclarativeForm;
+      return (await response.json()) as IStudioForm;
     },
     enabled: Boolean(params.formId),
   });
 
   const putForm = useMutation({
-    mutationFn: async (data: IDeclarativeForm) => {
+    mutationFn: async (data: IStudioForm) => {
       const response = await fetch(
         getBackendUrl(`studio/forms/${params.formId}`),
         {
@@ -202,7 +216,7 @@ export function FormPage() {
         },
       );
 
-      return (await response.json()) as IDeclarativeForm;
+      return (await response.json()) as IStudioForm;
     },
   });
 
@@ -270,7 +284,17 @@ export function FormPage() {
               leaving this page.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label="Share form"
+              title="Share form"
+              onClick={() => setIsShareOpen(true)}
+            >
+              <Share2 />
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -314,6 +338,24 @@ export function FormPage() {
             </Button>
           </div>
         </div>
+
+        <FormShareDialog
+          open={isShareOpen}
+          onOpenChange={setIsShareOpen}
+          collaborators={getForm.data.collaborators ?? []}
+          currentEmail={user?.email ?? null}
+          isSaving={putForm.isPending}
+          onSave={async (nextCollaborators) => {
+            const savedForm = await putForm.mutateAsync({
+              ...getForm.data,
+              collaborators: nextCollaborators,
+            });
+            queryClient.setQueryData(
+              ["studio", "forms", params.formId],
+              savedForm,
+            );
+          }}
+        />
 
         <form
           id="form-settings"
