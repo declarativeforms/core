@@ -23,7 +23,7 @@ function App() {
     <>
       <main id="main-content" className={embed ? "min-h-lvh bg-white" : undefined}>
         <Routes>
-          <Route path="/" element={<ExternalRedirect url="https://docs.declarativeforms.com" />} />
+          <Route path="/" element={<ExternalRedirect url="https://studio.frms.dev" />} />
           <Route path="/:id" element={<MainPage />} />
           <Route path="/:id/thank-you" element={<ThankYouPage />} />
           <Route path="/:owner/:repository/*" element={<MainPage />} />

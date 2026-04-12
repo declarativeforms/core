@@ -300,7 +300,12 @@ export function MainPage() {
     : undefined;
 
   return (
-    <BasePage title={resolvedTitle} description={resolvedDescription} theme={form.theme} embed={embed}>
+    <BasePage
+      title={resolvedTitle}
+      description={resolvedDescription}
+      theme={form.theme}
+      embed={embed}
+    >
       <DeclarativeForm
         form={form}
         locale={locale}
