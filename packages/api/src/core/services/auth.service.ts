@@ -2,8 +2,6 @@ import jwt from 'jsonwebtoken';
 import type { User } from '../types';
 
 export class AuthService {
-  constructor() {}
-
   public sign(user: User): string {
     return jwt.sign(
       {
@@ -17,13 +15,13 @@ export class AuthService {
 
   public verify(token: string): User | null {
     try {
-      const result = jwt.verify(
+      const payload = jwt.verify(
         token,
         process.env.AUTH_JWT_SECRET || '',
       ) as jwt.JwtPayload;
 
       return {
-        username: result.sub || '',
+        username: payload.sub || '',
       };
     } catch {
       return null;

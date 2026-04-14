@@ -1,39 +1,41 @@
-import type { ILocalizedText } from "@declarativeforms/types"
+import type { ILocalizedText } from "@declarativeforms/types";
 
 function normalizeLocaleKey(locale: string): string {
-  return locale.trim().toLowerCase().replace(/_/g, "-")
+  return locale.trim().toLowerCase().replace(/_/g, "-");
 }
 
 function getObjectLocalizedValue(
   input: Record<string, string>,
   locale: string,
 ): string | undefined {
-  const normalizedLocale = normalizeLocaleKey(locale)
+  const normalizedLocale = normalizeLocaleKey(locale);
+
   const normalizedEntries = Object.entries(input).reduce(
     (acc, [key, value]) => {
-      acc[normalizeLocaleKey(key)] = value
-      return acc
+      acc[normalizeLocaleKey(key)] = value;
+      return acc;
     },
     {} as Record<string, string>,
-  )
+  );
 
-  const baseLocale = normalizedLocale.split("-")[0]
-  const candidates = [normalizedLocale, baseLocale, "en"]
+  const baseLocale = normalizedLocale.split("-")[0];
+  const candidates = [normalizedLocale, baseLocale, "en"];
 
   for (const candidate of candidates) {
-    const value = normalizedEntries[candidate]
+    const value = normalizedEntries[candidate];
+
     if (typeof value === "string" && value.length > 0) {
-      return value
+      return value;
     }
   }
 
   for (const value of Object.values(normalizedEntries)) {
     if (typeof value === "string" && value.length > 0) {
-      return value
+      return value;
     }
   }
 
-  return undefined
+  return undefined;
 }
 
 export function resolveLocalizedText(
@@ -41,12 +43,12 @@ export function resolveLocalizedText(
   locale?: string,
 ): string {
   if (typeof input === "string") {
-    return input
+    return input;
   }
 
   if (!input) {
-    return ""
+    return "";
   }
 
-  return getObjectLocalizedValue(input, locale ?? "en") ?? ""
+  return getObjectLocalizedValue(input, locale ?? "en") ?? "";
 }

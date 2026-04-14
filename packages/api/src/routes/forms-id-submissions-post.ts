@@ -11,6 +11,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ) => {
     const { submissionService } = await getContainer();
+
     const submission = await submissionService.createOrUpdate({
       data: request.body,
       formId: request.params.id,
@@ -24,6 +25,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
 
     if (!submission) {
       reply.status(422).send();
+
       return;
     }
 

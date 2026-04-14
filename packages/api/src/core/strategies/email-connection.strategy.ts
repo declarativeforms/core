@@ -1,6 +1,13 @@
-import { interpolateTemplate, resolveLocalizedText } from '@declarativeforms/common';
+import {
+  interpolateTemplate,
+  resolveLocalizedText,
+} from '@declarativeforms/common';
 import { isDeclarativeFieldType } from '@declarativeforms/types';
-import type { IDeclarativeForm, IEmailConnection, ISubmission } from '@declarativeforms/types';
+import type {
+  IDeclarativeForm,
+  IEmailConnection,
+  ISubmission,
+} from '@declarativeforms/types';
 import { Resend } from 'resend';
 
 function generateResponsesHTML(
@@ -33,7 +40,7 @@ function generateResponsesHTML(
 export class EmailConnectionStrategy {
   readonly type = 'email';
 
-  async handle(
+  public async handle(
     connection: IEmailConnection,
     submission: ISubmission,
     form: IDeclarativeForm,
@@ -49,13 +56,12 @@ export class EmailConnectionStrategy {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const to = interpolateTemplate(connection.to, submission.data, { form });
-    const localizedSubject = resolveLocalizedText(
-      connection.subject,
-      form.locale,
+
+    const subject = interpolateTemplate(
+      resolveLocalizedText(connection.subject, form.locale),
+      submission.data,
+      { form },
     );
-    const subject = localizedSubject
-      ? interpolateTemplate(localizedSubject, submission.data, { form })
-      : '';
 
     if (!to || !subject) {
       return;

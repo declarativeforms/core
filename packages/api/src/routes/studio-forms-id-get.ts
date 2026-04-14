@@ -9,10 +9,12 @@ export const STUDIO_FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ) => {
     const { formService } = await getContainer();
+
     const form = await formService.findById(request.params.id);
 
     if (!form) {
       reply.status(404).send();
+
       return;
     }
 

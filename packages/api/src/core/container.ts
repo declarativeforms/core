@@ -24,18 +24,15 @@ import {
 export type Container = {
   db: Db;
   mongoClient: MongoClient;
-  // Gateways
   gitHubGateway: GitHubGateway;
-  // Repositories
   gitHubFileRepository: GitHubFileRepository;
-  studioFormRepository: StudioFormRepository;
-  studioMagicLinkRepository: StudioMagicLinkRepository;
   submissionRepository: SubmissionRepository;
-  // Services
   authService: AuthService;
   fileService: FileService;
   formService: FormService;
+  studioFormRepository: StudioFormRepository;
   studioFormService: StudioFormService;
+  studioMagicLinkRepository: StudioMagicLinkRepository;
   studioMagicLinkService: StudioMagicLinkService;
   submissionService: SubmissionService;
 };
@@ -58,19 +55,12 @@ export async function getContainer() {
   const mongoClient = await MongoClient.connect(
     process.env.MONGODB_CONNECTION_STRING as string,
   );
-
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
-
-  // Gateways
   const gitHubGateway = new GitHubGateway();
-
-  // Repositories
   const gitHubFileRepository = new GitHubFileRepository(db);
   const studioFormRepository = new StudioFormRepository(db);
   const studioMagicLinkRepository = new StudioMagicLinkRepository(db);
   const submissionRepository = new SubmissionRepository(db);
-
-  // Services
   const authService = new AuthService();
   const fileService = new FileService(s3Client);
   const formService = new FormService(
@@ -78,42 +68,35 @@ export async function getContainer() {
     studioFormRepository,
     gitHubGateway,
   );
-  const studioFormService = new StudioFormService(
-    studioFormRepository,
-  );
+  const studioFormService = new StudioFormService(studioFormRepository);
   const studioMagicLinkService = new StudioMagicLinkService(
     studioMagicLinkRepository,
   );
-
   const connectionStrategies = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
   ];
 
-  const validationStrategies: IValidationStrategy[] = [];
-
   const submissionService = new SubmissionService(
     formService,
-    gitHubFileRepository,
     submissionRepository,
-    gitHubGateway,
-    validationStrategies,
+    [],
     connectionStrategies,
   );
 
   container = {
     db,
-    mongoClient,
     gitHubGateway,
     gitHubFileRepository,
-    studioFormRepository,
-    studioMagicLinkRepository,
-    submissionRepository,
     authService,
     fileService,
     formService,
+    mongoClient,
+    studioFormRepository,
     studioFormService,
+    studioMagicLinkRepository,
     studioMagicLinkService,
+    submissionRepository,
     submissionService,
   };
 

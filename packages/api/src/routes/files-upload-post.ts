@@ -3,18 +3,19 @@ import { getContainer } from '../core';
 
 export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
   handler: async (request: FastifyRequest, reply: FastifyReply) => {
-    const data = await request.file();
+    const file = await request.file();
 
-    if (!data) {
+    if (!file) {
       reply.status(400).send();
 
       return;
     }
 
-    const buffer = await data.toBuffer();
-
     const { fileService } = await getContainer();
-    const url: string = await fileService.upload(buffer, data.filename, data.mimetype);
+
+    const buffer = await file.toBuffer();
+
+    const url = await fileService.upload(buffer, file.filename, file.mimetype);
 
     reply.status(200).send({ url });
   },

@@ -3,7 +3,7 @@ import { getContainer, parseAuthorizationHeader } from '../core';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    studioUser?: { username: string };
+    user?: { username: string };
   }
 }
 
@@ -14,18 +14,20 @@ export async function requireStudioAuth(
   const token = parseAuthorizationHeader(request.headers.authorization);
 
   if (!token) {
-    reply.status(401).send({ error: 'Unauthorized' });
+    reply.status(401).send();
+
     return;
   }
 
   const { authService } = await getContainer();
+
   const user = await authService.verify(token);
 
   if (!user) {
-    reply.status(401).send({ error: 'Unauthorized' });
+    reply.status(401).send();
 
     return;
   }
 
-  request.studioUser = user;
+  request.user = user;
 }

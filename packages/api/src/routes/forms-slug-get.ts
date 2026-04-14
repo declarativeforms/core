@@ -1,6 +1,6 @@
 import type { IDeclarativeForm } from '@declarativeforms/types';
-import { getContainer } from '../core';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
+import { getContainer } from '../core';
 
 export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -11,24 +11,25 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const accessToken = request.query.access_token;
-    const { owner, repository } = request.params;
     const file = request.params['*'];
 
     if (!file) {
       return reply.status(400).send();
     }
 
-    const slug = `forms/${owner}/${repository}/${file}`;
-
     const { formService } = await getContainer();
+
+    const slug = `forms/${request.params.owner}/${request.params.repository}/${file}`;
+
     const form: IDeclarativeForm | null = await formService.findBySlug(
       slug,
-      accessToken,
+      request.query.access_token,
     );
 
     if (!form) {
-      return reply.status(accessToken ? 404 : 403).send();
+      reply.status(request.query.access_token ? 404 : 403).send();
+
+      return;
     }
 
     reply.status(200).send(form);

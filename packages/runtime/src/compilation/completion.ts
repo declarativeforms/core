@@ -1,5 +1,12 @@
-import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
-import type { IDeclarativeFormCompletion, IDeclarativeFormCompletionRule } from "@declarativeforms/types";
+import {
+  evaluateExpression,
+  interpolateTemplate,
+  resolveLocalizedText,
+} from "@declarativeforms/common";
+import type {
+  IDeclarativeFormCompletion,
+  IDeclarativeFormCompletionRule,
+} from "@declarativeforms/types";
 import type { CompiledCompletion } from "../types";
 
 type CompletionLike = {
@@ -17,7 +24,7 @@ type CompletionRuleLike<T extends CompletionLike> = T & { when?: string };
  */
 function resolveCompletion<T extends CompletionLike>(
   completion: T | CompletionRuleLike<T>[] | undefined,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): T | undefined {
   if (!completion) {
     return undefined;
@@ -41,7 +48,10 @@ function resolveCompletion<T extends CompletionLike>(
 }
 
 export function compileCompletion(
-  completion: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[] | undefined,
+  completion:
+    | IDeclarativeFormCompletion
+    | IDeclarativeFormCompletionRule[]
+    | undefined,
   locale: string,
   data: Record<string, unknown>,
 ): CompiledCompletion | undefined {
@@ -56,12 +66,21 @@ export function compileCompletion(
       ? interpolateTemplate(resolveLocalizedText(resolved.title, locale), data)
       : undefined,
     message: resolved.message
-      ? interpolateTemplate(resolveLocalizedText(resolved.message, locale), data)
+      ? interpolateTemplate(
+          resolveLocalizedText(resolved.message, locale),
+          data,
+        )
       : undefined,
     button: resolved.button
       ? {
-          label: interpolateTemplate(resolveLocalizedText(resolved.button.label, locale), data),
-          url: interpolateTemplate(resolveLocalizedText(resolved.button.url, locale), data),
+          label: interpolateTemplate(
+            resolveLocalizedText(resolved.button.label, locale),
+            data,
+          ),
+          url: interpolateTemplate(
+            resolveLocalizedText(resolved.button.url, locale),
+            data,
+          ),
         }
       : undefined,
   };

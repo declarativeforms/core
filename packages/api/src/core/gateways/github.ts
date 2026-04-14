@@ -18,9 +18,9 @@ export class GitHubGateway {
       },
     );
 
-    const data: any = await response.json();
+    const payload: any = await response.json();
 
-    return data.access_token || null;
+    return payload.access_token || null;
   }
 
   public async findUser(accessToken: string): Promise<User | null> {
@@ -35,9 +35,9 @@ export class GitHubGateway {
       return null;
     }
 
-    const data = (await response.json()) as any;
+    const payload = (await response.json()) as any;
 
-    let email: string | null = data.email || null;
+    let email: string | null = payload.email || null;
 
     if (!email) {
       email = await this.findPrimaryEmail(accessToken);
@@ -50,31 +50,6 @@ export class GitHubGateway {
     return {
       username: email,
     };
-  }
-
-  private async findPrimaryEmail(
-    accessToken: string,
-  ): Promise<string | null> {
-    const response = await fetch('https://api.github.com/user/emails', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const emails = (await response.json()) as Array<{
-      email: string;
-      primary: boolean;
-      verified: boolean;
-    }>;
-
-    const primary = emails.find((e) => e.primary && e.verified);
-
-    return primary?.email ?? null;
   }
 
   public async hasAdminOrPushPermissions(
@@ -95,12 +70,12 @@ export class GitHubGateway {
       return false;
     }
 
-    const data: any = await response.json();
-
-    const permissions = data.permissions;
+    const payload = (await response.json()) as {
+      permissions?: { admin?: boolean; push?: boolean };
+    };
 
     return Boolean(
-      permissions && (permissions.admin === true || permissions.push === true),
+      payload.permissions?.admin === true || payload.permissions?.push === true,
     );
   }
 
@@ -140,5 +115,30 @@ export class GitHubGateway {
     }
 
     return response.text();
+  }
+
+  private async findPrimaryEmail(accessToken: string): Promise<string | null> {
+    const response = await fetch('https://api.github.com/user/emails', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const emails = (await response.json()) as Array<{
+      email: string;
+      primary: boolean;
+      verified: boolean;
+    }>;
+
+    const primaryEmail = emails.find(
+      (entry) => entry.primary && entry.verified,
+    );
+
+    return primaryEmail?.email ?? null;
   }
 }

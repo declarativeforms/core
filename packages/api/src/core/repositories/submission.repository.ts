@@ -4,13 +4,10 @@ import type { Db } from 'mongodb';
 export class SubmissionRepository {
   constructor(private db: Db) {}
 
-  public async find(
-    formId: string,
-    submissionId: string,
-  ): Promise<ISubmission | null> {
+  public async find(formId: string, id: string): Promise<ISubmission | null> {
     return this.db
       .collection<ISubmission>('submissions')
-      .findOne({ id: submissionId, form_id: formId });
+      .findOne({ id, form_id: formId });
   }
 
   public async findAll(formId: string): Promise<Array<ISubmission>> {

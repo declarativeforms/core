@@ -10,13 +10,14 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
   ) => {
     const { authService, studioMagicLinkService } = await getContainer();
 
-    const username = await studioMagicLinkService.verifyToken({
+    const username = await studioMagicLinkService.verify({
       requestId: request.body.request_id,
       token: request.body.token,
     });
 
     if (!username) {
-      reply.status(401).send({ error: 'Invalid or expired magic link' });
+      reply.status(401).send();
+
       return;
     }
 
@@ -24,10 +25,8 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
       username,
     };
 
-    const token = authService.sign(user);
-
     reply.status(200).send({
-      token,
+      token: authService.sign(user),
       user,
     });
   },

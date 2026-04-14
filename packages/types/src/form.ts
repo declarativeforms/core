@@ -28,7 +28,7 @@ export const DECLARATIVE_FIELD_TYPES = [
 export type DeclarativeFieldType = (typeof DECLARATIVE_FIELD_TYPES)[number];
 
 export function isDeclarativeFieldType(
-  value: unknown
+  value: unknown,
 ): value is DeclarativeFieldType {
   return (
     typeof value === "string" &&
@@ -36,16 +36,13 @@ export function isDeclarativeFieldType(
   );
 }
 
-export const DECLARATIVE_CONNECTION_TYPES = [
-  "email",
-  "webhook",
-] as const;
+export const DECLARATIVE_CONNECTION_TYPES = ["email", "webhook"] as const;
 
 export type DeclarativeConnectionType =
   (typeof DECLARATIVE_CONNECTION_TYPES)[number];
 
 export function isDeclarativeConnectionType(
-  value: unknown
+  value: unknown,
 ): value is DeclarativeConnectionType {
   return (
     typeof value === "string" &&
@@ -123,11 +120,7 @@ export type IDeclarativeFormRatingField = IDeclarativeFormFieldBase & {
 };
 
 export type IDeclarativeFormAddressField = IDeclarativeFormFieldBase & {
-  type?:
-    | "address"
-    | "address_locality"
-    | "address_region"
-    | "address_country";
+  type?: "address" | "address_locality" | "address_region" | "address_country";
   outputFormat?: "string" | "structured";
 };
 
@@ -228,8 +221,7 @@ export type IDeclarativeForm = {
   completion?: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[];
   sections?: Array<IDeclarativeFormSection>;
   connections?: Array<
-    | IDeclarativeFormRawWebhookConnection
-    | IDeclarativeFormRawEmailConnection
+    IDeclarativeFormRawWebhookConnection | IDeclarativeFormRawEmailConnection
   >;
   start_date?: string;
   end_date?: string;

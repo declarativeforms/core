@@ -1,17 +1,15 @@
-import { faker } from '@faker-js/faker';
 import type { IStudioForm } from '@declarativeforms/types';
+import { faker } from '@faker-js/faker';
 import type { StudioFormRepository } from '../repositories';
 
 const STUDIO_FORM_PREFIX = 'b';
 
 export class StudioFormService {
-  constructor(
-    private studioFormRepository: StudioFormRepository,
-  ) {}
+  constructor(private studioFormRepository: StudioFormRepository) {}
 
   public async create(
-    form: IStudioForm,
-    creatorEmail: string,
+    studioForm: IStudioForm,
+    collaborator: string,
   ): Promise<IStudioForm> {
     const now = new Date().toISOString();
 
@@ -20,34 +18,30 @@ export class StudioFormService {
       length: 8,
     })}`;
 
-    const nextForm: IStudioForm = {
-      ...form,
+    return await this.studioFormRepository.insert({
+      ...studioForm,
       id,
       created_at: now,
       updated_at: now,
-      collaborators: [creatorEmail],
-    };
-
-    await this.studioFormRepository.insert(nextForm);
-
-    return nextForm;
+      collaborators: [collaborator],
+    });
   }
 
-  public async delete(id: string): Promise<boolean> {
+  public async delete(id: string): Promise<void> {
     if (!id.startsWith(STUDIO_FORM_PREFIX)) {
-      return false;
+      return;
     }
 
-    return this.studioFormRepository.delete(id);
+    await this.studioFormRepository.delete(id);
   }
 
-  public async list(email: string): Promise<Array<IStudioForm>> {
-    return this.studioFormRepository.findAllByCollaborator(email);
+  public async list(collaborator: string): Promise<Array<IStudioForm>> {
+    return this.studioFormRepository.findAllByCollaborator(collaborator);
   }
 
   public async update(
     id: string,
-    form: IStudioForm,
+    studioForm: IStudioForm,
   ): Promise<IStudioForm | null> {
     if (!id.startsWith(STUDIO_FORM_PREFIX)) {
       return null;
@@ -59,16 +53,12 @@ export class StudioFormService {
       return null;
     }
 
-    const nextForm: IStudioForm = {
-      ...form,
+    return await this.studioFormRepository.update(id, {
+      ...studioForm,
       id,
       created_at: existing.created_at,
       updated_at: new Date().toISOString(),
       collaborators: existing.collaborators,
-    };
-
-    await this.studioFormRepository.update(id, nextForm);
-
-    return nextForm;
+    });
   }
 }

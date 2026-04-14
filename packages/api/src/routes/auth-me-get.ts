@@ -11,16 +11,15 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
     }
 
     const { authService } = await getContainer();
+
     const user = await authService.verify(token);
 
     if (!user) {
-      reply.status(401).send({ error: 'Unauthorized' });
+      reply.status(401).send();
       return;
     }
 
-    reply.status(200).send({
-      username: user.username,
-    });
+    reply.status(200).send(user);
   },
   method: 'GET',
   url: '/api/v1/auth/me',

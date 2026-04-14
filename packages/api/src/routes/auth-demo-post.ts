@@ -7,19 +7,12 @@ const DEMO_USER = {
 
 export const AUTH_DEMO_POST: RouteOptions<any, any, any, any> = {
   handler: async (_request: FastifyRequest, reply: FastifyReply) => {
-    const secret = process.env.AUTH_JWT_SECRET;
-
-    if (!secret) {
-      reply.status(500).send({ error: 'Server configuration error' });
-      return;
-    }
-
     const token = jwt.sign(
       {
         sub: DEMO_USER.username,
         username: DEMO_USER.username,
       },
-      secret,
+      process.env.AUTH_JWT_SECRET as string,
       { expiresIn: '7d' },
     );
 

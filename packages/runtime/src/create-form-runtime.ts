@@ -26,7 +26,10 @@ export function createFormRuntime(
   schema: IDeclarativeForm,
   options: FormRuntimeOptions,
 ): FormRuntime {
-  const messages: ValidationMessages = { ...DEFAULT_MESSAGES, ...options.messages };
+  const messages: ValidationMessages = {
+    ...DEFAULT_MESSAGES,
+    ...options.messages,
+  };
   let currentState = createRuntimeState(
     schema,
     options.locale,
@@ -43,8 +46,16 @@ export function createFormRuntime(
     }
   }
 
-  function dispatch(action: Parameters<typeof transitionRuntime>[3]): FormEffect {
-    const result = transitionRuntime(schema, locale, currentState, action, messages);
+  function dispatch(
+    action: Parameters<typeof transitionRuntime>[3],
+  ): FormEffect {
+    const result = transitionRuntime(
+      schema,
+      locale,
+      currentState,
+      action,
+      messages,
+    );
     currentState = result.state;
     notify();
     return result.effect;

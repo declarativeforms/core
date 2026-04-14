@@ -5,12 +5,19 @@ export class GitHubFileRepository {
   constructor(private db: Db) {}
 
   public async find(id: string): Promise<IGitHubFile | null> {
-    return this.db.collection<IGitHubFile>('github_files').findOne({ id });
+    return this.db.collection<IGitHubFile>('github_files').findOne(
+      { id },
+      {
+        projection: {
+          _id: 0,
+        },
+      },
+    );
   }
 
-  public async upsert(record: IGitHubFile): Promise<void> {
+  public async upsert(gitHubFile: IGitHubFile): Promise<void> {
     await this.db
       .collection<IGitHubFile>('github_files')
-      .replaceOne({ id: record.id }, record, { upsert: true });
+      .replaceOne({ id: gitHubFile.id }, gitHubFile, { upsert: true });
   }
 }

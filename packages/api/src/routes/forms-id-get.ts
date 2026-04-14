@@ -1,6 +1,6 @@
 import type { IDeclarativeForm } from '@declarativeforms/types';
-import { getContainer } from '../core';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
+import { getContainer } from '../core';
 
 export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -10,6 +10,7 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ) => {
     const { formService } = await getContainer();
+
     const form: IDeclarativeForm | null = await formService.findById(
       request.params.id,
     );

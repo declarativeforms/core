@@ -1,4 +1,8 @@
-import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
+import {
+  evaluateExpression,
+  interpolateTemplate,
+  resolveLocalizedText,
+} from "@declarativeforms/common";
 import type {
   DeclarativeFieldType,
   IDeclarativeForm,
@@ -52,7 +56,9 @@ function hasValidator(
   );
 }
 
-function getRatingRangeFromValidators(validators: IDeclarativeFormValidator[]): {
+function getRatingRangeFromValidators(
+  validators: IDeclarativeFormValidator[],
+): {
   min: number;
   max: number;
 } {
@@ -122,10 +128,14 @@ export function buildValidationRules(
           value: validator.value,
           message:
             resolveLocalizedText(validator.message, locale) ||
-            interpolateTemplate(messages.min_length, {}, {
-              label,
-              min: validator.value,
-            }),
+            interpolateTemplate(
+              messages.min_length,
+              {},
+              {
+                label,
+                min: validator.value,
+              },
+            ),
         });
         break;
 
@@ -136,10 +146,14 @@ export function buildValidationRules(
           value: validator.value,
           message:
             resolveLocalizedText(validator.message, locale) ||
-            interpolateTemplate(messages.max_length, {}, {
-              label,
-              max: validator.value,
-            }),
+            interpolateTemplate(
+              messages.max_length,
+              {},
+              {
+                label,
+                max: validator.value,
+              },
+            ),
         });
         break;
 
@@ -159,17 +173,25 @@ export function buildValidationRules(
   const minVal = getMinValidator(validators);
   const maxVal = getMaxValidator(validators);
 
-  if (fieldType === "date" || fieldType === "date_month" || fieldType === "time") {
+  if (
+    fieldType === "date" ||
+    fieldType === "date_month" ||
+    fieldType === "time"
+  ) {
     if (minVal) {
       rules.push({
         type: "min",
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolateTemplate(messages.date_min, {}, {
-            label,
-            min: String(minVal.value),
-          }),
+          interpolateTemplate(
+            messages.date_min,
+            {},
+            {
+              label,
+              min: String(minVal.value),
+            },
+          ),
       });
     }
     if (maxVal) {
@@ -178,10 +200,14 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolateTemplate(messages.date_max, {}, {
-            label,
-            max: String(maxVal.value),
-          }),
+          interpolateTemplate(
+            messages.date_max,
+            {},
+            {
+              label,
+              max: String(maxVal.value),
+            },
+          ),
       });
     }
   }
@@ -200,10 +226,14 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolateTemplate(messages.number_min, {}, {
-            label,
-            min: minVal.value,
-          }),
+          interpolateTemplate(
+            messages.number_min,
+            {},
+            {
+              label,
+              min: minVal.value,
+            },
+          ),
       });
     }
     if (maxVal && typeof maxVal.value === "number") {
@@ -212,10 +242,14 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolateTemplate(messages.number_max, {}, {
-            label,
-            max: maxVal.value,
-          }),
+          interpolateTemplate(
+            messages.number_max,
+            {},
+            {
+              label,
+              max: maxVal.value,
+            },
+          ),
       });
     }
   }
@@ -245,10 +279,14 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolateTemplate(messages.file_min, {}, {
-            label,
-            min: minVal.value,
-          }),
+          interpolateTemplate(
+            messages.file_min,
+            {},
+            {
+              label,
+              min: minVal.value,
+            },
+          ),
       });
     }
     if (maxVal && typeof maxVal.value === "number") {
@@ -257,10 +295,14 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolateTemplate(messages.file_max, {}, {
-            label,
-            max: maxVal.value,
-          }),
+          interpolateTemplate(
+            messages.file_max,
+            {},
+            {
+              label,
+              max: maxVal.value,
+            },
+          ),
       });
     }
   }
@@ -272,10 +314,14 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
-          interpolateTemplate(messages.selection_min, {}, {
-            label,
-            min: minVal.value,
-          }),
+          interpolateTemplate(
+            messages.selection_min,
+            {},
+            {
+              label,
+              min: minVal.value,
+            },
+          ),
       });
     }
     if (maxVal && typeof maxVal.value === "number") {
@@ -284,10 +330,14 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
-          interpolateTemplate(messages.selection_max, {}, {
-            label,
-            max: maxVal.value,
-          }),
+          interpolateTemplate(
+            messages.selection_max,
+            {},
+            {
+              label,
+              max: maxVal.value,
+            },
+          ),
       });
     }
   }
@@ -357,9 +407,7 @@ const ruleHandlers: {
     return String(value) > String(rule.value) ? rule.message : undefined;
   },
   expression: (rule, { data }) =>
-    evaluateExpression(rule.expression, data, false)
-      ? undefined
-      : rule.message,
+    evaluateExpression(rule.expression, data) ? undefined : rule.message,
 };
 
 export function validateFieldValue(
@@ -416,7 +464,10 @@ export function validateSectionData(
       continue;
     }
 
-    if (field.visible_when && !evaluateExpression(field.visible_when, formData, false)) {
+    if (
+      field.visible_when &&
+      !evaluateExpression(field.visible_when, formData)
+    ) {
       continue;
     }
 
@@ -535,7 +586,10 @@ function applyCommonRules(field: CompiledField): FieldValidationConfig {
         rules.required = rule.message;
         break;
       case "pattern":
-        rules.pattern = { value: new RegExp(rule.regex), message: rule.message };
+        rules.pattern = {
+          value: new RegExp(rule.regex),
+          message: rule.message,
+        };
         break;
       case "min_length":
         rules.minLength = { value: rule.value, message: rule.message };
@@ -564,9 +618,7 @@ function buildExpressionValidators(
       const data =
         formValues && typeof formValues === "object" ? formValues : {};
 
-      return evaluateExpression(rule.expression, data, false)
-        ? true
-        : rule.message;
+      return evaluateExpression(rule.expression, data) ? true : rule.message;
     };
   });
 
@@ -612,10 +664,18 @@ function buildFieldTypeValidators(
         if (patternRule && (!Number.isFinite(num) || !Number.isInteger(num))) {
           return patternRule.message;
         }
-        if (minRule && typeof minRule.value === "number" && num < minRule.value) {
+        if (
+          minRule &&
+          typeof minRule.value === "number" &&
+          num < minRule.value
+        ) {
           return minRule.message;
         }
-        if (maxRule && typeof maxRule.value === "number" && num > maxRule.value) {
+        if (
+          maxRule &&
+          typeof maxRule.value === "number" &&
+          num > maxRule.value
+        ) {
           return maxRule.message;
         }
         return true;
@@ -655,10 +715,18 @@ function buildFieldTypeValidators(
         if (field.required && count === 0 && requiredRule) {
           return requiredRule.message;
         }
-        if (minRule && typeof minRule.value === "number" && count < minRule.value) {
+        if (
+          minRule &&
+          typeof minRule.value === "number" &&
+          count < minRule.value
+        ) {
           return minRule.message;
         }
-        if (maxRule && typeof maxRule.value === "number" && count > maxRule.value) {
+        if (
+          maxRule &&
+          typeof maxRule.value === "number" &&
+          count > maxRule.value
+        ) {
           return maxRule.message;
         }
         return true;
@@ -690,9 +758,8 @@ export function buildFieldMetadata(field: CompiledField): FieldMetadata {
     minRule: findValidationRule(field.validation, "min"),
     maxRule: findValidationRule(field.validation, "max"),
     hasPattern: field.validation.some((r) => r.type === "pattern"),
-    ratingRange: field.type === "rating"
-      ? getRatingRange(field.validation)
-      : undefined,
+    ratingRange:
+      field.type === "rating" ? getRatingRange(field.validation) : undefined,
     options: getFieldOptions(field),
   };
 }

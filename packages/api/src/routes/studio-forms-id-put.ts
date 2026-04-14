@@ -11,10 +11,15 @@ export const STUDIO_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ) => {
     const { studioFormService } = await getContainer();
-    const form = await studioFormService.update(request.params.id, request.body);
+
+    const form = await studioFormService.update(
+      request.params.id,
+      request.body,
+    );
 
     if (!form) {
       reply.status(404).send();
+
       return;
     }
 

@@ -9,12 +9,8 @@ export const STUDIO_FORMS_ID_DELETE: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ) => {
     const { studioFormService } = await getContainer();
-    const didDelete = await studioFormService.delete(request.params.id);
 
-    if (!didDelete) {
-      reply.status(404).send();
-      return;
-    }
+    await studioFormService.delete(request.params.id);
 
     reply.status(204).send();
   },

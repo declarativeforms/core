@@ -1,4 +1,7 @@
-import type { IDeclarativeForm, IDeclarativeFormSection } from "@declarativeforms/types";
+import type {
+  IDeclarativeForm,
+  IDeclarativeFormSection,
+} from "@declarativeforms/types";
 import { evaluateExpression } from "@declarativeforms/common";
 import { compile } from "../compilation/form";
 import type { DispatchResult, FormAction, FormState } from "../types";
@@ -7,7 +10,7 @@ import { validateSectionData } from "../validation";
 
 export function resolveNextSectionId(
   section: IDeclarativeFormSection,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): string {
   if (typeof section.next === "string") {
     return section.next;
@@ -32,7 +35,7 @@ export function isExternalNextSectionId(nextSectionId: string): boolean {
 
 function getInitialSectionId(
   schema: IDeclarativeForm,
-  initialSectionId?: string
+  initialSectionId?: string,
 ): string {
   if (initialSectionId) {
     return initialSectionId;
@@ -73,7 +76,13 @@ export function transitionRuntime(
         state: {
           ...state,
           data,
-          compiled: compile(schema, locale, data, state.activeSectionId, messages),
+          compiled: compile(
+            schema,
+            locale,
+            data,
+            state.activeSectionId,
+            messages,
+          ),
           validationErrors: {},
         },
         effect: { type: "none" },
@@ -99,7 +108,7 @@ export function transitionRuntime(
       }
 
       const section = (schema.sections ?? []).find(
-        (candidate) => candidate.id === state.activeSectionId
+        (candidate) => candidate.id === state.activeSectionId,
       );
       if (!section) {
         return { state, effect: { type: "none" } };
@@ -162,7 +171,13 @@ export function transitionRuntime(
         state: {
           ...state,
           activeSectionId: previousSectionId,
-          compiled: compile(schema, locale, state.data, previousSectionId, messages),
+          compiled: compile(
+            schema,
+            locale,
+            state.data,
+            previousSectionId,
+            messages,
+          ),
           sectionHistory: state.sectionHistory.slice(0, -1),
           validationErrors: {},
         },

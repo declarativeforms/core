@@ -1,51 +1,22 @@
-import { faker } from '@faker-js/faker';
 import { evaluateExpression } from '@declarativeforms/common';
 import { isDeclarativeConnectionType } from '@declarativeforms/types';
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
-import type { GitHubFileRepository, SubmissionRepository } from '../repositories';
-import type { GitHubGateway } from '../gateways';
-import type { FormService } from './form.service';
+import { faker } from '@faker-js/faker';
+import type { SubmissionRepository } from '../repositories';
 import type { IConnectionStrategy, IValidationStrategy } from '../strategies';
+import type { FormService } from './form.service';
 
-const GITHUB_FORM_PREFIX = 'a';
 const STUDIO_FORM_PREFIX = 'b';
 
 export class SubmissionService {
   constructor(
     private formService: FormService,
-    private gitHubFileRepository: GitHubFileRepository,
     private submissionRepository: SubmissionRepository,
-    private gitHubGateway: GitHubGateway,
-    private validationStrategies: IValidationStrategy[],
-    private connectionStrategies: IConnectionStrategy[],
+    private validationStrategies: Array<IValidationStrategy>,
+    private connectionStrategies: Array<IConnectionStrategy>,
   ) {}
 
-  private async processConnections(
-    form: IDeclarativeForm,
-    submission: ISubmission,
-  ): Promise<void> {
-    if (!form.connections || form.connections.length === 0) {
-      return;
-    }
-
-    for (const connection of form.connections) {
-      if (!isDeclarativeConnectionType(connection.type)) {
-        continue;
-      }
-
-      if (connection.when && !evaluateExpression(connection.when, submission.data)) {
-        continue;
-      }
-
-      const strategy = this.connectionStrategies.find(s => s.type === connection.type);
-
-      if (strategy) {
-        await strategy.handle(connection, submission, form);
-      }
-    }
-  }
-
-  async createOrUpdate(input: {
+  public async createOrUpdate(input: {
     formId: string;
     data: Record<string, unknown>;
     isPartial: boolean;
@@ -125,45 +96,14 @@ export class SubmissionService {
     return submission;
   }
 
-  async findById(
+  public async findById(
     formId: string,
     submissionId: string,
   ): Promise<ISubmission | null> {
     return this.submissionRepository.find(formId, submissionId);
   }
 
-  async listFormSubmissions(
-    formId: string,
-    token: string,
-  ): Promise<Array<ISubmission> | null> {
-    if (!formId.startsWith(GITHUB_FORM_PREFIX)) {
-      return null;
-    }
-
-    const form = await this.gitHubFileRepository.find(formId);
-
-    if (!form) {
-      return null;
-    }
-
-    const canAccess = form.owner && form.repository
-      ? await this.gitHubGateway.hasAdminOrPushPermissions(
-          token,
-          form.owner,
-          form.repository,
-        )
-      : false;
-
-    if (!canAccess) {
-      return null;
-    }
-
-    return this.submissionRepository.findAll(formId);
-  }
-
-  async listStudioFormSubmissions(
-    formId: string,
-  ): Promise<Array<ISubmission> | null> {
+  public async list(formId: string): Promise<Array<ISubmission> | null> {
     if (!formId.startsWith(STUDIO_FORM_PREFIX)) {
       return null;
     }
@@ -175,5 +115,37 @@ export class SubmissionService {
     }
 
     return this.submissionRepository.findAll(formId);
+  }
+
+  private async processConnections(
+    form: IDeclarativeForm,
+    submission: ISubmission,
+  ): Promise<void> {
+    if (!form.connections || form.connections.length === 0) {
+      return;
+    }
+
+    for (const connection of form.connections) {
+      if (!isDeclarativeConnectionType(connection.type)) {
+        continue;
+      }
+
+      if (
+        connection.when &&
+        !evaluateExpression(connection.when, submission.data)
+      ) {
+        continue;
+      }
+
+      const strategy = this.connectionStrategies.find(
+        (entry) => entry.type === connection.type,
+      );
+
+      if (!strategy) {
+        continue;
+      }
+
+      await strategy.handle(connection, submission, form);
+    }
   }
 }

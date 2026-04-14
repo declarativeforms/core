@@ -1,5 +1,8 @@
 import type { IDeclarativeFormSection } from "@declarativeforms/types";
-import { interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
+import {
+  interpolateTemplate,
+  resolveLocalizedText,
+} from "@declarativeforms/common";
 import type { CompiledSection } from "../types";
 import type { ValidationMessages } from "../messages";
 import { compileField } from "./field";
@@ -12,7 +15,10 @@ export function compileSection(
 ): CompiledSection {
   return {
     id: section.id ?? "",
-    title: interpolateTemplate(resolveLocalizedText(section.title, locale), data),
+    title: interpolateTemplate(
+      resolveLocalizedText(section.title, locale),
+      data,
+    ),
     fields: (section.fields ?? []).flatMap((field) => {
       const compiled = compileField(field, locale, data, messages);
       return compiled ? [compiled] : [];

@@ -1,3 +1,4 @@
+import type { IDeclarativeForm } from '@declarativeforms/types';
 import yaml from 'js-yaml';
 import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
@@ -5,7 +6,6 @@ import type {
   GitHubFileRepository,
   StudioFormRepository,
 } from '../repositories';
-import type { IDeclarativeForm } from '@declarativeforms/types';
 
 const GITHUB_FORM_PREFIX = 'a';
 const STUDIO_FORM_PREFIX = 'b';
@@ -44,10 +44,8 @@ export class FormService {
         return null;
       }
 
-      const result = yaml.load(text) as IDeclarativeForm;
-
       return {
-        ...result,
+        ...(yaml.load(text) as IDeclarativeForm),
         id,
       };
     }
@@ -62,10 +60,8 @@ export class FormService {
       return null;
     }
 
-    const result = yaml.load(text) as IDeclarativeForm;
-
     return {
-      ...result,
+      ...(yaml.load(text) as IDeclarativeForm),
       id,
     };
   }

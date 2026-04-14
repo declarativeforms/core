@@ -1,70 +1,57 @@
 import { createHash, randomBytes } from 'crypto';
 import { faker } from '@faker-js/faker';
 import type { StudioMagicLinkRepository } from '../repositories';
-import type { IStudioMagicLinkRecord } from '../types';
 
 const MAGIC_LINK_EXPIRY_MS = 10 * 60 * 1000;
-const MAGIC_LINK_RESEND_COOLDOWN_MS = 30 * 1000;
 
 export class StudioMagicLinkService {
-  constructor(
-    private studioMagicLinkRepository: StudioMagicLinkRepository,
-  ) {}
+  constructor(private studioMagicLinkRepository: StudioMagicLinkRepository) {}
 
-  public async createRequest(input: {
-    email: string;
-  }): Promise<{ requestId: string; resendAfterSeconds: number; token: string } | null> {
-    const recent = await this.studioMagicLinkRepository.findMostRecent(input.email);
-
-    if (recent) {
-      const elapsed = Date.now() - new Date(recent.created_at).getTime();
-
-      if (elapsed < MAGIC_LINK_RESEND_COOLDOWN_MS) {
-        return null;
-      }
-    }
-
+  public async create(email: string): Promise<{
+    requestId: string;
+    token: string;
+  } | null> {
     const token = randomBytes(32).toString('hex');
+
     const now = new Date();
-    const record: IStudioMagicLinkRecord = {
+
+    const studioMagicLinkRecord = await this.studioMagicLinkRepository.insert({
       created_at: now.toISOString(),
-      email: input.email,
+      email,
       expires_at: new Date(now.getTime() + MAGIC_LINK_EXPIRY_MS).toISOString(),
       id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
       secret_hash: createHash('sha256').update(token).digest('hex'),
-    };
-
-    await this.studioMagicLinkRepository.insert(record);
+    });
 
     return {
-      requestId: record.id,
-      resendAfterSeconds: MAGIC_LINK_RESEND_COOLDOWN_MS / 1000,
+      requestId: studioMagicLinkRecord.id,
       token,
     };
   }
 
-  public async verifyToken(input: {
+  public async verify(input: {
     requestId: string;
     token: string;
   }): Promise<string | null> {
-    const record = await this.studioMagicLinkRepository.find(input.requestId);
+    const studioMagicLinkRecord = await this.studioMagicLinkRepository.find(
+      input.requestId,
+    );
 
-    if (!record) {
+    if (!studioMagicLinkRecord) {
       return null;
     }
 
-    if (new Date(record.expires_at).getTime() < Date.now()) {
+    if (new Date(studioMagicLinkRecord.expires_at).getTime() < Date.now()) {
       return null;
     }
 
-    const submittedHash = createHash('sha256')
-      .update(input.token)
-      .digest('hex');
-
-    if (submittedHash !== record.secret_hash) {
+    if (
+      createHash('sha256').update(input.token).digest('hex') !==
+      studioMagicLinkRecord.secret_hash
+    ) {
       return null;
     }
 
-    return record.email;
+    return studioMagicLinkRecord.email;
   }
 }

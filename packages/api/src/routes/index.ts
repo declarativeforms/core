@@ -5,7 +5,6 @@ export * from './auth-magic-link-verify-post';
 export * from './auth-me-get';
 export * from './files-upload-post';
 export * from './forms-id-get';
-export * from './forms-id-submissions-get';
 export * from './forms-id-submissions-id-get';
 export * from './forms-id-submissions-post';
 export * from './forms-slug-get';

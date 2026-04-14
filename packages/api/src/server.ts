@@ -1,7 +1,8 @@
-import fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
+import fastify from 'fastify';
 import * as qs from 'qs';
+import { requireStudioAuth } from './middleware';
 import {
   AUTH_DEMO_POST,
   AUTH_GITHUB_POST,
@@ -10,7 +11,6 @@ import {
   AUTH_ME_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
-  FORMS_ID_SUBMISSIONS_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
@@ -22,11 +22,10 @@ import {
   STUDIO_FORMS_ID_SUBMISSIONS_GET,
   STUDIO_FORMS_POST,
 } from './routes';
-import { requireStudioAuth } from './middleware';
 
 export async function startServer() {
   const server = fastify({
-    bodyLimit: 10 * 1048576, // 10MB
+    bodyLimit: 10 * 1048576,
     logger: true,
     routerOptions: {
       caseSensitive: false,
@@ -44,7 +43,7 @@ export async function startServer() {
 
   await server.register(fastifyMultipart, {
     limits: {
-      fileSize: 10 * 1048576, // 10MB
+      fileSize: 10 * 1048576,
     },
   });
 
@@ -52,7 +51,7 @@ export async function startServer() {
     '*',
     { parseAs: 'buffer' },
     (
-      request: any,
+      _request: any,
       payload: any,
       done: (error: Error | null, body: Buffer) => void,
     ) => {
@@ -67,7 +66,6 @@ export async function startServer() {
   server.route(AUTH_ME_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
-  server.route(FORMS_ID_SUBMISSIONS_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
@@ -106,7 +104,7 @@ export async function startServer() {
   });
 
   server.route({
-    handler: async (request, reply) => {
+    handler: async (_request, reply) => {
       try {
         reply.status(200).send();
       } catch {
@@ -135,7 +133,7 @@ export async function startServer() {
 
   await server.listen({
     host: '0.0.0.0',
-    port: process.env.PORT ? parseInt(process.env.PORT) : 8080,
+    port: process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 8080,
   });
 
   await server.ready();

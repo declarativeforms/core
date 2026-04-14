@@ -3,7 +3,7 @@ import type { ISubmission, IWebhookConnection } from '@declarativeforms/types';
 export class WebhookConnectionStrategy {
   readonly type = 'webhook';
 
-  async handle(
+  public async handle(
     connection: IWebhookConnection,
     submission: ISubmission,
   ): Promise<void> {

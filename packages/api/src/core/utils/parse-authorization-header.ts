@@ -1,4 +1,6 @@
-export function parseAuthorizationHeader(authorization: string | undefined): string | null {
+export function parseAuthorizationHeader(
+  authorization: string | undefined,
+): string | null {
   if (!authorization) {
     return null;
   }

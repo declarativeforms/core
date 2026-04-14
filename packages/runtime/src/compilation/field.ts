@@ -1,6 +1,13 @@
-import type { IDeclarativeFormField, IDeclarativeFormOption } from "@declarativeforms/types";
+import type {
+  IDeclarativeFormField,
+  IDeclarativeFormOption,
+} from "@declarativeforms/types";
 import { isDeclarativeFieldType } from "@declarativeforms/types";
-import { evaluateExpression, interpolateTemplate, resolveLocalizedText } from "@declarativeforms/common";
+import {
+  evaluateExpression,
+  interpolateTemplate,
+  resolveLocalizedText,
+} from "@declarativeforms/common";
 import type { CompiledField, CompiledOption } from "../types";
 import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
 import { buildValidationRules } from "../validation";
@@ -8,7 +15,7 @@ import { buildValidationRules } from "../validation";
 function resolveAndInterpolate(
   value: IDeclarativeFormField["label"],
   locale: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): string | undefined {
   const resolved = resolveLocalizedText(value, locale);
   if (!resolved) {
@@ -20,7 +27,7 @@ function resolveAndInterpolate(
 function compileOption(
   option: IDeclarativeFormOption,
   locale: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): CompiledOption {
   if (typeof option === "string") {
     return { label: interpolateTemplate(option, data), value: option };
@@ -43,7 +50,10 @@ export function compileField(
     return null;
   }
 
-  const label = interpolateTemplate(resolveLocalizedText(field.label, locale), data);
+  const label = interpolateTemplate(
+    resolveLocalizedText(field.label, locale),
+    data,
+  );
   const validation = buildValidationRules(
     field.type,
     field.validators ?? [],
@@ -91,10 +101,16 @@ export function compileField(
         ...base,
         type: field.type,
         ...(field.min_label && {
-          min_label: interpolateTemplate(resolveLocalizedText(field.min_label, locale), data),
+          min_label: interpolateTemplate(
+            resolveLocalizedText(field.min_label, locale),
+            data,
+          ),
         }),
         ...(field.max_label && {
-          max_label: interpolateTemplate(resolveLocalizedText(field.max_label, locale), data),
+          max_label: interpolateTemplate(
+            resolveLocalizedText(field.max_label, locale),
+            data,
+          ),
         }),
       };
 

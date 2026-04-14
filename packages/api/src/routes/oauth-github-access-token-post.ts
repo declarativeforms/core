@@ -10,10 +10,14 @@ export const OAUTH_GITHUB_ACCESS_TOKEN_POST: RouteOptions<any, any, any, any> =
       reply: FastifyReply,
     ) => {
       const { gitHubGateway } = await getContainer();
-      const accessToken = await gitHubGateway.findAccessToken(request.body.code);
+
+      const accessToken = await gitHubGateway.findAccessToken(
+        request.body.code,
+      );
 
       if (!accessToken) {
-        reply.status(401).send({ error: 'Authentication failed' });
+        reply.status(401).send();
+
         return;
       }
 

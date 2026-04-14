@@ -9,11 +9,7 @@ export class FileService {
     filename: string,
     contentType: string,
   ): Promise<string> {
-    const timestamp = Date.now();
-    const randomString = randomBytes(8).toString('hex');
-    const extension = filename.split('.').pop();
-
-    const key = `uploads/${timestamp}-${randomString}.${extension}`;
+    const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${filename.split('.').pop()}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME as string,
