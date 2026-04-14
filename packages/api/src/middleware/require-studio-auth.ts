@@ -1,6 +1,12 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { getContainer, parseAuthorizationHeader } from '../core';
 
+declare module 'fastify' {
+  interface FastifyRequest {
+    studioUser?: { username: string };
+  }
+}
+
 export async function requireStudioAuth(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -20,4 +26,6 @@ export async function requireStudioAuth(
 
     return;
   }
+
+  request.studioUser = user;
 }

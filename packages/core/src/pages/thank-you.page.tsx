@@ -19,7 +19,7 @@ export function ThankYouPage() {
   const submissionId = searchParams.get("submission_id");
   const langParam = searchParams.get("lang");
 
-  const { data: form } = useQuery({
+  const { data: form, isLoading: isFormLoading } = useQuery({
     queryKey: ["form", params.id],
     queryFn: async () => {
       const url = getBackendUrl(`forms/${params.id}`);
@@ -71,6 +71,10 @@ export function ThankYouPage() {
     nextParams.set("lang", form.locale);
     setSearchParams(nextParams, { replace: true });
   }, [form?.locale, langParam, searchParams, setSearchParams]);
+
+  if (isFormLoading) {
+    return null;
+  }
 
   const submissionData = submission?.data ?? {};
   const completion = form

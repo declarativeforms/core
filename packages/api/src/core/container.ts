@@ -80,7 +80,6 @@ export async function getContainer() {
   );
   const studioFormService = new StudioFormService(
     studioFormRepository,
-    formService,
   );
   const studioMagicLinkService = new StudioMagicLinkService(
     studioMagicLinkRepository,

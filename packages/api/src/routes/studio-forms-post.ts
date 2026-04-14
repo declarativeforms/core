@@ -10,7 +10,8 @@ export const STUDIO_FORMS_POST: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ) => {
     const { studioFormService } = await getContainer();
-    const form = await studioFormService.create(request.body);
+    const creatorEmail = request.studioUser?.username ?? '';
+    const form = await studioFormService.create(request.body, creatorEmail);
     reply.status(201).send(form);
   },
   method: 'POST',

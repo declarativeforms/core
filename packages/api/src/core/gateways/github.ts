@@ -37,9 +37,44 @@ export class GitHubGateway {
 
     const data = (await response.json()) as any;
 
+    let email: string | null = data.email || null;
+
+    if (!email) {
+      email = await this.findPrimaryEmail(accessToken);
+    }
+
+    if (!email) {
+      return null;
+    }
+
     return {
-      username: data.email,
+      username: email,
     };
+  }
+
+  private async findPrimaryEmail(
+    accessToken: string,
+  ): Promise<string | null> {
+    const response = await fetch('https://api.github.com/user/emails', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const emails = (await response.json()) as Array<{
+      email: string;
+      primary: boolean;
+      verified: boolean;
+    }>;
+
+    const primary = emails.find((e) => e.primary && e.verified);
+
+    return primary?.email ?? null;
   }
 
   public async hasAdminOrPushPermissions(
