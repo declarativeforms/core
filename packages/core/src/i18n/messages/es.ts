@@ -26,12 +26,6 @@ export const esMessages: TranslationMessages = {
   "address.loading_suggestions": "Cargando sugerencias",
   "address.no_results": "No se encontraron resultados.",
   "email.placeholder_default": "Tu respuesta",
-  "connections.success_title": "Éxito",
-  "connections.success_description":
-    "Tu conexión se creó correctamente. Usa el ID de abajo en tu configuración YAML.",
-  "connections.connection_id": "ID de conexión",
-  "connections.helper":
-    "Este ID conecta tu formulario con GitHub o Google Sheets.",
   "cookie.message": "Usamos cookies para mejorar tu experiencia.",
   "cookie.learn_more": "Más información",
   "cookie.decline": "Rechazar",

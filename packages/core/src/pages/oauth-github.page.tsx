@@ -24,6 +24,7 @@ export function OAuthGitHubPage() {
     }
 
     (async () => {
+      const fallbackUrl = "/";
       const response = await fetch(
         getBackendUrl("oauth/github/access_token"),
         {
@@ -33,12 +34,19 @@ export function OAuthGitHubPage() {
         }
       );
 
+      if (!response.ok) {
+        window.location.href = fallbackUrl;
+        return;
+      }
+
       const data = await response.json();
 
-      if (state && state.startsWith("/")) {
-        window.location.href = `${state}?connection_id=${data.id}`;
+      if (state && state.startsWith("/") && data.access_token) {
+        const redirectUrl = new URL(state, window.location.origin);
+        redirectUrl.searchParams.set("access_token", data.access_token);
+        window.location.href = redirectUrl.toString();
       } else {
-        window.location.href = `/test?access_token=${data.access_token}`;
+        window.location.href = fallbackUrl;
       }
     })();
   }, [code, state, searchParams]);

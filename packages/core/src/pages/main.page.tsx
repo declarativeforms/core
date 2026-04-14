@@ -16,7 +16,7 @@ import { useI18n } from "@/i18n";
 import { getBackendUrl } from "@/lib/api";
 
 const RESERVED_QUERY_KEYS = new Set([
-  "connection_id",
+  "access_token",
   "embed",
   "lang",
   "submission_id",
@@ -32,7 +32,7 @@ export function MainPage() {
   const slugPath = params["*"];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
-  const connectionId = searchParams.get("connection_id");
+  const accessToken = searchParams.get("access_token");
   const embed = searchParams.get("embed") === "true";
   const submissionId = searchParams.get("submission_id");
   const stepParam = searchParams.get("step");
@@ -52,7 +52,7 @@ export function MainPage() {
       params.owner,
       params.repository,
       slugPath,
-      connectionId,
+      accessToken,
     ],
     queryFn: async () => {
       const url = params.id
@@ -65,14 +65,16 @@ export function MainPage() {
 
       const fetchUrl = new URL(url, window.location.origin);
 
-      if (connectionId) {
-        fetchUrl.searchParams.set("connection_id", connectionId);
+      if (accessToken) {
+        fetchUrl.searchParams.set("access_token", accessToken);
       }
 
       const response = await fetch(fetchUrl.toString());
 
       if (response.status === 403) {
-        const state = encodeURIComponent(window.location.pathname);
+        const state = encodeURIComponent(
+          `${window.location.pathname}${window.location.search}`,
+        );
         window.location.href = `${window.location.origin}/oauth/github?state=${state}`;
 
         return;
@@ -91,9 +93,14 @@ export function MainPage() {
   useEffect(() => {
     if (!isSlugRoute || !form?.id) return;
 
-    // Redirect to ID path, preserving all query params
-    navigate(`/${form.id}?${searchParams.toString()}`, { replace: true });
-  }, [isSlugRoute, form?.id, form, connectionId, navigate, searchParams]);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("access_token");
+
+    const nextSearch = nextParams.toString();
+    navigate(nextSearch ? `/${form.id}?${nextSearch}` : `/${form.id}`, {
+      replace: true,
+    });
+  }, [isSlugRoute, form?.id, navigate, searchParams]);
 
   const data = useMemo<FieldValues>(() => {
     const initialData: FieldValues = {};

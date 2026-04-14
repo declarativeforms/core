@@ -25,12 +25,6 @@ const enMessageSource = {
   "address.loading_suggestions": "Loading suggestions",
   "address.no_results": "No results found.",
   "email.placeholder_default": "Your answer",
-  "connections.success_title": "Success",
-  "connections.success_description":
-    "Your connection has been successfully created. Use the ID below in your YAML configuration.",
-  "connections.connection_id": "Connection ID",
-  "connections.helper":
-    "This ID connects your form to GitHub or Google Sheets.",
   "cookie.message": "We use cookies to improve your experience.",
   "cookie.learn_more": "Learn more",
   "cookie.decline": "Decline",

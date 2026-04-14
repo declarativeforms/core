@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto';
 export class FileService {
   constructor(private s3Client: S3Client) {}
 
-  async upload(
+  public async upload(
     buffer: Buffer,
     filename: string,
     contentType: string,

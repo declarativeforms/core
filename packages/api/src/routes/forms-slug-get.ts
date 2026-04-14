@@ -7,11 +7,11 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     request: FastifyRequest<{
       Body: Record<string, string>;
       Params: { owner: string; repository: string; '*': string };
-      Querystring: { connection_id?: string };
+      Querystring: { access_token?: string };
     }>,
     reply: FastifyReply,
   ) => {
-    const connectionId = request.query.connection_id;
+    const accessToken = request.query.access_token;
     const { owner, repository } = request.params;
     const file = request.params['*'];
 
@@ -24,11 +24,11 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     const { formService } = await getContainer();
     const form: IDeclarativeForm | null = await formService.findBySlug(
       slug,
-      connectionId,
+      accessToken,
     );
 
     if (!form) {
-      return reply.status(connectionId ? 404 : 403).send();
+      return reply.status(accessToken ? 404 : 403).send();
     }
 
     reply.status(200).send(form);

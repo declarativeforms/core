@@ -2,7 +2,6 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
 import { GitHubGateway } from './gateways';
 import {
-  ConnectionRecordRepository,
   GitHubFileRepository,
   StudioFormRepository,
   StudioMagicLinkRepository,
@@ -10,7 +9,6 @@ import {
 } from './repositories';
 import {
   AuthService,
-  ConnectionRecordService,
   FileService,
   FormService,
   StudioFormService,
@@ -29,14 +27,12 @@ export type Container = {
   // Gateways
   gitHubGateway: GitHubGateway;
   // Repositories
-  connectionRecordRepository: ConnectionRecordRepository;
   gitHubFileRepository: GitHubFileRepository;
   studioFormRepository: StudioFormRepository;
   studioMagicLinkRepository: StudioMagicLinkRepository;
   submissionRepository: SubmissionRepository;
   // Services
   authService: AuthService;
-  connectionRecordService: ConnectionRecordService;
   fileService: FileService;
   formService: FormService;
   studioFormService: StudioFormService;
@@ -69,7 +65,6 @@ export async function getContainer() {
   const gitHubGateway = new GitHubGateway();
 
   // Repositories
-  const connectionRecordRepository = new ConnectionRecordRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
   const studioFormRepository = new StudioFormRepository(db);
   const studioMagicLinkRepository = new StudioMagicLinkRepository(db);
@@ -81,12 +76,7 @@ export async function getContainer() {
   const formService = new FormService(
     gitHubFileRepository,
     studioFormRepository,
-    connectionRecordRepository,
     gitHubGateway,
-  );
-  const connectionRecordService = new ConnectionRecordService(
-    gitHubGateway,
-    connectionRecordRepository,
   );
   const studioFormService = new StudioFormService(
     studioFormRepository,
@@ -116,13 +106,11 @@ export async function getContainer() {
     db,
     mongoClient,
     gitHubGateway,
-    connectionRecordRepository,
     gitHubFileRepository,
     studioFormRepository,
     studioMagicLinkRepository,
     submissionRepository,
     authService,
-    connectionRecordService,
     fileService,
     formService,
     studioFormService,

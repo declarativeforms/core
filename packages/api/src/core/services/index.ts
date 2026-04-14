@@ -1,5 +1,4 @@
 export { AuthService } from './auth.service';
-export { ConnectionRecordService } from './connection-record.service';
 export { FileService } from './file.service';
 export { FormService } from './form.service';
 export { StudioFormService } from './studio-form.service';

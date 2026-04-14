@@ -2,7 +2,6 @@ import yaml from 'js-yaml';
 import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
 import type {
-  ConnectionRecordRepository,
   GitHubFileRepository,
   StudioFormRepository,
 } from '../repositories';
@@ -15,7 +14,6 @@ export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
     private studioFormRepository: StudioFormRepository,
-    private connectionRecordRepository: ConnectionRecordRepository,
     private gitHubGateway: GitHubGateway,
   ) {}
 
@@ -34,20 +32,12 @@ export class FormService {
       return null;
     }
 
-    if (gitHubFile.connection_id) {
-      const connection = await this.connectionRecordRepository.find(
-        gitHubFile.connection_id,
-      );
-
-      if (!connection) {
-        return null;
-      }
-
+    if (gitHubFile.access_token) {
       const text = await this.gitHubGateway.retrieveYamlFile(
         gitHubFile.owner,
         gitHubFile.repository,
         gitHubFile.file,
-        connection.access_token,
+        gitHubFile.access_token,
       );
 
       if (!text) {
@@ -82,7 +72,7 @@ export class FormService {
 
   public async findBySlug(
     slug: string,
-    connectionId?: string,
+    accessToken?: string,
   ): Promise<IDeclarativeForm | null> {
     const parts = slug.split('/');
 
@@ -100,19 +90,13 @@ export class FormService {
       file,
     );
 
-    if (!text && connectionId) {
-      const connection =
-        await this.connectionRecordRepository.find(connectionId);
-      const token = connection?.access_token;
-
-      if (token) {
-        text = await this.gitHubGateway.retrieveYamlFile(
-          owner,
-          repository,
-          file,
-          token,
-        );
-      }
+    if (!text && accessToken) {
+      text = await this.gitHubGateway.retrieveYamlFile(
+        owner,
+        repository,
+        file,
+        accessToken,
+      );
     }
 
     if (!text) {
@@ -128,7 +112,7 @@ export class FormService {
       id,
       owner,
       repository,
-      ...(connectionId ? { connection_id: connectionId } : {}),
+      ...(accessToken ? { access_token: accessToken } : {}),
     });
 
     return {

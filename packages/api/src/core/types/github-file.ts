@@ -3,5 +3,5 @@ export type IGitHubFile = {
   owner: string;
   repository: string;
   file: string;
-  connection_id?: string;
+  access_token?: string;
 };
