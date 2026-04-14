@@ -4,10 +4,7 @@ const TOKEN_KEY = "studio_auth_token";
 const USER_KEY = "studio_auth_user";
 
 export type AuthUser = {
-  id: number;
-  login: string;
-  name: string | null;
-  avatar_url: string;
+  username: string;
 };
 
 export function getStoredToken(): string | null {
@@ -22,7 +19,15 @@ export function getStoredUser(): AuthUser | null {
   }
 
   try {
-    return JSON.parse(raw) as AuthUser;
+    const parsed = JSON.parse(raw) as Partial<AuthUser>;
+
+    if (typeof parsed.username !== "string" || parsed.username.length === 0) {
+      return null;
+    }
+
+    return {
+      username: parsed.username,
+    };
   } catch {
     return null;
   }
@@ -55,7 +60,7 @@ export function getGitHubOAuthUrl(): string {
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: "read:user",
+    scope: "read:user user:email",
   });
 
   return `https://github.com/login/oauth/authorize?${params.toString()}`;
@@ -86,7 +91,10 @@ export async function sendMagicLink(
   const response = await fetch(getBackendUrl("auth/magic-link/send"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, redirect_url: redirectUrl }),
+    body: JSON.stringify({
+      email,
+      redirect_url: redirectUrl,
+    }),
   });
 
   if (!response.ok) {
@@ -106,7 +114,10 @@ export async function verifyMagicLink(
   const response = await fetch(getBackendUrl("auth/magic-link/verify"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ request_id: requestId, token }),
+    body: JSON.stringify({
+      request_id: requestId,
+      token,
+    }),
   });
 
   if (!response.ok) {

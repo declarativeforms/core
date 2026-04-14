@@ -794,23 +794,6 @@ export function SectionField({
                           <Item variant="outline" className="bg-white">
                             <div className="flex items-center gap-3">
                               <Checkbox
-                                checked={field.otp === true}
-                                onCheckedChange={(checked) =>
-                                  onChange({
-                                    ...field,
-                                    otp: checked === true,
-                                  })
-                                }
-                              />
-                              <p className="text-sm font-medium text-foreground">
-                                Enable OTP
-                              </p>
-                            </div>
-                          </Item>
-
-                          <Item variant="outline" className="bg-white">
-                            <div className="flex items-center gap-3">
-                              <Checkbox
                                 checked={field.block_free_email === true}
                                 onCheckedChange={(checked) =>
                                   onChange({

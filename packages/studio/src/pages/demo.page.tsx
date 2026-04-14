@@ -19,10 +19,7 @@ export function DemoPage() {
         return response.json() as Promise<{
           token: string;
           user: {
-            id: number;
-            login: string;
-            name: string | null;
-            avatar_url: string;
+            username: string;
           };
         }>;
       })

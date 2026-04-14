@@ -12,8 +12,7 @@ type OtpSendResponse = {
 };
 
 type OtpVerifyResponse = {
-  verification_token?: string;
-  verificationToken?: string;
+  token?: string;
 };
 
 type OtpApiMessages = {
@@ -49,6 +48,7 @@ export async function sendEmailOtp(args: {
   const response = await fetch(EMAIL_OTP_SEND_ENDPOINT, {
     body: JSON.stringify({
       email: args.email,
+      purpose: "form_email_verification",
       field_id: args.fieldId,
     }),
     headers: {
@@ -86,7 +86,6 @@ export async function sendEmailOtp(args: {
 
 export async function verifyEmailOtp(args: {
   email: string;
-  fieldId: string;
   otp: string;
   requestId: string;
   messages: OtpApiMessages;
@@ -94,9 +93,9 @@ export async function verifyEmailOtp(args: {
   const response = await fetch(EMAIL_OTP_VERIFY_ENDPOINT, {
     body: JSON.stringify({
       email: args.email,
-      field_id: args.fieldId,
-      otp: args.otp,
+      purpose: "form_email_verification",
       request_id: args.requestId,
+      secret: args.otp,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -110,10 +109,8 @@ export async function verifyEmailOtp(args: {
 
   const payload = (await response.json()) as OtpVerifyResponse;
   const verificationToken =
-    typeof payload.verification_token === "string"
-      ? payload.verification_token
-      : typeof payload.verificationToken === "string"
-      ? payload.verificationToken
+    typeof payload.token === "string"
+      ? payload.token
       : "";
 
   if (!verificationToken) {

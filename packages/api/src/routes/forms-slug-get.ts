@@ -1,5 +1,5 @@
 import type { IDeclarativeForm } from '@declarativeforms/types';
-import { findFormBySlug } from '../core';
+import { getContainer } from '../core';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 
 export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
@@ -7,11 +7,11 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     request: FastifyRequest<{
       Body: Record<string, string>;
       Params: { owner: string; repository: string; '*': string };
-      Querystring: { connection_id?: string };
+      Querystring: { access_token?: string };
     }>,
     reply: FastifyReply,
   ) => {
-    const connectionId = request.query.connection_id;
+    const accessToken = request.query.access_token;
     const { owner, repository } = request.params;
     const file = request.params['*'];
 
@@ -21,44 +21,18 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
 
     const slug = `forms/${owner}/${repository}/${file}`;
 
-    const form: IDeclarativeForm | null = await findFormBySlug(
+    const { formService } = await getContainer();
+    const form: IDeclarativeForm | null = await formService.findBySlug(
       slug,
-      connectionId,
+      accessToken,
     );
 
     if (!form) {
-      return reply.status(connectionId ? 404 : 403).send();
+      return reply.status(accessToken ? 404 : 403).send();
     }
 
     reply.status(200).send(form);
   },
   method: 'GET',
   url: '/api/v1/forms/:owner/:repository/*',
-  schema: {
-    tags: ['forms'],
-    summary: 'Get a form by slug',
-    params: {
-      type: 'object',
-      required: ['owner', 'repository'],
-      properties: {
-        owner: { type: 'string' },
-        repository: { type: 'string' },
-      },
-    },
-    querystring: {
-      type: 'object',
-      properties: {
-        connection_id: { type: 'string' },
-      },
-    },
-    response: {
-      200: {
-        type: 'object',
-        additionalProperties: true,
-      },
-      400: { type: 'null' },
-      403: { type: 'null' },
-      404: { type: 'null' },
-    },
-  },
 };

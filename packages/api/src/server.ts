@@ -1,8 +1,6 @@
 import fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
-import fastifySwagger from '@fastify/swagger';
-import fastifySwaggerUi from '@fastify/swagger-ui';
 import * as qs from 'qs';
 import {
   AUTH_DEMO_POST,
@@ -16,10 +14,7 @@ import {
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
-  OAUTH_AIRTABLE_ACCESS_TOKEN_POST,
   OAUTH_GITHUB_ACCESS_TOKEN_POST,
-  ONE_TIME_PIN_EMAIL_SEND_POST,
-  ONE_TIME_PIN_EMAIL_VERIFY_POST,
   STUDIO_FORMS_GET,
   STUDIO_FORMS_ID_DELETE,
   STUDIO_FORMS_ID_GET,
@@ -65,35 +60,6 @@ export async function startServer() {
     },
   );
 
-  await server.register(fastifySwagger, {
-    swagger: {
-      consumes: ['application/json'],
-      host: process.env.HOST || 'localhost:8080',
-      info: {
-        description: '',
-        title: 'API Specification',
-        version: '0.1.0',
-      },
-      produces: ['application/json'],
-      schemes: process.env.HOST ? ['https', 'http'] : ['http'],
-      securityDefinitions: {
-        apiKey: {
-          type: 'apiKey',
-          name: 'Authorization',
-          in: 'header',
-        },
-      },
-      externalDocs: {
-        url: 'https://github.com/hirebarend/fastify-boilerplate',
-        description: 'View Offical Documentation',
-      },
-    },
-  });
-
-  await server.register(fastifySwaggerUi, {
-    routePrefix: '/docs',
-  });
-
   server.route(AUTH_DEMO_POST);
   server.route(AUTH_GITHUB_POST);
   server.route(AUTH_MAGIC_LINK_SEND_POST);
@@ -105,10 +71,7 @@ export async function startServer() {
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
-  server.route(OAUTH_AIRTABLE_ACCESS_TOKEN_POST);
   server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
-  server.route(ONE_TIME_PIN_EMAIL_SEND_POST);
-  server.route(ONE_TIME_PIN_EMAIL_VERIFY_POST);
   server.route({
     ...STUDIO_FORMS_GET,
     preHandler: requireStudioAuth,
@@ -135,14 +98,11 @@ export async function startServer() {
   });
 
   server.route({
-    handler: async (request, reply) => {
-      reply.redirect('/docs', 302);
+    handler: async (_request, reply) => {
+      reply.status(200).send();
     },
     method: 'GET',
     url: '/',
-    schema: {
-      tags: ['X-HIDDEN'],
-    },
   });
 
   server.route({

@@ -33,7 +33,6 @@ type CompiledFieldBase = {
 
 export type CompiledEmailField = CompiledFieldBase & {
   type: "email";
-  otp?: boolean;
   block_free_email?: boolean;
 };
 
@@ -69,10 +68,6 @@ export type CompiledCameraField = CompiledFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
-export type CompiledTurnstileField = CompiledFieldBase & {
-  type: "turnstile";
-};
-
 export type CompiledFileUploadField = CompiledFieldBase & {
   type: "file_upload";
   accepted_mime_types?: string[];
@@ -102,7 +97,6 @@ export type CompiledField =
   | CompiledSelectField
   | CompiledGeolocationField
   | CompiledCameraField
-  | CompiledTurnstileField
   | CompiledFileUploadField
   | CompiledGenericField;
 

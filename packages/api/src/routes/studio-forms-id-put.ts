@@ -1,6 +1,6 @@
 import type { IDeclarativeForm } from '@declarativeforms/types';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { updateStudioFormById } from '../core';
+import { getContainer } from '../core';
 
 export const STUDIO_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -10,7 +10,8 @@ export const STUDIO_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const form = await updateStudioFormById(request.params.id, request.body);
+    const { studioFormService } = await getContainer();
+    const form = await studioFormService.update(request.params.id, request.body);
 
     if (!form) {
       reply.status(404).send();
@@ -21,26 +22,4 @@ export const STUDIO_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
   },
   method: 'PUT',
   url: '/api/v1/studio/forms/:id',
-  schema: {
-    tags: ['studio'],
-    summary: 'Update a studio form',
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-      },
-      required: ['id'],
-    },
-    body: {
-      type: 'object',
-      additionalProperties: true,
-    },
-    response: {
-      200: {
-        type: 'object',
-        additionalProperties: true,
-      },
-      404: { type: 'null' },
-    },
-  },
 };

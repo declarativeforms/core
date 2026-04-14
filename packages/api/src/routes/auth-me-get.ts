@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { findUserByToken, parseAuthorizationHeader } from '../core';
+import { getContainer, parseAuthorizationHeader } from '../core';
 
 export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
   handler: async (request: FastifyRequest, reply: FastifyReply) => {
@@ -10,7 +10,8 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
       return;
     }
 
-    const user = await findUserByToken(token);
+    const { authService } = await getContainer();
+    const user = await authService.verify(token);
 
     if (!user) {
       reply.status(401).send({ error: 'Unauthorized' });
@@ -18,33 +19,9 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
     }
 
     reply.status(200).send({
-      github_id: user.github_id,
-      login: user.login,
-      name: user.name,
-      avatar_url: user.avatar_url,
+      username: user.username,
     });
   },
   method: 'GET',
   url: '/api/v1/auth/me',
-  schema: {
-    tags: ['auth'],
-    summary: 'Get the currently authenticated user',
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          github_id: { type: 'number' },
-          login: { type: 'string' },
-          name: { type: 'string', nullable: true },
-          avatar_url: { type: 'string' },
-        },
-      },
-      401: {
-        type: 'object',
-        properties: {
-          error: { type: 'string' },
-        },
-      },
-    },
-  },
 };

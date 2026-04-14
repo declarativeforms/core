@@ -1,6 +1,4 @@
-export * from './connections';
-export * from './forms';
-export * from './one-time-pin';
-export * from './studio-forms';
-export * from './studio-magic-link';
-export * from './submissions';
+export { GitHubFileRepository } from './github-file.repository';
+export { StudioFormRepository } from './studio-form.repository';
+export { StudioMagicLinkRepository } from './studio-magic-link.repository';
+export { SubmissionRepository } from './submission.repository';

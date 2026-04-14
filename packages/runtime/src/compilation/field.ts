@@ -69,7 +69,6 @@ export function compileField(
       return {
         ...base,
         type: field.type,
-        ...(field.otp !== undefined && { otp: field.otp }),
         ...(field.block_free_email !== undefined && {
           block_free_email: field.block_free_email,
         }),
@@ -134,7 +133,6 @@ export function compileField(
       };
 
     case "geolocation":
-    case "turnstile":
       return { ...base, type: field.type };
 
     case "file_upload":

@@ -12,7 +12,6 @@ import { getEmailValidation } from "../fields/email/validation";
 // ---------------------------------------------------------------------------
 
 export type ValidationMessages = {
-  emailOtpRequired?: string;
   emailFreeEmailBlocked?: string;
 };
 
@@ -37,7 +36,7 @@ export function buildFieldValidation(
 ): FieldValidation {
   const { config, ...metadata } = buildFieldMetadata(field);
 
-  // Inject email-specific validators (OTP verification, free email blocking)
+  // Inject email-specific validators (for example free email blocking)
   const emailValidation = getEmailValidation(field, messages);
   if (emailValidation) {
     const validate = config.validate ?? {};

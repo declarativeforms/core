@@ -22,7 +22,6 @@ export const DECLARATIVE_FIELD_TYPES = [
   "signature",
   "single_select",
   "time",
-  "turnstile",
   "url",
 ] as const;
 
@@ -38,7 +37,6 @@ export function isDeclarativeFieldType(
 }
 
 export const DECLARATIVE_CONNECTION_TYPES = [
-  "airtable",
   "email",
   "webhook",
 ] as const;
@@ -109,7 +107,6 @@ export type IDeclarativeFormFieldBase = {
 
 export type IDeclarativeFormEmailField = IDeclarativeFormFieldBase & {
   type?: "email";
-  otp?: boolean;
   block_free_email?: boolean;
 };
 
@@ -149,10 +146,6 @@ export type IDeclarativeFormCameraField = IDeclarativeFormFieldBase & {
   facing_mode?: "front" | "rear";
 };
 
-export type IDeclarativeFormTurnstileField = IDeclarativeFormFieldBase & {
-  type?: "turnstile";
-};
-
 export type IDeclarativeFormFileUploadField = IDeclarativeFormFieldBase & {
   type?: "file_upload";
   accepted_mime_types?: string[];
@@ -180,7 +173,6 @@ export type IDeclarativeFormField =
   | IDeclarativeFormSelectField
   | IDeclarativeFormGeolocationField
   | IDeclarativeFormCameraField
-  | IDeclarativeFormTurnstileField
   | IDeclarativeFormFileUploadField
   | IDeclarativeFormGenericField;
 
@@ -206,14 +198,6 @@ export type IDeclarativeFormCompletion = {
 };
 
 export type IDeclarativeFormCompletionRule = IDeclarativeFormCompletion & {
-  when?: string;
-};
-
-export type IDeclarativeFormRawAirtableConnection = {
-  type?: "airtable";
-  connection_id?: string;
-  base_id?: string;
-  table_id_or_name?: string;
   when?: string;
 };
 
@@ -246,7 +230,6 @@ export type IDeclarativeForm = {
   completion?: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[];
   sections?: Array<IDeclarativeFormSection>;
   connections?: Array<
-    | IDeclarativeFormRawAirtableConnection
     | IDeclarativeFormRawWebhookConnection
     | IDeclarativeFormRawEmailConnection
   >;

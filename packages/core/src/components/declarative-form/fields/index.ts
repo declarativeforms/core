@@ -1,7 +1,6 @@
 export * from "./address-field.component";
 export * from "./camera-field.component";
 export * from "./dropdown-field.component";
-export * from "./email-field.component";
 export * from "./file-upload/file-upload-field.component";
 export * from "./hidden-field.component";
 export * from "./input-field.component";
@@ -11,4 +10,3 @@ export * from "./rating-field.component";
 export * from "./signature-field.component";
 export * from "./geolocation/geolocation-field.component";
 export * from "./single-select-field.component";
-export * from "./turnstile-field.component";

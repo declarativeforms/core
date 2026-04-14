@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
 import { buildFieldValidation } from "../supporting/validation";
-import { getOtpFieldNames, isOtpVerifiedValue } from "./email/otp-field-names";
+import { getSecondaryValidationTokenFieldName } from "./secondary-token-field";
 import { Input } from "@/components/ui";
 import { useFormI18n } from "../supporting/use-form-i18n";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,10 @@ export function EmailField({
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
   const otpEnabled = field.type === "email" && field.otp === true;
-  const otpFieldNames = useMemo(() => getOtpFieldNames(field.id), [field.id]);
+  const tokenFieldName = useMemo(
+    () => getSecondaryValidationTokenFieldName(field.id),
+    [field.id]
+  );
   const otpMessages = useMemo(
     () => ({
       enterCode: t("email.otp.enter_code"),
@@ -38,9 +41,7 @@ export function EmailField({
       return;
     }
 
-    form.register(otpFieldNames.verified);
-    form.register(otpFieldNames.token);
-    form.register(otpFieldNames.requestId);
+    form.register(tokenFieldName);
 
     const options = {
       shouldDirty: false,
@@ -48,42 +49,26 @@ export function EmailField({
       shouldValidate: false,
     } as const;
 
-    if (form.getValues(otpFieldNames.verified) === undefined) {
-      form.setValue(otpFieldNames.verified, false, options);
+    if (form.getValues(tokenFieldName) === undefined) {
+      form.setValue(tokenFieldName, "", options);
     }
+  }, [form, otpEnabled, tokenFieldName]);
 
-    if (form.getValues(otpFieldNames.token) === undefined) {
-      form.setValue(otpFieldNames.token, "", options);
-    }
-
-    if (form.getValues(otpFieldNames.requestId) === undefined) {
-      form.setValue(otpFieldNames.requestId, "", options);
-    }
-  }, [form, otpEnabled, otpFieldNames]);
-
-  const watchedVerified = useWatch({
-    control: form.control,
-    name: otpFieldNames.verified,
-  });
   const watchedToken = useWatch({
     control: form.control,
-    name: otpFieldNames.token,
-  });
-  const watchedRequestId = useWatch({
-    control: form.control,
-    name: otpFieldNames.requestId,
+    name: tokenFieldName,
   });
 
-  const isVerified = isOtpVerifiedValue(watchedVerified);
-  const otpRequestId =
-    typeof watchedRequestId === "string" ? watchedRequestId : "";
-  const otpToken = typeof watchedToken === "string" ? watchedToken : "";
+  const verificationToken =
+    typeof watchedToken === "string" ? watchedToken : "";
+  const isVerified = verificationToken !== "";
 
   const emailValue = useMemo(
     () => toFieldString(controllerField.value),
     [controllerField.value]
   );
 
+  const [requestId, setRequestId] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -108,19 +93,6 @@ export function EmailField({
     Math.ceil((resendAvailableAt - clockMs) / 1000)
   );
 
-  const setOtpFieldValues = (
-    values: { requestId: string; token: string; verified: boolean },
-    options: {
-      shouldDirty: boolean;
-      shouldTouch: boolean;
-      shouldValidate: boolean;
-    }
-  ) => {
-    form.setValue(otpFieldNames.verified, values.verified, options);
-    form.setValue(otpFieldNames.token, values.token, options);
-    form.setValue(otpFieldNames.requestId, values.requestId, options);
-  };
-
   const clearOtpState = () => {
     if (!otpEnabled) {
       return;
@@ -132,8 +104,8 @@ export function EmailField({
       shouldValidate: false,
     } as const;
 
-    setOtpFieldValues({ requestId: "", token: "", verified: false }, options);
-
+    form.setValue(tokenFieldName, "", options);
+    setRequestId("");
     setOtpCode("");
     setResendAvailableAt(0);
     setStatusMessage(null);
@@ -146,7 +118,7 @@ export function EmailField({
       return;
     }
 
-    if (isVerified || otpRequestId || otpToken) {
+    if (isVerified || requestId || verificationToken) {
       clearOtpState();
     }
   };
@@ -177,8 +149,8 @@ export function EmailField({
         shouldValidate: false,
       } as const;
 
-      setOtpFieldValues({ requestId, token: "", verified: false }, options);
-
+      form.setValue(tokenFieldName, "", options);
+      setRequestId(requestId);
       setOtpCode("");
       setResendAvailableAt(Date.now() + Math.max(1, resendAfterSeconds) * 1000);
       setClockMs(Date.now());
@@ -192,7 +164,7 @@ export function EmailField({
   };
 
   const verifyOtp = async () => {
-    if (!otpRequestId) {
+    if (!requestId) {
       setStatusMessage(otpMessages.requestCodeFirst);
       return;
     }
@@ -208,9 +180,8 @@ export function EmailField({
     try {
       const { verificationToken } = await verifyEmailOtp({
         email: emailValue,
-        fieldId: field.id,
         otp: otpCode.trim(),
-        requestId: otpRequestId,
+        requestId,
         messages: {
           requestFailed: otpMessages.requestFailed,
           startFailed: otpMessages.startFailed,
@@ -224,10 +195,7 @@ export function EmailField({
         shouldValidate: true,
       } as const;
 
-      setOtpFieldValues(
-        { requestId: otpRequestId, token: verificationToken, verified: true },
-        options
-      );
+      form.setValue(tokenFieldName, verificationToken, options);
       setOtpCode("");
       form.trigger(field.id);
     } catch {
@@ -289,13 +257,13 @@ export function EmailField({
             disabled={
               isSending ||
               !isEmailValid(emailValue) ||
-              (otpRequestId !== "" && secondsUntilResend > 0)
+              (requestId !== "" && secondsUntilResend > 0)
             }
             onClick={() => {
               void sendOtp();
             }}
           >
-            {otpRequestId
+            {requestId
               ? secondsUntilResend > 0
                 ? t("email.otp.resend_in_seconds", {
                     seconds: secondsUntilResend,
@@ -306,7 +274,7 @@ export function EmailField({
         )}
       </div>
 
-      {!isVerified && otpRequestId ? (
+      {!isVerified && requestId ? (
         <div className="relative">
           <Input
             value={otpCode}

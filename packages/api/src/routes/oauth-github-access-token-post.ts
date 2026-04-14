@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { createGitHubConnection } from '../core';
+import { getContainer } from '../core';
 
 export const OAUTH_GITHUB_ACCESS_TOKEN_POST: RouteOptions<any, any, any, any> =
   {
@@ -9,32 +9,16 @@ export const OAUTH_GITHUB_ACCESS_TOKEN_POST: RouteOptions<any, any, any, any> =
       }>,
       reply: FastifyReply,
     ) => {
-      const result = await createGitHubConnection(request.body.code);
+      const { gitHubGateway } = await getContainer();
+      const accessToken = await gitHubGateway.findAccessToken(request.body.code);
 
-      reply
-        .status(200)
-        .send({ access_token: result.accessToken, id: result.id });
+      if (!accessToken) {
+        reply.status(401).send({ error: 'Authentication failed' });
+        return;
+      }
+
+      reply.status(200).send({ access_token: accessToken });
     },
     method: 'POST',
     url: '/api/v1/oauth/github/access_token',
-    schema: {
-      tags: ['oauth2'],
-      summary: 'Exchange GitHub OAuth code for an access token',
-      body: {
-        type: 'object',
-        required: ['code'],
-        properties: {
-          code: { type: 'string' },
-        },
-      },
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            access_token: { type: 'string' },
-            id: { type: 'string' },
-          },
-        },
-      },
-    },
   };

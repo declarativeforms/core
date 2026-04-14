@@ -31,7 +31,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-3">
           {user ? (
             <span className="text-xs font-medium text-muted-foreground">
-              {user.login}
+              {user.username}
             </span>
           ) : null}
 
