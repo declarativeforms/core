@@ -11,10 +11,6 @@ export class StudioFormService {
     private formService: FormService,
   ) {}
 
-  public async list(): Promise<Array<IDeclarativeForm>> {
-    return this.studioFormRepository.findAll();
-  }
-
   public async create(form: IDeclarativeForm): Promise<IDeclarativeForm> {
     const now = new Date().toISOString();
 
@@ -33,6 +29,18 @@ export class StudioFormService {
     await this.studioFormRepository.insert(nextForm);
 
     return nextForm;
+  }
+
+  public async delete(id: string): Promise<boolean> {
+    if (!id.startsWith(STUDIO_FORM_PREFIX)) {
+      return false;
+    }
+
+    return this.studioFormRepository.delete(id);
+  }
+
+  public async list(): Promise<Array<IDeclarativeForm>> {
+    return this.studioFormRepository.findAll();
   }
 
   public async update(
@@ -59,13 +67,5 @@ export class StudioFormService {
     await this.studioFormRepository.update(id, nextForm);
 
     return nextForm;
-  }
-
-  public async delete(id: string): Promise<boolean> {
-    if (!id.startsWith(STUDIO_FORM_PREFIX)) {
-      return false;
-    }
-
-    return this.studioFormRepository.delete(id);
   }
 }

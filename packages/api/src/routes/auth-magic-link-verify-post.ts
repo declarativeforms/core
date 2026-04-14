@@ -8,31 +8,27 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const { request_id, token } = request.body;
-
-    if (!request_id || !token) {
-      reply.status(400).send({ error: 'request_id and token are required' });
-      return;
-    }
-
     const { authService, studioMagicLinkService } = await getContainer();
-    const email = await studioMagicLinkService.verifyToken({
-      requestId: request_id,
-      token,
+
+    const username = await studioMagicLinkService.verifyToken({
+      requestId: request.body.request_id,
+      token: request.body.token,
     });
 
-    if (!email) {
+    if (!username) {
       reply.status(401).send({ error: 'Invalid or expired magic link' });
       return;
     }
 
-    const authResult = authService.issueTokenAndUser(
-      authService.createStudioEmailUser(email),
-    );
+    const user = {
+      username,
+    };
+
+    const token = authService.sign(user);
 
     reply.status(200).send({
-      token: authResult.token,
-      user: authResult.user,
+      token,
+      user,
     });
   },
   method: 'POST',

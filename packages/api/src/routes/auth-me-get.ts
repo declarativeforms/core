@@ -11,7 +11,7 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
     }
 
     const { authService } = await getContainer();
-    const user = await authService.findUserByToken(token);
+    const user = await authService.verify(token);
 
     if (!user) {
       reply.status(401).send({ error: 'Unauthorized' });

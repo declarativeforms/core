@@ -71,7 +71,7 @@ export async function getContainer() {
   const submissionRepository = new SubmissionRepository(db);
 
   // Services
-  const authService = new AuthService(gitHubGateway);
+  const authService = new AuthService();
   const fileService = new FileService(s3Client);
   const formService = new FormService(
     gitHubFileRepository,

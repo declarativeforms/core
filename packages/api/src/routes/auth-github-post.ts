@@ -8,19 +8,27 @@ export const AUTH_GITHUB_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const { authService } = await getContainer();
-    const result = await authService.findTokenAndUserByGitHubCode(
-      request.body.code,
-    );
+    const { authService, gitHubGateway } = await getContainer();
 
-    if (!result) {
-      reply.status(401).send({ error: 'Authentication failed' });
+    const accessToken = await gitHubGateway.findAccessToken(request.body.code);
+
+    if (!accessToken) {
+      reply.status(401).send();
+
+      return;
+    }
+
+    const user = await gitHubGateway.findUser(accessToken);
+
+    if (!user) {
+      reply.status(401).send();
+
       return;
     }
 
     reply.status(200).send({
-      token: result.token,
-      user: result.user,
+      token: authService.sign(user),
+      user,
     });
   },
   method: 'POST',

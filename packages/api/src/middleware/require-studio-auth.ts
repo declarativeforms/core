@@ -13,10 +13,11 @@ export async function requireStudioAuth(
   }
 
   const { authService } = await getContainer();
-  const user = await authService.findUserByToken(token);
+  const user = await authService.verify(token);
 
   if (!user) {
     reply.status(401).send({ error: 'Unauthorized' });
+
     return;
   }
 }
