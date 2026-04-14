@@ -1,11 +1,7 @@
 import type { User } from '../types';
 
 export class GitHubGateway {
-  public async findAccessToken(
-    code: string,
-    clientId: string,
-    clientSecret: string,
-  ): Promise<string | null> {
+  public async findAccessToken(code: string): Promise<string | null> {
     const response = await fetch(
       'https://github.com/login/oauth/access_token',
       {
@@ -15,8 +11,8 @@ export class GitHubGateway {
           Accept: 'application/json',
         },
         body: JSON.stringify({
-          client_id: clientId,
-          client_secret: clientSecret,
+          client_id: process.env.STUDIO_GITHUB_CLIENT_ID as string,
+          client_secret: process.env.STUDIO_GITHUB_CLIENT_SECRET as string,
           code,
         }),
       },
@@ -39,14 +35,10 @@ export class GitHubGateway {
       return null;
     }
 
-    const data: any = await response.json();
+    const data = (await response.json()) as any;
 
     return {
-      avatar_url: data.avatar_url || '',
-      github_id: data.id || 0,
-      id: data.id || 0,
-      login: data.login || '',
-      name: data.name || null,
+      username: data.email,
     };
   }
 

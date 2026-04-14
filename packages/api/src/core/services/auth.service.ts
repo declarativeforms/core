@@ -9,23 +9,15 @@ export class AuthService {
 
   public createStudioEmailUser(email: string): User {
     return {
-      avatar_url: '',
-      github_id: 0,
-      id: 0,
-      login: email,
-      name: null,
+      username: email,
     };
   }
 
   public issueToken(user: User): string {
     return jwt.sign(
       {
-        avatar_url: user.avatar_url,
-        github_id: user.github_id,
-        id: user.id,
-        login: user.login,
-        name: user.name,
-        sub: user.login,
+        sub: user.username,
+        username: user.username,
       },
       process.env.AUTH_JWT_SECRET || '',
       { expiresIn: AUTH_JWT_EXPIRY },
@@ -48,20 +40,19 @@ export class AuthService {
 
     try {
       const result = jwt.verify(token, secret) as jwt.JwtPayload;
+      const username =
+        typeof result.username === 'string'
+          ? result.username
+          : typeof result.sub === 'string'
+            ? result.sub
+            : '';
+
+      if (!username) {
+        return null;
+      }
 
       return {
-        avatar_url:
-          typeof result.avatar_url === 'string' ? result.avatar_url : '',
-        github_id:
-          typeof result.github_id === 'number' ? result.github_id : 0,
-        id: typeof result.id === 'number' ? result.id : 0,
-        login:
-          typeof result.login === 'string'
-            ? result.login
-            : typeof result.sub === 'string'
-              ? result.sub
-              : '',
-        name: typeof result.name === 'string' ? result.name : null,
+        username,
       };
     } catch {
       return null;
@@ -72,11 +63,7 @@ export class AuthService {
     token: string;
     user: User;
   } | null> {
-    const accessToken = await this.gitHubGateway.findAccessToken(
-      code,
-      process.env.STUDIO_GITHUB_CLIENT_ID as string,
-      process.env.STUDIO_GITHUB_CLIENT_SECRET as string,
-    );
+    const accessToken = await this.gitHubGateway.findAccessToken(code);
 
     if (!accessToken) {
       return null;

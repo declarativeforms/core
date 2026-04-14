@@ -19,10 +19,7 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
     }
 
     reply.status(200).send({
-      github_id: user.github_id,
-      login: user.login,
-      name: user.name,
-      avatar_url: user.avatar_url,
+      username: user.username,
     });
   },
   method: 'GET',
