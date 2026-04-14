@@ -1,4 +1,19 @@
-import { Github, Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft } from "lucide-react";
+
+function Github(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      width="1em"
+      height="1em"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M12 .5C5.73.5.75 5.48.75 11.75c0 4.99 3.23 9.21 7.71 10.71.56.1.76-.24.76-.54 0-.27-.01-1.16-.02-2.1-3.14.68-3.8-1.34-3.8-1.34-.51-1.29-1.25-1.63-1.25-1.63-1.02-.7.08-.69.08-.69 1.12.08 1.71 1.15 1.71 1.15 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.71-1.5-2.5-.28-5.14-1.25-5.14-5.58 0-1.23.44-2.24 1.15-3.03-.12-.28-.5-1.43.11-2.98 0 0 .94-.3 3.07 1.16.89-.25 1.85-.37 2.8-.38.95.01 1.91.13 2.8.38 2.13-1.46 3.07-1.16 3.07-1.16.61 1.55.23 2.7.11 2.98.72.79 1.15 1.8 1.15 3.03 0 4.34-2.65 5.29-5.16 5.57.4.35.76 1.03.76 2.08 0 1.5-.01 2.71-.01 3.08 0 .3.2.65.77.54 4.48-1.5 7.7-5.72 7.7-10.71C23.25 5.48 18.27.5 12 .5z" />
+    </svg>
+  );
+}
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";

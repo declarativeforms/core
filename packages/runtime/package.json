@@ -14,10 +14,10 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@declarativeforms/types": "*",
-    "@declarativeforms/common": "*"
+    "@declarativeforms/common": "*",
+    "@declarativeforms/types": "*"
   },
   "devDependencies": {
-    "typescript": "~5.9.3"
+    "typescript": "^6.0.2"
   }
 }

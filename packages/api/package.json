@@ -15,30 +15,30 @@
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/qs": "^6.15.0",
     "jest": "^30.3.0",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.2",
     "ts-jest": "^29.4.9",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1027.0",
+    "@aws-sdk/client-s3": "^3.1030.0",
     "@declarativeforms/common": "*",
     "@declarativeforms/types": "*",
     "@faker-js/faker": "^10.4.0",
     "@fastify/cors": "^11.2.0",
-    "@fastify/multipart": "^9.4.0",
+    "@fastify/multipart": "^10.0.0",
     "@types/md5": "^2.3.6",
-    "dotenv": "^17.4.1",
-    "fastify": "^5.8.4",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.8.5",
     "handlebars": "^4.7.9",
     "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.3",
     "md5": "^2.3.0",
     "mongodb": "^7.1.1",
     "qs": "^6.15.1",
-    "resend": "^6.10.0"
+    "resend": "^6.11.0"
   }
 }

@@ -11,7 +11,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2023"
+    "target": "ES2023",
+    "types": ["node", "jest"],
+    "ignoreDeprecations": "6.0"
   },
   "references": [{ "path": "../types" }, { "path": "../common" }],
   "include": ["src"]
