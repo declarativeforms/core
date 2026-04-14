@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { listFormSubmissions } from '../core';
+import { getContainer } from '../core';
 
 export const FORMS_ID_SUBMISSIONS_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -17,7 +17,8 @@ export const FORMS_ID_SUBMISSIONS_GET: RouteOptions<any, any, any, any> = {
     }
 
     const token = authorizationHeader.split(' ')[1];
-    const submissions = await listFormSubmissions(request.params.id, token);
+    const { submissionService } = await getContainer();
+    const submissions = await submissionService.listFormSubmissions(request.params.id, token);
 
     if (!submissions) {
       reply.status(403).send();
@@ -28,28 +29,4 @@ export const FORMS_ID_SUBMISSIONS_GET: RouteOptions<any, any, any, any> = {
   },
   method: 'GET',
   url: '/api/v1/forms/:id/submissions',
-  schema: {
-    tags: ['forms'],
-    summary: 'List submissions for a form',
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-      },
-      required: ['id'],
-    },
-    security: [
-      {
-        apiKey: [],
-      },
-    ],
-    response: {
-      200: {
-        type: 'array',
-        items: { type: 'object', additionalProperties: true },
-      },
-      401: { type: 'null' },
-      403: { type: 'null' },
-    },
-  },
 };

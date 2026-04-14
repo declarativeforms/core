@@ -4,7 +4,6 @@ import {
   AddressField,
   CameraField,
   DropdownField,
-  EmailField,
   FileUploadField,
   GeolocationField,
   HiddenField,
@@ -14,7 +13,6 @@ import {
   RatingField,
   SignatureField,
   SingleSelectField,
-  TurnstileField,
 } from "../fields";
 import type { DeclarativeFieldType } from "../supporting/types";
 import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
@@ -33,7 +31,7 @@ export const fieldRegistry: Record<
   date: InputField,
   date_month: InputField,
   dropdown: DropdownField,
-  email: EmailField,
+  email: InputField,
   geolocation: GeolocationField,
   file_upload: FileUploadField,
   hidden: HiddenField,
@@ -46,6 +44,5 @@ export const fieldRegistry: Record<
   signature: SignatureField,
   single_select: SingleSelectField,
   time: InputField,
-  turnstile: TurnstileField,
   url: InputField,
 };

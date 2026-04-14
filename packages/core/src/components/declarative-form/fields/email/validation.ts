@@ -2,10 +2,8 @@ import type { RegisterOptions, Validate } from "react-hook-form";
 
 import type { CompiledField } from "@declarativeforms/runtime";
 import { FREE_EMAIL_DOMAINS } from "./free-email-domains";
-import { getOtpFieldNames, isOtpVerifiedValue } from "./otp-field-names";
 
 export type EmailValidationMessages = {
-  emailOtpRequired?: string;
   emailFreeEmailBlocked?: string;
 };
 
@@ -16,21 +14,6 @@ export function getEmailValidation(
   if (field.type !== "email") return undefined;
 
   const validators: Record<string, Validate<unknown, Record<string, unknown>>> = {};
-
-  if (field.otp) {
-    const otpFieldNames = getOtpFieldNames(field.id);
-    validators.otp = (value, formValues) => {
-      if (value === undefined || value === null || value === "") return true;
-      const values =
-        formValues && typeof formValues === "object"
-          ? (formValues as Record<string, unknown>)
-          : {};
-      if (!isOtpVerifiedValue(values[otpFieldNames.verified])) {
-        return messages?.emailOtpRequired ?? "";
-      }
-      return true;
-    };
-  }
 
   if (field.block_free_email) {
     validators.blockFreeEmail = (value) => {

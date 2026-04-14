@@ -50,8 +50,7 @@
               "field-types/signature",
               "field-types/geolocation",
               "field-types/camera",
-              "field-types/hidden",
-              "field-types/turnstile"
+              "field-types/hidden"
             ]
           },
           {
@@ -70,8 +69,7 @@
               "examples/send-submissions-to-a-webhook",
               "examples/connect-a-form-to-zapier-n8n-or-make",
               "examples/route-to-an-external-website",
-              "examples/embed-a-form-in-an-iframe",
-              "examples/protect-a-form-with-cloudflare-turnstile"
+              "examples/embed-a-form-in-an-iframe"
             ]
           }
         ]

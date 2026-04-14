@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { findSubmissionById } from '../core';
+import { getContainer } from '../core';
 
 export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -8,7 +8,8 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const submission = await findSubmissionById(
+    const { submissionService } = await getContainer();
+    const submission = await submissionService.findById(
       request.params.id,
       request.params.submissionId,
     );
@@ -22,23 +23,4 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
   },
   method: 'GET',
   url: '/api/v1/forms/:id/submissions/:submissionId',
-  schema: {
-    tags: ['forms'],
-    summary: 'Get a specific submission',
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        submissionId: { type: 'string' },
-      },
-      required: ['id', 'submissionId'],
-    },
-    response: {
-      200: {
-        type: 'object',
-        additionalProperties: true,
-      },
-      404: { type: 'null' },
-    },
-  },
 };

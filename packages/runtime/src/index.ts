@@ -47,7 +47,6 @@ export type {
   CompiledSelectField,
   CompiledGeolocationField,
   CompiledCameraField,
-  CompiledTurnstileField,
   CompiledGenericField,
   CompiledField,
   CompiledSection,

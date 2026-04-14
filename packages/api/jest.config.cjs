@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['<rootDir>/src/**/*.test.ts'],
   moduleNameMapper: {
+    '^@declarativeforms/common$': '<rootDir>/../common/src',
     '^@declarativeforms/types$': '<rootDir>/../types/src',
   },
 };

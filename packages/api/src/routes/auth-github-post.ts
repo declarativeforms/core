@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { findTokenAndUserByCode } from '../core';
+import { getContainer } from '../core';
 
 export const AUTH_GITHUB_POST: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -8,7 +8,10 @@ export const AUTH_GITHUB_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const result = await findTokenAndUserByCode(request.body.code);
+    const { authService } = await getContainer();
+    const result = await authService.findTokenAndUserByGitHubCode(
+      request.body.code,
+    );
 
     if (!result) {
       reply.status(401).send({ error: 'Authentication failed' });
@@ -22,38 +25,4 @@ export const AUTH_GITHUB_POST: RouteOptions<any, any, any, any> = {
   },
   method: 'POST',
   url: '/api/v1/auth/github',
-  schema: {
-    tags: ['auth'],
-    summary: 'Authenticate with GitHub OAuth code',
-    body: {
-      type: 'object',
-      required: ['code'],
-      properties: {
-        code: { type: 'string' },
-      },
-    },
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          token: { type: 'string' },
-          user: {
-            type: 'object',
-            properties: {
-              id: { type: 'number' },
-              login: { type: 'string' },
-              name: { type: 'string', nullable: true },
-              avatar_url: { type: 'string' },
-            },
-          },
-        },
-      },
-      401: {
-        type: 'object',
-        properties: {
-          error: { type: 'string' },
-        },
-      },
-    },
-  },
 };

@@ -292,13 +292,6 @@ export function buildValidationRules(
     }
   }
 
-  if (fieldType === "turnstile" && !rules.some((rule) => rule.type === "required")) {
-    rules.push({
-      type: "required",
-      message: interpolateTemplate(messages.required, {}, { label }),
-    });
-  }
-
   return rules;
 }
 

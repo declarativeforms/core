@@ -86,7 +86,10 @@ export async function sendMagicLink(
   const response = await fetch(getBackendUrl("auth/magic-link/send"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, redirect_url: redirectUrl }),
+    body: JSON.stringify({
+      email,
+      redirect_url: redirectUrl,
+    }),
   });
 
   if (!response.ok) {
@@ -106,7 +109,10 @@ export async function verifyMagicLink(
   const response = await fetch(getBackendUrl("auth/magic-link/verify"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ request_id: requestId, token }),
+    body: JSON.stringify({
+      request_id: requestId,
+      token,
+    }),
   });
 
   if (!response.ok) {

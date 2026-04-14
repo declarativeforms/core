@@ -61,7 +61,7 @@ The YAML example is the page.
 
 Examples:
 
-- `email` should show `otp` and `block_free_email`
+- `email` should show `block_free_email`
 - `dropdown` should show `options` and `searchable`
 - `rating` should show `min_label` and `max_label`
 - `camera` should show `facing_mode`

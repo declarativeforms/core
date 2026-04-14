@@ -26,29 +26,12 @@ export const esMessages: TranslationMessages = {
   "address.loading_suggestions": "Cargando sugerencias",
   "address.no_results": "No se encontraron resultados.",
   "email.placeholder_default": "Tu respuesta",
-  "email.placeholder_otp": "tu@email.com",
-  "email.otp.invalid_email_before_send":
-    "Introduce un correo válido antes de solicitar un código.",
-  "email.otp.send_failed": "No se pudo enviar el código de verificación.",
-  "email.otp.request_code_first": "Solicita primero un código de verificación.",
-  "email.otp.enter_code": "Introduce el código de verificación.",
-  "email.otp.invalid_code": "Código de verificación no válido.",
-  "email.otp.verification_code_placeholder": "Introduce el código de 6 dígitos",
-  "email.otp.verification_code_aria_label": "Código de verificación",
-  "email.otp.send_code": "Enviar código",
-  "email.otp.resend": "Reenviar",
-  "email.otp.resend_in_seconds": "Reenviar en {{seconds}}s",
-  "email.otp.verify": "Verificar",
-  "email.otp.request_failed": "La solicitud falló. Inténtalo de nuevo.",
-  "email.otp.start_failed": "No se pudo iniciar la verificación OTP.",
-  "email.otp.token_missing":
-    "Falta el token de verificación OTP en la respuesta.",
   "connections.success_title": "Éxito",
   "connections.success_description":
     "Tu conexión se creó correctamente. Usa el ID de abajo en tu configuración YAML.",
   "connections.connection_id": "ID de conexión",
   "connections.helper":
-    "Este ID conecta tu formulario con Airtable, GitHub o Google Sheets.",
+    "Este ID conecta tu formulario con GitHub o Google Sheets.",
   "cookie.message": "Usamos cookies para mejorar tu experiencia.",
   "cookie.learn_more": "Más información",
   "cookie.decline": "Rechazar",
@@ -79,8 +62,6 @@ export const esMessages: TranslationMessages = {
     "{{label}} debe tener al menos {{min}} caracteres.",
   "validation.max_length":
     "{{label}} debe tener como máximo {{max}} caracteres.",
-  "validation.email_otp_required":
-    "Por favor, verifica tu correo electrónico con OTP.",
   "validation.email_free_blocked":
     "Por favor, utiliza un correo electrónico de trabajo.",
   "validation.date_min":

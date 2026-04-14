@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { findUserByToken, parseAuthorizationHeader } from '../core';
+import { getContainer, parseAuthorizationHeader } from '../core';
 
 export async function requireStudioAuth(
   request: FastifyRequest,
@@ -12,7 +12,8 @@ export async function requireStudioAuth(
     return;
   }
 
-  const user = await findUserByToken(token);
+  const { authService } = await getContainer();
+  const user = await authService.findUserByToken(token);
 
   if (!user) {
     reply.status(401).send({ error: 'Unauthorized' });

@@ -1,1 +1,1 @@
-export * from './github';
+export { GitHubGateway } from './github';

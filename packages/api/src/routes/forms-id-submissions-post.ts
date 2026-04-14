@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { createOrUpdateSubmission } from '../core';
+import { getContainer } from '../core';
 
 export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -10,7 +10,8 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const submission = await createOrUpdateSubmission({
+    const { submissionService } = await getContainer();
+    const submission = await submissionService.createOrUpdate({
       data: request.body,
       formId: request.params.id,
       isPartial: request.query.partial === 'true',
@@ -30,32 +31,4 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
   },
   method: 'POST',
   url: '/api/v1/forms/:id/submissions',
-  schema: {
-    tags: ['forms'],
-    summary: 'Create or update a form submission',
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-      },
-      required: ['id'],
-    },
-    querystring: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        partial: { type: 'string', enum: ['true', 'false'] },
-      },
-    },
-    body: {
-      type: 'object',
-    },
-    response: {
-      200: {
-        type: 'object',
-        additionalProperties: true,
-      },
-      422: { type: 'null' },
-    },
-  },
 };

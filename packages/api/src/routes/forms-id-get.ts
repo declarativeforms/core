@@ -1,5 +1,5 @@
 import type { IDeclarativeForm } from '@declarativeforms/types';
-import { findFormById } from '../core';
+import { getContainer } from '../core';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 
 export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
@@ -9,7 +9,8 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const form: IDeclarativeForm | null = await findFormById(
+    const { formService } = await getContainer();
+    const form: IDeclarativeForm | null = await formService.findById(
       request.params.id,
     );
 
@@ -21,22 +22,4 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
   },
   method: 'GET',
   url: '/api/v1/forms/:id',
-  schema: {
-    tags: ['forms'],
-    summary: 'Get a form by ID',
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-      },
-      required: ['id'],
-    },
-    response: {
-      200: {
-        type: 'object',
-        additionalProperties: true,
-      },
-      404: { type: 'null' },
-    },
-  },
 };

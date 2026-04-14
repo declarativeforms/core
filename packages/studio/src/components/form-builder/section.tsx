@@ -66,7 +66,6 @@ const BUILDER_FIELD_TYPES = [
   "file_upload",
   "signature",
   "time",
-  "turnstile",
   "url",
   "mobile_number",
 ] as const satisfies readonly DeclarativeFieldType[];
@@ -156,10 +155,6 @@ const FIELD_TYPE_DETAILS: Record<
   time: {
     title: "Time",
     description: "Ask for a time of day.",
-  },
-  turnstile: {
-    title: "Turnstile",
-    description: "Protect the form from bots.",
   },
   url: {
     title: "URL",

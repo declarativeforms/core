@@ -12,14 +12,12 @@ export type {
   IDeclarativeFormSelectField,
   IDeclarativeFormGeolocationField,
   IDeclarativeFormCameraField,
-  IDeclarativeFormTurnstileField,
   IDeclarativeFormFileUploadField,
   IDeclarativeFormGenericField,
   IDeclarativeFormField,
   IDeclarativeFormSection,
   IDeclarativeFormCompletion,
   IDeclarativeFormCompletionRule,
-  IDeclarativeFormRawAirtableConnection,
   IDeclarativeFormRawWebhookConnection,
   IDeclarativeFormRawEmailConnection,
   IDeclarativeForm,
@@ -28,7 +26,6 @@ export type {
   IStructuredAddress,
   IConnection,
   IWebhookConnection,
-  IAirtableConnection,
   IEmailConnection,
 } from "@declarativeforms/types";
 

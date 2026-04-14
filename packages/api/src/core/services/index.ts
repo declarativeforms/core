@@ -1,10 +1,7 @@
-export * from './auth';
-export * from './connections';
-export * from './files';
-export * from './forms';
-export * from './oauth';
-export * from './one-time-pin';
-export * from './studio-forms';
-export * from './studio-magic-link';
-export * from './submissions';
-export * from './turnstile';
+export { AuthService } from './auth.service';
+export { ConnectionRecordService } from './connection-record.service';
+export { FileService } from './file.service';
+export { FormService } from './form.service';
+export { StudioFormService } from './studio-form.service';
+export { StudioMagicLinkService } from './studio-magic-link.service';
+export { SubmissionService } from './submission.service';

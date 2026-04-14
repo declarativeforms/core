@@ -31,25 +31,4 @@ export const AUTH_DEMO_POST: RouteOptions<any, any, any, any> = {
   },
   method: 'POST',
   url: '/api/v1/auth/demo',
-  schema: {
-    tags: ['auth'],
-    summary: 'Authenticate as a demo user',
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          token: { type: 'string' },
-          user: {
-            type: 'object',
-            properties: {
-              id: { type: 'number' },
-              login: { type: 'string' },
-              name: { type: 'string', nullable: true },
-              avatar_url: { type: 'string' },
-            },
-          },
-        },
-      },
-    },
-  },
 };
