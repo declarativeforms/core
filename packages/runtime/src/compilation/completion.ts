@@ -2,12 +2,12 @@ import {
   evaluateExpression,
   interpolateTemplate,
   resolveLocalizedText,
-} from "@declarativeforms/common";
+} from '@declarativeforms/common';
 import type {
   IDeclarativeFormCompletion,
   IDeclarativeFormCompletionRule,
-} from "@declarativeforms/types";
-import type { CompiledCompletion } from "../types";
+} from '@declarativeforms/types';
+import type { CompiledCompletion } from '../types';
 
 type CompletionLike = {
   title?: unknown;
@@ -17,11 +17,6 @@ type CompletionLike = {
 
 type CompletionRuleLike<T extends CompletionLike> = T & { when?: string };
 
-/**
- * Resolves the matching completion from a single or conditional completion config.
- * Rules are evaluated top-to-bottom; the first matching `when` wins.
- * An entry without `when` acts as the default and should be placed last.
- */
 function resolveCompletion<T extends CompletionLike>(
   completion: T | CompletionRuleLike<T>[] | undefined,
   data: Record<string, unknown>,
@@ -35,11 +30,11 @@ function resolveCompletion<T extends CompletionLike>(
   }
 
   for (const rule of completion) {
-    if (rule.when) {
-      if (evaluateExpression(rule.when, data)) {
-        return rule;
-      }
-    } else {
+    if (!rule.when) {
+      return rule;
+    }
+
+    if (evaluateExpression(rule.when, data)) {
       return rule;
     }
   }
@@ -55,30 +50,33 @@ export function compileCompletion(
   locale: string,
   data: Record<string, unknown>,
 ): CompiledCompletion | undefined {
-  const resolved = resolveCompletion(completion, data);
+  const matchingCompletion = resolveCompletion(completion, data);
 
-  if (!resolved) {
+  if (!matchingCompletion) {
     return undefined;
   }
 
   return {
-    title: resolved.title
-      ? interpolateTemplate(resolveLocalizedText(resolved.title, locale), data)
-      : undefined,
-    message: resolved.message
+    title: matchingCompletion.title
       ? interpolateTemplate(
-          resolveLocalizedText(resolved.message, locale),
+          resolveLocalizedText(matchingCompletion.title, locale),
           data,
         )
       : undefined,
-    button: resolved.button
+    message: matchingCompletion.message
+      ? interpolateTemplate(
+          resolveLocalizedText(matchingCompletion.message, locale),
+          data,
+        )
+      : undefined,
+    button: matchingCompletion.button
       ? {
           label: interpolateTemplate(
-            resolveLocalizedText(resolved.button.label, locale),
+            resolveLocalizedText(matchingCompletion.button.label, locale),
             data,
           ),
           url: interpolateTemplate(
-            resolveLocalizedText(resolved.button.url, locale),
+            resolveLocalizedText(matchingCompletion.button.url, locale),
             data,
           ),
         }

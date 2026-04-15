@@ -1,28 +1,28 @@
 export type ILocalizedText = Record<string, string> | string;
 
 export const DECLARATIVE_FIELD_TYPES = [
-  "address",
-  "address_country",
-  "address_locality",
-  "address_region",
-  "camera",
-  "date",
-  "date_month",
-  "dropdown",
-  "email",
-  "file_upload",
-  "geolocation",
-  "hidden",
-  "long_text",
-  "mobile_number",
-  "multiple_select",
-  "number",
-  "rating",
-  "short_text",
-  "signature",
-  "single_select",
-  "time",
-  "url",
+  'address',
+  'address_country',
+  'address_locality',
+  'address_region',
+  'camera',
+  'date',
+  'date_month',
+  'dropdown',
+  'email',
+  'file_upload',
+  'geolocation',
+  'hidden',
+  'long_text',
+  'mobile_number',
+  'multiple_select',
+  'number',
+  'rating',
+  'short_text',
+  'signature',
+  'single_select',
+  'time',
+  'url',
 ] as const;
 
 export type DeclarativeFieldType = (typeof DECLARATIVE_FIELD_TYPES)[number];
@@ -31,12 +31,12 @@ export function isDeclarativeFieldType(
   value: unknown,
 ): value is DeclarativeFieldType {
   return (
-    typeof value === "string" &&
+    typeof value === 'string' &&
     (DECLARATIVE_FIELD_TYPES as readonly string[]).includes(value)
   );
 }
 
-export const DECLARATIVE_CONNECTION_TYPES = ["email", "webhook"] as const;
+export const DECLARATIVE_CONNECTION_TYPES = ['email', 'webhook'] as const;
 
 export type DeclarativeConnectionType =
   (typeof DECLARATIVE_CONNECTION_TYPES)[number];
@@ -45,7 +45,7 @@ export function isDeclarativeConnectionType(
   value: unknown,
 ): value is DeclarativeConnectionType {
   return (
-    typeof value === "string" &&
+    typeof value === 'string' &&
     (DECLARATIVE_CONNECTION_TYPES as readonly string[]).includes(value)
   );
 }
@@ -58,38 +58,38 @@ export type IDeclarativeFormOption =
     };
 
 export type IDeclarativeFormValidator =
-  | "required"
+  | 'required'
   | {
-      type: "required";
+      type: 'required';
       message?: ILocalizedText;
     }
   | {
-      type?: "pattern";
+      type?: 'pattern';
       regex?: string;
       message?: ILocalizedText;
     }
   | {
-      type?: "min";
+      type?: 'min';
       value?: number | string;
       message?: ILocalizedText;
     }
   | {
-      type?: "max";
+      type?: 'max';
       value?: number | string;
       message?: ILocalizedText;
     }
   | {
-      type?: "min_length";
+      type?: 'min_length';
       value?: number;
       message?: ILocalizedText;
     }
   | {
-      type?: "max_length";
+      type?: 'max_length';
       value?: number;
       message?: ILocalizedText;
     }
   | {
-      type?: "expression";
+      type?: 'expression';
       expression?: string;
       message?: ILocalizedText;
     };
@@ -103,59 +103,59 @@ export type IDeclarativeFormFieldBase = {
 };
 
 export type IDeclarativeFormEmailField = IDeclarativeFormFieldBase & {
-  type?: "email";
+  type?: 'email';
   block_free_email?: boolean;
 };
 
 export type IDeclarativeFormDropdownField = IDeclarativeFormFieldBase & {
-  type?: "dropdown";
+  type?: 'dropdown';
   searchable?: boolean;
   options?: Array<IDeclarativeFormOption>;
 };
 
 export type IDeclarativeFormRatingField = IDeclarativeFormFieldBase & {
-  type?: "rating";
+  type?: 'rating';
   min_label?: ILocalizedText;
   max_label?: ILocalizedText;
 };
 
 export type IDeclarativeFormAddressField = IDeclarativeFormFieldBase & {
-  type?: "address" | "address_locality" | "address_region" | "address_country";
-  outputFormat?: "string" | "structured";
+  type?: 'address' | 'address_locality' | 'address_region' | 'address_country';
+  outputFormat?: 'string' | 'structured';
 };
 
 export type IDeclarativeFormSelectField = IDeclarativeFormFieldBase & {
-  type?: "single_select" | "multiple_select";
+  type?: 'single_select' | 'multiple_select';
   options?: Array<IDeclarativeFormOption>;
   allow_other?: boolean;
 };
 
 export type IDeclarativeFormGeolocationField = IDeclarativeFormFieldBase & {
-  type?: "geolocation";
+  type?: 'geolocation';
 };
 
 export type IDeclarativeFormCameraField = IDeclarativeFormFieldBase & {
-  type?: "camera";
-  facing_mode?: "front" | "rear";
+  type?: 'camera';
+  facing_mode?: 'front' | 'rear';
 };
 
 export type IDeclarativeFormFileUploadField = IDeclarativeFormFieldBase & {
-  type?: "file_upload";
+  type?: 'file_upload';
   accepted_mime_types?: string[];
 };
 
 export type IDeclarativeFormGenericField = IDeclarativeFormFieldBase & {
   type?:
-    | "date"
-    | "date_month"
-    | "hidden"
-    | "long_text"
-    | "mobile_number"
-    | "number"
-    | "signature"
-    | "short_text"
-    | "time"
-    | "url";
+    | 'date'
+    | 'date_month'
+    | 'hidden'
+    | 'long_text'
+    | 'mobile_number'
+    | 'number'
+    | 'signature'
+    | 'short_text'
+    | 'time'
+    | 'url';
 };
 
 export type IDeclarativeFormField =
@@ -195,13 +195,13 @@ export type IDeclarativeFormCompletionRule = IDeclarativeFormCompletion & {
 };
 
 export type IDeclarativeFormRawWebhookConnection = {
-  type?: "webhook";
+  type?: 'webhook';
   url?: string;
   when?: string;
 };
 
 export type IDeclarativeFormRawEmailConnection = {
-  type?: "email";
+  type?: 'email';
   to?: string;
   subject?: ILocalizedText;
   body?: ILocalizedText;

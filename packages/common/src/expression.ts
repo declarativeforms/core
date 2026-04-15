@@ -3,12 +3,12 @@ export function evaluateExpression(
   data: Record<string, unknown>,
 ): boolean {
   try {
-    const fn = new Function("data", `return ${expression}`) as (
+    const fn = new Function('data', `return ${expression}`) as (
       value: Record<string, unknown>,
     ) => unknown;
 
     return Boolean(fn(data));
-  } catch (error) {
+  } catch {
     return false;
   }
 }

@@ -1,26 +1,28 @@
 import type {
   IDeclarativeFormField,
   IDeclarativeFormOption,
-} from "@declarativeforms/types";
-import { isDeclarativeFieldType } from "@declarativeforms/types";
+} from '@declarativeforms/types';
+import { isDeclarativeFieldType } from '@declarativeforms/types';
 import {
   evaluateExpression,
   interpolateTemplate,
   resolveLocalizedText,
-} from "@declarativeforms/common";
-import type { CompiledField, CompiledOption } from "../types";
-import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
-import { buildValidationRules } from "../validation";
+} from '@declarativeforms/common';
+import type { CompiledField, CompiledOption } from '../types';
+import { DEFAULT_MESSAGES, type ValidationMessages } from '../messages';
+import { buildValidationRules } from '../validation';
 
 function resolveAndInterpolate(
-  value: IDeclarativeFormField["label"],
+  text: IDeclarativeFormField['label'],
   locale: string,
   data: Record<string, unknown>,
 ): string | undefined {
-  const resolved = resolveLocalizedText(value, locale);
+  const resolved = resolveLocalizedText(text, locale);
+
   if (!resolved) {
     return undefined;
   }
+
   return interpolateTemplate(resolved, data);
 }
 
@@ -29,15 +31,19 @@ function compileOption(
   locale: string,
   data: Record<string, unknown>,
 ): CompiledOption {
-  if (typeof option === "string") {
+  if (typeof option === 'string') {
     return { label: interpolateTemplate(option, data), value: option };
   }
 
   const label = option.label
     ? interpolateTemplate(resolveLocalizedText(option.label, locale), data)
-    : "";
-  const value = option.value ?? label;
-  return { label: label || value || "", value: value || "" };
+    : '';
+  const optionValue = option.value ?? label;
+
+  return {
+    label: label || optionValue || '',
+    value: optionValue || '',
+  };
 }
 
 export function compileField(
@@ -63,10 +69,10 @@ export function compileField(
   );
 
   const base = {
-    id: field.id ?? "",
+    id: field.id ?? '',
     label,
     placeholder: resolveAndInterpolate(field.placeholder, locale, data),
-    required: validation.some((rule) => rule.type === "required"),
+    required: validation.some((rule) => rule.type === 'required'),
     visible: field.visible_when
       ? evaluateExpression(field.visible_when, data)
       : true,
@@ -75,7 +81,7 @@ export function compileField(
   };
 
   switch (field.type) {
-    case "email":
+    case 'email':
       return {
         ...base,
         type: field.type,
@@ -84,7 +90,7 @@ export function compileField(
         }),
       };
 
-    case "dropdown": {
+    case 'dropdown': {
       const options = field.options?.map((o) => compileOption(o, locale, data));
       return {
         ...base,
@@ -96,7 +102,7 @@ export function compileField(
       };
     }
 
-    case "rating":
+    case 'rating':
       return {
         ...base,
         type: field.type,
@@ -114,10 +120,10 @@ export function compileField(
         }),
       };
 
-    case "address":
-    case "address_locality":
-    case "address_region":
-    case "address_country":
+    case 'address':
+    case 'address_locality':
+    case 'address_region':
+    case 'address_country':
       return {
         ...base,
         type: field.type,
@@ -126,8 +132,8 @@ export function compileField(
         }),
       };
 
-    case "single_select":
-    case "multiple_select": {
+    case 'single_select':
+    case 'multiple_select': {
       const options = field.options?.map((o) => compileOption(o, locale, data));
       return {
         ...base,
@@ -139,7 +145,7 @@ export function compileField(
       };
     }
 
-    case "camera":
+    case 'camera':
       return {
         ...base,
         type: field.type,
@@ -148,10 +154,10 @@ export function compileField(
         }),
       };
 
-    case "geolocation":
+    case 'geolocation':
       return { ...base, type: field.type };
 
-    case "file_upload":
+    case 'file_upload':
       return {
         ...base,
         type: field.type,

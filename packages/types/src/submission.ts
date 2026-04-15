@@ -7,6 +7,6 @@ export type ISubmission = {
     ip_address: string;
     user_agent: string;
   };
-  status: "partial" | "completed";
+  status: 'partial' | 'completed';
   updated_at: string;
 };

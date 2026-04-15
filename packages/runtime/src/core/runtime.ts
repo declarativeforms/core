@@ -1,36 +1,40 @@
 import type {
   IDeclarativeForm,
   IDeclarativeFormSection,
-} from "@declarativeforms/types";
-import { evaluateExpression } from "@declarativeforms/common";
-import { compile } from "../compilation/form";
-import type { DispatchResult, FormAction, FormState } from "../types";
-import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
-import { validateSectionData } from "../validation";
+} from '@declarativeforms/types';
+import { evaluateExpression } from '@declarativeforms/common';
+import { compile } from '../compilation/form';
+import type { DispatchResult, FormAction, FormState } from '../types';
+import { DEFAULT_MESSAGES, type ValidationMessages } from '../messages';
+import { validateSectionData } from '../validation';
 
 export function resolveNextSectionId(
   section: IDeclarativeFormSection,
-  data: Record<string, unknown>,
+  formData: Record<string, unknown>,
 ): string {
-  if (typeof section.next === "string") {
+  if (typeof section.next === 'string') {
     return section.next;
   }
 
   for (const rule of section.next ?? []) {
-    if ("when" in rule) {
-      if (rule.when && rule.go && evaluateExpression(rule.when, data)) {
-        return rule.go;
-      }
-    } else if ("else" in rule && rule.else) {
+    if ('else' in rule && rule.else) {
       return rule.else;
+    }
+
+    if (!('when' in rule) || !rule.when || !rule.go) {
+      continue;
+    }
+
+    if (evaluateExpression(rule.when, formData)) {
+      return rule.go;
     }
   }
 
-  return "done";
+  return 'done';
 }
 
 export function isExternalNextSectionId(nextSectionId: string): boolean {
-  return nextSectionId.startsWith("https://");
+  return nextSectionId.startsWith('https://');
 }
 
 function getInitialSectionId(
@@ -41,7 +45,7 @@ function getInitialSectionId(
     return initialSectionId;
   }
 
-  return schema.sections?.[0]?.id ?? "";
+  return schema.sections?.[0]?.id ?? '';
 }
 
 export function createRuntimeState(
@@ -70,40 +74,40 @@ export function transitionRuntime(
   messages: ValidationMessages = DEFAULT_MESSAGES,
 ): DispatchResult {
   switch (action.type) {
-    case "update_field": {
-      const data = { ...state.data, [action.fieldId]: action.value };
+    case 'update_field': {
+      const formData = { ...state.data, [action.fieldId]: action.value };
       return {
         state: {
           ...state,
-          data,
+          data: formData,
           compiled: compile(
             schema,
             locale,
-            data,
+            formData,
             state.activeSectionId,
             messages,
           ),
           validationErrors: {},
         },
-        effect: { type: "none" },
+        effect: { type: 'none' },
       };
     }
 
-    case "submit_section": {
-      const data = { ...state.data, ...action.data };
-      const errors = validateSectionData(
+    case 'submit_section': {
+      const formData = { ...state.data, ...action.data };
+      const validationErrors = validateSectionData(
         schema,
         locale,
         state.activeSectionId,
         action.data,
-        data,
+        formData,
         messages,
       );
 
-      if (Object.keys(errors).length > 0) {
+      if (Object.keys(validationErrors).length > 0) {
         return {
-          state: { ...state, validationErrors: errors },
-          effect: { type: "none" },
+          state: { ...state, validationErrors },
+          effect: { type: 'none' },
         };
       }
 
@@ -111,14 +115,14 @@ export function transitionRuntime(
         (candidate) => candidate.id === state.activeSectionId,
       );
       if (!section) {
-        return { state, effect: { type: "none" } };
+        return { state, effect: { type: 'none' } };
       }
 
-      const nextSectionId = resolveNextSectionId(section, data);
-      const currentCompiled = compile(
+      const nextSectionId = resolveNextSectionId(section, formData);
+      const compiledState = compile(
         schema,
         locale,
-        data,
+        formData,
         state.activeSectionId,
         messages,
       );
@@ -127,44 +131,44 @@ export function transitionRuntime(
         return {
           state: {
             ...state,
-            data,
-            compiled: currentCompiled,
+            data: formData,
+            compiled: compiledState,
             validationErrors: {},
           },
-          effect: { type: "redirect", url: nextSectionId },
+          effect: { type: 'redirect', url: nextSectionId },
         };
       }
 
-      if (nextSectionId === "done") {
+      if (nextSectionId === 'done') {
         return {
           state: {
             ...state,
-            data,
-            compiled: currentCompiled,
+            data: formData,
+            compiled: compiledState,
             validationErrors: {},
           },
-          effect: { type: "complete", data },
+          effect: { type: 'complete', data: formData },
         };
       }
 
       return {
         state: {
           ...state,
-          data,
+          data: formData,
           activeSectionId: nextSectionId,
-          compiled: compile(schema, locale, data, nextSectionId, messages),
+          compiled: compile(schema, locale, formData, nextSectionId, messages),
           sectionHistory: [...state.sectionHistory, state.activeSectionId],
           validationErrors: {},
         },
-        effect: { type: "submit", data, isPartial: true },
+        effect: { type: 'submit', data: formData, isPartial: true },
       };
     }
 
-    case "go_back": {
+    case 'go_back': {
       const previousSectionId =
         state.sectionHistory[state.sectionHistory.length - 1];
       if (!previousSectionId) {
-        return { state, effect: { type: "none" } };
+        return { state, effect: { type: 'none' } };
       }
 
       return {
@@ -181,11 +185,11 @@ export function transitionRuntime(
           sectionHistory: state.sectionHistory.slice(0, -1),
           validationErrors: {},
         },
-        effect: { type: "none" },
+        effect: { type: 'none' },
       };
     }
 
-    case "set_locale":
+    case 'set_locale':
       return {
         state: {
           ...state,
@@ -197,7 +201,7 @@ export function transitionRuntime(
             messages,
           ),
         },
-        effect: { type: "none" },
+        effect: { type: 'none' },
       };
   }
 }

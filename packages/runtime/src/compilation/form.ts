@@ -1,13 +1,13 @@
-import type { IDeclarativeForm } from "@declarativeforms/types";
-import { isDeclarativeConnectionType } from "@declarativeforms/types";
-import { compileCompletion } from "./completion";
+import type { IDeclarativeForm } from '@declarativeforms/types';
+import { isDeclarativeConnectionType } from '@declarativeforms/types';
+import { compileCompletion } from './completion';
 import {
   interpolateTemplate,
   resolveLocalizedText,
-} from "@declarativeforms/common";
-import type { CompiledForm } from "../types";
-import { DEFAULT_MESSAGES, type ValidationMessages } from "../messages";
-import { compileSection } from "./section";
+} from '@declarativeforms/common';
+import type { CompiledForm } from '../types';
+import { DEFAULT_MESSAGES, type ValidationMessages } from '../messages';
+import { compileSection } from './section';
 
 export function compile(
   schema: IDeclarativeForm,

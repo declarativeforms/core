@@ -1,20 +1,16 @@
 import type {
   DeclarativeFieldType,
   IConnection,
-} from "@declarativeforms/types";
-
-// --- Validation Rules (extensible discriminated union) ---
+} from '@declarativeforms/types';
 
 export type ValidationRule =
-  | { type: "required"; message: string }
-  | { type: "pattern"; regex: string; message: string }
-  | { type: "min_length"; value: number; message: string }
-  | { type: "max_length"; value: number; message: string }
-  | { type: "min"; value: number | string; message: string }
-  | { type: "max"; value: number | string; message: string }
-  | { type: "expression"; expression: string; message: string };
-
-// --- Compiled Form ---
+  | { type: 'required'; message: string }
+  | { type: 'pattern'; regex: string; message: string }
+  | { type: 'min_length'; value: number; message: string }
+  | { type: 'max_length'; value: number; message: string }
+  | { type: 'min'; value: number | string; message: string }
+  | { type: 'max'; value: number | string; message: string }
+  | { type: 'expression'; expression: string; message: string };
 
 export type CompiledOption = {
   label: string;
@@ -32,60 +28,60 @@ type CompiledFieldBase = {
 };
 
 export type CompiledEmailField = CompiledFieldBase & {
-  type: "email";
+  type: 'email';
   block_free_email?: boolean;
 };
 
 export type CompiledDropdownField = CompiledFieldBase & {
-  type: "dropdown";
+  type: 'dropdown';
   searchable?: boolean;
   options?: CompiledOption[];
 };
 
 export type CompiledRatingField = CompiledFieldBase & {
-  type: "rating";
+  type: 'rating';
   min_label?: string;
   max_label?: string;
 };
 
 export type CompiledAddressField = CompiledFieldBase & {
-  type: "address" | "address_locality" | "address_region" | "address_country";
+  type: 'address' | 'address_locality' | 'address_region' | 'address_country';
   outputFormat?: string;
 };
 
 export type CompiledSelectField = CompiledFieldBase & {
-  type: "single_select" | "multiple_select";
+  type: 'single_select' | 'multiple_select';
   options?: CompiledOption[];
   allow_other?: boolean;
 };
 
 export type CompiledGeolocationField = CompiledFieldBase & {
-  type: "geolocation";
+  type: 'geolocation';
 };
 
 export type CompiledCameraField = CompiledFieldBase & {
-  type: "camera";
-  facing_mode?: "front" | "rear";
+  type: 'camera';
+  facing_mode?: 'front' | 'rear';
 };
 
 export type CompiledFileUploadField = CompiledFieldBase & {
-  type: "file_upload";
+  type: 'file_upload';
   accepted_mime_types?: string[];
 };
 
 export type CompiledGenericField = CompiledFieldBase & {
   type: Extract<
     DeclarativeFieldType,
-    | "date"
-    | "date_month"
-    | "hidden"
-    | "long_text"
-    | "mobile_number"
-    | "number"
-    | "signature"
-    | "short_text"
-    | "time"
-    | "url"
+    | 'date'
+    | 'date_month'
+    | 'hidden'
+    | 'long_text'
+    | 'mobile_number'
+    | 'number'
+    | 'signature'
+    | 'short_text'
+    | 'time'
+    | 'url'
   >;
 };
 
@@ -128,8 +124,6 @@ export type CompiledForm = {
   theme?: { primary?: string };
 };
 
-// --- Form State ---
-
 export type FormState = {
   compiled: CompiledForm;
   data: Record<string, unknown>;
@@ -138,21 +132,17 @@ export type FormState = {
   validationErrors: Record<string, string>;
 };
 
-// --- Actions ---
-
 export type FormAction =
-  | { type: "update_field"; fieldId: string; value: unknown }
-  | { type: "submit_section"; data: Record<string, unknown> }
-  | { type: "go_back" }
-  | { type: "set_locale"; locale: string };
-
-// --- Effects (signals to IO layer) ---
+  | { type: 'update_field'; fieldId: string; value: unknown }
+  | { type: 'submit_section'; data: Record<string, unknown> }
+  | { type: 'go_back' }
+  | { type: 'set_locale'; locale: string };
 
 export type FormEffect =
-  | { type: "none" }
-  | { type: "submit"; data: Record<string, unknown>; isPartial: boolean }
-  | { type: "complete"; data: Record<string, unknown> }
-  | { type: "redirect"; url: string };
+  | { type: 'none' }
+  | { type: 'submit'; data: Record<string, unknown>; isPartial: boolean }
+  | { type: 'complete'; data: Record<string, unknown> }
+  | { type: 'redirect'; url: string };
 
 export type DispatchResult = {
   state: FormState;

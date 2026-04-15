@@ -2,23 +2,19 @@ import {
   evaluateExpression,
   interpolateTemplate,
   resolveLocalizedText,
-} from "@declarativeforms/common";
+} from '@declarativeforms/common';
 import type {
   DeclarativeFieldType,
   IDeclarativeForm,
   IDeclarativeFormValidator,
   ILocalizedText,
-} from "@declarativeforms/types";
-import { isDeclarativeFieldType } from "@declarativeforms/types";
-import { DEFAULT_MESSAGES, type ValidationMessages } from "./messages";
-import type { CompiledField, CompiledOption, ValidationRule } from "./types";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+} from '@declarativeforms/types';
+import { isDeclarativeFieldType } from '@declarativeforms/types';
+import { DEFAULT_MESSAGES, type ValidationMessages } from './messages';
+import type { CompiledField, CompiledOption, ValidationRule } from './types';
 
 type ValidatorWithValue = {
-  type: "min" | "max";
+  type: 'min' | 'max';
   value: number | string;
   message?: ILocalizedText;
 };
@@ -26,25 +22,23 @@ type ValidatorWithValue = {
 function getMinValidator(
   validators: IDeclarativeFormValidator[],
 ): ValidatorWithValue | undefined {
-  const found = validators.find(
+  return validators.find(
     (validator) =>
-      typeof validator === "object" &&
-      validator.type === "min" &&
+      typeof validator === 'object' &&
+      validator.type === 'min' &&
       validator.value !== undefined,
-  );
-  return found as ValidatorWithValue | undefined;
+  ) as ValidatorWithValue | undefined;
 }
 
 function getMaxValidator(
   validators: IDeclarativeFormValidator[],
 ): ValidatorWithValue | undefined {
-  const found = validators.find(
+  return validators.find(
     (validator) =>
-      typeof validator === "object" &&
-      validator.type === "max" &&
+      typeof validator === 'object' &&
+      validator.type === 'max' &&
       validator.value !== undefined,
-  );
-  return found as ValidatorWithValue | undefined;
+  ) as ValidatorWithValue | undefined;
 }
 
 function hasValidator(
@@ -52,7 +46,7 @@ function hasValidator(
   type: string,
 ): boolean {
   return validators.some(
-    (validator) => typeof validator === "object" && validator.type === type,
+    (validator) => typeof validator === 'object' && validator.type === type,
   );
 }
 
@@ -66,20 +60,16 @@ function getRatingRangeFromValidators(
   const maxVal = getMaxValidator(validators);
 
   const min =
-    minVal && typeof minVal.value === "number" && minVal.value >= 1
+    minVal && typeof minVal.value === 'number' && minVal.value >= 1
       ? minVal.value
       : 1;
   const max =
-    maxVal && typeof maxVal.value === "number" && maxVal.value >= min
+    maxVal && typeof maxVal.value === 'number' && maxVal.value >= min
       ? maxVal.value
       : 5;
 
   return { min, max };
 }
-
-// ---------------------------------------------------------------------------
-// Rule building — compilation step (IDeclarativeFormValidator[] → ValidationRule[])
-// ---------------------------------------------------------------------------
 
 export function buildValidationRules(
   fieldType: DeclarativeFieldType,
@@ -91,17 +81,17 @@ export function buildValidationRules(
   const rules: ValidationRule[] = [];
 
   for (const validator of validators) {
-    if (validator === "required") {
+    if (validator === 'required') {
       rules.push({
-        type: "required",
+        type: 'required',
         message: interpolateTemplate(messages.required, {}, { label }),
       });
       continue;
     }
 
-    if (validator.type === "required") {
+    if (validator.type === 'required') {
       rules.push({
-        type: "required",
+        type: 'required',
         message:
           resolveLocalizedText(validator.message, locale) ||
           interpolateTemplate(messages.required, {}, { label }),
@@ -110,10 +100,10 @@ export function buildValidationRules(
     }
 
     switch (validator.type) {
-      case "pattern":
+      case 'pattern':
         if (!validator.regex) break;
         rules.push({
-          type: "pattern",
+          type: 'pattern',
           regex: validator.regex,
           message:
             resolveLocalizedText(validator.message, locale) ||
@@ -121,10 +111,10 @@ export function buildValidationRules(
         });
         break;
 
-      case "min_length":
-        if (typeof validator.value !== "number") break;
+      case 'min_length':
+        if (typeof validator.value !== 'number') break;
         rules.push({
-          type: "min_length",
+          type: 'min_length',
           value: validator.value,
           message:
             resolveLocalizedText(validator.message, locale) ||
@@ -139,10 +129,10 @@ export function buildValidationRules(
         });
         break;
 
-      case "max_length":
-        if (typeof validator.value !== "number") break;
+      case 'max_length':
+        if (typeof validator.value !== 'number') break;
         rules.push({
-          type: "max_length",
+          type: 'max_length',
           value: validator.value,
           message:
             resolveLocalizedText(validator.message, locale) ||
@@ -157,10 +147,10 @@ export function buildValidationRules(
         });
         break;
 
-      case "expression":
+      case 'expression':
         if (!validator.expression) break;
         rules.push({
-          type: "expression",
+          type: 'expression',
           expression: validator.expression,
           message:
             resolveLocalizedText(validator.message, locale) ||
@@ -174,13 +164,13 @@ export function buildValidationRules(
   const maxVal = getMaxValidator(validators);
 
   if (
-    fieldType === "date" ||
-    fieldType === "date_month" ||
-    fieldType === "time"
+    fieldType === 'date' ||
+    fieldType === 'date_month' ||
+    fieldType === 'time'
   ) {
     if (minVal) {
       rules.push({
-        type: "min",
+        type: 'min',
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
@@ -196,7 +186,7 @@ export function buildValidationRules(
     }
     if (maxVal) {
       rules.push({
-        type: "max",
+        type: 'max',
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
@@ -212,17 +202,17 @@ export function buildValidationRules(
     }
   }
 
-  if (fieldType === "number") {
-    if (!hasValidator(validators, "pattern")) {
+  if (fieldType === 'number') {
+    if (!hasValidator(validators, 'pattern')) {
       rules.push({
-        type: "pattern",
-        regex: "^\\d+$",
+        type: 'pattern',
+        regex: '^\\d+$',
         message: interpolateTemplate(messages.whole_number, {}, { label }),
       });
     }
-    if (minVal && typeof minVal.value === "number") {
+    if (minVal && typeof minVal.value === 'number') {
       rules.push({
-        type: "min",
+        type: 'min',
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
@@ -236,9 +226,9 @@ export function buildValidationRules(
           ),
       });
     }
-    if (maxVal && typeof maxVal.value === "number") {
+    if (maxVal && typeof maxVal.value === 'number') {
       rules.push({
-        type: "max",
+        type: 'max',
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
@@ -254,17 +244,17 @@ export function buildValidationRules(
     }
   }
 
-  if (fieldType === "rating") {
+  if (fieldType === 'rating') {
     const range = getRatingRangeFromValidators(validators);
     rules.push({
-      type: "min",
+      type: 'min',
       value: range.min,
       message:
         resolveLocalizedText(minVal?.message, locale) ||
         interpolateTemplate(messages.number_min, {}, { label, min: range.min }),
     });
     rules.push({
-      type: "max",
+      type: 'max',
       value: range.max,
       message:
         resolveLocalizedText(maxVal?.message, locale) ||
@@ -272,10 +262,10 @@ export function buildValidationRules(
     });
   }
 
-  if (fieldType === "file_upload") {
-    if (minVal && typeof minVal.value === "number") {
+  if (fieldType === 'file_upload') {
+    if (minVal && typeof minVal.value === 'number') {
       rules.push({
-        type: "min",
+        type: 'min',
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
@@ -289,9 +279,9 @@ export function buildValidationRules(
           ),
       });
     }
-    if (maxVal && typeof maxVal.value === "number") {
+    if (maxVal && typeof maxVal.value === 'number') {
       rules.push({
-        type: "max",
+        type: 'max',
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
@@ -307,10 +297,10 @@ export function buildValidationRules(
     }
   }
 
-  if (fieldType === "multiple_select") {
-    if (minVal && typeof minVal.value === "number") {
+  if (fieldType === 'multiple_select') {
+    if (minVal && typeof minVal.value === 'number') {
       rules.push({
-        type: "min",
+        type: 'min',
         value: minVal.value,
         message:
           resolveLocalizedText(minVal.message, locale) ||
@@ -324,9 +314,9 @@ export function buildValidationRules(
           ),
       });
     }
-    if (maxVal && typeof maxVal.value === "number") {
+    if (maxVal && typeof maxVal.value === 'number') {
       rules.push({
-        type: "max",
+        type: 'max',
         value: maxVal.value,
         message:
           resolveLocalizedText(maxVal.message, locale) ||
@@ -345,10 +335,6 @@ export function buildValidationRules(
   return rules;
 }
 
-// ---------------------------------------------------------------------------
-// Rule execution — runtime validation of field values
-// ---------------------------------------------------------------------------
-
 function getSelectionCount(value: unknown): number {
   if (Array.isArray(value)) {
     return value.length;
@@ -358,7 +344,7 @@ function getSelectionCount(value: unknown): number {
 }
 
 const ruleHandlers: {
-  [K in ValidationRule["type"]]: (
+  [K in ValidationRule['type']]: (
     rule: Extract<ValidationRule, { type: K }>,
     context: {
       fieldType: string;
@@ -375,13 +361,13 @@ const ruleHandlers: {
   max_length: (rule, { value }) =>
     String(value).length > rule.value ? rule.message : undefined,
   min: (rule, { fieldType, value }) => {
-    if (fieldType === "file_upload" || fieldType === "multiple_select") {
+    if (fieldType === 'file_upload' || fieldType === 'multiple_select') {
       return getSelectionCount(value) < Number(rule.value)
         ? rule.message
         : undefined;
     }
 
-    if (fieldType === "number" || fieldType === "rating") {
+    if (fieldType === 'number' || fieldType === 'rating') {
       const numValue = Number(value);
       return Number.isFinite(numValue) && numValue < Number(rule.value)
         ? rule.message
@@ -391,13 +377,13 @@ const ruleHandlers: {
     return String(value) < String(rule.value) ? rule.message : undefined;
   },
   max: (rule, { fieldType, value }) => {
-    if (fieldType === "file_upload" || fieldType === "multiple_select") {
+    if (fieldType === 'file_upload' || fieldType === 'multiple_select') {
       return getSelectionCount(value) > Number(rule.value)
         ? rule.message
         : undefined;
     }
 
-    if (fieldType === "number" || fieldType === "rating") {
+    if (fieldType === 'number' || fieldType === 'rating') {
       const numValue = Number(value);
       return Number.isFinite(numValue) && numValue > Number(rule.value)
         ? rule.message
@@ -416,8 +402,8 @@ export function validateFieldValue(
   rules: ValidationRule[],
   data: Record<string, unknown>,
 ): string | undefined {
-  const isEmpty = value === undefined || value === null || value === "";
-  const requiredRule = rules.find((rule) => rule.type === "required");
+  const isEmpty = value === undefined || value === null || value === '';
+  const requiredRule = rules.find((rule) => rule.type === 'required');
 
   if (isEmpty) {
     return requiredRule?.message;
@@ -437,10 +423,6 @@ export function validateFieldValue(
 
   return undefined;
 }
-
-// ---------------------------------------------------------------------------
-// Section validation — validates all fields in a section at once
-// ---------------------------------------------------------------------------
 
 export function validateSectionData(
   schema: IDeclarativeForm,
@@ -478,9 +460,10 @@ export function validateSectionData(
       locale,
       messages,
     );
-    const fieldId = field.id ?? "";
-    const value = sectionData[fieldId];
-    const error = validateFieldValue(field.type, value, rules, formData);
+    const fieldId = field.id ?? '';
+    const fieldValue = sectionData[fieldId];
+    const error = validateFieldValue(field.type, fieldValue, rules, formData);
+
     if (error) {
       errors[fieldId] = error;
     }
@@ -489,16 +472,12 @@ export function validateSectionData(
   return errors;
 }
 
-// ---------------------------------------------------------------------------
-// Query utilities — extract data from compiled ValidationRule arrays
-// ---------------------------------------------------------------------------
-
 export type RatingRange = {
   min: number;
   max: number;
 };
 
-export function findValidationRule<T extends ValidationRule["type"]>(
+export function findValidationRule<T extends ValidationRule['type']>(
   rules: ValidationRule[],
   type: T,
 ): Extract<ValidationRule, { type: T }> | undefined {
@@ -509,28 +488,28 @@ export function findValidationRule<T extends ValidationRule["type"]>(
 
 export function getNumericRuleValue(
   rules: ValidationRule[],
-  type: "min_length" | "max_length",
+  type: 'min_length' | 'max_length',
 ): number | undefined {
   return findValidationRule(rules, type)?.value;
 }
 
 export function getNumericBound(
   rules: ValidationRule[],
-  type: "min" | "max",
+  type: 'min' | 'max',
 ): number | undefined {
   const rule = findValidationRule(rules, type);
-  return rule && typeof rule.value === "number" ? rule.value : undefined;
+  return rule && typeof rule.value === 'number' ? rule.value : undefined;
 }
 
 export function getFieldOptions(
   field: CompiledField,
 ): CompiledOption[] | undefined {
-  return "options" in field ? field.options : undefined;
+  return 'options' in field ? field.options : undefined;
 }
 
 export function getRatingRange(validation: ValidationRule[]): RatingRange {
-  const min = Math.trunc(getNumericBound(validation, "min") ?? 1);
-  const max = Math.trunc(getNumericBound(validation, "max") ?? 5);
+  const min = Math.trunc(getNumericBound(validation, 'min') ?? 1);
+  const max = Math.trunc(getNumericBound(validation, 'max') ?? 5);
 
   if (!Number.isFinite(min) || !Number.isFinite(max) || max < min) {
     return { max: 5, min: 1 };
@@ -538,10 +517,6 @@ export function getRatingRange(validation: ValidationRule[]): RatingRange {
 
   return { max, min };
 }
-
-// ---------------------------------------------------------------------------
-// Field metadata — framework-agnostic validation config for UI consumers
-// ---------------------------------------------------------------------------
 
 export type FieldValidator = (
   value: unknown,
@@ -562,8 +537,8 @@ export type FieldMetadata = {
   maxLength?: number;
   minBound?: number;
   maxBound?: number;
-  minRule?: Extract<ValidationRule, { type: "min" }>;
-  maxRule?: Extract<ValidationRule, { type: "max" }>;
+  minRule?: Extract<ValidationRule, { type: 'min' }>;
+  maxRule?: Extract<ValidationRule, { type: 'max' }>;
   hasPattern: boolean;
   ratingRange?: RatingRange;
   options?: CompiledOption[];
@@ -582,19 +557,19 @@ function applyCommonRules(field: CompiledField): FieldValidationConfig {
 
   for (const rule of field.validation) {
     switch (rule.type) {
-      case "required":
+      case 'required':
         rules.required = rule.message;
         break;
-      case "pattern":
+      case 'pattern':
         rules.pattern = {
           value: new RegExp(rule.regex),
           message: rule.message,
         };
         break;
-      case "min_length":
+      case 'min_length':
         rules.minLength = { value: rule.value, message: rule.message };
         break;
-      case "max_length":
+      case 'max_length':
         rules.maxLength = { value: rule.value, message: rule.message };
         break;
     }
@@ -609,16 +584,20 @@ function buildExpressionValidators(
   const validators: Record<string, FieldValidator> = {};
 
   validation.forEach((rule, i) => {
-    if (rule.type !== "expression") return;
+    if (rule.type !== 'expression') {
+      return;
+    }
 
     validators[`expr_${i}`] = (
       _value: unknown,
       formValues: Record<string, unknown>,
     ) => {
-      const data =
-        formValues && typeof formValues === "object" ? formValues : {};
+      const formData =
+        formValues && typeof formValues === 'object' ? formValues : {};
 
-      return evaluateExpression(rule.expression, data) ? true : rule.message;
+      return evaluateExpression(rule.expression, formData)
+        ? true
+        : rule.message;
     };
   });
 
@@ -628,23 +607,23 @@ function buildExpressionValidators(
 function buildFieldTypeValidators(
   field: CompiledField,
 ): Record<string, FieldValidator> {
-  const validateFns: Record<string, FieldValidator> = {};
+  const fieldValidators: Record<string, FieldValidator> = {};
 
   switch (field.type) {
-    case "date":
-    case "date_month":
-    case "time": {
-      const minRule = findValidationRule(field.validation, "min");
-      const maxRule = findValidationRule(field.validation, "max");
+    case 'date':
+    case 'date_month':
+    case 'time': {
+      const minRule = findValidationRule(field.validation, 'min');
+      const maxRule = findValidationRule(field.validation, 'max');
 
       if (minRule) {
-        validateFns.minDate = (value) =>
+        fieldValidators.minDate = (value) =>
           value && String(value) < String(minRule.value)
             ? minRule.message
             : true;
       }
       if (maxRule) {
-        validateFns.maxDate = (value) =>
+        fieldValidators.maxDate = (value) =>
           value && String(value) > String(maxRule.value)
             ? maxRule.message
             : true;
@@ -652,13 +631,13 @@ function buildFieldTypeValidators(
       break;
     }
 
-    case "number": {
-      const minRule = findValidationRule(field.validation, "min");
-      const maxRule = findValidationRule(field.validation, "max");
-      const patternRule = findValidationRule(field.validation, "pattern");
+    case 'number': {
+      const minRule = findValidationRule(field.validation, 'min');
+      const maxRule = findValidationRule(field.validation, 'max');
+      const patternRule = findValidationRule(field.validation, 'pattern');
 
-      validateFns.fieldType = (value) => {
-        if (value === undefined || value === null || value === "") return true;
+      fieldValidators.fieldType = (value) => {
+        if (value === undefined || value === null || value === '') return true;
 
         const num = Number(value);
         if (patternRule && (!Number.isFinite(num) || !Number.isInteger(num))) {
@@ -666,14 +645,14 @@ function buildFieldTypeValidators(
         }
         if (
           minRule &&
-          typeof minRule.value === "number" &&
+          typeof minRule.value === 'number' &&
           num < minRule.value
         ) {
           return minRule.message;
         }
         if (
           maxRule &&
-          typeof maxRule.value === "number" &&
+          typeof maxRule.value === 'number' &&
           num > maxRule.value
         ) {
           return maxRule.message;
@@ -683,12 +662,12 @@ function buildFieldTypeValidators(
       break;
     }
 
-    case "rating": {
-      const minRule = findValidationRule(field.validation, "min");
-      const maxRule = findValidationRule(field.validation, "max");
+    case 'rating': {
+      const minRule = findValidationRule(field.validation, 'min');
+      const maxRule = findValidationRule(field.validation, 'max');
 
-      validateFns.fieldType = (value) => {
-        if (value === undefined || value === null || value === "") return true;
+      fieldValidators.fieldType = (value) => {
+        if (value === undefined || value === null || value === '') return true;
 
         const num = Number(value);
         if (minRule && num < Number(minRule.value)) return minRule.message;
@@ -698,15 +677,15 @@ function buildFieldTypeValidators(
       break;
     }
 
-    case "file_upload":
-    case "multiple_select": {
-      const minRule = findValidationRule(field.validation, "min");
-      const maxRule = findValidationRule(field.validation, "max");
-      const requiredRule = findValidationRule(field.validation, "required");
+    case 'file_upload':
+    case 'multiple_select': {
+      const minRule = findValidationRule(field.validation, 'min');
+      const maxRule = findValidationRule(field.validation, 'max');
+      const requiredRule = findValidationRule(field.validation, 'required');
 
-      validateFns.fieldType = (value) => {
+      fieldValidators.fieldType = (value) => {
         const count =
-          field.type === "multiple_select"
+          field.type === 'multiple_select'
             ? Array.isArray(value)
               ? value.length
               : 0
@@ -717,14 +696,14 @@ function buildFieldTypeValidators(
         }
         if (
           minRule &&
-          typeof minRule.value === "number" &&
+          typeof minRule.value === 'number' &&
           count < minRule.value
         ) {
           return minRule.message;
         }
         if (
           maxRule &&
-          typeof maxRule.value === "number" &&
+          typeof maxRule.value === 'number' &&
           count > maxRule.value
         ) {
           return maxRule.message;
@@ -735,31 +714,31 @@ function buildFieldTypeValidators(
     }
   }
 
-  return validateFns;
+  return fieldValidators;
 }
 
 export function buildFieldMetadata(field: CompiledField): FieldMetadata {
   const config = applyCommonRules(field);
-  const validateFns = {
+  const fieldValidators = {
     ...buildFieldTypeValidators(field),
     ...buildExpressionValidators(field.validation),
   };
 
-  if (Object.keys(validateFns).length > 0) {
-    config.validate = validateFns;
+  if (Object.keys(fieldValidators).length > 0) {
+    config.validate = fieldValidators;
   }
 
   return {
     config,
-    minLength: getNumericRuleValue(field.validation, "min_length"),
-    maxLength: getNumericRuleValue(field.validation, "max_length"),
-    minBound: getNumericBound(field.validation, "min"),
-    maxBound: getNumericBound(field.validation, "max"),
-    minRule: findValidationRule(field.validation, "min"),
-    maxRule: findValidationRule(field.validation, "max"),
-    hasPattern: field.validation.some((r) => r.type === "pattern"),
+    minLength: getNumericRuleValue(field.validation, 'min_length'),
+    maxLength: getNumericRuleValue(field.validation, 'max_length'),
+    minBound: getNumericBound(field.validation, 'min'),
+    maxBound: getNumericBound(field.validation, 'max'),
+    minRule: findValidationRule(field.validation, 'min'),
+    maxRule: findValidationRule(field.validation, 'max'),
+    hasPattern: field.validation.some((r) => r.type === 'pattern'),
     ratingRange:
-      field.type === "rating" ? getRatingRange(field.validation) : undefined,
+      field.type === 'rating' ? getRatingRange(field.validation) : undefined,
     options: getFieldOptions(field),
   };
 }

@@ -1,18 +1,18 @@
-import type { CompiledSection } from "../types";
+import type { CompiledSection } from '../types';
 
 function getDefaultValueForFieldType(
-  field: CompiledSection["fields"][number],
+  field: CompiledSection['fields'][number],
 ): unknown {
   switch (field.type) {
-    case "file_upload":
-    case "multiple_select":
+    case 'file_upload':
+    case 'multiple_select':
       return [];
-    case "camera":
-    case "geolocation":
-    case "signature":
+    case 'camera':
+    case 'geolocation':
+    case 'signature':
       return null;
     default:
-      return "";
+      return '';
   }
 }
 
@@ -21,9 +21,13 @@ export function buildDefaultValues(
   data: Record<string, unknown>,
 ): Record<string, unknown> {
   return section.fields.reduce<Record<string, unknown>>((acc, field) => {
-    const value = data[field.id];
+    const fieldValue = data[field.id];
+
     acc[field.id] =
-      value !== undefined ? value : getDefaultValueForFieldType(field);
+      fieldValue !== undefined
+        ? fieldValue
+        : getDefaultValueForFieldType(field);
+
     return acc;
   }, {});
 }

@@ -1,11 +1,11 @@
-import type { IDeclarativeFormSection } from "@declarativeforms/types";
+import type { IDeclarativeFormSection } from '@declarativeforms/types';
 import {
   interpolateTemplate,
   resolveLocalizedText,
-} from "@declarativeforms/common";
-import type { CompiledSection } from "../types";
-import type { ValidationMessages } from "../messages";
-import { compileField } from "./field";
+} from '@declarativeforms/common';
+import type { CompiledSection } from '../types';
+import type { ValidationMessages } from '../messages';
+import { compileField } from './field';
 
 export function compileSection(
   section: IDeclarativeFormSection,
@@ -14,7 +14,7 @@ export function compileSection(
   messages: ValidationMessages,
 ): CompiledSection {
   return {
-    id: section.id ?? "",
+    id: section.id ?? '',
     title: interpolateTemplate(
       resolveLocalizedText(section.title, locale),
       data,

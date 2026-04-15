@@ -1,4 +1,4 @@
-export { resolveLocalizedText } from "./localization"
-export { evaluateExpression } from "./expression"
-export { interpolateTemplate } from "./template"
-export { stripHtml } from "./strip-html"
+export { evaluateExpression } from './expression';
+export { resolveLocalizedText } from './localization';
+export { stripHtml } from './strip-html';
+export { interpolateTemplate } from './template';
