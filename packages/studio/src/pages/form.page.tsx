@@ -266,8 +266,8 @@ export function FormPage() {
               </span>
             </h1>
             <p className="text-sm text-muted-foreground">
-              Refine your form settings, structure, and completion flow without
-              leaving this page.
+              {readTextValue(getForm.data.description) ||
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
             </p>
           </div>
           <div className="flex gap-2">

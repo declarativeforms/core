@@ -14,18 +14,11 @@ function Github(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-import { useEffect } from "react";
+
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 
-import {
-  Button,
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  PageShell,
-} from "@/components";
+import { Button, Field, FieldGroup, FieldLabel, PageShell } from "@/components";
 import { Input } from "@/components/ui";
 import { getGitHubOAuthUrl, sendMagicLink } from "@/lib/auth";
 
@@ -44,10 +37,6 @@ export function LoginPage() {
       email: searchParams.get("email") ?? "",
     },
   });
-
-  useEffect(() => {
-    document.title = "Sign in — Declarative Forms Studio";
-  }, []);
 
   if (searchParams.get("sent") === "1" && !searchParams.get("error")) {
     return (
@@ -111,8 +100,7 @@ export function LoginPage() {
         </div>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with GitHub to manage forms, submissions, and completion
-          flows from one place.
+          Define forms in YAML. The platform renders the experience.
         </p>
 
         <div className="mt-4 w-full">
@@ -160,9 +148,6 @@ export function LoginPage() {
           <FieldGroup className="gap-3">
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
-              <FieldDescription>
-                Use email if you prefer a passwordless sign-in link.
-              </FieldDescription>
               <Input
                 id="email"
                 type="email"
