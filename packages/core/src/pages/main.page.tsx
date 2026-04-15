@@ -1,26 +1,25 @@
-import { useQuery } from "@tanstack/react-query";
-import mixpanel from "mixpanel-browser";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { FieldValues } from "react-hook-form";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-
-import { BasePage } from "./base.page";
+import { resolveLocalizedText } from '@declarativeforms/common';
+import type { FormEffect } from '@declarativeforms/runtime';
+import { useQuery } from '@tanstack/react-query';
+import mixpanel from 'mixpanel-browser';
+import { useEffect, useRef } from 'react';
+import type { FieldValues } from 'react-hook-form';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   DeclarativeForm,
   HeroSection,
   type IDeclarativeForm,
-} from "@/components";
-import { resolveLocalizedText } from "@declarativeforms/common";
-import type { FormEffect } from "@declarativeforms/runtime";
-import { useI18n } from "@/i18n";
-import { getBackendUrl } from "@/lib/api";
+} from '@/components';
+import { useI18n } from '@/i18n';
+import { getBackendUrl } from '@/lib/api';
+import { BasePage } from './base.page';
 
 const RESERVED_QUERY_KEYS = new Set([
-  "access_token",
-  "embed",
-  "lang",
-  "submission_id",
-  "step",
+  'access_token',
+  'embed',
+  'lang',
+  'submission_id',
+  'step',
 ]);
 
 export function MainPage() {
@@ -29,14 +28,14 @@ export function MainPage() {
   const { locale, t, withLang } = useI18n();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const slugPath = params["*"];
+  const slugPath = params['*'];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
-  const accessToken = searchParams.get("access_token");
-  const embed = searchParams.get("embed") === "true";
-  const submissionId = searchParams.get("submission_id");
-  const stepParam = searchParams.get("step");
-  const langParam = searchParams.get("lang");
+  const accessToken = searchParams.get('access_token');
+  const embed = searchParams.get('embed') === 'true';
+  const submissionId = searchParams.get('submission_id');
+  const stepParam = searchParams.get('step');
+  const langParam = searchParams.get('lang');
 
   const submissionIdRef = useRef(submissionId);
   const isCompletingRef = useRef(false);
@@ -47,7 +46,7 @@ export function MainPage() {
 
   const { data: form, error } = useQuery({
     queryKey: [
-      "form",
+      'form',
       params.id,
       params.owner,
       params.repository,
@@ -61,12 +60,12 @@ export function MainPage() {
           ? getBackendUrl(
               `forms/${params.owner}/${params.repository}/${slugPath}`,
             )
-          : "/default.yaml";
+          : '/default.yaml';
 
       const fetchUrl = new URL(url, window.location.origin);
 
       if (accessToken) {
-        fetchUrl.searchParams.set("access_token", accessToken);
+        fetchUrl.searchParams.set('access_token', accessToken);
       }
 
       const response = await fetch(fetchUrl.toString());
@@ -88,13 +87,13 @@ export function MainPage() {
     },
   });
 
-  const formId = form?.id ?? params.id ?? "";
+  const formId = form?.id ?? params.id ?? '';
 
   useEffect(() => {
     if (!isSlugRoute || !form?.id) return;
 
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete("access_token");
+    nextParams.delete('access_token');
 
     const nextSearch = nextParams.toString();
     navigate(nextSearch ? `/${form.id}?${nextSearch}` : `/${form.id}`, {
@@ -102,40 +101,15 @@ export function MainPage() {
     });
   }, [isSlugRoute, form?.id, navigate, searchParams]);
 
-  const data = useMemo<FieldValues>(() => {
-    const initialData: FieldValues = {};
+  const initialData: FieldValues = {};
 
-    for (const [key, value] of searchParams.entries()) {
-      if (RESERVED_QUERY_KEYS.has(key)) {
-        continue;
-      }
-
-      initialData[key] = value;
+  for (const [key, value] of searchParams.entries()) {
+    if (RESERVED_QUERY_KEYS.has(key)) {
+      continue;
     }
 
-    return initialData;
-  }, [searchParams]);
-
-  const updateProgressQuery = useCallback(
-    (progress: { submissionId: string | null; step: string }) => {
-      const nextParams = new URLSearchParams(searchParams);
-
-      if (progress.submissionId) {
-        nextParams.set("submission_id", progress.submissionId);
-      } else {
-        nextParams.delete("submission_id");
-      }
-
-      if (progress.step) {
-        nextParams.set("step", progress.step);
-      } else {
-        nextParams.delete("step");
-      }
-
-      setSearchParams(nextParams, { replace: true });
-    },
-    [searchParams, setSearchParams],
-  );
+    initialData[key] = value;
+  }
 
   useEffect(() => {
     if (!form?.locale || langParam === form.locale) {
@@ -143,130 +117,160 @@ export function MainPage() {
     }
 
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("lang", form.locale);
+    nextParams.set('lang', form.locale);
     setSearchParams(nextParams, { replace: true });
   }, [form?.locale, langParam, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (form?.measurements?.mixpanel) {
       mixpanel.init(form.measurements.mixpanel, {
-        api_host: "https://api-eu.mixpanel.com",
+        api_host: 'https://api-eu.mixpanel.com',
       });
 
-      mixpanel.track("page_view", {
+      mixpanel.track('page_view', {
         form_id: formId || undefined,
       });
     }
   }, [form?.measurements?.mixpanel, formId]);
 
-  const submitToBackend = useCallback(
-    async (formData: Record<string, unknown>, isPartial: boolean) => {
-      if (!form) return;
+  function updateProgressQuery(progress: {
+    submissionId: string | null;
+    step: string;
+  }) {
+    const nextParams = new URLSearchParams(searchParams);
 
-      const submitFormId = form.id ?? params.id;
-      if (!submitFormId) {
+    if (progress.submissionId) {
+      nextParams.set('submission_id', progress.submissionId);
+    } else {
+      nextParams.delete('submission_id');
+    }
+
+    if (progress.step) {
+      nextParams.set('step', progress.step);
+    } else {
+      nextParams.delete('step');
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  }
+
+  async function submitToBackend(
+    submissionData: Record<string, unknown>,
+    isPartial: boolean,
+  ) {
+    if (!form) {
+      return;
+    }
+
+    const submitFormId = form.id ?? params.id;
+
+    if (!submitFormId) {
+      return;
+    }
+
+    const url = new URL(getBackendUrl(`forms/${submitFormId}/submissions`));
+
+    if (isPartial) {
+      url.searchParams.set('partial', 'true');
+    }
+
+    if (submissionIdRef.current) {
+      url.searchParams.set('id', submissionIdRef.current);
+    }
+
+    const response = await fetch(url.toString(), {
+      body: JSON.stringify(submissionData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+    const submissionResponse = await response.json();
+
+    return submissionResponse?.id as string | undefined;
+  }
+
+  async function handleEffect(
+    effect: FormEffect,
+    runtimeState: { data: Record<string, unknown>; activeSectionId: string },
+  ) {
+    if (form?.measurements?.mixpanel) {
+      mixpanel.track('section_completed', {
+        form_id: formId || undefined,
+      });
+    }
+
+    switch (effect.type) {
+      case 'submit': {
+        const submissionId = await submitToBackend(
+          runtimeState.data,
+          effect.isPartial,
+        );
+        updateProgressQuery({
+          submissionId: submissionId ?? submissionIdRef.current,
+          step: runtimeState.activeSectionId,
+        });
         return;
       }
 
-      const url = new URL(getBackendUrl(`forms/${submitFormId}/submissions`));
+      case 'complete': {
+        if (isCompletingRef.current) {
+          return;
+        }
 
-      if (isPartial) {
-        url.searchParams.set("partial", "true");
-      }
+        isCompletingRef.current = true;
 
-      const currentSubmissionId = submissionIdRef.current;
-      if (currentSubmissionId) {
-        url.searchParams.set("id", currentSubmissionId);
-      }
+        try {
+          const submissionId = await submitToBackend(runtimeState.data, false);
+          const finalSubmissionId = submissionId ?? submissionIdRef.current;
 
-      const response = await fetch(url.toString(), {
-        body: JSON.stringify(formData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-      });
-
-      const result = await response.json();
-      return result?.id as string | undefined;
-    },
-    [form, params.id],
-  );
-
-  const handleEffect = useCallback(
-    async (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => {
-      if (form?.measurements?.mixpanel) {
-        mixpanel.track("section_completed", {
-          form_id: formId || undefined,
-        });
-      }
-
-      switch (effect.type) {
-        case "submit": {
-          const id = await submitToBackend(state.data, effect.isPartial);
           updateProgressQuery({
-            submissionId: id ?? submissionIdRef.current,
-            step: state.activeSectionId,
+            submissionId: finalSubmissionId,
+            step: 'done',
           });
-          break;
-        }
-
-        case "complete": {
-          if (isCompletingRef.current) {
-            return;
-          }
-          isCompletingRef.current = true;
-
-          try {
-            const id = await submitToBackend(state.data, false);
-            const finalSubmissionId = id ?? submissionIdRef.current;
-            updateProgressQuery({
-              submissionId: finalSubmissionId,
-              step: "done",
-            });
-            navigate(
-              withLang(
-                finalSubmissionId
-                  ? `thank-you?submission_id=${finalSubmissionId}`
-                  : "thank-you",
-              ),
-            );
-          } catch (error) {
-            isCompletingRef.current = false;
-            throw error;
-          }
-          break;
-        }
-
-        case "redirect": {
-          if (isCompletingRef.current) {
-            return;
-          }
-          isCompletingRef.current = true;
-
-          try {
-            const id = await submitToBackend(state.data, false);
-            updateProgressQuery({
-              submissionId: id ?? submissionIdRef.current,
-              step: "done",
-            });
-            window.location.href = effect.url;
-          } catch (error) {
-            isCompletingRef.current = false;
-            throw error;
-          }
-          break;
+          navigate(
+            withLang(
+              finalSubmissionId
+                ? `thank-you?submission_id=${finalSubmissionId}`
+                : 'thank-you',
+            ),
+          );
+          return;
+        } catch (error) {
+          isCompletingRef.current = false;
+          throw error;
         }
       }
-    },
-    [form, formId, submitToBackend, updateProgressQuery, navigate, withLang],
-  );
+
+      case 'redirect': {
+        if (isCompletingRef.current) {
+          return;
+        }
+
+        isCompletingRef.current = true;
+
+        try {
+          const submissionId = await submitToBackend(runtimeState.data, false);
+
+          updateProgressQuery({
+            submissionId: submissionId ?? submissionIdRef.current,
+            step: 'done',
+          });
+          window.location.href = effect.url;
+          return;
+        } catch (error) {
+          isCompletingRef.current = false;
+          throw error;
+        }
+      }
+    }
+  }
 
   if (error) {
     return (
       <HeroSection
-        title={t("main.form_not_found.title")}
-        description={t("main.form_not_found.description")}
+        title={t('main.form_not_found.title')}
+        description={t('main.form_not_found.description')}
       />
     );
   }
@@ -278,8 +282,8 @@ export function MainPage() {
   if (form.start_date && new Date(form.start_date) > new Date()) {
     return (
       <HeroSection
-        title={t("main.form_not_yet_open.title")}
-        description={t("main.form_not_yet_open.description")}
+        title={t('main.form_not_yet_open.title')}
+        description={t('main.form_not_yet_open.description')}
         theme={form.theme}
       />
     );
@@ -288,20 +292,21 @@ export function MainPage() {
   if (form.end_date && new Date(form.end_date) < new Date()) {
     return (
       <HeroSection
-        title={t("main.form_closed.title")}
-        description={t("main.form_closed.description")}
+        title={t('main.form_closed.title')}
+        description={t('main.form_closed.description')}
         theme={form.theme}
       />
     );
   }
 
   const initialSectionId =
-    stepParam && (form.sections ?? []).some((section) => section.id === stepParam)
+    stepParam &&
+    (form.sections ?? []).some((section) => section.id === stepParam)
       ? stepParam
       : form.sections?.[0]?.id;
 
   const resolvedTitle =
-    resolveLocalizedText(form.title, locale) || form.id || params.id || "";
+    resolveLocalizedText(form.title, locale) || form.id || params.id || '';
   const resolvedDescription = form.description
     ? resolveLocalizedText(form.description, locale)
     : undefined;
@@ -316,7 +321,7 @@ export function MainPage() {
       <DeclarativeForm
         form={form}
         locale={locale}
-        initialData={data}
+        initialData={initialData}
         initialSectionId={initialSectionId}
         onEffect={handleEffect}
       />

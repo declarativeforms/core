@@ -1,17 +1,20 @@
-import { useEffect, useRef } from "react";
-import type { FieldValues } from "react-hook-form";
+import type { FormEffect } from '@declarativeforms/runtime';
+import { useEffect, useRef } from 'react';
+import type { FieldValues } from 'react-hook-form';
 
-import { useFormRuntime } from "./use-runtime";
-import type { FormEffect } from "@declarativeforms/runtime";
-import { DeclarativeFormSection } from "./section.component";
-import type { IDeclarativeForm } from "../supporting/types";
+import type { IDeclarativeForm } from '../supporting/types';
+import { DeclarativeFormSection } from './section.component';
+import { useFormRuntime } from './use-runtime';
 
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
   locale: string;
   initialData: FieldValues;
   initialSectionId?: string;
-  onEffect: (effect: FormEffect, state: { data: Record<string, unknown>; activeSectionId: string }) => void | Promise<void>;
+  onEffect: (
+    effect: FormEffect,
+    state: { data: Record<string, unknown>; activeSectionId: string },
+  ) => void | Promise<void>;
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
@@ -19,7 +22,7 @@ export function DeclarativeForm(props: {
     props.form,
     props.locale,
     props.initialData,
-    props.initialSectionId
+    props.initialSectionId,
   );
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export function DeclarativeForm(props: {
   }, [state.activeSectionId]);
 
   const activeSection = state.compiled.sections.find(
-    (section) => section.id === state.activeSectionId
+    (section) => section.id === state.activeSectionId,
   );
 
   if (!activeSection) {
@@ -48,15 +51,15 @@ export function DeclarativeForm(props: {
       sectionHistory={state.sectionHistory}
       dispatch={dispatch}
       onSubmit={async (sectionData: FieldValues) => {
-        const result = dispatch({
-          type: "submit_section",
+        const effectResult = dispatch({
+          type: 'submit_section',
           data: sectionData,
         });
 
-        if (result.type !== "none") {
-          await props.onEffect(result, {
+        if (effectResult.type !== 'none') {
+          await props.onEffect(effectResult, {
             data: { ...state.data, ...sectionData },
-            activeSectionId: result.activeSectionId,
+            activeSectionId: effectResult.activeSectionId,
           });
         }
       }}

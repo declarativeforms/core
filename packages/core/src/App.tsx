@@ -1,4 +1,4 @@
-import { Route, Routes, useSearchParams } from "react-router-dom";
+import { Route, Routes, useSearchParams } from 'react-router-dom';
 
 import {
   MainPage,
@@ -6,7 +6,7 @@ import {
   OAuthGitHubPage,
   PrivacyPolicyPage,
   ThankYouPage,
-} from "./pages";
+} from './pages';
 
 function ExternalRedirect({ url }: { url: string }) {
   window.location.replace(url);
@@ -15,13 +15,19 @@ function ExternalRedirect({ url }: { url: string }) {
 
 function App() {
   const [searchParams] = useSearchParams();
-  const embed = searchParams.get("embed") === "true";
+  const embed = searchParams.get('embed') === 'true';
 
   return (
     <>
-      <main id="main-content" className={embed ? "min-h-lvh bg-white" : undefined}>
+      <main
+        id="main-content"
+        className={embed ? 'min-h-lvh bg-white' : undefined}
+      >
         <Routes>
-          <Route path="/" element={<ExternalRedirect url="https://studio.frms.dev" />} />
+          <Route
+            path="/"
+            element={<ExternalRedirect url="https://studio.frms.dev" />}
+          />
           <Route path="/:id" element={<MainPage />} />
           <Route path="/:id/thank-you" element={<ThankYouPage />} />
           <Route path="/:owner/:repository/*" element={<MainPage />} />

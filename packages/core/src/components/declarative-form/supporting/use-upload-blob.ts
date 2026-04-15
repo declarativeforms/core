@@ -1,13 +1,13 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 
-import type { TranslationKey } from "@/i18n/messages/en";
-import { uploadFile } from "@/lib/file-upload";
+import type { TranslationKey } from '@/i18n/messages/en';
+import { uploadFile } from '@/lib/file-upload';
 
-import { useFormI18n } from "./use-form-i18n";
+import { useFormI18n } from './use-form-i18n';
 
 export function useUploadBlob(
   onChange: (value: string | null) => void,
-  fallbackErrorKey: TranslationKey
+  fallbackErrorKey: TranslationKey,
 ) {
   const { t } = useFormI18n();
   const [isUploading, setIsUploading] = useState(false);
@@ -30,7 +30,7 @@ export function useUploadBlob(
         setIsUploading(false);
       }
     },
-    [onChange, t, fallbackErrorKey]
+    [onChange, t, fallbackErrorKey],
   );
 
   return { upload, isUploading, errorMessage, setErrorMessage };

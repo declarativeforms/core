@@ -1,2 +1,2 @@
-export * from "./declarative-form";
-export * from "./ui";
+export * from './declarative-form';
+export * from './ui';

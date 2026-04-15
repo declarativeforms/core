@@ -1,15 +1,20 @@
-import { forwardRef } from "react";
-import { FormProvider, useForm, type FieldValues } from "react-hook-form";
+import { forwardRef } from 'react';
+import {
+  FormProvider,
+  useForm,
+  useWatch,
+  type FieldValues,
+} from 'react-hook-form';
 
-import { Button } from "../../ui";
-import { useI18n } from "@/i18n";
+import { Button } from '../../ui';
+import { useI18n } from '@/i18n';
 import {
   buildDefaultValues,
   resolveFieldVisibility,
   type CompiledSection,
   type FormAction,
-} from "@declarativeforms/runtime";
-import { DeclarativeFormField } from "./field.component";
+} from '@declarativeforms/runtime';
+import { DeclarativeFormField } from './field.component';
 
 type DeclarativeFormSectionProps = {
   section: CompiledSection;
@@ -29,9 +34,11 @@ export const DeclarativeFormSection = forwardRef<
   });
 
   const hasVisibleWhen = props.section.fields.some((f) => f.visible_when);
-  const watchedValues = hasVisibleWhen ? form.watch() : undefined;
+  const watchedValues = useWatch({ control: form.control });
   const currentData = watchedValues
-    ? { ...props.data, ...watchedValues }
+    ? hasVisibleWhen
+      ? { ...props.data, ...watchedValues }
+      : props.data
     : props.data;
 
   const handleSubmit = form.handleSubmit(
@@ -41,7 +48,7 @@ export const DeclarativeFormSection = forwardRef<
       if (firstErrorField) {
         form.setFocus(firstErrorField);
       }
-    }
+    },
   );
 
   return (
@@ -70,15 +77,15 @@ export const DeclarativeFormSection = forwardRef<
               type="button"
               variant="outline"
               disabled={form.formState.isSubmitting}
-              onClick={() => props.dispatch({ type: "go_back" })}
+              onClick={() => props.dispatch({ type: 'go_back' })}
             >
-              {t("section.back")}
+              {t('section.back')}
             </Button>
           ) : (
             <div />
           )}
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            {t("section.next")}
+            {t('section.next')}
           </Button>
         </div>
       </form>

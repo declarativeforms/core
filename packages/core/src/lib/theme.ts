@@ -2,12 +2,8 @@ type ThemeOverrides = {
   primary?: string;
 };
 
-/**
- * Parse a hex color string into RGB components (0-255).
- * Supports 3-digit (#RGB) and 6-digit (#RRGGBB) hex.
- */
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const cleaned = hex.replace("#", "");
+  const cleaned = hex.replace('#', '');
 
   if (cleaned.length === 3) {
     return {
@@ -28,23 +24,15 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   return null;
 }
 
-/**
- * Returns relative luminance of a color (0 = black, 1 = white).
- * Uses the sRGB linearization formula from WCAG 2.x.
- */
 function relativeLuminance(r: number, g: number, b: number): number {
   const [rs, gs, bs] = [r / 255, g / 255, b / 255].map((c) =>
-    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4),
   );
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
 
-/**
- * Build a CSS custom property map from a theme object.
- * Returns a React-compatible style object to spread onto a container element.
- */
 export function buildThemeStyle(
-  theme: ThemeOverrides | undefined
+  theme: ThemeOverrides | undefined,
 ): React.CSSProperties | undefined {
   if (!theme?.primary) {
     return undefined;
@@ -56,11 +44,11 @@ export function buildThemeStyle(
   }
 
   const lum = relativeLuminance(rgb.r, rgb.g, rgb.b);
-  const foreground = lum > 0.4 ? "#0a0a0a" : "#fafafa";
+  const foreground = lum > 0.4 ? '#0a0a0a' : '#fafafa';
 
   return {
-    "--primary": theme.primary,
-    "--primary-foreground": foreground,
-    "--ring": theme.primary,
+    '--primary': theme.primary,
+    '--primary-foreground': foreground,
+    '--ring': theme.primary,
   } as React.CSSProperties;
 }

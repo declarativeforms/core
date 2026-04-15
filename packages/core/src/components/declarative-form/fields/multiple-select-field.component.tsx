@@ -1,19 +1,14 @@
-import { useState } from "react";
-import { useWatch } from "react-hook-form";
+import { useState } from 'react';
+import { useWatch } from 'react-hook-form';
 
-import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
-import { buildFieldValidation } from "../supporting/validation";
-import { HtmlText } from "../supporting/html-text";
-import { stripHtml } from "@declarativeforms/common";
-import {
-  Checkbox,
-  Field,
-  FieldLabel,
-  Input,
-} from "@/components/ui";
-import { Controller } from "react-hook-form";
-import { useFormI18n } from "../supporting/use-form-i18n";
-import { cn } from "@/lib/utils";
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import { buildFieldValidation } from '../supporting/validation';
+import { HtmlText } from '../supporting/html-text';
+import { stripHtml } from '@declarativeforms/common';
+import { Checkbox, Field, FieldLabel, Input } from '@/components/ui';
+import { Controller } from 'react-hook-form';
+import { useFormI18n } from '../supporting/use-form-i18n';
+import { cn } from '@/lib/utils';
 
 export function MultipleSelectField({
   field,
@@ -23,7 +18,7 @@ export function MultipleSelectField({
   const { minBound, maxBound, options } = buildFieldValidation(field);
   const minSelections = minBound ?? 0;
   const maxSelections = maxBound;
-  const allowOther = "allow_other" in field && field.allow_other;
+  const allowOther = 'allow_other' in field && field.allow_other;
 
   // Watch the current value to show selection count
   const currentValue = useWatch({
@@ -44,26 +39,26 @@ export function MultipleSelectField({
     : undefined;
 
   const [otherText, setOtherText] = useState<string>(
-    currentOtherValue ? String(currentOtherValue) : ""
+    currentOtherValue ? String(currentOtherValue) : '',
   );
   const isOtherChecked = currentOtherValue !== undefined;
 
   const getHelperText = () => {
     if (minSelections > 0 && maxSelections) {
-      return t("multiple_select.range", {
+      return t('multiple_select.range', {
         min: String(minSelections),
         max: String(maxSelections),
       });
     } else if (minSelections > 0) {
-      return t("multiple_select.at_least", {
+      return t('multiple_select.at_least', {
         min: String(minSelections),
       });
     } else if (maxSelections) {
-      return t("multiple_select.up_to", {
+      return t('multiple_select.up_to', {
         max: String(maxSelections),
       });
     }
-    return "";
+    return '';
   };
 
   const helperText = getHelperText();
@@ -76,7 +71,11 @@ export function MultipleSelectField({
       aria-required={field.required}
       aria-describedby={helperText ? helperTextId : undefined}
     >
-      {helperText && <p id={helperTextId} className="text-sm text-muted-foreground">{helperText}</p>}
+      {helperText && (
+        <p id={helperTextId} className="text-sm text-muted-foreground">
+          {helperText}
+        </p>
+      )}
       {options?.map((option) => (
         <Controller
           key={option.value}
@@ -93,8 +92,8 @@ export function MultipleSelectField({
               <Field>
                 <FieldLabel
                   className={cn(
-                    "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
-                    { "border-ring": isChecked }
+                    'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
+                    { 'border-ring': isChecked },
                   )}
                 >
                   <Checkbox
@@ -103,18 +102,15 @@ export function MultipleSelectField({
                       if (checked) {
                         const newValue = [...selectedValues, option.value];
                         // Prevent exceeding max selections
-                        if (
-                          maxSelections &&
-                          newValue.length > maxSelections
-                        ) {
+                        if (maxSelections && newValue.length > maxSelections) {
                           return;
                         }
                         formField.onChange(newValue);
                       } else {
                         formField.onChange(
                           selectedValues.filter(
-                            (value) => value !== option.value
-                          )
+                            (value) => value !== option.value,
+                          ),
                         );
                       }
                     }}
@@ -147,25 +143,32 @@ export function MultipleSelectField({
               <Field>
                 <FieldLabel
                   className={cn(
-                    "border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
-                    { "border-ring": isOtherChecked }
+                    'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
+                    { 'border-ring': isOtherChecked },
                   )}
                 >
                   <Checkbox
                     checked={isOtherChecked}
                     onCheckedChange={(checked: boolean) => {
                       if (checked) {
-                        const text = otherText || "";
-                        const newValue = [...selectedValues.filter((v: string) => optionValues.has(v)), text];
+                        const text = otherText || '';
+                        const newValue = [
+                          ...selectedValues.filter((v: string) =>
+                            optionValues.has(v),
+                          ),
+                          text,
+                        ];
                         if (maxSelections && newValue.length > maxSelections) {
                           return;
                         }
                         formField.onChange(newValue);
                       } else {
                         formField.onChange(
-                          selectedValues.filter((v: string) => optionValues.has(v))
+                          selectedValues.filter((v: string) =>
+                            optionValues.has(v),
+                          ),
                         );
-                        setOtherText("");
+                        setOtherText('');
                       }
                     }}
                     disabled={
@@ -176,17 +179,19 @@ export function MultipleSelectField({
                       )
                     }
                   />
-                  <span className="flex-1">{t("select.other")}</span>
+                  <span className="flex-1">{t('select.other')}</span>
                 </FieldLabel>
                 {isOtherChecked && (
                   <Input
                     className="mt-2 text-sm/4"
-                    placeholder={t("select.other_placeholder")}
+                    placeholder={t('select.other_placeholder')}
                     value={otherText}
                     onChange={(e) => {
                       const text = e.target.value;
                       setOtherText(text);
-                      const withoutOther = selectedValues.filter((v: string) => optionValues.has(v));
+                      const withoutOther = selectedValues.filter((v: string) =>
+                        optionValues.has(v),
+                      );
                       formField.onChange([...withoutOther, text]);
                     }}
                     autoFocus
@@ -199,10 +204,10 @@ export function MultipleSelectField({
       )}
       <p className="text-sm text-muted-foreground" aria-live="polite">
         {currentSelections > 0
-          ? t("multiple_select.selected_count", {
+          ? t('multiple_select.selected_count', {
               count: String(currentSelections),
             })
-          : ""}
+          : ''}
       </p>
     </div>
   );

@@ -1,10 +1,10 @@
-import { X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
-import { useFormI18n } from "../supporting/use-form-i18n";
-import { useUploadBlob } from "../supporting/use-upload-blob";
-import { cn } from "@/lib/utils";
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import { useFormI18n } from '../supporting/use-form-i18n';
+import { useUploadBlob } from '../supporting/use-upload-blob';
+import { cn } from '@/lib/utils';
 
 type Point = {
   x: number;
@@ -28,19 +28,19 @@ export function SignatureField({
   const [hasSignature, setHasSignature] = useState(false);
   const { upload, isUploading, errorMessage, setErrorMessage } = useUploadBlob(
     controllerField.onChange,
-    "signature.upload_failed"
+    'signature.upload_failed',
   );
 
   const redrawSignature = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#111827";
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#111827';
     ctx.lineWidth = 2;
 
     const points = pointsRef.current;
@@ -65,14 +65,14 @@ export function SignatureField({
     canvas.height = Math.max(1, Math.floor(CANVAS_HEIGHT * ratio));
     canvas.style.height = `${CANVAS_HEIGHT}px`;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(ratio, ratio);
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#111827";
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#111827';
     ctx.lineWidth = 2;
 
     redrawSignature();
@@ -81,8 +81,8 @@ export function SignatureField({
   useEffect(() => {
     resizeCanvas();
     const onResize = () => resizeCanvas();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, [resizeCanvas]);
 
   const getCanvasPoint = (event: PointerEvent) => {
@@ -126,7 +126,7 @@ export function SignatureField({
     if (!point || !lastPoint) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
+    const ctx = canvas?.getContext('2d');
     if (!ctx) return;
 
     ctx.beginPath();
@@ -152,15 +152,15 @@ export function SignatureField({
 
     const canvas = canvasRef.current;
     const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob((b) => resolve(b), "image/png")
+      canvas.toBlob((b) => resolve(b), 'image/png'),
     );
 
     if (!blob) {
-      setErrorMessage(t("signature.capture_failed"));
+      setErrorMessage(t('signature.capture_failed'));
       return;
     }
 
-    await upload(blob, "signature.png");
+    await upload(blob, 'signature.png');
   };
 
   const clearSignature = () => {
@@ -178,56 +178,60 @@ export function SignatureField({
 
   return (
     <div className="space-y-2">
-        <div
-          className={cn(
-            "border border-dashed rounded-md min-h-[160px] transition-colors",
-            "bg-muted/40 border-border",
-            "focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring"
-          )}
-        >
-          <div className="relative">
-            <canvas
-              ref={canvasRef}
-              className="w-full h-[160px] touch-none"
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerLeave={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              aria-label={field.label}
-            />
-            {!hasSignature && !isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="text-sm text-muted-foreground">{t("signature.draw")}</span>
-              </div>
-            )}
-            <div className="absolute bottom-2 right-3" aria-live="polite">
-              {isUploading && (
-                <span className="text-sm text-muted-foreground">{t("signature.uploading")}</span>
-              )}
+      <div
+        className={cn(
+          'border border-dashed rounded-md min-h-[160px] transition-colors',
+          'bg-muted/40 border-border',
+          'focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring',
+        )}
+      >
+        <div className="relative">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-[160px] touch-none"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            aria-label={field.label}
+          />
+          {!hasSignature && !isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-sm text-muted-foreground">
+                {t('signature.draw')}
+              </span>
             </div>
+          )}
+          <div className="absolute bottom-2 right-3" aria-live="polite">
+            {isUploading && (
+              <span className="text-sm text-muted-foreground">
+                {t('signature.uploading')}
+              </span>
+            )}
           </div>
         </div>
-
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={clearSignature}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium",
-              "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted",
-              "transition-colors"
-            )}
-            disabled={!hasSignature || isUploading}
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-            {t("signature.clear")}
-          </button>
-        </div>
-
-        <p className="text-sm text-destructive" aria-live="polite">
-          {errorMessage ?? ""}
-        </p>
       </div>
+
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={clearSignature}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
+            'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted',
+            'transition-colors',
+          )}
+          disabled={!hasSignature || isUploading}
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+          {t('signature.clear')}
+        </button>
+      </div>
+
+      <p className="text-sm text-destructive" aria-live="polite">
+        {errorMessage ?? ''}
+      </p>
+    </div>
   );
 }

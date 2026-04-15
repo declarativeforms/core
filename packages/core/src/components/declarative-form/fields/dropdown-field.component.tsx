@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
-import { buildFieldValidation } from "../supporting/validation";
-import { HtmlText } from "../supporting/html-text";
+import { useState } from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import { buildFieldValidation } from '../supporting/validation';
+import { HtmlText } from '../supporting/html-text';
 import {
   Button,
   Command,
@@ -19,9 +19,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui";
-import { useFormI18n } from "../supporting/use-form-i18n";
-import { cn } from "@/lib/utils";
+} from '@/components/ui';
+import { useFormI18n } from '../supporting/use-form-i18n';
+import { cn } from '@/lib/utils';
 
 export function DropdownField({
   field,
@@ -32,7 +32,7 @@ export function DropdownField({
 
   const { options } = buildFieldValidation(field);
 
-  if ("searchable" in field && field.searchable) {
+  if ('searchable' in field && field.searchable) {
     return (
       <SearchableDropdown
         field={field}
@@ -43,14 +43,17 @@ export function DropdownField({
   }
 
   return (
-      <Select
+    <Select
       onValueChange={controllerField.onChange}
       value={controllerField.value}
     >
-      <SelectTrigger className="w-full text-sm/4" aria-required={field.required}>
+      <SelectTrigger
+        className="w-full text-sm/4"
+        aria-required={field.required}
+      >
         <SelectValue
           placeholder={
-            field.placeholder || t("dropdown.select_a", { label: field.label })
+            field.placeholder || t('dropdown.select_a', { label: field.label })
           }
         />
       </SelectTrigger>
@@ -73,33 +76,38 @@ function SearchableDropdown({
   const [open, setOpen] = useState(false);
   const { options } = buildFieldValidation(field);
   const selectedOption = options?.find(
-    (option) => option.value === controllerField.value
+    (option) => option.value === controllerField.value,
   );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            aria-required={field.required}
-            className={cn(
-              "w-full justify-between text-sm/4 font-normal",
-              !controllerField.value && "text-muted-foreground"
-            )}
-          >
-            {selectedOption ? <HtmlText html={selectedOption.label} /> :
-              (field.placeholder ||
-              t("dropdown.select_a", { label: field.label }))}
-            <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          aria-required={field.required}
+          className={cn(
+            'w-full justify-between text-sm/4 font-normal',
+            !controllerField.value && 'text-muted-foreground',
+          )}
+        >
+          {selectedOption ? (
+            <HtmlText html={selectedOption.label} />
+          ) : (
+            field.placeholder || t('dropdown.select_a', { label: field.label })
+          )}
+          <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+      >
         <Command>
-          <CommandInput placeholder={t("dropdown.search")} />
+          <CommandInput placeholder={t('dropdown.search')} />
           <CommandList>
-            <CommandEmpty>{t("dropdown.no_results")}</CommandEmpty>
+            <CommandEmpty>{t('dropdown.no_results')}</CommandEmpty>
             <CommandGroup>
               {options?.map((option) => (
                 <CommandItem
@@ -113,10 +121,10 @@ function SearchableDropdown({
                   <HtmlText html={option.label} />
                   <Check
                     className={cn(
-                      "ml-auto size-4",
+                      'ml-auto size-4',
                       controllerField.value === option.value
-                        ? "opacity-100"
-                        : "opacity-0"
+                        ? 'opacity-100'
+                        : 'opacity-0',
                     )}
                   />
                 </CommandItem>

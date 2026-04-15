@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType } from 'react';
 
 import {
   AddressField,
@@ -13,9 +13,9 @@ import {
   RatingField,
   SignatureField,
   SingleSelectField,
-} from "../fields";
-import type { DeclarativeFieldType } from "../supporting/types";
-import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
+} from '../fields';
+import type { DeclarativeFieldType } from '../supporting/types';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
 
 type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 

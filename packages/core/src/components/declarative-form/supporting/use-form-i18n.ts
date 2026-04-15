@@ -1,9 +1,9 @@
-import { useFormContext, useWatch } from "react-hook-form";
+import { useFormContext, useWatch } from 'react-hook-form';
 
-import type { I18nContextValue } from "@/i18n/context";
-import { useI18n } from "@/i18n/use-i18n";
+import type { I18nContextValue } from '@/i18n/context';
+import { useI18n } from '@/i18n/use-i18n';
 
-import { interpolateTemplate } from "@declarativeforms/common";
+import { interpolateTemplate } from '@declarativeforms/common';
 
 export function useFormI18n(): I18nContextValue {
   const i18n = useI18n();

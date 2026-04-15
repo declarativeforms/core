@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export function useWaitForGlobal(
   check: () => boolean,
-  { interval = 100, timeout = 10_000 } = {}
+  { interval = 100, timeout = 10_000 } = {},
 ): boolean {
   const [ready, setReady] = useState(check);
 

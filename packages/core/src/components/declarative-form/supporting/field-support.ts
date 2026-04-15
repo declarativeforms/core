@@ -2,9 +2,9 @@ import type {
   ControllerRenderProps,
   FieldValues,
   UseFormReturn,
-} from "react-hook-form";
+} from 'react-hook-form';
 
-import type { CompiledField } from "@declarativeforms/runtime";
+import type { CompiledField } from '@declarativeforms/runtime';
 
 export type DeclarativeFieldComponentProps = {
   controllerField: ControllerRenderProps<FieldValues, string>;

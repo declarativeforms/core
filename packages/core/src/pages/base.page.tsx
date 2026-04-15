@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, type ReactNode } from 'react';
 
 import {
   Card,
@@ -6,11 +6,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components";
-import { HtmlText } from "@/components/declarative-form/supporting/html-text";
-import { stripHtml } from "@declarativeforms/common";
-import { useI18n } from "@/i18n";
-import { buildThemeStyle } from "@/lib/theme";
+} from '@/components';
+import { HtmlText } from '@/components/declarative-form/supporting/html-text';
+import { stripHtml } from '@declarativeforms/common';
+import { useI18n } from '@/i18n';
+import { buildThemeStyle } from '@/lib/theme';
 
 export function BasePage(props: {
   title: string;
@@ -67,7 +67,7 @@ export function BasePage(props: {
 
       <div className="text-center text-gray-500 text-xs tracking-wide space-x-2">
         <span>
-          {t("base.powered_by")}{" "}
+          {t('base.powered_by')}{' '}
           <a
             href="https://docs.declarativeforms.com"
             className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
@@ -77,10 +77,10 @@ export function BasePage(props: {
         </span>
         <span>•</span>
         <a
-          href={withLang("/privacy-policy")}
+          href={withLang('/privacy-policy')}
           className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
         >
-          {t("base.privacy_policy")}
+          {t('base.privacy_policy')}
         </a>
       </div>
     </div>

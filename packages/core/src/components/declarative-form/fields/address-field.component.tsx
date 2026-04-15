@@ -1,189 +1,206 @@
-import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import type { DeclarativeFieldComponentProps } from "../supporting/field-support";
-import { useWaitForGlobal } from "../supporting/use-wait-for-global";
-import { useDebounce } from "@/hooks/useDebounce";
-import {
-  getPlacePredictions,
-  getPlaceDetails,
-  formatStructuredAddress,
-  formatAddressString,
-  type PlacePrediction,
-} from "@/lib/google-places";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { useFormI18n } from "../supporting/use-form-i18n";
+} from '@/components/ui/popover';
+import { useDebounce } from '@/hooks/useDebounce';
+import {
+  formatAddressString,
+  formatStructuredAddress,
+  getPlaceDetails,
+  getPlacePredictions,
+  type PlacePrediction,
+} from '@/lib/google-places';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import { useFormI18n } from '../supporting/use-form-i18n';
+import { useWaitForGlobal } from '../supporting/use-wait-for-global';
 
 export function AddressField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
-
-  // Extract autocomplete type from field type
   const autocompleteType = (() => {
     switch (field.type) {
-      case "address_locality":
-        return "locality";
-      case "address_region":
-        return "region";
-      case "address_country":
-        return "country";
-      case "address":
+      case 'address_locality':
+        return 'locality';
+      case 'address_region':
+        return 'region';
+      case 'address_country':
+        return 'country';
+      case 'address':
       default:
-        return "address";
+        return 'address';
     }
   })();
 
   const outputFormat =
-    "outputFormat" in field ? (field.outputFormat || "string") : "string";
+    'outputFormat' in field ? field.outputFormat || 'string' : 'string';
 
   const checkGooglePlaces = useCallback(
-    () =>
-      typeof window !== "undefined" &&
-      !!(window as any).google?.maps?.places,
-    []
+    () => typeof window !== 'undefined' && !!window.google?.maps?.places,
+    [],
   );
   const isApiLoaded = useWaitForGlobal(checkGooglePlaces, { timeout: 10_000 });
 
   const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
 
   const debouncedInput = useDebounce(inputValue, 300);
+  const visibleSuggestions = debouncedInput && isApiLoaded ? suggestions : [];
 
-  // Fetch suggestions effect
   useEffect(() => {
     if (!debouncedInput || !isApiLoaded) {
-      setSuggestions([]);
       return;
     }
 
-    setLoading(true);
+    let isCancelled = false;
     const types =
-      autocompleteType === "region"
-        ? ["administrative_area_level_1"]
+      autocompleteType === 'region'
+        ? ['administrative_area_level_1']
         : [autocompleteType];
 
-    getPlacePredictions(debouncedInput, types)
-      .then((predictions) => {
-        setSuggestions(predictions);
-      })
-      .catch((err) => {
-        console.error("Error fetching place predictions:", err);
-        setSuggestions([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    void Promise.resolve().then(() => {
+      if (isCancelled) {
+        return;
+      }
+
+      setLoading(true);
+
+      getPlacePredictions(debouncedInput, types)
+        .then((predictions) => {
+          if (isCancelled) {
+            return;
+          }
+
+          setSuggestions(predictions);
+        })
+        .catch((err) => {
+          if (isCancelled) {
+            return;
+          }
+
+          console.error('Error fetching place predictions:', err);
+          setSuggestions([]);
+        })
+        .finally(() => {
+          if (!isCancelled) {
+            setLoading(false);
+          }
+        });
+    });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [debouncedInput, isApiLoaded, autocompleteType]);
 
-  // Selection handler
   const handleSelect = async (placeId: string) => {
     try {
       const place = await getPlaceDetails(placeId);
-      const value =
-        outputFormat === "structured"
+      const selectedAddress =
+        outputFormat === 'structured'
           ? formatStructuredAddress(place)
           : formatAddressString(place);
 
-      controllerField.onChange(value);
-      setInputValue(place.formatted_address || "");
+      controllerField.onChange(selectedAddress);
+      setInputValue(place.formatted_address || '');
       setOpen(false);
     } catch (err) {
-      console.error("Error fetching place details:", err);
+      console.error('Error fetching place details:', err);
     }
   };
 
-  // Fallback for when API is not loaded
   if (!isApiLoaded) {
     return (
       <Input
         {...controllerField}
         className="text-sm/4"
-        placeholder={field.placeholder || t("address.placeholder")}
+        placeholder={field.placeholder || t('address.placeholder')}
         required={field.required}
         aria-required={field.required}
       />
     );
   }
 
-  // Main render with autocomplete
   return (
-    <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <div className="relative w-full" aria-busy={loading}>
-            <Input
-              value={inputValue}
-              className="text-sm/4"
-              onChange={(e) => {
-                setInputValue(e.target.value);
-                if (e.target.value.trim()) {
-                  setOpen(true);
-                }
-              }}
-              onBlur={controllerField.onBlur}
-              placeholder={field.placeholder || t("address.placeholder")}
-              required={field.required}
-              aria-required={field.required}
-              role="combobox"
-              aria-autocomplete="list"
-              aria-expanded={open && suggestions.length > 0}
-              aria-controls={`address-suggestions-${field.id}`}
-            />
-            {loading && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            )}
-            <span className="sr-only" aria-live="polite">
-              {loading ? t("address.loading_suggestions") : ""}
-            </span>
-          </div>
-        </PopoverTrigger>
-        <PopoverContent
-          className="p-0"
-          style={{ width: "var(--radix-popover-trigger-width)" }}
-          align="start"
-          side="bottom"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <Command className="w-full" id={`address-suggestions-${field.id}`}>
-            <CommandEmpty>{t("address.no_results")}</CommandEmpty>
-            <CommandGroup>
-              {suggestions.map((suggestion) => (
-                <CommandItem
-                  key={suggestion.place_id}
-                  onSelect={() => handleSelect(suggestion.place_id)}
-                  className="cursor-pointer items-start"
-                >
-                  <div className="flex flex-col w-full">
-                    <span className="font-medium break-words">
-                      {suggestion.structured_formatting.main_text}
+    <Popover
+      open={open && visibleSuggestions.length > 0}
+      onOpenChange={setOpen}
+    >
+      <PopoverTrigger asChild>
+        <div className="relative w-full" aria-busy={loading}>
+          <Input
+            value={inputValue}
+            className="text-sm/4"
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (e.target.value.trim()) {
+                setOpen(true);
+              }
+            }}
+            onBlur={controllerField.onBlur}
+            placeholder={field.placeholder || t('address.placeholder')}
+            required={field.required}
+            aria-required={field.required}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={open && visibleSuggestions.length > 0}
+            aria-controls={`address-suggestions-${field.id}`}
+          />
+          {loading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          <span className="sr-only" aria-live="polite">
+            {loading ? t('address.loading_suggestions') : ''}
+          </span>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent
+        className="p-0"
+        style={{ width: 'var(--radix-popover-trigger-width)' }}
+        align="start"
+        side="bottom"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <Command className="w-full" id={`address-suggestions-${field.id}`}>
+          <CommandEmpty>{t('address.no_results')}</CommandEmpty>
+          <CommandGroup>
+            {visibleSuggestions.map((suggestion) => (
+              <CommandItem
+                key={suggestion.place_id}
+                onSelect={() => handleSelect(suggestion.place_id)}
+                className="cursor-pointer items-start"
+              >
+                <div className="flex flex-col w-full">
+                  <span className="font-medium break-words">
+                    {suggestion.structured_formatting.main_text}
+                  </span>
+                  {suggestion.structured_formatting.secondary_text && (
+                    <span className="text-sm text-muted-foreground break-words">
+                      {suggestion.structured_formatting.secondary_text}
                     </span>
-                    {suggestion.structured_formatting.secondary_text && (
-                      <span className="text-sm text-muted-foreground break-words">
-                        {suggestion.structured_formatting.secondary_text}
-                      </span>
-                    )}
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+                  )}
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

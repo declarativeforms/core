@@ -1,11 +1,11 @@
-import { interpolateTemplate } from "@declarativeforms/common";
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./locales";
+import { interpolateTemplate } from '@declarativeforms/common';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from './locales';
 import {
   enMessages,
   type TranslationKey,
   type TranslationMessages,
-} from "./messages/en";
-import { esMessages } from "./messages/es";
+} from './messages/en';
+import { esMessages } from './messages/es';
 
 export const TRANSLATIONS: Record<Locale, TranslationMessages> = {
   en: enMessages,
@@ -16,10 +16,10 @@ export type TranslationValues = Record<string, string | number>;
 
 function normalizeLocaleCandidate(value?: string | null): string {
   if (!value) {
-    return "";
+    return '';
   }
 
-  return value.trim().toLowerCase().replace("_", "-");
+  return value.trim().toLowerCase().replace('_', '-');
 }
 
 function toSupportedLocale(value?: string | null): Locale | null {
@@ -33,16 +33,17 @@ function toSupportedLocale(value?: string | null): Locale | null {
     return exact;
   }
 
-  const base = normalized.split("-")[0];
+  const base = normalized.split('-')[0];
   return SUPPORTED_LOCALES.find((locale) => locale === base) ?? null;
 }
 
 export function translate(
   locale: Locale,
   key: TranslationKey,
-  values?: TranslationValues
+  values?: TranslationValues,
 ): string {
-  const template = TRANSLATIONS[locale][key] ?? TRANSLATIONS[DEFAULT_LOCALE][key];
+  const template =
+    TRANSLATIONS[locale][key] ?? TRANSLATIONS[DEFAULT_LOCALE][key];
   return interpolateTemplate(template ?? key, values ?? {});
 }
 
@@ -56,7 +57,9 @@ export function resolveLocale(queryLang?: string | null): {
   }
 
   const browserLocale =
-    typeof navigator !== "undefined" ? toSupportedLocale(navigator.language) : null;
+    typeof navigator !== 'undefined'
+      ? toSupportedLocale(navigator.language)
+      : null;
 
   return {
     locale: browserLocale ?? DEFAULT_LOCALE,

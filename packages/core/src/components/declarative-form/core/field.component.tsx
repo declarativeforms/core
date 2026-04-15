@@ -1,17 +1,17 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 import {
   Controller,
   type FieldValues,
   type UseFormReturn,
-} from "react-hook-form";
+} from 'react-hook-form';
 
-import { Field, FieldLabel as BaseFieldLabel, FieldError } from "../../ui";
-import { useI18n } from "@/i18n";
-import type { CompiledField } from "@declarativeforms/runtime";
-import { buildFieldValidation } from "../supporting/validation";
-import { HtmlText } from "../supporting/html-text";
-import { FieldErrorBoundary } from "../supporting/field-error-boundary.component";
-import { fieldRegistry } from "./field-registry";
+import { Field, FieldLabel as BaseFieldLabel, FieldError } from '../../ui';
+import { useI18n } from '@/i18n';
+import type { CompiledField } from '@declarativeforms/runtime';
+import { buildFieldValidation } from '../supporting/validation';
+import { HtmlText } from '../supporting/html-text';
+import { FieldErrorBoundary } from '../supporting/field-error-boundary.component';
+import { fieldRegistry } from './field-registry';
 
 function FieldLabel({ field }: { field: CompiledField }) {
   return (
@@ -45,13 +45,13 @@ export function DeclarativeFormField(props: {
 
   const compiledField = props.field;
   const { registerOptions: rules } = buildFieldValidation(compiledField, {
-    emailFreeEmailBlocked: t("validation.email_free_blocked"),
+    emailFreeEmailBlocked: t('validation.email_free_blocked'),
   });
   const Renderer = fieldRegistry[compiledField.type];
   if (!Renderer) {
     return null;
   }
-  const isHiddenField = compiledField.type === "hidden";
+  const isHiddenField = compiledField.type === 'hidden';
 
   return (
     <Controller

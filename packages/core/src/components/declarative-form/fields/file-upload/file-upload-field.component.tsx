@@ -1,12 +1,12 @@
-import { Upload } from "lucide-react";
-import { useState, useRef } from "react";
+import { Upload } from 'lucide-react';
+import { useState, useRef } from 'react';
 
-import type { DeclarativeFieldComponentProps } from "../../supporting/field-support";
-import { buildFieldValidation } from "../../supporting/validation";
-import { useFormI18n } from "../../supporting/use-form-i18n";
-import { uploadFile } from "@/lib/file-upload";
-import { cn } from "@/lib/utils";
-import { FilePreview, type FileMetadata } from "./file-preview.component";
+import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
+import { buildFieldValidation } from '../../supporting/validation';
+import { useFormI18n } from '../../supporting/use-form-i18n';
+import { uploadFile } from '@/lib/file-upload';
+import { cn } from '@/lib/utils';
+import { FilePreview, type FileMetadata } from './file-preview.component';
 
 function acceptsMimeType(file: File, acceptedMimeTypes: string[]) {
   if (acceptedMimeTypes.length === 0) {
@@ -20,7 +20,7 @@ function acceptsMimeType(file: File, acceptedMimeTypes: string[]) {
       return false;
     }
 
-    if (normalized.endsWith("/*")) {
+    if (normalized.endsWith('/*')) {
       const prefix = normalized.slice(0, normalized.length - 1);
       return file.type.toLowerCase().startsWith(prefix);
     }
@@ -37,28 +37,35 @@ export function FileUploadField({
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nextUploadIdRef = useRef(0);
   const acceptedMimeTypes =
-    field.type === "file_upload" ? (field.accepted_mime_types ?? []) : [];
-  const acceptedMimeTypesLabel = acceptedMimeTypes.join(", ");
+    field.type === 'file_upload' ? (field.accepted_mime_types ?? []) : [];
+  const acceptedMimeTypesLabel = acceptedMimeTypes.join(', ');
 
   const { minBound, maxBound } = buildFieldValidation(field);
   const maxFiles = maxBound ?? 1;
 
   const currentUrls: string[] = Array.isArray(controllerField.value)
     ? controllerField.value.filter(
-        (value): value is string => typeof value === "string" && value.length > 0
+        (value): value is string =>
+          typeof value === 'string' && value.length > 0,
       )
-    : typeof controllerField.value === "string" && controllerField.value
+    : typeof controllerField.value === 'string' && controllerField.value
       ? [controllerField.value]
       : [];
 
   const validateFile = (): string | null => {
     if (fileMetadata.length >= maxFiles) {
-      return t("file_upload.max_reached", { max: String(maxFiles) });
+      return t('file_upload.max_reached', { max: String(maxFiles) });
     }
 
     return null;
   };
+
+  function getTempFileId(prefix: string): string {
+    nextUploadIdRef.current += 1;
+    return `${prefix}-${nextUploadIdRef.current}`;
+  }
 
   const handleFiles = async (newFiles: File[]) => {
     const acceptedFiles: File[] = [];
@@ -70,12 +77,12 @@ export function FileUploadField({
       }
 
       const metadata: FileMetadata = {
-        url: `invalid-${Date.now()}-${Math.random()}`,
+        url: getTempFileId('invalid'),
         name: file.name,
         size: file.size,
         type: file.type,
-        status: "error",
-        error: t("file_upload.invalid_type", {
+        status: 'error',
+        error: t('file_upload.invalid_type', {
           types: acceptedMimeTypesLabel,
         }),
       };
@@ -90,11 +97,11 @@ export function FileUploadField({
     if (error) {
       for (const file of acceptedFiles) {
         const metadata: FileMetadata = {
-          url: "",
+          url: '',
           name: file.name,
           size: file.size,
           type: file.type,
-          status: "error",
+          status: 'error',
           error,
         };
         setFileMetadata((prev) => [...prev, metadata]);
@@ -103,13 +110,13 @@ export function FileUploadField({
     }
 
     for (const file of acceptedFiles) {
-      const tempId = `temp-${Date.now()}-${Math.random()}`;
+      const tempId = getTempFileId('temp');
       const metadata: FileMetadata = {
         url: tempId,
         name: file.name,
         size: file.size,
         type: file.type,
-        status: "uploading",
+        status: 'uploading',
         progress: 0,
       };
 
@@ -120,21 +127,23 @@ export function FileUploadField({
 
         setFileMetadata((prev) =>
           prev.map((m) =>
-            m.url === tempId ? { ...m, url, status: "uploaded" as const } : m
-          )
+            m.url === tempId ? { ...m, url, status: 'uploaded' as const } : m,
+          ),
         );
 
         const newUrls = maxFiles === 1 ? url : [...currentUrls, url];
         controllerField.onChange(newUrls);
       } catch (error) {
         const errorMessage =
-          error instanceof Error ? error.message : t("file_upload.upload_failed");
+          error instanceof Error
+            ? error.message
+            : t('file_upload.upload_failed');
         setFileMetadata((prev) =>
           prev.map((m) =>
             m.url === tempId
-              ? { ...m, status: "error" as const, error: errorMessage }
-              : m
-          )
+              ? { ...m, status: 'error' as const, error: errorMessage }
+              : m,
+          ),
         );
       }
     }
@@ -174,7 +183,7 @@ export function FileUploadField({
     const files = Array.from(e.target.files || []);
     handleFiles(files);
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -185,91 +194,112 @@ export function FileUploadField({
     const minFiles = minBound ?? 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
-      requirements.push(t("file_upload.range_files", { min: String(minFiles), max: String(maxFiles) }));
+      requirements.push(
+        t('file_upload.range_files', {
+          min: String(minFiles),
+          max: String(maxFiles),
+        }),
+      );
     } else if (minFiles > 0) {
-      requirements.push(t("file_upload.at_least_files", { min: String(minFiles) }));
+      requirements.push(
+        t('file_upload.at_least_files', { min: String(minFiles) }),
+      );
     } else if (maxFiles > 1) {
-      requirements.push(t("file_upload.up_to_files", { max: String(maxFiles) }));
+      requirements.push(
+        t('file_upload.up_to_files', { max: String(maxFiles) }),
+      );
     }
 
     if (acceptedMimeTypes.length > 0) {
       requirements.push(
-        t("file_upload.accepted_types", {
+        t('file_upload.accepted_types', {
           types: acceptedMimeTypesLabel,
         }),
       );
     }
 
-    return requirements.join(" • ");
+    return requirements.join(' • ');
   };
 
   return (
     <div className="space-y-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={acceptedMimeTypesLabel || undefined}
-          multiple={maxFiles > 1}
-          onChange={handleInputChange}
-          className="sr-only"
-          id={controllerField.name}
-          aria-label={field.label}
-          required={field.required}
-          aria-required={field.required}
-        />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={acceptedMimeTypesLabel || undefined}
+        multiple={maxFiles > 1}
+        onChange={handleInputChange}
+        className="sr-only"
+        id={controllerField.name}
+        aria-label={field.label}
+        required={field.required}
+        aria-required={field.required}
+      />
 
-        {canAddMore && (
-          <div
-            onClick={handleClick}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleClick();
-              }
-            }}
-            tabIndex={0}
-            role="button"
-            aria-label={t("file_upload.upload_files")}
-            className={cn(
-              "border border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors",
-              "flex flex-col items-center justify-center gap-2 p-6",
-              "focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring",
-              isDragging
-                ? "border-ring bg-muted/60"
-                : "border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50"
-            )}
-          >
-            <Upload
-              className="w-8 h-8 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <div className="text-center">
-              <p className="text-sm text-foreground">
-                {t("file_upload.click_to_upload")}
+      {canAddMore && (
+        <div
+          onClick={handleClick}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={t('file_upload.upload_files')}
+          className={cn(
+            'border border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors',
+            'flex flex-col items-center justify-center gap-2 p-6',
+            'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
+            isDragging
+              ? 'border-ring bg-muted/60'
+              : 'border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50',
+          )}
+        >
+          <Upload
+            className="w-8 h-8 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <div className="text-center">
+            <p className="text-sm text-foreground">
+              {t('file_upload.click_to_upload')}
+            </p>
+            {getFileRequirements() && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {getFileRequirements()}
               </p>
-              {getFileRequirements() && (
-                <p className="mt-1 text-sm text-muted-foreground">{getFileRequirements()}</p>
-              )}
-              {field.placeholder && <p className="mt-1 text-sm text-muted-foreground">{field.placeholder}</p>}
-            </div>
+            )}
+            {field.placeholder && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {field.placeholder}
+              </p>
+            )}
           </div>
-        )}
+        </div>
+      )}
 
-        {fileMetadata.length > 0 && (
-          <div className="space-y-2" role="list" aria-label={t("file_upload.uploaded_files")} aria-live="polite" aria-busy={fileMetadata.some((m) => m.status === "uploading")}>
-            {fileMetadata.map((metadata, index) => (
-              <FilePreview
-                key={metadata.url || index}
-                metadata={metadata}
-                onRemove={() => handleRemove(metadata.url)}
-                t={t}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {fileMetadata.length > 0 && (
+        <div
+          className="space-y-2"
+          role="list"
+          aria-label={t('file_upload.uploaded_files')}
+          aria-live="polite"
+          aria-busy={fileMetadata.some((m) => m.status === 'uploading')}
+        >
+          {fileMetadata.map((metadata, index) => (
+            <FilePreview
+              key={metadata.url || index}
+              metadata={metadata}
+              onRemove={() => handleRemove(metadata.url)}
+              t={t}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from "react";
+import { Component, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -19,7 +19,7 @@ class ErrorBoundaryInner extends Component<Props, State> {
   componentDidCatch(error: Error) {
     console.warn(
       `[DeclarativeForms] Field "${this.props.fieldId}" failed to render:`,
-      error
+      error,
     );
   }
 
@@ -37,7 +37,5 @@ class ErrorBoundaryInner extends Component<Props, State> {
 }
 
 export function FieldErrorBoundary({ children, fieldId }: Props) {
-  return (
-    <ErrorBoundaryInner fieldId={fieldId}>{children}</ErrorBoundaryInner>
-  );
+  return <ErrorBoundaryInner fieldId={fieldId}>{children}</ErrorBoundaryInner>;
 }

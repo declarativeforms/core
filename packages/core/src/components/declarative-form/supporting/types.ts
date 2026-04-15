@@ -27,11 +27,11 @@ export type {
   IConnection,
   IWebhookConnection,
   IEmailConnection,
-} from "@declarativeforms/types";
+} from '@declarativeforms/types';
 
 export {
   DECLARATIVE_FIELD_TYPES,
   isDeclarativeFieldType,
   DECLARATIVE_CONNECTION_TYPES,
   isDeclarativeConnectionType,
-} from "@declarativeforms/types";
+} from '@declarativeforms/types';
