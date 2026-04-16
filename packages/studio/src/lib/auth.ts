@@ -2,6 +2,7 @@ import { getBackendUrl } from "./api";
 
 const TOKEN_KEY = "studio_auth_token";
 const USER_KEY = "studio_auth_user";
+const SIGN_IN_SALT = "sign_in";
 
 export type AuthUser = {
   username: string;
@@ -87,13 +88,14 @@ export async function exchangeCodeForToken(
 export async function sendMagicLink(
   email: string,
   redirectUrl: string,
-): Promise<{ request_id: string; resend_after_seconds: number } | null> {
+): Promise<{ request_id: string } | null> {
   const response = await fetch(getBackendUrl("auth/magic-link/send"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email,
       redirect_url: redirectUrl,
+      salt: SIGN_IN_SALT,
     }),
   });
 
@@ -101,10 +103,7 @@ export async function sendMagicLink(
     return null;
   }
 
-  return (await response.json()) as {
-    request_id: string;
-    resend_after_seconds: number;
-  };
+  return (await response.json()) as { request_id: string };
 }
 
 export async function verifyMagicLink(
@@ -116,6 +115,7 @@ export async function verifyMagicLink(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       request_id: requestId,
+      salt: SIGN_IN_SALT,
       token,
     }),
   });

@@ -7,7 +7,16 @@ const MAGIC_LINK_EXPIRY_MS = 10 * 60 * 1000;
 export class StudioMagicLinkService {
   constructor(private studioMagicLinkRepository: StudioMagicLinkRepository) {}
 
-  public async create(email: string): Promise<{
+  private createSecretHash(email: string, salt: string, token: string): string {
+    return createHash('sha256')
+      .update([email, salt, token].join(':'))
+      .digest('hex');
+  }
+
+  public async create(
+    email: string,
+    salt: string,
+  ): Promise<{
     requestId: string;
     token: string;
   } | null> {
@@ -20,7 +29,8 @@ export class StudioMagicLinkService {
       email,
       expires_at: new Date(now.getTime() + MAGIC_LINK_EXPIRY_MS).toISOString(),
       id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
-      secret_hash: createHash('sha256').update(token).digest('hex'),
+      salt,
+      secret_hash: this.createSecretHash(email, salt, token),
     });
 
     return {
@@ -31,6 +41,7 @@ export class StudioMagicLinkService {
 
   public async verify(input: {
     requestId: string;
+    salt: string;
     token: string;
   }): Promise<string | null> {
     const studioMagicLinkRecord = await this.studioMagicLinkRepository.find(
@@ -45,8 +56,16 @@ export class StudioMagicLinkService {
       return null;
     }
 
+    if (studioMagicLinkRecord.salt !== input.salt) {
+      return null;
+    }
+
     if (
-      createHash('sha256').update(input.token).digest('hex') !==
+      this.createSecretHash(
+        studioMagicLinkRecord.email,
+        input.salt,
+        input.token,
+      ) !==
       studioMagicLinkRecord.secret_hash
     ) {
       return null;

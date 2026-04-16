@@ -4,7 +4,7 @@ import { getContainer } from '../core';
 export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
   handler: async (
     request: FastifyRequest<{
-      Body: { request_id: string; token: string };
+      Body: { request_id: string; salt: string; token: string };
     }>,
     reply: FastifyReply,
   ) => {
@@ -12,6 +12,7 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
 
     const username = await studioMagicLinkService.verify({
       requestId: request.body.request_id,
+      salt: request.body.salt,
       token: request.body.token,
     });
 

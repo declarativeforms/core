@@ -19,13 +19,16 @@ const MAGIC_LINK_EMAIL_TEMPLATE = readFileSync(
 export const AUTH_MAGIC_LINK_SEND_POST: RouteOptions<any, any, any, any> = {
   handler: async (
     request: FastifyRequest<{
-      Body: { email: string; redirect_url: string };
+      Body: { email: string; redirect_url: string; salt: string };
     }>,
     reply: FastifyReply,
   ) => {
     const { studioMagicLinkService } = await getContainer();
 
-    const result = await studioMagicLinkService.create(request.body.email);
+    const result = await studioMagicLinkService.create(
+      request.body.email,
+      request.body.salt,
+    );
 
     if (!result) {
       reply.status(429).send();
