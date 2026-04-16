@@ -2,17 +2,17 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
 import { GitHubGateway } from './gateways';
 import {
+  EmailVerificationRepository,
   GitHubFileRepository,
   StudioFormRepository,
-  StudioMagicLinkRepository,
   SubmissionRepository,
 } from './repositories';
 import {
   AuthService,
+  EmailVerificationService,
   FileService,
   FormService,
   StudioFormService,
-  StudioMagicLinkService,
   SubmissionService,
 } from './services';
 import {
@@ -32,8 +32,8 @@ export type Container = {
   formService: FormService;
   studioFormRepository: StudioFormRepository;
   studioFormService: StudioFormService;
-  studioMagicLinkRepository: StudioMagicLinkRepository;
-  studioMagicLinkService: StudioMagicLinkService;
+  emailVerificationRepository: EmailVerificationRepository;
+  emailVerificationService: EmailVerificationService;
   submissionService: SubmissionService;
 };
 
@@ -57,11 +57,14 @@ export async function getContainer() {
   );
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
+  const emailVerificationRepository = new EmailVerificationRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
   const studioFormRepository = new StudioFormRepository(db);
-  const studioMagicLinkRepository = new StudioMagicLinkRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const authService = new AuthService();
+  const emailVerificationService = new EmailVerificationService(
+    emailVerificationRepository,
+  );
   const fileService = new FileService(s3Client);
   const formService = new FormService(
     gitHubFileRepository,
@@ -69,9 +72,6 @@ export async function getContainer() {
     gitHubGateway,
   );
   const studioFormService = new StudioFormService(studioFormRepository);
-  const studioMagicLinkService = new StudioMagicLinkService(
-    studioMagicLinkRepository,
-  );
   const connectionStrategies = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
@@ -86,6 +86,8 @@ export async function getContainer() {
 
   container = {
     db,
+    emailVerificationRepository,
+    emailVerificationService,
     gitHubGateway,
     gitHubFileRepository,
     authService,
@@ -94,8 +96,6 @@ export async function getContainer() {
     mongoClient,
     studioFormRepository,
     studioFormService,
-    studioMagicLinkRepository,
-    studioMagicLinkService,
     submissionRepository,
     submissionService,
   };

@@ -23,9 +23,9 @@ export const AUTH_MAGIC_LINK_SEND_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const { studioMagicLinkService } = await getContainer();
+    const { emailVerificationService } = await getContainer();
 
-    const result = await studioMagicLinkService.create(
+    const result = await emailVerificationService.create(
       request.body.email,
       request.body.salt,
     );

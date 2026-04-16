@@ -2,7 +2,6 @@ import { getBackendUrl } from "./api";
 
 const TOKEN_KEY = "studio_auth_token";
 const USER_KEY = "studio_auth_user";
-const SIGN_IN_SALT = "sign_in";
 
 export type AuthUser = {
   username: string;
@@ -95,7 +94,7 @@ export async function sendMagicLink(
     body: JSON.stringify({
       email,
       redirect_url: redirectUrl,
-      salt: SIGN_IN_SALT,
+      salt: "sign_in",
     }),
   });
 
@@ -115,7 +114,7 @@ export async function verifyMagicLink(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       request_id: requestId,
-      salt: SIGN_IN_SALT,
+      salt: "sign_in",
       token,
     }),
   });

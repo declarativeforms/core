@@ -1,4 +1,4 @@
-export type IStudioMagicLinkRecord = {
+export type IEmailVerificationRecord = {
   id: string;
   email: string;
   salt: string;

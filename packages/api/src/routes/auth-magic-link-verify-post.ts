@@ -8,9 +8,9 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
-    const { authService, studioMagicLinkService } = await getContainer();
+    const { authService, emailVerificationService } = await getContainer();
 
-    const username = await studioMagicLinkService.verify({
+    const username = await emailVerificationService.verify({
       requestId: request.body.request_id,
       salt: request.body.salt,
       token: request.body.token,
