@@ -31,7 +31,7 @@ export class EmailVerificationService {
         expires_at: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
         id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
         salt,
-        secret_hash: this.createSecretHash(email, salt, token),
+        hash: this.createSecretHash(email, salt, token),
       });
 
     return {
@@ -40,14 +40,13 @@ export class EmailVerificationService {
     };
   }
 
-  public async verify(input: {
-    requestId: string;
-    salt: string;
-    token: string;
-  }): Promise<string | null> {
-    const emailVerificationRecord = await this.emailVerificationRepository.find(
-      input.requestId,
-    );
+  public async verify(
+    requestId: string,
+    salt: string,
+    token: string,
+  ): Promise<string | null> {
+    const emailVerificationRecord =
+      await this.emailVerificationRepository.find(requestId);
 
     if (!emailVerificationRecord) {
       return null;
@@ -57,16 +56,13 @@ export class EmailVerificationService {
       return null;
     }
 
-    if (emailVerificationRecord.salt !== input.salt) {
+    if (emailVerificationRecord.salt !== salt) {
       return null;
     }
 
     if (
-      this.createSecretHash(
-        emailVerificationRecord.email,
-        input.salt,
-        input.token,
-      ) !== emailVerificationRecord.secret_hash
+      this.createSecretHash(emailVerificationRecord.email, salt, token) !==
+      emailVerificationRecord.hash
     ) {
       return null;
     }

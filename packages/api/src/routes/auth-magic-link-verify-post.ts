@@ -10,11 +10,11 @@ export const AUTH_MAGIC_LINK_VERIFY_POST: RouteOptions<any, any, any, any> = {
   ) => {
     const { authService, emailVerificationService } = await getContainer();
 
-    const username = await emailVerificationService.verify({
-      requestId: request.body.request_id,
-      salt: request.body.salt,
-      token: request.body.token,
-    });
+    const username = await emailVerificationService.verify(
+      request.body.request_id,
+      request.body.salt,
+      request.body.token,
+    );
 
     if (!username) {
       reply.status(401).send();
