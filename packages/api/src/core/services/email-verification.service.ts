@@ -7,7 +7,7 @@ export class EmailVerificationService {
     private emailVerificationRepository: EmailVerificationRepository,
   ) {}
 
-  private createSecretHash(email: string, salt: string, token: string): string {
+  private createHash(email: string, salt: string, token: string): string {
     return createHash('sha256')
       .update([email, salt, token].join(':'))
       .digest('hex');
@@ -29,9 +29,9 @@ export class EmailVerificationService {
         created_at: now.toISOString(),
         email,
         expires_at: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
+        hash: this.createHash(email, salt, token),
         id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
         salt,
-        hash: this.createSecretHash(email, salt, token),
       });
 
     return {
@@ -45,28 +45,28 @@ export class EmailVerificationService {
     salt: string,
     token: string,
   ): Promise<string | null> {
-    const emailVerificationRecord =
+    const emailVerification =
       await this.emailVerificationRepository.find(requestId);
 
-    if (!emailVerificationRecord) {
+    if (!emailVerification) {
       return null;
     }
 
-    if (new Date(emailVerificationRecord.expires_at).getTime() < Date.now()) {
+    if (new Date(emailVerification.expires_at).getTime() < Date.now()) {
       return null;
     }
 
-    if (emailVerificationRecord.salt !== salt) {
+    if (emailVerification.salt !== salt) {
       return null;
     }
 
     if (
-      this.createSecretHash(emailVerificationRecord.email, salt, token) !==
-      emailVerificationRecord.hash
+      this.createHash(emailVerification.email, salt, token) !==
+      emailVerification.hash
     ) {
       return null;
     }
 
-    return emailVerificationRecord.email;
+    return emailVerification.email;
   }
 }

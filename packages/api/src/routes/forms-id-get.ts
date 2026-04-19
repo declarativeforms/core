@@ -16,7 +16,9 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     );
 
     if (!form) {
-      return reply.status(404).send();
+      reply.status(404).send();
+
+      return;
     }
 
     reply.status(200).send(form);

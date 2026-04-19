@@ -1,12 +1,12 @@
 import type { Db } from 'mongodb';
-import type { IEmailVerificationRecord } from '../types';
+import type { IEmailVerification } from '../types';
 
 export class EmailVerificationRepository {
   constructor(private db: Db) {}
 
-  public async find(id: string): Promise<IEmailVerificationRecord | null> {
+  public async find(id: string): Promise<IEmailVerification | null> {
     return this.db
-      .collection<IEmailVerificationRecord>('email_verifications')
+      .collection<IEmailVerification>('email_verifications')
       .findOne(
         { id },
         {
@@ -18,12 +18,12 @@ export class EmailVerificationRepository {
   }
 
   public async insert(
-    record: IEmailVerificationRecord,
-  ): Promise<IEmailVerificationRecord> {
+    emailVerification: IEmailVerification,
+  ): Promise<IEmailVerification> {
     await this.db
-      .collection<IEmailVerificationRecord>('email_verifications')
-      .insertOne(record);
+      .collection<IEmailVerification>('email_verifications')
+      .insertOne(emailVerification);
 
-    return record;
+    return emailVerification;
   }
 }

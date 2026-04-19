@@ -16,26 +16,26 @@ export class SubmissionService {
     private connectionStrategies: Array<IConnectionStrategy>,
   ) {}
 
-  public async createOrUpdate(input: {
-    formId: string;
-    data: Record<string, unknown>;
-    isPartial: boolean;
+  public async createOrUpdate(
+    formId: string,
+    data: Record<string, unknown>,
+    isPartial: boolean,
     metadata: {
       ipAddress: string;
       userAgent: string;
-    };
-    submissionId?: string;
-  }): Promise<ISubmission | null> {
-    const form = await this.formService.findById(input.formId);
+    },
+    submissionId?: string,
+  ): Promise<ISubmission | null> {
+    const form = await this.formService.findById(formId);
 
     if (!form) {
       return null;
     }
 
     for (const strategy of this.validationStrategies) {
-      const error = await strategy.validate(form, input.data, {
-        ip: input.metadata.ipAddress,
-        isPartial: input.isPartial,
+      const error = await strategy.validate(form, data, {
+        isPartial,
+        ipAddress: metadata.ipAddress,
       });
 
       if (error) {
@@ -44,22 +44,22 @@ export class SubmissionService {
     }
 
     const now = new Date().toISOString();
-    const status = input.isPartial ? 'partial' : 'completed';
+    const status = isPartial ? 'partial' : 'completed';
     const persistedFormId = form.id || '';
 
     let submission: ISubmission;
 
-    if (input.submissionId) {
+    if (submissionId) {
       const existingSubmission = await this.submissionRepository.find(
         persistedFormId,
-        input.submissionId,
+        submissionId,
       );
 
       if (!existingSubmission) {
         return null;
       }
 
-      if (existingSubmission.status === 'completed' && !input.isPartial) {
+      if (existingSubmission.status === 'completed' && !isPartial) {
         return existingSubmission;
       }
 
@@ -67,7 +67,7 @@ export class SubmissionService {
         ...existingSubmission,
         data: {
           ...existingSubmission.data,
-          ...input.data,
+          ...data,
         },
         status,
         updated_at: now,
@@ -77,12 +77,12 @@ export class SubmissionService {
     } else {
       submission = {
         created_at: now,
-        data: input.data,
+        data,
         form_id: persistedFormId,
         id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
         metadata: {
-          ip_address: input.metadata.ipAddress,
-          user_agent: input.metadata.userAgent,
+          ip_address: metadata.ipAddress,
+          user_agent: metadata.userAgent,
         },
         status,
         updated_at: now,

@@ -14,7 +14,9 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     const file = request.params['*'];
 
     if (!file) {
-      return reply.status(400).send();
+      reply.status(400).send();
+
+      return;
     }
 
     const { formService } = await getContainer();

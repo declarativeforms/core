@@ -6,7 +6,8 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
     const token = parseAuthorizationHeader(request.headers.authorization);
 
     if (!token) {
-      reply.status(401).send({ error: 'Unauthorized' });
+      reply.status(401).send();
+
       return;
     }
 
@@ -16,6 +17,7 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
 
     if (!user) {
       reply.status(401).send();
+
       return;
     }
 

@@ -21,9 +21,9 @@ export class StudioFormService {
     return await this.studioFormRepository.insert({
       ...studioForm,
       id,
+      collaborators: [collaborator],
       created_at: now,
       updated_at: now,
-      collaborators: [collaborator],
     });
   }
 
@@ -56,9 +56,9 @@ export class StudioFormService {
     return await this.studioFormRepository.update(id, {
       ...studioForm,
       id,
+      collaborators: existing.collaborators,
       created_at: existing.created_at,
       updated_at: new Date().toISOString(),
-      collaborators: existing.collaborators,
     });
   }
 }

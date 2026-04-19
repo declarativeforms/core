@@ -37,46 +37,21 @@ export class GitHubGateway {
 
     const payload = (await response.json()) as any;
 
-    let email: string | null = payload.email || null;
-
-    if (!email) {
-      email = await this.findPrimaryEmail(accessToken);
+    if (payload.email) {
+      return {
+        username: payload.email,
+      };
     }
 
-    if (!email) {
+    const primaryEmail = await this.findPrimaryEmail(accessToken);
+
+    if (!primaryEmail) {
       return null;
     }
 
     return {
-      username: email,
+      username: primaryEmail,
     };
-  }
-
-  public async hasAdminOrPushPermissions(
-    accessToken: string,
-    owner: string,
-    repository: string,
-  ): Promise<boolean> {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repository}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const payload = (await response.json()) as {
-      permissions?: { admin?: boolean; push?: boolean };
-    };
-
-    return Boolean(
-      payload.permissions?.admin === true || payload.permissions?.push === true,
-    );
   }
 
   public async retrieveYamlFile(

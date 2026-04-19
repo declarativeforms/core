@@ -12,11 +12,11 @@ export class FileService {
     const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${filename.split('.').pop()}`;
 
     const command = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME as string,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
       ACL: 'public-read',
+      Body: buffer,
+      Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+      ContentType: contentType,
+      Key: key,
     });
 
     await this.s3Client.send(command);

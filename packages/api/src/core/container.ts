@@ -17,7 +17,6 @@ import {
 } from './services';
 import {
   EmailConnectionStrategy,
-  type IValidationStrategy,
   WebhookConnectionStrategy,
 } from './strategies';
 

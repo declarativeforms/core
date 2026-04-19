@@ -13,7 +13,7 @@ export interface IValidationStrategy {
   validate(
     form: IDeclarativeForm,
     data: Record<string, unknown>,
-    metadata?: { ip?: string; isPartial?: boolean },
+    metadata?: { ipAddress?: string; isPartial?: boolean },
   ): Promise<string | null>;
 }
 

@@ -12,16 +12,16 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
   ) => {
     const { submissionService } = await getContainer();
 
-    const submission = await submissionService.createOrUpdate({
-      data: request.body,
-      formId: request.params.id,
-      isPartial: request.query.partial === 'true',
-      metadata: {
+    const submission = await submissionService.createOrUpdate(
+      request.params.id,
+      request.body,
+      request.query.partial === 'true',
+      {
         ipAddress: String(request.headers['do-connecting-ip'] || ''),
         userAgent: String(request.headers['user-agent'] || ''),
       },
-      submissionId: request.query.id,
-    });
+      request.query.id,
+    );
 
     if (!submission) {
       reply.status(422).send();

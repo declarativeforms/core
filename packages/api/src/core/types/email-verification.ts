@@ -1,8 +1,8 @@
-export type IEmailVerificationRecord = {
-  id: string;
-  email: string;
-  salt: string;
-  hash: string;
+export type IEmailVerification = {
   created_at: string;
+  email: string;
   expires_at: string;
+  hash: string;
+  id: string;
+  salt: string;
 };
