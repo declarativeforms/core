@@ -3,17 +3,17 @@ export function isEmailValid(value: string): boolean {
 }
 
 export function toFieldString(value: unknown): string {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return value;
   }
 
   if (value === undefined || value === null) {
-    return "";
+    return '';
   }
 
   return String(value);
 }
 
 export function sanitizeOtpCode(value: string): string {
-  return value.replace(/\D/g, "").slice(0, 6);
+  return value.replace(/\D/g, '').slice(0, 6);
 }

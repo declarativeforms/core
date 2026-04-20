@@ -9,6 +9,7 @@ import { getEmailValidation } from '../fields/email/validation';
 
 export type ValidationMessages = {
   emailFreeEmailBlocked?: string;
+  emailOtpRequired?: string;
 };
 
 export type FieldValidation = Omit<FieldMetadata, 'config'> & {

@@ -46,6 +46,7 @@ export function DeclarativeFormField(props: {
   const compiledField = props.field;
   const { registerOptions: rules } = buildFieldValidation(compiledField, {
     emailFreeEmailBlocked: t('validation.email_free_blocked'),
+    emailOtpRequired: t('validation.email_otp_required'),
   });
   const Renderer = fieldRegistry[compiledField.type];
   if (!Renderer) {

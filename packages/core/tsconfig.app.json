@@ -27,6 +27,9 @@
 
     "baseUrl": ".",
     "paths": {
+      "@declarativeforms/common": ["../common/src/index.ts"],
+      "@declarativeforms/runtime": ["../runtime/src/index.ts"],
+      "@declarativeforms/types": ["../types/src/index.ts"],
       "@/*": ["./src/*"]
     },
     "ignoreDeprecations": "6.0"

@@ -2,9 +2,11 @@ import type { RegisterOptions, Validate } from 'react-hook-form';
 
 import type { CompiledField } from '@declarativeforms/runtime';
 import { FREE_EMAIL_DOMAINS } from './free-email-domains';
+import { getSecondaryValidationTokenFieldName } from '../secondary-token-field';
 
 export type EmailValidationMessages = {
   emailFreeEmailBlocked?: string;
+  emailOtpRequired?: string;
 };
 
 export function getEmailValidation(
@@ -26,6 +28,19 @@ export function getEmailValidation(
         return messages?.emailFreeEmailBlocked ?? '';
       }
       return true;
+    };
+  }
+
+  if (field.otp) {
+    validators.otpVerified = (_value, formValues) => {
+      const tokenFieldName = getSecondaryValidationTokenFieldName(field.id);
+      const verificationToken = formValues[tokenFieldName];
+
+      if (typeof verificationToken === 'string' && verificationToken.trim()) {
+        return true;
+      }
+
+      return messages?.emailOtpRequired ?? '';
     };
   }
 
