@@ -9,6 +9,8 @@ import {
   AUTH_MAGIC_LINK_SEND_POST,
   AUTH_MAGIC_LINK_VERIFY_POST,
   AUTH_ME_GET,
+  EMAIL_CHALLENGES_SEND_POST,
+  EMAIL_CHALLENGES_VERIFY_POST,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
@@ -64,6 +66,8 @@ export async function startServer() {
   server.route(AUTH_MAGIC_LINK_SEND_POST);
   server.route(AUTH_MAGIC_LINK_VERIFY_POST);
   server.route(AUTH_ME_GET);
+  server.route(EMAIL_CHALLENGES_SEND_POST);
+  server.route(EMAIL_CHALLENGES_VERIFY_POST);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);

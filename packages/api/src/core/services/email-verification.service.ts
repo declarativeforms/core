@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomInt } from 'crypto';
 import { faker } from '@faker-js/faker';
 import type { EmailVerificationRepository } from '../repositories';
 
@@ -16,11 +16,14 @@ export class EmailVerificationService {
   public async create(
     email: string,
     salt: string,
+    useOneTimePin = false,
   ): Promise<{
     requestId: string;
     token: string;
-  } | null> {
-    const token = randomBytes(32).toString('hex');
+  }> {
+    const token = useOneTimePin
+      ? randomInt(100000, 1000000).toString()
+      : randomBytes(32).toString('hex');
 
     const now = new Date();
 
