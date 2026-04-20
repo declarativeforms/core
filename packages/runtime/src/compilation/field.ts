@@ -88,6 +88,9 @@ export function compileField(
         ...(field.block_free_email !== undefined && {
           block_free_email: field.block_free_email,
         }),
+        ...(field.otp !== undefined && {
+          otp: field.otp,
+        }),
       };
 
     case 'dropdown': {

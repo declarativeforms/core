@@ -105,6 +105,7 @@ export type IDeclarativeFormFieldBase = {
 export type IDeclarativeFormEmailField = IDeclarativeFormFieldBase & {
   type?: 'email';
   block_free_email?: boolean;
+  otp?: boolean;
 };
 
 export type IDeclarativeFormDropdownField = IDeclarativeFormFieldBase & {

@@ -807,6 +807,23 @@ export function SectionField({
                               </p>
                             </div>
                           </Item>
+
+                          <Item variant="outline" className="bg-white">
+                            <div className="flex items-center gap-3">
+                              <Checkbox
+                                checked={field.otp === true}
+                                onCheckedChange={(checked) =>
+                                  onChange({
+                                    ...field,
+                                    otp: checked === true,
+                                  })
+                                }
+                              />
+                              <p className="text-sm font-medium text-foreground">
+                                Require email verification code
+                              </p>
+                            </div>
+                          </Item>
                         </>
                       ) : null}
 
