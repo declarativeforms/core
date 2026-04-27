@@ -1,0 +1,29 @@
+---
+title: "Capture a location"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Site check-in"
+description: "A simple form that captures the respondent's current location."
+
+sections:
+  - id: section_1
+    title: "Check in"
+    fields:
+      - id: technician_name
+        type: short_text
+        label: "Technician name"
+        validators:
+          - required
+
+      - id: current_location
+        type: geolocation
+        label: "Current location"
+        validators:
+          - required
+
+    next: done
+```

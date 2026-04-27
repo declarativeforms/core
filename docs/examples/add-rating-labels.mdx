@@ -1,0 +1,25 @@
+---
+title: "Add rating labels"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Support feedback"
+description: "A simple form with labels at both ends of a rating scale."
+
+sections:
+  - id: section_1
+    title: "Feedback"
+    fields:
+      - id: satisfaction
+        type: rating
+        label: "How was your support experience?"
+        min_label: "Poor"
+        max_label: "Excellent"
+        validators:
+          - required
+
+    next: done
+```
