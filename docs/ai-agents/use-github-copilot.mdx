@@ -1,0 +1,60 @@
+---
+title: "Use GitHub Copilot"
+description: "Use GitHub Copilot Chat with Declarative Forms documentation context to write and review YAML form definitions."
+---
+
+Use GitHub Copilot when your form YAML lives in a GitHub repository and you want help authoring or reviewing it in place.
+
+## Add context
+
+Start by giving GitHub Copilot the Declarative Forms docs context:
+
+```text
+Use this documentation as context: https://docs.declarativeforms.com/llms-full.txt
+```
+
+For smaller context windows, use the docs index first:
+
+```text
+Use https://docs.declarativeforms.com/llms.txt to find the relevant Declarative Forms pages before editing this YAML.
+```
+
+## Create a form
+
+```text
+Using the Declarative Forms documentation at https://docs.declarativeforms.com/llms-full.txt, draft a complete form.yaml file for <form purpose>.
+
+Include:
+- version: 1
+- title and description
+- sections with stable ids
+- fields for <field list>
+- validators for <validation needs>
+- a completion message
+- a connection to <email or webhook>
+
+Use only documented field types and options. Keep the YAML concise and explain any assumptions after the code block.
+```
+
+## Review a form
+
+```text
+Review this Declarative Forms YAML against the docs at https://docs.declarativeforms.com/llms-full.txt.
+
+Check for:
+- unsupported field types or properties
+- missing required validators
+- invalid next targets
+- conditional expressions that reference missing field ids
+- connections that are incomplete
+
+Suggest the smallest safe change for each issue.
+```
+
+## Good GitHub Copilot tasks
+
+- Add a field to an existing section.
+- Add `visible_when` to show or hide a field.
+- Add a second section and update `next`.
+- Add email or webhook submission handling.
+- Review a YAML file before committing it.

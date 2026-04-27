@@ -29,6 +29,15 @@
             ]
           },
           {
+            "group": "AI Agents",
+            "pages": [
+              "ai-agents/configure-coding-agents",
+              "ai-agents/use-openai-codex",
+              "ai-agents/use-github-copilot",
+              "ai-agents/use-claude-code"
+            ]
+          },
+          {
             "group": "Field Types",
             "pages": [
               "field-types/index",
