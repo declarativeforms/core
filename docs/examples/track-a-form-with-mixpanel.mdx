@@ -1,0 +1,27 @@
+---
+title: "Track a form with Mixpanel"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Lead capture"
+description: "A simple form that sends form events to Mixpanel."
+
+measurements:
+  # Use your Mixpanel project token.
+  mixpanel: "00000000000000000000000000000000"
+
+sections:
+  - id: section_1
+    title: "Your details"
+    fields:
+      - id: email
+        type: email
+        label: "Email address"
+        validators:
+          - required
+
+    next: done
+```

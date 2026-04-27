@@ -1,0 +1,27 @@
+---
+title: "Require a specific format"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Access request"
+description: "A simple form that requires an answer to match a format."
+
+sections:
+  - id: section_1
+    title: "Request details"
+    fields:
+      - id: employee_id
+        type: short_text
+        label: "Employee ID"
+        placeholder: "EMP-12345"
+        validators:
+          - required
+          - type: pattern
+            regex: "^EMP-[0-9]{5}$"
+            message: "Use the format EMP-12345."
+
+    next: done
+```

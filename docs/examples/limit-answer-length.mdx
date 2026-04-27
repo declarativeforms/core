@@ -1,0 +1,29 @@
+---
+title: "Limit answer length"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Feedback"
+description: "A simple form that limits the length of a written answer."
+
+sections:
+  - id: section_1
+    title: "Feedback"
+    fields:
+      - id: feedback
+        type: long_text
+        label: "Feedback"
+        validators:
+          - required
+          - type: min_length
+            value: 20
+            message: "Write at least 20 characters."
+          - type: max_length
+            value: 500
+            message: "Keep your feedback under 500 characters."
+
+    next: done
+```

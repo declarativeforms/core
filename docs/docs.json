@@ -25,16 +25,8 @@
           {
             "group": "Getting Started",
             "pages": [
-              "getting-started/create-a-form"
-            ]
-          },
-          {
-            "group": "AI Agents",
-            "pages": [
-              "ai-agents/configure-coding-agents",
-              "ai-agents/use-openai-codex",
-              "ai-agents/use-github-copilot",
-              "ai-agents/use-claude-code"
+              "getting-started/create-a-form",
+              "getting-started/configure-coding-agents"
             ]
           },
           {
@@ -67,16 +59,26 @@
             "pages": [
               "examples/add-another-section",
               "examples/show-or-hide-a-field",
+              "examples/customize-validation-messages",
+              "examples/limit-answer-length",
+              "examples/require-a-specific-format",
+              "examples/verify-an-email-address",
+              "examples/limit-multiple-select-choices",
+              "examples/limit-file-uploads",
               "examples/customize-the-thank-you-page",
+              "examples/show-a-conditional-thank-you-page",
               "examples/customize-the-primary-color",
               "examples/add-conditional-navigation",
               "examples/build-a-multi-step-form-with-cross-field-validation",
               "examples/prefill-data-using-query-parameters",
+              "examples/capture-campaign-data",
               "examples/localize-a-form",
               "examples/set-a-form-start-and-end-date",
               "examples/send-submissions-to-email",
+              "examples/send-a-confirmation-email",
               "examples/send-submissions-to-a-webhook",
               "examples/connect-a-form-to-zapier-n8n-or-make",
+              "examples/track-a-form-with-mixpanel",
               "examples/route-to-an-external-website",
               "examples/embed-a-form-in-an-iframe"
             ]

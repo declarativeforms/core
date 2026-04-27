@@ -1,0 +1,36 @@
+---
+title: "Show a conditional thank-you page"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Demo request"
+description: "A simple form with a thank-you page based on the answer."
+
+sections:
+  - id: section_1
+    title: "Request details"
+    fields:
+      - id: request_type
+        type: dropdown
+        label: "What do you need?"
+        options:
+          - label: "Book a demo"
+            value: "demo"
+          - label: "Ask a question"
+            value: "question"
+        validators:
+          - required
+
+    next: done
+
+completion:
+  - when: "data.request_type === 'demo'"
+    title: "Demo request received"
+    message: "Thanks. We will follow up to schedule a demo."
+
+  - title: "Question received"
+    message: "Thanks. We will reply as soon as possible."
+```

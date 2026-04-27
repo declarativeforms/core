@@ -1,0 +1,36 @@
+---
+title: "Send a confirmation email"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Event registration"
+description: "A simple form that emails a confirmation to the respondent."
+
+sections:
+  - id: section_1
+    title: "Your details"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        validators:
+          - required
+
+    next: done
+
+connections:
+  - type: email
+    # Send the confirmation to the email address submitted in the form.
+    to: "{{data.email}}"
+    subject: "Registration received"
+    body: "Thanks, {{data.full_name}}. Your registration has been received."
+```

@@ -1,0 +1,30 @@
+---
+title: "Limit file uploads"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Application"
+description: "A simple form that limits uploaded files."
+
+sections:
+  - id: section_1
+    title: "Documents"
+    fields:
+      - id: documents
+        type: file_upload
+        label: "Upload documents"
+        accepted_mime_types:
+          - application/pdf
+          - image/png
+          - image/jpeg
+        validators:
+          - required
+          - type: max
+            value: 3
+            message: "Upload no more than 3 files."
+
+    next: done
+```

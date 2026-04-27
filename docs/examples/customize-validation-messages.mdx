@@ -1,0 +1,43 @@
+---
+title: "Customize validation messages"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Support request"
+description: "A simple form with custom validation messages."
+
+sections:
+  - id: section_1
+    title: "Request details"
+    fields:
+      - id: name
+        type: short_text
+        label: "Name"
+        validators:
+          - type: required
+            message: "Enter your name."
+
+      - id: order_number
+        type: short_text
+        label: "Order number"
+        validators:
+          - type: pattern
+            regex: "^ORD-[0-9]{6}$"
+            message: "Use the format ORD-123456."
+
+      - id: message
+        type: long_text
+        label: "Message"
+        validators:
+          - type: min_length
+            value: 20
+            message: "Describe the issue in at least 20 characters."
+          - type: max_length
+            value: 1000
+            message: "Keep the message under 1000 characters."
+
+    next: done
+```

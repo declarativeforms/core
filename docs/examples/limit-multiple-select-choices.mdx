@@ -1,0 +1,34 @@
+---
+title: "Limit multiple select choices"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Preferences"
+description: "A simple form that limits how many options can be selected."
+
+sections:
+  - id: section_1
+    title: "Preferences"
+    fields:
+      - id: interests
+        type: multiple_select
+        label: "Choose your interests"
+        options:
+          - "Product updates"
+          - "Events"
+          - "Research"
+          - "Partner news"
+        validators:
+          - required
+          - type: min
+            value: 1
+            message: "Choose at least 1 option."
+          - type: max
+            value: 2
+            message: "Choose no more than 2 options."
+
+    next: done
+```

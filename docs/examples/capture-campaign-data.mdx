@@ -1,0 +1,33 @@
+---
+title: "Capture campaign data"
+---
+
+If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
+
+```yaml form.yaml
+version: 1
+title: "Lead capture"
+description: "A simple form that captures campaign data from the URL."
+
+sections:
+  - id: section_1
+    title: "Your details"
+    fields:
+      # Prefill this hidden field with ?utm_source=...
+      - id: utm_source
+        type: hidden
+
+      # Prefill this hidden field with ?utm_campaign=...
+      - id: utm_campaign
+        type: hidden
+
+      - id: email
+        type: email
+        label: "Email address"
+        validators:
+          - required
+
+    next: done
+```
+
+Example URL: `https://frms.dev/example-form?utm_source=newsletter&utm_campaign=spring_launch`
