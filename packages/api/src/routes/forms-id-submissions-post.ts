@@ -24,7 +24,12 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     );
 
     if (!submission) {
-      reply.status(422).send();
+      reply.status(422).send({
+        error: {
+          code: 'SUBMISSION_REJECTED',
+          message: 'The submission could not be accepted.',
+        },
+      });
 
       return;
     }

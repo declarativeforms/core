@@ -1,1 +1,1 @@
-export * from './require-studio-auth';
+export * from './require-api-key';

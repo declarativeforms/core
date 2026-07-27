@@ -1,98 +1,43 @@
-name: Deploy
+name: CI
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'packages/api/**'
-      - 'packages/types/**'
-      - 'packages/core/**'
-      - 'packages/studio/**'
+  pull_request:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: declarativeforms/api
+permissions:
+  contents: read
 
 jobs:
-  publish-api-image:
+  test-and-build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Log in to container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Extract image metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: packages/api/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Wait for image to propagate
-        run: sleep 30
-
-      - name: Trigger DigitalOcean deployment
-        run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" \
-            "https://api.digitalocean.com/v2/apps/${{ secrets.DIGITALOCEAN_APP_ID }}/deployments")
-          echo "DigitalOcean API response status: $HTTP_STATUS"
-          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
-            echo "Failed to trigger DigitalOcean deployment (HTTP $HTTP_STATUS)"
-            exit 1
-          fi
-
-  deploy-firebase-hosting:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
+      - name: Check out repository
         uses: actions/checkout@v6
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
+          cache: npm
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --no-package-lock
+        run: npm ci
 
-      - name: Build core
-        working-directory: packages/core
+      - name: Test
+        run: npm test
+
+      - name: Build packages and applications
         run: npm run build
 
-      - name: Build studio
-        working-directory: packages/studio
-        run: npm run build
+  validate-containers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
 
-      - name: Deploy core
-        working-directory: packages/core
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: npx firebase deploy --only hosting
+      - name: Validate Compose configuration
+        run: docker compose --env-file .env.example --file docker/compose.yaml config --quiet
 
-      - name: Deploy studio
-        working-directory: packages/studio
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: npx firebase deploy --only hosting
+      - name: Build production images
+        run: docker compose --env-file .env.example --file docker/compose.yaml build api web

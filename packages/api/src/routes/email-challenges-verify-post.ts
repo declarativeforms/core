@@ -47,6 +47,7 @@ export const EMAIL_CHALLENGES_VERIFY_POST: RouteOptions<any, any, any, any> = {
           sub: emailAddress,
         },
         process.env.AUTH_JWT_SECRET || '',
+        { expiresIn: '10m' },
       ),
     });
   },

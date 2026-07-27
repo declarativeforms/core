@@ -1,16 +1,20 @@
 {
-  "files": [],
-  "references": [
-    { "path": "../types" },
-    { "path": "../common" },
-    { "path": "../runtime" },
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "types": ["jest"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "erasableSyntaxOnly": true,
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
 }

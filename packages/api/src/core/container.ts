@@ -3,20 +3,20 @@ import { Db, MongoClient } from 'mongodb';
 import { GitHubGateway } from './gateways';
 import {
   EmailVerificationRepository,
+  FormRepository,
   GitHubFileRepository,
-  StudioFormRepository,
   SubmissionRepository,
 } from './repositories';
 import {
-  AuthService,
   EmailVerificationService,
   FileService,
   FormService,
-  StudioFormService,
+  ManagedFormService,
   SubmissionService,
 } from './services';
 import {
   EmailConnectionStrategy,
+  EmailVerificationValidationStrategy,
   WebhookConnectionStrategy,
 } from './strategies';
 
@@ -26,11 +26,10 @@ export type Container = {
   gitHubGateway: GitHubGateway;
   gitHubFileRepository: GitHubFileRepository;
   submissionRepository: SubmissionRepository;
-  authService: AuthService;
   fileService: FileService;
+  formRepository: FormRepository;
   formService: FormService;
-  studioFormRepository: StudioFormRepository;
-  studioFormService: StudioFormService;
+  managedFormService: ManagedFormService;
   emailVerificationRepository: EmailVerificationRepository;
   emailVerificationService: EmailVerificationService;
   submissionService: SubmissionService;
@@ -38,6 +37,12 @@ export type Container = {
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION as string,
+  ...(process.env.AWS_ENDPOINT_URL
+    ? {
+        endpoint: process.env.AWS_ENDPOINT_URL,
+        forcePathStyle: true,
+      }
+    : {}),
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
@@ -57,20 +62,19 @@ export async function getContainer() {
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
   const emailVerificationRepository = new EmailVerificationRepository(db);
+  const formRepository = new FormRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
-  const studioFormRepository = new StudioFormRepository(db);
   const submissionRepository = new SubmissionRepository(db);
-  const authService = new AuthService();
   const emailVerificationService = new EmailVerificationService(
     emailVerificationRepository,
   );
   const fileService = new FileService(s3Client);
   const formService = new FormService(
     gitHubFileRepository,
-    studioFormRepository,
+    formRepository,
     gitHubGateway,
   );
-  const studioFormService = new StudioFormService(studioFormRepository);
+  const managedFormService = new ManagedFormService(formRepository);
   const connectionStrategies = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
@@ -79,7 +83,7 @@ export async function getContainer() {
   const submissionService = new SubmissionService(
     formService,
     submissionRepository,
-    [],
+    [new EmailVerificationValidationStrategy()],
     connectionStrategies,
   );
 
@@ -89,12 +93,11 @@ export async function getContainer() {
     emailVerificationService,
     gitHubGateway,
     gitHubFileRepository,
-    authService,
     fileService,
+    formRepository,
     formService,
+    managedFormService,
     mongoClient,
-    studioFormRepository,
-    studioFormService,
     submissionRepository,
     submissionService,
   };

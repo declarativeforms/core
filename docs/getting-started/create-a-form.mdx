@@ -3,7 +3,7 @@ title: "Create a form"
 description: "Create a form in YAML, store it in GitHub, and share it as a live URL — in under three minutes."
 ---
 
-Define a form in a YAML file, push it to a GitHub repository, and Declarative Forms turns it into a live, shareable form. This page covers the YAML-first workflow; Studio is also available if you prefer a visual editor.
+Define a form in a YAML file, push it to a GitHub repository, and Declarative Forms turns it into a live, shareable form. API-managed JSON definitions are available for automation-driven workflows.
 
 <Info>
 **All you need is a GitHub repository.** Public or private — both work. There is nothing to install, sign up for, or deploy.
@@ -108,18 +108,23 @@ Once your YAML file is on `main`, open it through `frms.dev`. The process differ
   </Tab>
 
   <Tab title="Private repository">
-    Use the same URL format:
+    Configure the self-hosted API with a read-only `GITHUB_TOKEN`, then register
+    the source through the protected management API:
 
-    ```text
-    https://frms.dev/<owner>/<repo>/<filename>
+    ```bash
+    curl -X POST https://forms.example.com/api/v1/forms/github \
+      -H "Authorization: Bearer $FORMS_API_KEY" \
+      -H "Content-Type: application/json" \
+      --data '{"owner":"acme","repository":"forms","path":"contact.yaml"}'
     ```
 
-    The first time **you** (the form creator) open this URL, Declarative Forms will redirect you to GitHub to authorize access. This is a one-time OAuth flow — you grant Declarative Forms read access to the repository so it can fetch the YAML file.
-
-    Once authorized, the form loads and you are redirected to a short URL with a unique form ID (e.g., `https://frms.dev/c979ac5b`). This is the link you share with your audience.
+    The response contains an `a...` form ID. Open and share
+    `https://forms.example.com/<form-id>`.
 
     <Note>
-    **Your respondents will never be asked to log into GitHub.** The OAuth authorization is only required once — by you, the form creator — so that Declarative Forms can connect to your private repository and read the YAML file. After that, anyone with the short URL can fill in the form without any authentication.
+    **Your respondents never receive the GitHub token.** Private repositories
+    cannot be loaded through the public owner/repository path; they must be
+    registered by an API-key-authenticated management client.
     </Note>
   </Tab>
 </Tabs>
@@ -131,13 +136,13 @@ Once your YAML file is on `main`, open it through `frms.dev`. The process differ
 After you load the form for the first time, you'll be redirected to a permanent short URL like:
 
 ```text
-https://frms.dev/c979ac5b
+https://forms.example.com/a12345678
 ```
 
 This is your form's **shareable link**. Share it with anyone who should fill in the form. It always points to the latest version of your YAML — every push to `main` updates the form automatically.
 
 <Info>
-**This is the URL your respondents use — not the repository path.** The short URL works without any GitHub authentication, even if the YAML file lives in a private repository. Only you (the form creator) needed to authorize access; your audience simply opens the link and fills in the form.
+**This is the URL your respondents use — not the repository path.** The short URL works without GitHub authentication, including for a registered private source.
 </Info>
 
 <Check>
@@ -173,7 +178,8 @@ Open your form URL and run through these checks:
   <Accordion title="Form not loading">
     - Confirm the file is on the `main` branch.
     - Check that the URL matches the filename exactly (without `.yaml`).
-    - For private repos, make sure you've completed the GitHub authorization.
+    - For private repos, make sure the server has a `GITHUB_TOKEN` with read
+      access to the repository.
   </Accordion>
 
   <Accordion title="YAML parse error">

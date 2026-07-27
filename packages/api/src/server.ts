@@ -1,31 +1,25 @@
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
-import fastify from 'fastify';
-import * as qs from 'qs';
-import { requireStudioAuth } from './middleware';
+import fastify, { type FastifyInstance } from 'fastify';
+import { requireApiKey } from './middleware';
 import {
-  AUTH_DEMO_POST,
-  AUTH_GITHUB_POST,
-  AUTH_MAGIC_LINK_SEND_POST,
-  AUTH_MAGIC_LINK_VERIFY_POST,
-  AUTH_ME_GET,
   EMAIL_CHALLENGES_SEND_POST,
   EMAIL_CHALLENGES_VERIFY_POST,
+  FILES_KEY_GET,
   FILES_UPLOAD_POST,
+  FORMS_GET,
+  FORMS_GITHUB_POST,
+  FORMS_ID_DELETE,
   FORMS_ID_GET,
+  FORMS_ID_PUT,
+  FORMS_ID_SUBMISSIONS_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
+  FORMS_POST,
   FORMS_SLUG_GET,
-  OAUTH_GITHUB_ACCESS_TOKEN_POST,
-  STUDIO_FORMS_GET,
-  STUDIO_FORMS_ID_DELETE,
-  STUDIO_FORMS_ID_GET,
-  STUDIO_FORMS_ID_PUT,
-  STUDIO_FORMS_ID_SUBMISSIONS_GET,
-  STUDIO_FORMS_POST,
 } from './routes';
 
-export async function startServer() {
+export async function buildServer(): Promise<FastifyInstance> {
   const server = fastify({
     bodyLimit: 10 * 1048576,
     logger: true,
@@ -33,7 +27,6 @@ export async function startServer() {
       caseSensitive: false,
       ignoreDuplicateSlashes: true,
       ignoreTrailingSlash: true,
-      querystringParser: (str) => qs.parse(str),
     },
   });
 
@@ -49,96 +42,96 @@ export async function startServer() {
     },
   });
 
-  await server.addContentTypeParser(
-    '*',
-    { parseAs: 'buffer' },
-    (
-      _request: any,
-      payload: any,
-      done: (error: Error | null, body: Buffer) => void,
-    ) => {
-      done(null, payload);
-    },
-  );
-
-  server.route(AUTH_DEMO_POST);
-  server.route(AUTH_GITHUB_POST);
-  server.route(AUTH_MAGIC_LINK_SEND_POST);
-  server.route(AUTH_MAGIC_LINK_VERIFY_POST);
-  server.route(AUTH_ME_GET);
   server.route(EMAIL_CHALLENGES_SEND_POST);
   server.route(EMAIL_CHALLENGES_VERIFY_POST);
+  server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
-  server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
-  server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
   server.route({
-    ...STUDIO_FORMS_GET,
-    preHandler: requireStudioAuth,
+    ...FORMS_GET,
+    preHandler: requireApiKey,
   });
   server.route({
-    ...STUDIO_FORMS_POST,
-    preHandler: requireStudioAuth,
+    ...FORMS_POST,
+    preHandler: requireApiKey,
   });
   server.route({
-    ...STUDIO_FORMS_ID_GET,
-    preHandler: requireStudioAuth,
+    ...FORMS_GITHUB_POST,
+    preHandler: requireApiKey,
   });
   server.route({
-    ...STUDIO_FORMS_ID_PUT,
-    preHandler: requireStudioAuth,
+    ...FORMS_ID_PUT,
+    preHandler: requireApiKey,
   });
   server.route({
-    ...STUDIO_FORMS_ID_DELETE,
-    preHandler: requireStudioAuth,
+    ...FORMS_ID_DELETE,
+    preHandler: requireApiKey,
   });
   server.route({
-    ...STUDIO_FORMS_ID_SUBMISSIONS_GET,
-    preHandler: requireStudioAuth,
+    ...FORMS_ID_SUBMISSIONS_GET,
+    preHandler: requireApiKey,
   });
-
   server.route({
-    handler: async (_request, reply) => {
-      reply.status(200).send();
-    },
-    method: 'GET',
-    url: '/',
+    ...FORMS_ID_SUBMISSIONS_ID_GET,
+    preHandler: requireApiKey,
   });
 
   server.route({
     handler: async (_request, reply) => {
-      try {
-        reply.status(200).send();
-      } catch {
-        reply.status(503).send();
-      }
+      reply.status(200).send({ status: 'ok' });
     },
     method: 'GET',
     url: '/api/v1/health',
   });
 
-  server.route({
-    handler: async (request, reply) => {
-      reply.status(200).send(request.headers);
-    },
-    method: 'GET',
-    url: '/api/v1/headers',
+  server.setNotFoundHandler((_request, reply) => {
+    reply.status(404).send({
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Route not found.',
+      },
+    });
   });
 
-  server.route({
-    handler: async (request, reply) => {
-      reply.status(200).send();
-    },
-    method: 'GET',
-    url: '/api/v1/ping',
+  server.setErrorHandler((error, request, reply) => {
+    request.log.error(error);
+    const statusCode =
+      typeof error === 'object' &&
+      error !== null &&
+      'statusCode' in error &&
+      typeof error.statusCode === 'number' &&
+      error.statusCode < 500
+        ? error.statusCode
+        : 500;
+    const message =
+      statusCode < 500 &&
+      error instanceof Error
+        ? error.message
+        : 'The server could not complete the request.';
+
+    reply.status(statusCode).send({
+      error: {
+        code:
+          statusCode < 500 ? 'INVALID_REQUEST' : 'INTERNAL_SERVER_ERROR',
+        message,
+      },
+    });
   });
+
+  await server.ready();
+
+  return server;
+}
+
+export async function startServer(): Promise<FastifyInstance> {
+  const server = await buildServer();
 
   await server.listen({
     host: '0.0.0.0',
     port: process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 8080,
   });
 
-  await server.ready();
+  return server;
 }

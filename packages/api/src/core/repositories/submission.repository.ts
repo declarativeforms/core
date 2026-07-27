@@ -1,4 +1,4 @@
-import type { ISubmission } from '@declarativeforms/types';
+import type { ISubmission } from '@declarativeforms/core';
 import type { Db } from 'mongodb';
 
 export class SubmissionRepository {

@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { getContainer } from '../core';
+import { sendNotFound } from './error-response';
 
 export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -16,7 +17,7 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
     );
 
     if (!submission) {
-      reply.status(404).send();
+      sendNotFound(reply, 'Submission');
 
       return;
     }

@@ -4,6 +4,12 @@ title: "Address fields"
 
 If you have not created a form before, start with [Create a form](/getting-started/create-a-form).
 
+Address fields work as normal text inputs without a mapping provider. With
+`outputFormat: structured`, that fallback returns `formatted_address` and an
+empty `place_id`. A host can load Google Maps Places in the browser for full
+address-component autocomplete, or replace the address renderer through the
+`@declarativeforms/react` component registry.
+
 ```yaml form.yaml
 version: 1
 title: "Example form"

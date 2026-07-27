@@ -1,3 +1,3 @@
 export * from './email-verification';
 export * from './github-file';
-export * from './user';
+export * from './managed-form';

@@ -1,12 +1,13 @@
-import { evaluateExpression } from '@declarativeforms/common';
-import { isDeclarativeConnectionType } from '@declarativeforms/types';
-import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
-import { faker } from '@faker-js/faker';
+import {
+  evaluateExpression,
+  isDeclarativeConnectionType,
+  type IDeclarativeForm,
+  type ISubmission,
+} from '@declarativeforms/core';
+import { randomBytes } from 'node:crypto';
 import type { SubmissionRepository } from '../repositories';
 import type { IConnectionStrategy, IValidationStrategy } from '../strategies';
 import type { FormService } from './form.service';
-
-const STUDIO_FORM_PREFIX = 'b';
 
 export class SubmissionService {
   constructor(
@@ -79,7 +80,7 @@ export class SubmissionService {
         created_at: now,
         data,
         form_id: persistedFormId,
-        id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
+        id: randomBytes(6).toString('hex'),
         metadata: {
           ip_address: metadata.ipAddress,
           user_agent: metadata.userAgent,
@@ -91,7 +92,9 @@ export class SubmissionService {
       await this.submissionRepository.insert(submission);
     }
 
-    await this.processConnections(form, submission);
+    if (!isPartial) {
+      await this.processConnections(form, submission);
+    }
 
     return submission;
   }
@@ -104,10 +107,6 @@ export class SubmissionService {
   }
 
   public async list(formId: string): Promise<Array<ISubmission> | null> {
-    if (!formId.startsWith(STUDIO_FORM_PREFIX)) {
-      return null;
-    }
-
     const form = await this.formService.findById(formId);
 
     if (!form) {

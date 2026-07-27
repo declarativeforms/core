@@ -1,5 +1,4 @@
 import { createHash, randomBytes, randomInt } from 'crypto';
-import { faker } from '@faker-js/faker';
 import type { EmailVerificationRepository } from '../repositories';
 
 export class EmailVerificationService {
@@ -33,7 +32,7 @@ export class EmailVerificationService {
         email,
         expires_at: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
         hash: this.createHash(email, salt, token),
-        id: faker.string.alphanumeric({ casing: 'lower', length: 8 }),
+        id: randomBytes(6).toString('hex'),
         salt,
       });
 

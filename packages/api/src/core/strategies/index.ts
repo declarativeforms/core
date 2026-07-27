@@ -1,4 +1,4 @@
-import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
+import type { IDeclarativeForm, ISubmission } from '@declarativeforms/core';
 
 export interface IConnectionStrategy {
   readonly type: string;
@@ -18,4 +18,5 @@ export interface IValidationStrategy {
 }
 
 export { EmailConnectionStrategy } from './email-connection.strategy';
+export { EmailVerificationValidationStrategy } from './email-verification-validation.strategy';
 export { WebhookConnectionStrategy } from './webhook-connection.strategy';

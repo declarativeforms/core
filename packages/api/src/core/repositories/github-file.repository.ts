@@ -10,6 +10,7 @@ export class GitHubFileRepository {
       {
         projection: {
           _id: 0,
+          access_token: 0,
         },
       },
     );

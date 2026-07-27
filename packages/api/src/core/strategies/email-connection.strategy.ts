@@ -1,13 +1,11 @@
 import {
   interpolateTemplate,
+  isDeclarativeFieldType,
   resolveLocalizedText,
-} from '@declarativeforms/common';
-import { isDeclarativeFieldType } from '@declarativeforms/types';
-import type {
-  IDeclarativeForm,
-  IEmailConnection,
-  ISubmission,
-} from '@declarativeforms/types';
+  type IDeclarativeForm,
+  type IEmailConnection,
+  type ISubmission,
+} from '@declarativeforms/core';
 import { Resend } from 'resend';
 
 function generateResponsesHTML(

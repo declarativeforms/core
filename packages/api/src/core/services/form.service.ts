@@ -1,25 +1,40 @@
-import type { IDeclarativeForm } from '@declarativeforms/types';
-import yaml from 'js-yaml';
-import md5 from 'md5';
+import {
+  parseFormYaml,
+  type IDeclarativeForm,
+} from '@declarativeforms/core';
+import { createHash } from 'node:crypto';
 import type { GitHubGateway } from '../gateways';
 import type {
+  FormRepository,
   GitHubFileRepository,
-  StudioFormRepository,
 } from '../repositories';
+import type { IGitHubFile } from '../types';
+import {
+  InvalidFormDefinitionError,
+  parseFormDefinition,
+} from '../utils';
 
 const GITHUB_FORM_PREFIX = 'a';
-const STUDIO_FORM_PREFIX = 'b';
+const MANAGED_FORM_PREFIX = 'f';
+
+export type GitHubFormSource = {
+  id: string;
+  owner: string;
+  repository: string;
+  path: string;
+  ref: string;
+};
 
 export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
-    private studioFormRepository: StudioFormRepository,
+    private formRepository: FormRepository,
     private gitHubGateway: GitHubGateway,
   ) {}
 
   public async findById(id: string): Promise<IDeclarativeForm | null> {
-    if (id.startsWith(STUDIO_FORM_PREFIX)) {
-      return this.studioFormRepository.find(id);
+    if (id.startsWith(MANAGED_FORM_PREFIX)) {
+      return this.formRepository.find(id);
     }
 
     if (!id.startsWith(GITHUB_FORM_PREFIX)) {
@@ -32,44 +47,49 @@ export class FormService {
       return null;
     }
 
-    if (gitHubFile.access_token) {
-      const text = await this.gitHubGateway.retrieveYamlFile(
+    const token = process.env.GITHUB_TOKEN;
+    let text: string | null;
+
+    if (gitHubFile.private) {
+      text = token
+        ? await this.gitHubGateway.retrieveYamlFile(
+            gitHubFile.owner,
+            gitHubFile.repository,
+            gitHubFile.file,
+            gitHubFile.ref,
+            token,
+          )
+        : null;
+    } else {
+      text = await this.gitHubGateway.retrieveYamlFile(
         gitHubFile.owner,
         gitHubFile.repository,
         gitHubFile.file,
-        gitHubFile.access_token,
+        gitHubFile.ref,
       );
 
-      if (!text) {
-        return null;
+      if (!text && token) {
+        text = await this.gitHubGateway.retrieveYamlFile(
+          gitHubFile.owner,
+          gitHubFile.repository,
+          gitHubFile.file,
+          gitHubFile.ref,
+          token,
+        );
       }
-
-      return {
-        ...(yaml.load(text) as IDeclarativeForm),
-        id,
-      };
     }
-
-    const text = await this.gitHubGateway.retrieveYamlFile(
-      gitHubFile.owner,
-      gitHubFile.repository,
-      gitHubFile.file,
-    );
 
     if (!text) {
       return null;
     }
 
     return {
-      ...(yaml.load(text) as IDeclarativeForm),
+      ...this.parseYaml(text),
       id,
     };
   }
 
-  public async findBySlug(
-    slug: string,
-    accessToken?: string,
-  ): Promise<IDeclarativeForm | null> {
+  public async findBySlug(slug: string): Promise<IDeclarativeForm | null> {
     const parts = slug.split('/');
 
     if (parts.length < 4) {
@@ -78,37 +98,26 @@ export class FormService {
 
     const owner = parts[1];
     const repository = parts[2];
-    const file = parts.slice(3).join('/');
+    const file = normalizeYamlPath(parts.slice(3).join('/'));
 
-    let text = await this.gitHubGateway.retrieveYamlFile(
+    const text = await this.gitHubGateway.retrieveYamlFile(
       owner,
       repository,
       file,
     );
 
-    if (!text && accessToken) {
-      text = await this.gitHubGateway.retrieveYamlFile(
-        owner,
-        repository,
-        file,
-        accessToken,
-      );
-    }
-
     if (!text) {
       return null;
     }
 
-    const form = yaml.load(text) as IDeclarativeForm;
-
-    const id = `${GITHUB_FORM_PREFIX}${md5(slug).substring(0, 8)}`;
+    const form = this.parseYaml(text);
+    const id = createGitHubFormId(owner, repository, file);
 
     await this.gitHubFileRepository.upsert({
       file,
       id,
       owner,
       repository,
-      ...(accessToken ? { access_token: accessToken } : {}),
     });
 
     return {
@@ -116,4 +125,92 @@ export class FormService {
       id,
     };
   }
+
+  public async registerGitHubSource(input: {
+    owner: string;
+    repository: string;
+    path: string;
+    ref?: string;
+  }): Promise<GitHubFormSource | null> {
+    const token = process.env.GITHUB_TOKEN;
+
+    if (!token) {
+      return null;
+    }
+
+    const owner = input.owner.trim();
+    const repository = input.repository.trim();
+    const file = normalizeYamlPath(input.path);
+    const ref = input.ref?.trim() || 'main';
+
+    if (!owner || !repository || !file) {
+      return null;
+    }
+
+    const text = await this.gitHubGateway.retrieveYamlFile(
+      owner,
+      repository,
+      file,
+      ref,
+      token,
+    );
+
+    if (!text) {
+      return null;
+    }
+
+    this.parseYaml(text);
+
+    const id = createGitHubFormId(owner, repository, file, ref);
+    const gitHubFile: IGitHubFile = {
+      file,
+      id,
+      owner,
+      private: true,
+      ref,
+      repository,
+    };
+
+    await this.gitHubFileRepository.upsert(gitHubFile);
+
+    return {
+      id,
+      owner,
+      path: file,
+      ref,
+      repository,
+    };
+  }
+
+  private parseYaml(text: string): IDeclarativeForm {
+    try {
+      return parseFormDefinition(parseFormYaml(text));
+    } catch (error) {
+      if (error instanceof InvalidFormDefinitionError) {
+        throw error;
+      }
+
+      throw new InvalidFormDefinitionError([
+        error instanceof Error ? error.message : 'The YAML could not be parsed.',
+      ]);
+    }
+  }
+}
+
+function createGitHubFormId(
+  owner: string,
+  repository: string,
+  file: string,
+  ref = 'main',
+): string {
+  const slug = `forms/${owner}/${repository}/${file}`;
+  const source = ref === 'main' ? slug : `${slug}@${ref}`;
+
+  const hash = createHash('md5').update(source).digest('hex');
+
+  return `${GITHUB_FORM_PREFIX}${hash.substring(0, 8)}`;
+}
+
+function normalizeYamlPath(path: string): string {
+  return path.trim().replace(/^\/+/, '').replace(/\.yaml$/i, '');
 }
