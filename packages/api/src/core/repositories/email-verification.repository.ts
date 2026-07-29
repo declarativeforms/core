@@ -26,4 +26,25 @@ export class EmailVerificationRepository {
 
     return emailVerification;
   }
+
+  public async incrementAttempts(id: string): Promise<number> {
+    const result = await this.db
+      .collection<IEmailVerification>('email_verifications')
+      .findOneAndUpdate(
+        { id },
+        { $inc: { attempts: 1 } },
+        {
+          projection: { _id: 0, attempts: 1 },
+          returnDocument: 'after',
+        },
+      );
+
+    return result?.attempts ?? Number.MAX_SAFE_INTEGER;
+  }
+
+  public async delete(id: string): Promise<void> {
+    await this.db
+      .collection<IEmailVerification>('email_verifications')
+      .deleteOne({ id });
+  }
 }

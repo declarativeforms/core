@@ -1,0 +1,56 @@
+---
+title: "Architecture"
+description: "Trace a GitHub YAML form from request to rendered response."
+---
+
+Declarative Forms is an npm-workspaces TypeScript monorepo with four primary
+packages.
+
+```text
+Browser source URL
+  → web route parsing
+  → API source route
+  → GitHub configuration and gateway
+  → YAML parser
+  → strict definition validator
+  → respondent-safe definition
+  → framework-independent runtime/compiler
+  → React component registry
+  → server-validated submission
+  → MongoDB response and MinIO upload storage
+  → trusted connection delivery
+```
+
+## Boundaries
+
+- `packages/core` has no browser, GitHub, database, or React dependency. It
+  parses, validates, compiles one active section, resolves navigation, and
+  validates response data.
+- `packages/react` renders the compiled view and delegates persistence as
+  effects. Its field registry is the obvious place to connect a field type to a
+  visual component.
+- `packages/web` parses public URLs, loads definitions, displays safe source
+  errors, owns query/resume state, and sends runtime effects to the API.
+- `packages/api` validates deployment configuration, retrieves GitHub content,
+  translates source failures, stores responses/uploads, and runs trusted
+  connections.
+
+GitHub form IDs begin with `g.` and reversibly encode owner, repository, path,
+and ref. They are operational identifiers for response endpoints, not a second
+source of truth. Definition content is fetched from GitHub on every cache miss.
+
+MongoDB stores submissions and verification state. MinIO stores response
+files. Neither service stores authoritative GitHub form definitions or
+repository mappings.
+
+## Adding a field type
+
+1. Add the public definition and compiled-view types in core.
+2. Add strict property validation and server response validation.
+3. Compile the new definition into a focused field view.
+4. Add the renderer and register it explicitly.
+5. Add field behavior and safe-rendering tests.
+6. Add a validated YAML example and field documentation.
+
+Avoid adding source-provider abstractions, dynamic component discovery, or
+generic pipelines unless an existing concrete requirement needs them.

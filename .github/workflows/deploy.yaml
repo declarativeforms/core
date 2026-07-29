@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
@@ -27,8 +27,20 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Validate OpenAPI document
+        run: npm run check:openapi
+
+      - name: Check production dependency advisories
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Build packages and applications
         run: npm run build
+
+      - name: Check publishable package contents
+        run: npm run pack:check
 
   validate-containers:
     runs-on: ubuntu-latest

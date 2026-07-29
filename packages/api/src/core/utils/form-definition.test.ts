@@ -1,6 +1,5 @@
 import {
   parseFormDefinition,
-  sanitizeFormDefinition,
   validateFormDefinition,
 } from './form-definition';
 
@@ -51,17 +50,5 @@ describe('form definition validation', () => {
         'sections[0].next references unknown section "missing"',
       ]),
     );
-  });
-
-  test('removes fields controlled by the server', () => {
-    expect(
-      sanitizeFormDefinition({
-        ...validForm,
-        id: 'supplied',
-        created_at: 'supplied',
-        updated_at: 'supplied',
-        collaborators: ['supplied'],
-      }),
-    ).toEqual(validForm);
   });
 });

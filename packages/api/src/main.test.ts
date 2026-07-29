@@ -28,7 +28,7 @@ describe('API surface', () => {
     await server.close();
   });
 
-  test('protects form management without connecting to the database', async () => {
+  test('does not expose database-managed form definitions', async () => {
     const server = await buildServer();
     const response = await server.inject({
       method: 'POST',
@@ -36,22 +36,17 @@ describe('API surface', () => {
       payload: {},
     });
 
-    expect(response.statusCode).toBe(401);
-    expect(response.json()).toEqual({
-      error: {
-        code: 'UNAUTHORIZED',
-        message: 'A valid management API key is required.',
-      },
-    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json().error.code).toBe('NOT_FOUND');
 
     await server.close();
   });
 
-  test('requires the API key to use the Bearer scheme', async () => {
+  test('protects submission reads with the Bearer API key', async () => {
     const server = await buildServer();
     const response = await server.inject({
       method: 'GET',
-      url: '/api/v1/forms',
+      url: '/api/v1/forms/g.invalid/submissions',
       headers: {
         authorization: 'test-api-key',
       },

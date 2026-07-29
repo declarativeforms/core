@@ -1,5 +1,7 @@
 import {
   GetObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
   NoSuchKey,
   PutObjectCommand,
   S3Client,
@@ -48,6 +50,7 @@ export class FileService {
   }
 
   public async upload(
+    formId: string,
     buffer: Buffer,
     filename: string,
     contentType: string,
@@ -58,7 +61,11 @@ export class FileService {
         .pop()
         ?.toLowerCase()
         .replace(/[^a-z0-9]/g, '') || 'bin';
-    const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${extension}`;
+    const safeFormId = formId.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeFormId || safeFormId !== formId) {
+      throw new Error('Invalid form ID for upload.');
+    }
+    const key = `uploads/${safeFormId}/${Date.now()}-${randomBytes(16).toString('hex')}.${extension}`;
 
     const command = new PutObjectCommand({
       Body: buffer,
@@ -70,5 +77,32 @@ export class FileService {
     await this.s3Client.send(command);
 
     return `${(process.env.AWS_S3_BASE_URL || '/api/v1/files').replace(/\/$/, '')}/${key}`;
+  }
+
+  public async deleteForForm(formId: string): Promise<void> {
+    const prefix = `uploads/${formId}/`;
+    let continuationToken: string | undefined;
+
+    do {
+      const page = await this.s3Client.send(
+        new ListObjectsV2Command({
+          Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+          ContinuationToken: continuationToken,
+          Prefix: prefix,
+        }),
+      );
+      const objects = (page.Contents ?? []).flatMap((object) =>
+        object.Key ? [{ Key: object.Key }] : [],
+      );
+      if (objects.length > 0) {
+        await this.s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+            Delete: { Objects: objects },
+          }),
+        );
+      }
+      continuationToken = page.NextContinuationToken;
+    } while (continuationToken);
   }
 }

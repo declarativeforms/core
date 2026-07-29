@@ -8,11 +8,7 @@ import {
   CommandItem,
 } from '../../ui/command';
 import { Input } from '../../ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../../ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 import { useDebounce } from '../../../hooks/useDebounce';
 import {
   formatAddressString,
@@ -54,7 +50,11 @@ export function AddressField({
   const isApiLoaded = useWaitForGlobal(checkGooglePlaces, { timeout: 10_000 });
 
   const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(() =>
+    typeof controllerField.value === 'string'
+      ? controllerField.value
+      : controllerField.value?.formatted_address || '',
+  );
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -163,9 +163,17 @@ export function AddressField({
             value={inputValue}
             className="text-sm/4"
             onChange={(e) => {
-              setInputValue(e.target.value);
-              if (e.target.value.trim()) {
+              const value = e.target.value;
+              setInputValue(value);
+              controllerField.onChange(
+                outputFormat === 'structured'
+                  ? { formatted_address: value, place_id: '' }
+                  : value,
+              );
+              if (value.trim()) {
                 setOpen(true);
+              } else {
+                setOpen(false);
               }
             }}
             onBlur={controllerField.onBlur}

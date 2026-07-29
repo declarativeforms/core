@@ -2,14 +2,8 @@ import { useState } from 'react';
 
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
 import { buildFieldValidation } from '../supporting/validation';
-import { HtmlText } from '../supporting/html-text';
-import {
-  Field,
-  FieldLabel,
-  Input,
-  RadioGroup,
-  RadioGroupItem,
-} from '../../ui';
+import { PlainText } from '../supporting/plain-text';
+import { Field, FieldLabel, Input, RadioGroup, RadioGroupItem } from '../../ui';
 import { cn } from '../../../lib/utils';
 import { useFormI18n } from '../supporting/use-form-i18n';
 
@@ -71,7 +65,7 @@ export function SingleSelectField({
               )}
             >
               <RadioGroupItem value={option.value} />
-              <HtmlText html={option.label} />
+              <PlainText text={option.label} />
             </FieldLabel>
           </Field>
         );

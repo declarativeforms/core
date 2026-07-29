@@ -25,6 +25,7 @@ export type FormViewRendererProps = {
   onSubmit: (sectionData: FieldValues) => void | Promise<void>;
   components: FieldComponentRegistry;
   disabled?: boolean;
+  onFieldError?: (error: Error, fieldId?: string) => void;
 };
 
 export const FormViewRenderer = forwardRef<
@@ -66,38 +67,44 @@ export const FormViewRenderer = forwardRef<
         noValidate
         className="outline-none"
       >
-        <div className="space-y-6">
-          {section.fields.map((field) => (
-            <DeclarativeFormField
-              key={field.id}
-              field={resolveFieldVisibility(field, currentData)}
-              form={form}
-              components={props.components}
-              data={props.data}
-            />
-          ))}
-        </div>
+        <fieldset
+          disabled={props.disabled}
+          className="border-0 p-0 m-0 min-w-0"
+        >
+          <div className="space-y-6">
+            {section.fields.map((field) => (
+              <DeclarativeFormField
+                key={field.id}
+                field={resolveFieldVisibility(field, currentData)}
+                form={form}
+                components={props.components}
+                data={props.data}
+                onFieldError={props.onFieldError}
+              />
+            ))}
+          </div>
 
-        <div className="mt-8 flex justify-between items-center">
-          {props.sectionHistory.length > 0 ? (
+          <div className="mt-8 flex justify-between items-center">
+            {props.sectionHistory.length > 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={props.disabled || form.formState.isSubmitting}
+                onClick={() => props.dispatch({ type: 'go_back' })}
+              >
+                {t('section.back')}
+              </Button>
+            ) : (
+              <div />
+            )}
             <Button
-              type="button"
-              variant="outline"
+              type="submit"
               disabled={props.disabled || form.formState.isSubmitting}
-              onClick={() => props.dispatch({ type: 'go_back' })}
             >
-              {t('section.back')}
+              {t('section.next')}
             </Button>
-          ) : (
-            <div />
-          )}
-          <Button
-            type="submit"
-            disabled={props.disabled || form.formState.isSubmitting}
-          >
-            {t('section.next')}
-          </Button>
-        </div>
+          </div>
+        </fieldset>
       </form>
     </FormProvider>
   );

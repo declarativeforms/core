@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
 import { buildFieldValidation } from '../supporting/validation';
-import { HtmlText } from '../supporting/html-text';
+import { PlainText } from '../supporting/plain-text';
 import {
   Button,
   Command,
@@ -60,7 +60,7 @@ export function DropdownField({
       <SelectContent>
         {options?.map((option) => (
           <SelectItem key={option.value} value={option.value}>
-            <HtmlText html={option.label} />
+            <PlainText text={option.label} />
           </SelectItem>
         ))}
       </SelectContent>
@@ -93,7 +93,7 @@ function SearchableDropdown({
           )}
         >
           {selectedOption ? (
-            <HtmlText html={selectedOption.label} />
+            <PlainText text={selectedOption.label} />
           ) : (
             field.placeholder || t('dropdown.select_a', { label: field.label })
           )}
@@ -118,7 +118,7 @@ function SearchableDropdown({
                     setOpen(false);
                   }}
                 >
-                  <HtmlText html={option.label} />
+                  <PlainText text={option.label} />
                   <Check
                     className={cn(
                       'ml-auto size-4',

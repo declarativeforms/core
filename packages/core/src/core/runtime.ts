@@ -1,40 +1,44 @@
-import type {
-  IDeclarativeForm,
-  IDeclarativeFormSection,
-} from '../definition';
+import type { IDeclarativeForm } from '../definition';
 import { evaluateExpression } from '../expression';
 import { compile } from '../compilation/form';
 import type { DispatchResult, FormAction, FormState } from '../types';
 import { DEFAULT_MESSAGES, type ValidationMessages } from '../messages';
 import { validateSectionData } from '../validation';
+import {
+  buildSectionHistory,
+  isExternalNextSectionId,
+  resolveNextSectionId,
+} from '../navigation';
 
-export function resolveNextSectionId(
-  section: IDeclarativeFormSection,
-  formData: Record<string, unknown>,
-): string {
-  if (typeof section.next === 'string') {
-    return section.next;
-  }
+export { isExternalNextSectionId, resolveNextSectionId } from '../navigation';
 
-  for (const rule of section.next ?? []) {
-    if ('else' in rule && rule.else) {
-      return rule.else;
+function removeHiddenValues(
+  schema: IDeclarativeForm,
+  data: Record<string, unknown>,
+): Record<string, unknown> {
+  const nextData = { ...data };
+  let changed: boolean;
+
+  do {
+    changed = false;
+    for (const section of schema.sections ?? []) {
+      for (const field of section.fields ?? []) {
+        if (
+          field.id &&
+          field.visible_when &&
+          !evaluateExpression(field.visible_when, nextData)
+        ) {
+          if (field.id in nextData || `${field.id}_token` in nextData) {
+            changed = true;
+          }
+          delete nextData[field.id];
+          delete nextData[`${field.id}_token`];
+        }
+      }
     }
+  } while (changed);
 
-    if (!('when' in rule) || !rule.when || !rule.go) {
-      continue;
-    }
-
-    if (evaluateExpression(rule.when, formData)) {
-      return rule.go;
-    }
-  }
-
-  return 'done';
-}
-
-export function isExternalNextSectionId(nextSectionId: string): boolean {
-  return nextSectionId.startsWith('https://');
+  return nextData;
 }
 
 function getInitialSectionId(
@@ -56,19 +60,14 @@ export function createRuntimeState(
   messages: ValidationMessages = DEFAULT_MESSAGES,
 ): FormState {
   const activeSectionId = getInitialSectionId(schema, initialSectionId);
-  const view = compile(
-    schema,
-    locale,
-    initialData,
-    activeSectionId,
-    messages,
-  );
+  const data = removeHiddenValues(schema, initialData);
+  const view = compile(schema, locale, data, activeSectionId, messages);
 
   return {
     view,
-    data: initialData,
+    data,
     activeSectionId: view.section.id,
-    sectionHistory: [],
+    sectionHistory: buildSectionHistory(schema, data, view.section.id),
     validationErrors: {},
   };
 }
@@ -82,7 +81,10 @@ export function transitionRuntime(
 ): DispatchResult {
   switch (action.type) {
     case 'update_field': {
-      const formData = { ...state.data, [action.fieldId]: action.value };
+      const formData = removeHiddenValues(schema, {
+        ...state.data,
+        [action.fieldId]: action.value,
+      });
       return {
         state: {
           ...state,
@@ -101,7 +103,10 @@ export function transitionRuntime(
     }
 
     case 'submit_section': {
-      const formData = { ...state.data, ...action.data };
+      const formData = removeHiddenValues(schema, {
+        ...state.data,
+        ...action.data,
+      });
       const validationErrors = validateSectionData(
         schema,
         locale,

@@ -46,9 +46,11 @@ Rules:
 ## Check the result
 
 - The file starts with `version: 1`.
-- Every section has an `id`, `title`, `fields`, and `next`.
+- Every section has an `id` and `fields`; add `title` and `next` when the form
+  needs them.
 - Every field has an `id`, `type`, and `label`.
 - Conditional expressions reference values with `data.<field_id>`.
-- Connections use `email` or `webhook`.
+- Connections use `email` or `webhook` and run only when the deployment
+  allowlists the source repository.
 
 For field-specific options, use [Field types](/field-types/index).

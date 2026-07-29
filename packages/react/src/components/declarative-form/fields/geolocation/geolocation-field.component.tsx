@@ -1,19 +1,10 @@
 import { AlertCircle, Loader2, MapPin, X } from 'lucide-react';
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '../../../../lib/utils';
 import type { TranslationKey } from '../../../../i18n/messages/en';
 import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
 import { useFormI18n } from '../../supporting/use-form-i18n';
-
-const GeolocationMapPreview = lazy(() => import('./geolocation-map-preview'));
 
 type GeolocationValue = {
   latitude: number;
@@ -39,10 +30,12 @@ function isGeolocationValue(v: unknown): v is GeolocationValue {
   return (
     typeof v === 'object' &&
     v !== null &&
-    'latitude' in v &&
-    'longitude' in v &&
-    'accuracy' in v &&
-    'timestamp' in v
+    ['latitude', 'longitude', 'accuracy', 'timestamp'].every(
+      (key) =>
+        key in v &&
+        typeof (v as Record<string, unknown>)[key] === 'number' &&
+        Number.isFinite((v as Record<string, number>)[key]),
+    )
   );
 }
 
@@ -219,18 +212,14 @@ export function GeolocationField({
 
       {hasCoords && (
         <div className="space-y-3">
-          <Suspense
-            fallback={
-              <div className="h-[200px] w-full animate-pulse rounded-md border bg-muted" />
-            }
+          <div
+            className="rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground"
+            aria-label={t('geolocation.map_label')}
           >
-            <GeolocationMapPreview
-              latitude={visibleState.value.latitude}
-              longitude={visibleState.value.longitude}
-              accuracy={visibleState.value.accuracy}
-              label={t('geolocation.map_label')}
-            />
-          </Suspense>
+            {visibleState.value.latitude.toFixed(6)},{' '}
+            {visibleState.value.longitude.toFixed(6)} (
+            {Math.round(visibleState.value.accuracy)} m)
+          </div>
 
           <div className="flex items-center justify-between">
             <button

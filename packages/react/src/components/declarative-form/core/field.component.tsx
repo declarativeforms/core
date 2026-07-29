@@ -9,14 +9,14 @@ import { Field, FieldLabel as BaseFieldLabel, FieldError } from '../../ui';
 import { useI18n } from '../../../i18n';
 import type { CompiledField } from '@declarativeforms/core';
 import { buildFieldValidation } from '../supporting/validation';
-import { HtmlText } from '../supporting/html-text';
+import { PlainText } from '../supporting/plain-text';
 import { FieldErrorBoundary } from '../supporting/field-error-boundary.component';
 import type { FieldComponentRegistry } from './field-registry';
 
 function FieldLabel({ field }: { field: CompiledField }) {
   return (
     <BaseFieldLabel className="text-sm/4.5">
-      <HtmlText html={field.label} />
+      <PlainText text={field.label} />
       {field.required ? (
         <span className="font-medium text-red-500" aria-hidden="true">
           *
@@ -31,6 +31,7 @@ export function DeclarativeFormField(props: {
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
   components: FieldComponentRegistry;
   data: Record<string, unknown>;
+  onFieldError?: (error: Error, fieldId?: string) => void;
 }) {
   const { t } = useI18n();
   const { visible, id } = props.field;
@@ -46,10 +47,14 @@ export function DeclarativeFormField(props: {
   }
 
   const compiledField = props.field;
-  const { registerOptions: rules } = buildFieldValidation(compiledField, {
-    emailFreeEmailBlocked: t('validation.email_free_blocked'),
-    emailOtpRequired: t('validation.email_otp_required'),
-  }, props.data);
+  const { registerOptions: rules } = buildFieldValidation(
+    compiledField,
+    {
+      emailFreeEmailBlocked: t('validation.email_free_blocked'),
+      emailOtpRequired: t('validation.email_otp_required'),
+    },
+    props.data,
+  );
   const Renderer = props.components[compiledField.type];
   if (!Renderer) {
     return null;
@@ -63,7 +68,10 @@ export function DeclarativeFormField(props: {
       rules={rules}
       render={({ field, fieldState }) =>
         isHiddenField ? (
-          <FieldErrorBoundary fieldId={compiledField.id}>
+          <FieldErrorBoundary
+            fieldId={compiledField.id}
+            onError={props.onFieldError}
+          >
             <Renderer
               controllerField={field}
               field={compiledField}
@@ -73,7 +81,10 @@ export function DeclarativeFormField(props: {
         ) : (
           <Field>
             <FieldLabel field={compiledField} />
-            <FieldErrorBoundary fieldId={compiledField.id}>
+            <FieldErrorBoundary
+              fieldId={compiledField.id}
+              onError={props.onFieldError}
+            >
               <Renderer
                 controllerField={field}
                 field={compiledField}

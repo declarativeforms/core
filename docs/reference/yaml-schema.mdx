@@ -1,0 +1,126 @@
+---
+title: "YAML version 1 reference"
+description: "The supported Declarative Forms definition contract."
+---
+
+Version 1 YAML is a public API. Unknown properties are rejected, defaults are
+documented here, and arbitrary JavaScript is not evaluated.
+
+## Minimal definition
+
+```yaml
+version: 1
+title: "Contact us"
+
+sections:
+  - id: contact
+    fields:
+      - id: email
+        type: email
+        label: "Email address"
+        validators:
+          - required
+    next: done
+```
+
+`sections` must contain at least one section. `version` defaults to `1` when
+omitted; any other value is rejected.
+
+## Top-level properties
+
+| Property | Type | Behavior |
+| --- | --- | --- |
+| `version` | `1` | Schema version |
+| `title`, `description` | string or locale map | Form heading |
+| `sections` | array | Ordered form steps |
+| `completion` | object or conditional array | Completion content |
+| `connections` | array | Trusted email/webhook delivery |
+| `start_date`, `end_date` | date-time string | Submission availability |
+| `locale` | string | Initial locale |
+| `theme.primary` | string | Primary UI color |
+| `measurements.mixpanel` | string | Trusted Mixpanel project token |
+
+`id` is assigned from the GitHub source and returned by the API. Authored IDs
+are replaced by the stateless source ID.
+
+## Sections and fields
+
+Each section requires a unique `id` and `fields` array. `next` may be another
+section ID, `done`, an HTTPS redirect, or an ordered conditional rule list.
+
+Every field requires a globally unique `id` and supported `type`. Common
+properties are:
+
+| Property | Type | Behavior |
+| --- | --- | --- |
+| `label` | localized text | Visible label |
+| `placeholder` | localized text | Input hint |
+| `validators` | array | Field validation rules |
+| `visible_when` | safe expression | Conditional visibility |
+
+Supported field-specific properties:
+
+| Field | Properties |
+| --- | --- |
+| `email` | `block_free_email`, `otp` |
+| `dropdown` | `options`, `searchable` |
+| `single_select`, `multiple_select` | `options`, `allow_other` |
+| `rating` | `min_label`, `max_label` |
+| address variants | `outputFormat: string | structured` |
+| `camera` | `facing_mode: front | rear` |
+| `file_upload` | `accepted_mime_types` |
+
+See [Field types](/field-types) for complete copyable forms.
+
+## Validators
+
+- `required`
+- `pattern` with `regex`
+- `min` and `max`
+- `min_length` and `max_length`
+- `expression`
+
+Each object validator may provide a localized `message`. Bounds are interpreted
+according to the field: numeric/date values, selected-option count, or uploaded
+file count.
+
+Expressions support literals, `data` field access, `!`, unary `+`/`-`,
+comparisons, and `&&`/`||`. Function calls, constructors, assignments, array
+literals, modulo/arithmetic operators, and arbitrary globals are rejected.
+
+```text
+data.country === 'DE' && data.age >= 18
+```
+
+## Options
+
+Select options can be strings or `{ label, value }` objects. Values must be
+unique and non-empty. A string is used as both its label and submitted value.
+
+## Localization and templates
+
+Visible text accepts either a string or a locale-to-string object. Titles,
+labels, completion text, and trusted email templates can interpolate submitted
+answers with Handlebars-style references such as `{{data.full_name}}`.
+Rendered form text is escaped and not interpreted as HTML.
+
+## Connections and trust
+
+Supported connections are:
+
+- `email`: `to`, optional `subject`, `body`, `include_responses`, and `when`;
+- `webhook`: a public HTTPS `url` and optional `when`.
+
+Connections execute only for repositories in
+`GITHUB_TRUSTED_REPOSITORIES`. Webhook destinations are checked against
+private, loopback, link-local, and unsafe redirect targets.
+
+## Limits and compatibility
+
+The API accepts at most 1 MB of YAML, 100 sections, 500 fields per section, 50
+validators per field, and 1,000 options per field. IDs are limited to 128
+characters.
+
+Backward-compatible additions may extend version 1. Removing or changing an
+existing property requires a new version or explicit migration guidance.
+Examples and documentation fences are validated against the runtime in CI.

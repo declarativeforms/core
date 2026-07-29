@@ -43,9 +43,6 @@ sections:
           - type: max
             value: 2
             message: "Select no more than 2 options."
-          - type: expression
-            expression: "!((data.question_2 || []).includes('option_1') && (data.question_2 || []).includes('option_3'))"
-            message: "Do not combine Option 1 and Option 3."
 
       - id: question_3
         type: multiple_select

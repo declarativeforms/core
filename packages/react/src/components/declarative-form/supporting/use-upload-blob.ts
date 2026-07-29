@@ -1,15 +1,17 @@
 import { useCallback, useState } from 'react';
 
 import type { TranslationKey } from '../../../i18n/messages/en';
-import { uploadFile } from '../../../lib/file-upload';
+import { useRendererApi } from '../../../lib/renderer-api';
 
 import { useFormI18n } from './use-form-i18n';
 
 export function useUploadBlob(
   onChange: (value: string | null) => void,
   fallbackErrorKey: TranslationKey,
+  fieldId: string,
 ) {
   const { t } = useFormI18n();
+  const { uploadFile } = useRendererApi();
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -18,7 +20,7 @@ export function useUploadBlob(
       setIsUploading(true);
       setErrorMessage(null);
       try {
-        const url = await uploadFile(blob, filename);
+        const url = await uploadFile(blob, filename, fieldId);
         onChange(url);
         return url;
       } catch (error) {
@@ -30,7 +32,7 @@ export function useUploadBlob(
         setIsUploading(false);
       }
     },
-    [onChange, t, fallbackErrorKey],
+    [fieldId, onChange, t, fallbackErrorKey, uploadFile],
   );
 
   return { upload, isUploading, errorMessage, setErrorMessage };

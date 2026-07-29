@@ -1,14 +1,36 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { I18nContext, type I18nContextValue } from './context';
 import { resolveLocale, translate } from './runtime';
 
 export function I18nProvider(props: { children: ReactNode; locale?: string }) {
-  const queryLang =
-    props.locale ??
-    (typeof window === 'undefined'
+  const [locationLocale, setLocationLocale] = useState(() =>
+    typeof window === 'undefined'
       ? null
-      : new URLSearchParams(window.location.search).get('lang'));
+      : new URLSearchParams(window.location.search).get('lang'),
+  );
+
+  useEffect(() => {
+    if (props.locale !== undefined || typeof window === 'undefined') {
+      return;
+    }
+
+    const updateLocale = () =>
+      setLocationLocale(
+        new URLSearchParams(window.location.search).get('lang'),
+      );
+    window.addEventListener('popstate', updateLocale);
+    window.addEventListener('declarativeforms:locationchange', updateLocale);
+    return () => {
+      window.removeEventListener('popstate', updateLocale);
+      window.removeEventListener(
+        'declarativeforms:locationchange',
+        updateLocale,
+      );
+    };
+  }, [props.locale]);
+
+  const queryLang = props.locale ?? locationLocale;
   const resolvedLocale = resolveLocale(queryLang);
   const contextValue: I18nContextValue = {
     locale: resolvedLocale.locale,

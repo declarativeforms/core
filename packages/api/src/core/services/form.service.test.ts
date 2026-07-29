@@ -1,132 +1,130 @@
-import type {
-  FormRepository,
-  GitHubFileRepository,
-} from '../repositories';
-import type { IGitHubFile } from '../types';
 import type { GitHubGateway } from '../gateways';
-import { FormService } from './form.service';
+import {
+  decodeGitHubFormId,
+  encodeGitHubFormId,
+  FormService,
+} from './form.service';
 
 const yaml = `
 title: Contact us
+measurements:
+  mixpanel: public-project-token
 sections:
   - id: contact
     fields:
       - id: email
         type: email
+connections:
+  - type: webhook
+    url: https://example.com/hook
 `;
 
 describe('FormService GitHub sources', () => {
-  const originalToken = process.env.GITHUB_TOKEN;
-
-  afterEach(() => {
-    if (originalToken === undefined) {
-      delete process.env.GITHUB_TOKEN;
-    } else {
-      process.env.GITHUB_TOKEN = originalToken;
-    }
-  });
-
-  test('loads a direct public source without the server token', async () => {
-    const calls: Array<Array<string | undefined>> = [];
-    let saved: IGitHubFile | null = null;
+  test('loads an untrusted public source without the server token', async () => {
+    const calls: unknown[][] = [];
     const gitHubGateway = {
-      retrieveYamlFile: async (...args: Array<string | undefined>) => {
+      retrieveYamlFile: async (...args: unknown[]) => {
         calls.push(args);
-        return yaml;
+        return { ok: true as const, text: yaml };
       },
     } as unknown as GitHubGateway;
-    const gitHubFiles = {
-      upsert: async (source: IGitHubFile) => {
-        saved = source;
-      },
-    } as unknown as GitHubFileRepository;
-    const service = new FormService(
-      gitHubFiles,
-      {} as FormRepository,
-      gitHubGateway,
-    );
-
-    const form = await service.findBySlug(
-      'forms/example/forms/contact.yaml',
-    );
-
-    expect(form?.id).toMatch(/^a[0-9a-f]{8}$/);
-    expect(calls[0]).toEqual(['example', 'forms', 'contact']);
-    expect(saved).not.toHaveProperty('private');
-  });
-
-  test('registers a private source without persisting its token', async () => {
-    process.env.GITHUB_TOKEN = 'server-token';
-    let saved: IGitHubFile | null = null;
-    const gitHubGateway = {
-      retrieveYamlFile: async () => yaml,
-    } as unknown as GitHubGateway;
-    const gitHubFiles = {
-      upsert: async (source: IGitHubFile) => {
-        saved = source;
-      },
-    } as unknown as GitHubFileRepository;
-    const service = new FormService(
-      gitHubFiles,
-      {} as FormRepository,
-      gitHubGateway,
-    );
-
-    const source = await service.registerGitHubSource({
-      owner: 'example',
-      repository: 'private-forms',
-      path: 'contact.yaml',
+    const service = new FormService(gitHubGateway, {
+      token: 'server-token',
+      trustedRepositories: new Set(),
     });
 
-    expect(source).toMatchObject({
+    const form = await service.findBySource({
       owner: 'example',
+      repository: 'forms',
       path: 'contact',
-      ref: 'main',
-      repository: 'private-forms',
     });
-    expect(saved).toMatchObject({
-      file: 'contact',
-      private: true,
-      ref: 'main',
-    });
-    expect(saved).not.toHaveProperty('access_token');
+
+    expect(form.id).toMatch(/^g\./);
+    expect(form).not.toHaveProperty('connections');
+    expect(form).not.toHaveProperty('measurements');
+    expect(calls[0]).toEqual([
+      'example',
+      'forms',
+      'contact.yaml',
+      undefined,
+      undefined,
+    ]);
   });
 
-  test('uses the server token as a fallback for legacy private sources', async () => {
-    process.env.GITHUB_TOKEN = 'server-token';
-    const calls: Array<Array<string | undefined>> = [];
+  test('uses the token and enables connections only for an allowlisted source', async () => {
+    const calls: unknown[][] = [];
     const gitHubGateway = {
-      retrieveYamlFile: async (...args: Array<string | undefined>) => {
+      retrieveYamlFile: async (...args: unknown[]) => {
         calls.push(args);
-        return calls.length === 1 ? null : yaml;
+        return { ok: true as const, text: yaml };
       },
     } as unknown as GitHubGateway;
-    const gitHubFiles = {
-      find: async () => ({
-        file: 'contact',
-        id: 'a12345678',
-        owner: 'example',
-        repository: 'legacy-private-forms',
-      }),
-    } as unknown as GitHubFileRepository;
+    const service = new FormService(gitHubGateway, {
+      token: 'server-token',
+      trustedRepositories: new Set(['example/private-forms']),
+    });
+    const id = encodeGitHubFormId({
+      owner: 'Example',
+      repository: 'private-forms',
+      path: 'forms/contact.yml',
+      ref: 'release/v1',
+    });
+
+    const resolved = await service.resolveById(id);
+    const rendered = await service.findForRenderingById(id);
+
+    expect(resolved?.trusted).toBe(true);
+    expect(resolved?.definition.connections).toHaveLength(1);
+    expect(rendered).not.toHaveProperty('connections');
+    expect(rendered?.measurements).toEqual({
+      mixpanel: 'public-project-token',
+    });
+    expect(calls[0]).toEqual([
+      'Example',
+      'private-forms',
+      'forms/contact.yml',
+      'release/v1',
+      'server-token',
+    ]);
+  });
+
+  test('round-trips a normalized stateless source id', () => {
+    const id = encodeGitHubFormId({
+      owner: 'example',
+      repository: 'forms',
+      path: '/nested/contact',
+    });
+
+    expect(decodeGitHubFormId(id)).toEqual({
+      owner: 'example',
+      repository: 'forms',
+      path: 'nested/contact.yaml',
+    });
+    expect(decodeGitHubFormId('a12345678')).toBeNull();
+    expect(decodeGitHubFormId('g.not-json')).toBeNull();
+  });
+
+  test('preserves actionable GitHub failures', async () => {
     const service = new FormService(
-      gitHubFiles,
-      {} as FormRepository,
-      gitHubGateway,
+      {
+        retrieveYamlFile: async () => ({
+          ok: false as const,
+          reason: 'rate_limited' as const,
+          retryAfter: '30',
+        }),
+      } as unknown as GitHubGateway,
+      { trustedRepositories: new Set() },
     );
 
-    const form = await service.findById('a12345678');
-
-    expect(form?.id).toBe('a12345678');
-    expect(calls).toEqual([
-      ['example', 'legacy-private-forms', 'contact', undefined],
-      [
-        'example',
-        'legacy-private-forms',
-        'contact',
-        undefined,
-        'server-token',
-      ],
-    ]);
+    await expect(
+      service.findBySource({
+        owner: 'example',
+        repository: 'forms',
+        path: 'contact.yaml',
+      }),
+    ).rejects.toMatchObject({
+      code: 'GITHUB_RATE_LIMITED',
+      retryAfter: '30',
+    });
   });
 });

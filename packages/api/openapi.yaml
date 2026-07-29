@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Declarative Forms API
   version: 1.0.0
-  description: Render and manage declarative forms from JSON or GitHub-hosted YAML.
+  description: Render GitHub-hosted YAML forms and operate their submissions.
 servers:
   - url: /api/v1
 paths:
@@ -10,133 +10,37 @@ paths:
     get:
       summary: Check API health
       responses:
-        "200":
+        '200':
           description: Healthy
-  /forms:
+  /ready:
     get:
-      summary: List API-managed forms
-      security:
-        - ApiKey: []
+      summary: Check database and object-storage readiness
       responses:
-        "200":
-          description: Managed forms ordered by most recently updated
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ManagedForm"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-    post:
-      summary: Create a form from a JSON definition
-      security:
-        - ApiKey: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FormDefinition"
-      responses:
-        "201":
-          description: Form created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ManagedForm"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "422":
-          $ref: "#/components/responses/InvalidForm"
-  /forms/github:
-    post:
-      summary: Register a private GitHub YAML form
-      description: Uses the server-side GITHUB_TOKEN. The token is never stored with the form.
-      security:
-        - ApiKey: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [owner, repository, path]
-              properties:
-                owner:
-                  type: string
-                repository:
-                  type: string
-                path:
-                  type: string
-                  description: YAML path, with or without the .yaml suffix
-                ref:
-                  type: string
-                  default: main
-      responses:
-        "201":
-          description: Registered source
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GitHubSource"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          description: GitHub file unavailable
-        "422":
-          $ref: "#/components/responses/InvalidForm"
-        "503":
-          description: GITHUB_TOKEN is not configured
+        '200':
+          description: Dependencies are ready
+        '500':
+          description: A dependency is unavailable
   /forms/{id}:
     parameters:
-      - $ref: "#/components/parameters/FormId"
+      - $ref: '#/components/parameters/FormId'
     get:
       summary: Get a form for rendering
       security: []
       responses:
-        "200":
+        '200':
           description: Form definition
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FormDefinition"
-        "404":
+                $ref: '#/components/schemas/PublicFormDefinition'
+        '404':
           description: Form not found
-    put:
-      summary: Replace an API-managed form
-      security:
-        - ApiKey: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FormDefinition"
-      responses:
-        "200":
-          description: Form updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ManagedForm"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          description: Managed form not found
-        "422":
-          $ref: "#/components/responses/InvalidForm"
-    delete:
-      summary: Delete an API-managed form
-      security:
-        - ApiKey: []
-      responses:
-        "204":
-          description: Form deleted
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          description: Managed form not found
+        '422':
+          $ref: '#/components/responses/InvalidForm'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: GitHub is unavailable
   /forms/{owner}/{repository}/{path}:
     parameters:
       - name: owner
@@ -155,47 +59,61 @@ paths:
         description: Public GitHub YAML path, with or without the .yaml suffix
         schema:
           type: string
+      - name: ref
+        in: query
+        required: false
+        description: Branch, tag, or commit. GitHub's default branch is used when omitted.
+        schema:
+          type: string
     get:
-      summary: Load and register a public GitHub YAML form
+      summary: Load a GitHub YAML form for rendering
+      description: Non-allowlisted public sources are render-only. Allowlisted repositories may use the server token and execute connections during submission.
       security: []
       responses:
-        "200":
-          description: Form definition with its stable a-prefixed ID
+        '200':
+          description: Form definition with its stateless g.-prefixed source ID
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FormDefinition"
-        "404":
-          description: Public GitHub file unavailable
-        "422":
-          $ref: "#/components/responses/InvalidForm"
+                $ref: '#/components/schemas/PublicFormDefinition'
+        '404':
+          description: GitHub source unavailable or missing
+        '422':
+          $ref: '#/components/responses/InvalidForm'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: GitHub is unavailable
   /forms/{id}/submissions:
     parameters:
-      - $ref: "#/components/parameters/FormId"
+      - $ref: '#/components/parameters/FormId'
     get:
       summary: List a form's submissions
       security:
         - ApiKey: []
       responses:
-        "200":
+        '200':
           description: Submissions
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Submission"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          description: Form not found
+                  $ref: '#/components/schemas/Submission'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
       summary: Create or update a respondent submission
       security: []
       parameters:
         - name: id
           in: query
-          description: Existing submission ID for an update
+          description: Existing submission ID for an update. Requires resume_token.
+          schema:
+            type: string
+        - name: resume_token
+          in: query
+          description: Respondent capability returned by a prior save
           schema:
             type: string
         - name: partial
@@ -211,17 +129,80 @@ paths:
               type: object
               additionalProperties: true
       responses:
-        "200":
+        '200':
           description: Saved submission
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Submission"
-        "422":
+                $ref: '#/components/schemas/SubmissionResponse'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Missing or invalid resume capability
+        '422':
           description: Submission rejected
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /forms/{id}/submissions/resume:
+    parameters:
+      - $ref: '#/components/parameters/FormId'
+      - name: token
+        in: query
+        required: true
+        description: Respondent resume capability returned by a prior save
+        schema:
+          type: string
+    get:
+      summary: Restore a respondent submission
+      security: []
+      responses:
+        '200':
+          description: Respondent-safe saved state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, data, status]
+                properties:
+                  id:
+                    type: string
+                  data:
+                    type: object
+                    additionalProperties: true
+                  status:
+                    type: string
+                    enum: [partial, completed]
+        '401':
+          description: Missing, invalid, or expired resume capability
+        '404':
+          description: Submission not found
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /forms/{id}/upload-capabilities:
+    parameters:
+      - $ref: '#/components/parameters/FormId'
+    post:
+      summary: Create a short-lived upload capability
+      description: Available only when the rendered form contains an upload-capable field.
+      security: []
+      responses:
+        '200':
+          description: Ten-minute form-scoped upload capability
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token]
+                properties:
+                  token:
+                    type: string
+        '404':
+          description: Form not found or uploads are not available
+        '429':
+          $ref: '#/components/responses/RateLimited'
   /forms/{id}/submissions/{submissionId}:
     parameters:
-      - $ref: "#/components/parameters/FormId"
+      - $ref: '#/components/parameters/FormId'
       - name: submissionId
         in: path
         required: true
@@ -232,20 +213,32 @@ paths:
       security:
         - ApiKey: []
       responses:
-        "200":
+        '200':
           description: Submission
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Submission"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
+                $ref: '#/components/schemas/Submission'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
           description: Submission not found
   /files/upload:
     post:
       summary: Upload a respondent file
-      security: []
+      security:
+        - UploadCapability: []
+      parameters:
+        - name: X-Form-Id
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Field-Id
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -258,7 +251,7 @@ paths:
                   type: string
                   format: binary
       responses:
-        "200":
+        '200':
           description: Same-origin file URL
           content:
             application/json:
@@ -268,41 +261,120 @@ paths:
                 properties:
                   url:
                     type: string
+        '401':
+          description: Missing, invalid, or expired upload capability
+        '422':
+          description: Field or detected content type is not accepted
+        '429':
+          $ref: '#/components/responses/RateLimited'
   /files/{key}:
     parameters:
       - name: key
         in: path
         required: true
+        description: The runtime route accepts the complete slash-containing upload key.
         schema:
           type: string
     get:
       summary: Download an uploaded file
       security: []
       responses:
-        "200":
+        '200':
           description: Uploaded file bytes
-        "404":
+        '404':
           description: File not found
   /email-challenges/send:
     post:
       summary: Send a respondent email verification code
       security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [form_id, field_id, email_address]
+              properties:
+                form_id:
+                  type: string
+                field_id:
+                  type: string
+                email_address:
+                  type: string
+                  format: email
       responses:
-        "200":
+        '200':
           description: Challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [request_id, resend_after_seconds]
+                properties:
+                  request_id:
+                    type: string
+                  resend_after_seconds:
+                    type: integer
+        '400':
+          description: Invalid request
+        '404':
+          description: Form field does not support verification
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: Email is not configured
+        '502':
+          description: Verification email delivery failed
   /email-challenges/verify:
     post:
       summary: Verify a respondent email code
       security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [form_id, field_id, email_address, request_id, secret]
+              properties:
+                form_id:
+                  type: string
+                field_id:
+                  type: string
+                email_address:
+                  type: string
+                  format: email
+                request_id:
+                  type: string
+                secret:
+                  type: string
       responses:
-        "200":
+        '200':
           description: Email verified
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token]
+                properties:
+                  token:
+                    type: string
+        '400':
+          description: Invalid request
+        '422':
+          description: Verification failed
+        '429':
+          $ref: '#/components/responses/RateLimited'
 components:
   securitySchemes:
     ApiKey:
       type: http
       scheme: bearer
       description: The deployment API_KEY
+    UploadCapability:
+      type: http
+      scheme: bearer
+      description: Short-lived token from the form upload-capabilities endpoint
   parameters:
     FormId:
       name: id
@@ -310,82 +382,228 @@ components:
       required: true
       schema:
         type: string
-        pattern: "^[af]"
+        pattern: '^g\.[A-Za-z0-9_-]+$'
   responses:
     Unauthorized:
       description: Missing or invalid API_KEY
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     InvalidForm:
       description: Invalid form definition
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: The request limit was exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     FormDefinition:
       type: object
       required: [sections]
-      additionalProperties: true
+      additionalProperties: false
       properties:
         id:
           type: string
           readOnly: true
         title: {}
+        version:
+          type: integer
+          enum: [1]
+        description: {}
+        completion: {}
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        locale:
+          type: string
         sections:
           type: array
           minItems: 1
+          maxItems: 100
           items:
-            type: object
-            required: [id, fields]
-            additionalProperties: true
-            properties:
-              id:
-                type: string
-                minLength: 1
-              fields:
-                type: array
-                items:
-                  type: object
-                  required: [id, type]
-                  additionalProperties: true
-                  properties:
-                    id:
-                      type: string
-                    type:
-                      type: string
-    ManagedForm:
-      allOf:
-        - $ref: "#/components/schemas/FormDefinition"
-        - type: object
-          required: [id, created_at, updated_at]
+            $ref: '#/components/schemas/FormSection'
+        connections:
+          type: array
+          maxItems: 50
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/EmailConnection'
+              - $ref: '#/components/schemas/WebhookConnection'
+        theme:
+          type: object
+          additionalProperties: false
           properties:
-            id:
+            primary:
               type: string
-              pattern: "^f"
-            created_at:
+        measurements:
+          type: object
+          additionalProperties: false
+          properties:
+            mixpanel:
               type: string
-              format: date-time
-            updated_at:
-              type: string
-              format: date-time
-    GitHubSource:
+    FormSection:
       type: object
-      required: [id, owner, repository, path, ref]
+      required: [id, fields]
+      additionalProperties: false
       properties:
         id:
           type: string
-          pattern: "^a"
-        owner:
+          minLength: 1
+          maxLength: 128
+        title: {}
+        fields:
+          type: array
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/FormField'
+        next:
+          oneOf:
+            - type: string
+            - type: array
+              maxItems: 50
+              items:
+                oneOf:
+                  - type: object
+                    required: [when, go]
+                    additionalProperties: false
+                    properties:
+                      when:
+                        type: string
+                      go:
+                        type: string
+                  - type: object
+                    required: [else]
+                    additionalProperties: false
+                    properties:
+                      else:
+                        type: string
+    FormField:
+      type: object
+      required: [id, type]
+      additionalProperties: false
+      properties:
+        id:
           type: string
-        repository:
+          minLength: 1
+          maxLength: 128
+          pattern: '^(?!.*_token$).+$'
+        type:
           type: string
-        path:
+          enum:
+            - address
+            - address_country
+            - address_locality
+            - address_region
+            - camera
+            - date
+            - date_month
+            - dropdown
+            - email
+            - file_upload
+            - geolocation
+            - hidden
+            - long_text
+            - mobile_number
+            - multiple_select
+            - number
+            - rating
+            - short_text
+            - signature
+            - single_select
+            - time
+            - url
+        label: {}
+        placeholder: {}
+        visible_when:
           type: string
-        ref:
+          maxLength: 1000
+        validators:
+          type: array
+          maxItems: 50
+        options:
+          type: array
+          maxItems: 1000
+          items:
+            oneOf:
+              - type: string
+              - type: object
+                additionalProperties: false
+                properties:
+                  label: {}
+                  value:
+                    type: string
+        allow_other:
+          type: boolean
+        block_free_email:
+          type: boolean
+        otp:
+          type: boolean
+        searchable:
+          type: boolean
+        min_label: {}
+        max_label: {}
+        outputFormat:
           type: string
+          enum: [string, structured]
+        facing_mode:
+          type: string
+          enum: [front, rear]
+        accepted_mime_types:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+    EmailConnection:
+      type: object
+      required: [type, to]
+      additionalProperties: false
+      properties:
+        type:
+          const: email
+        to:
+          type: string
+        subject: {}
+        body: {}
+        include_responses:
+          type: boolean
+        when:
+          type: string
+    WebhookConnection:
+      type: object
+      required: [type, url]
+      additionalProperties: false
+      properties:
+        type:
+          const: webhook
+        url:
+          type: string
+          format: uri
+          pattern: '^https://'
+        when:
+          type: string
+    PublicFormDefinition:
+      allOf:
+        - $ref: '#/components/schemas/FormDefinition'
+        - type: object
+          description: Respondent-facing definition with server-only configuration removed
+          properties:
+            connections: false
+            collaborators: false
+            created_at: false
+            updated_at: false
     Submission:
       type: object
       required: [id, form_id, data, status, created_at, updated_at]
@@ -406,6 +624,63 @@ components:
         updated_at:
           type: string
           format: date-time
+        metadata:
+          type: object
+          required: [ip_address, user_agent]
+          properties:
+            ip_address:
+              type: string
+            user_agent:
+              type: string
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+    SubmissionResponse:
+      type: object
+      required: [id, form_id, data, status, updated_at, resume_token]
+      properties:
+        id:
+          type: string
+        form_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [partial, completed]
+        updated_at:
+          type: string
+          format: date-time
+        resume_token:
+          type: string
+          description: Seven-day respondent capability used to update or resume
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+    Delivery:
+      type: object
+      required: [attempts, connection_index, status, type, updated_at]
+      properties:
+        attempts:
+          type: integer
+          minimum: 1
+          maximum: 3
+        connection_index:
+          type: integer
+          minimum: 0
+        error:
+          type: string
+        status:
+          type: string
+          enum: [delivered, failed]
+        type:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
     Error:
       type: object
       required: [error]
@@ -419,6 +694,10 @@ components:
             message:
               type: string
             details:
-              type: array
-              items:
-                type: string
+              oneOf:
+                - type: array
+                  items:
+                    type: string
+                - type: object
+                  additionalProperties:
+                    type: string

@@ -3,7 +3,7 @@ import { useWatch } from 'react-hook-form';
 
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
 import { buildFieldValidation } from '../supporting/validation';
-import { HtmlText } from '../supporting/html-text';
+import { PlainText } from '../supporting/plain-text';
 import { stripHtml } from '@declarativeforms/core';
 import { Checkbox, Field, FieldLabel, Input } from '../../ui';
 import { Controller } from 'react-hook-form';
@@ -122,7 +122,7 @@ export function MultipleSelectField({
                       )
                     }
                   />
-                  <HtmlText html={option.label} className="flex-1" />
+                  <PlainText text={option.label} className="flex-1" />
                 </FieldLabel>
               </Field>
             );

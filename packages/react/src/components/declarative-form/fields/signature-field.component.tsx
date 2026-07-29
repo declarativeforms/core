@@ -12,7 +12,6 @@ type Point = {
 };
 
 const CANVAS_HEIGHT = 160;
-const UPLOAD_DEBOUNCE_MS = 500;
 
 export function SignatureField({
   field,
@@ -23,12 +22,14 @@ export function SignatureField({
   const pointsRef = useRef<Point[]>([]);
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<Point | null>(null);
-  const uploadTimeoutRef = useRef<number | null>(null);
 
-  const [hasSignature, setHasSignature] = useState(false);
+  const [hasSignature, setHasSignature] = useState(
+    () => typeof controllerField.value === 'string' && !!controllerField.value,
+  );
   const { upload, isUploading, errorMessage, setErrorMessage } = useUploadBlob(
     controllerField.onChange,
     'signature.upload_failed',
+    field.id,
   );
 
   const redrawSignature = useCallback(() => {
@@ -82,7 +83,9 @@ export function SignatureField({
     resizeCanvas();
     const onResize = () => resizeCanvas();
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
   }, [resizeCanvas]);
 
   const getCanvasPoint = (event: PointerEvent) => {
@@ -95,25 +98,14 @@ export function SignatureField({
     };
   };
 
-  const scheduleUpload = () => {
-    if (uploadTimeoutRef.current) {
-      window.clearTimeout(uploadTimeoutRef.current);
-    }
-    uploadTimeoutRef.current = window.setTimeout(() => {
-      uploadSignature();
-    }, UPLOAD_DEBOUNCE_MS);
-  };
-
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(event.nativeEvent);
     if (!point) return;
 
-    if (uploadTimeoutRef.current) {
-      window.clearTimeout(uploadTimeoutRef.current);
-      uploadTimeoutRef.current = null;
-    }
-
     isDrawingRef.current = true;
+    if (pointsRef.current.length === 0 && controllerField.value) {
+      controllerField.onChange(null);
+    }
     lastPointRef.current = point;
     pointsRef.current.push(point);
     setHasSignature(true);
@@ -142,8 +134,8 @@ export function SignatureField({
     isDrawingRef.current = false;
     lastPointRef.current = null;
 
-    if (hasSignature) {
-      scheduleUpload();
+    if (pointsRef.current.length > 0) {
+      void uploadSignature();
     }
   };
 
@@ -164,11 +156,6 @@ export function SignatureField({
   };
 
   const clearSignature = () => {
-    if (uploadTimeoutRef.current) {
-      window.clearTimeout(uploadTimeoutRef.current);
-      uploadTimeoutRef.current = null;
-    }
-
     pointsRef.current = [];
     setHasSignature(false);
     setErrorMessage(null);
@@ -196,6 +183,15 @@ export function SignatureField({
             onPointerCancel={handlePointerUp}
             aria-label={field.label}
           />
+          {pointsRef.current.length === 0 &&
+            typeof controllerField.value === 'string' &&
+            controllerField.value && (
+              <img
+                src={controllerField.value}
+                alt={field.label}
+                className="absolute inset-0 h-full w-full object-contain pointer-events-none"
+              />
+            )}
           {!hasSignature && !isUploading && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-sm text-muted-foreground">

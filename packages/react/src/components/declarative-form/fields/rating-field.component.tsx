@@ -1,5 +1,5 @@
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { HtmlText } from '../supporting/html-text';
+import { PlainText } from '../supporting/plain-text';
 import { buildFieldValidation } from '../supporting/validation';
 import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '../../ui';
 import { cn } from '../../../lib/utils';
@@ -60,8 +60,8 @@ export function RatingField({
           id={labelsId}
           className="flex items-center justify-between gap-2 text-sm text-muted-foreground"
         >
-          <HtmlText html={minLabel || ''} />
-          <HtmlText html={maxLabel || ''} className="text-right" />
+          <PlainText text={minLabel || ''} />
+          <PlainText text={maxLabel || ''} className="text-right" />
         </div>
       )}
     </div>

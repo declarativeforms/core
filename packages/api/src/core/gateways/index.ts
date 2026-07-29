@@ -1,1 +1,1 @@
-export { GitHubGateway } from './github';
+export { GitHubGateway, type GitHubFileResult } from './github';

@@ -3,6 +3,7 @@ import { Component, type ReactNode } from 'react';
 interface Props {
   children: ReactNode;
   fieldId?: string;
+  onError?: (error: Error, fieldId?: string) => void;
 }
 
 interface State {
@@ -17,6 +18,7 @@ class ErrorBoundaryInner extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
+    this.props.onError?.(error, this.props.fieldId);
     console.warn(
       `[DeclarativeForms] Field "${this.props.fieldId}" failed to render:`,
       error,
@@ -36,6 +38,10 @@ class ErrorBoundaryInner extends Component<Props, State> {
   }
 }
 
-export function FieldErrorBoundary({ children, fieldId }: Props) {
-  return <ErrorBoundaryInner fieldId={fieldId}>{children}</ErrorBoundaryInner>;
+export function FieldErrorBoundary({ children, fieldId, onError }: Props) {
+  return (
+    <ErrorBoundaryInner fieldId={fieldId} onError={onError}>
+      {children}
+    </ErrorBoundaryInner>
+  );
 }

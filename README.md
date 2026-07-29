@@ -1,286 +1,224 @@
 # Declarative Forms
 
-Declarative Forms renders forms from a YAML definition stored in GitHub or from
-a JSON definition managed through an API. It has no administrative UI: forms
-can be managed by scripts, automation tools such as Zapier, or coding agents.
+Declarative Forms is an open-source, self-hosted forms platform where YAML
+defines the form and GitHub stores it. Deploy the renderer, point it at a
+repository, and manage forms through commits and pull requests instead of a
+database-backed form builder.
 
-The project deliberately has a short, visible flow:
+> **Project status:** Declarative Forms is early-stage software. The version 1
+> YAML contract and core workflow are tested, but operators should evaluate
+> security, backups, and response-retention requirements before production use.
 
 ```text
-YAML / JSON FormDefinition
-          |
-          v
-  compiled FormView
-          |
-          v
-React rendering engine
-          |
-          v
- answers and submissions
+YAML in GitHub
+  → retrieve and validate
+  → compile the active section
+  → render with React
+  → validate and store responses
 ```
 
-`@declarativeforms/core` owns parsing, compilation, validation, and the
-framework-independent runtime. `@declarativeforms/react` renders a compiled
-view with built-in or application-provided field components. The web
-application hosts that renderer, while the API resolves form definitions,
-stores submissions, and handles integrations.
+This operating model is intended for developers, platform teams, open-source
+communities, and other teams that already use Git. There is no visual editor or
+administrative dashboard. GitHub remains the authoring, review, and change
+history interface.
 
-## Self-hosting
+## Five-minute workflow
 
-You need:
+Create a YAML file in a GitHub repository:
 
-- a Linux host with Docker Engine and Docker Compose v2;
-- ports 80 and 443 open to the internet; and
-- an A or AAAA DNS record for your forms hostname pointing to the host.
+```yaml
+version: 1
+title: "Contact us"
+description: "Tell us how we can help."
 
-Clone the repository, create the environment file, and replace every placeholder:
+sections:
+  - id: contact
+    fields:
+      - id: name
+        type: short_text
+        label: "Name"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        validators:
+          - required
+
+      - id: message
+        type: long_text
+        label: "Message"
+        validators:
+          - required
+
+    next: done
+```
+
+Deploy Declarative Forms:
 
 ```bash
-cp .env.example .env
-openssl rand -hex 32
+./scripts/create-env.sh forms.example.com admin@example.com
 docker compose --env-file .env --file docker/compose.yaml up -d --build
 ```
 
-Traefik redirects HTTP to HTTPS and obtains a Let's Encrypt certificate after
-DNS reaches the host. The stack exposes only ports 80 and 443. MongoDB and
-MinIO stay on a private Docker network, and their data and the ACME
-certificates are kept in named volumes.
+Then open:
 
-Check the deployment with:
+```text
+https://forms.example.com/<owner>/<repository>/<path>
+```
+
+For example, `forms/contact.yaml` in `acme/company-forms` is available at:
+
+```text
+https://forms.example.com/acme/company-forms/forms/contact
+```
+
+The URL remains source-addressed and stable. When `ref` is omitted, GitHub's
+default branch is used. Pin a branch, tag, or commit with:
+
+```text
+https://forms.example.com/acme/company-forms/forms/contact?ref=release-v1
+```
+
+Use [templates/contact.yaml](templates/contact.yaml) as a larger working
+example. Every YAML file and documentation example is checked against the
+runtime schema in CI.
+
+## Public and trusted repositories
+
+Any public repository can be rendered by its source URL. Unconfigured public
+sources are deliberately untrusted:
+
+- the deployment never sends them `GITHUB_TOKEN`;
+- email and webhook `connections` do not execute; and
+- external measurement configuration is removed.
+
+Allowlist repositories that the deployment operator trusts:
+
+```dotenv
+GITHUB_TRUSTED_REPOSITORIES=acme/company-forms,acme/internal-forms
+```
+
+Trusted repositories may execute configured connections. For private
+repositories, also set a fine-grained GitHub token with read-only **Contents**
+access to only the required repositories:
+
+```dotenv
+GITHUB_TOKEN=github_pat_replace_me
+```
+
+The token stays in the API container and is never returned to respondents.
+Anyone who knows a private form's public Declarative Forms URL can render and
+submit it, matching the behavior of a share link.
+
+## What is supported
+
+- Sections and multi-step navigation
+- Conditional visibility, branching, completion messages, and redirects
+- Localized labels and messages
+- Required, pattern, length, range, selection-count, and safe-expression
+  validation
+- Text, email, number, date/time, select, rating, address, geolocation,
+  signature, camera, hidden, and file-upload fields
+- URL prefilling and resumable partial submissions
+- MongoDB response storage and MinIO/S3-compatible uploads
+- Trusted email and HTTPS webhook connections
+- A small primary-color theme and optional Mixpanel measurement
+- React component overrides through `@declarativeforms/react`
+
+Unknown YAML properties are rejected so misspellings do not fail silently. See
+the [YAML reference](docs/reference/yaml-schema.mdx) and
+[field examples](docs/field-types/index.mdx).
+
+Not currently included:
+
+- visual form authoring;
+- accounts, teams, or an administration dashboard;
+- analytics dashboards or workflow automation;
+- a database-backed form-definition API; or
+- a general extension/plugin system.
+
+## Self-hosting
+
+The production Compose stack includes:
+
+| Service | Purpose | Public |
+| --- | --- | --- |
+| Traefik | HTTPS and Let's Encrypt | ports 80/443 |
+| Web | Respondent application and API proxy | through Traefik |
+| API | GitHub retrieval, validation, submissions, integrations | through Traefik |
+| MongoDB | Responses, resume state, and email verification | no |
+| MinIO | Uploaded response files | no |
+| Bucket initializer | Creates the restricted MinIO application account | no |
+
+Required and optional configuration is documented in
+[`.env.example`](.env.example). The most important values are:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DOMAIN` | yes | Public forms hostname |
+| `LETSENCRYPT_EMAIL` | yes | Let's Encrypt account |
+| `API_KEY` | yes | Protects submission reads |
+| `AUTH_JWT_SECRET` | yes | Signs respondent capabilities |
+| `GITHUB_TRUSTED_REPOSITORIES` | no | Repositories trusted to use server-side features |
+| `GITHUB_TOKEN` | private repositories only | Read-only GitHub Contents access |
+| MongoDB variables | yes | Response and verification persistence |
+| MinIO variables | yes | Response-file persistence |
+| Resend variables | email features only | Verification and email connections |
+
+Verify a deployment:
 
 ```bash
 docker compose --env-file .env --file docker/compose.yaml ps
 docker compose --env-file .env --file docker/compose.yaml logs --follow api web traefik
 curl https://forms.example.com/api/v1/health
+curl https://forms.example.com/api/v1/ready
 ```
 
-Replace `forms.example.com` with `DOMAIN`. Upgrade by pulling the new source
-and rerunning the `up -d --build` command. Back up the `mongodb_data`,
-`minio_data`, and `traefik_certs` volumes according to your host's normal
-backup process.
+MongoDB responses and MinIO objects are retained until the operator removes
+them. Back up the `mongodb_data`, `minio_data`, and `traefik_certs` volumes.
+See the [self-hosting guide](docs/getting-started/self-host.mdx) for local
+evaluation, upgrades, logs, and limitations.
 
-### Environment
+## Response API
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DOMAIN` | yes | Public hostname used by Traefik, the renderer, and file URLs |
-| `LETSENCRYPT_EMAIL` | yes | Let's Encrypt account and expiry email |
-| `API_KEY` | yes | Bearer key for management and submission-read endpoints |
-| `AUTH_JWT_SECRET` | yes | Signs respondent email-verification tokens |
-| `GITHUB_TOKEN` | private repos only | Read-only fine-grained GitHub token held by the server |
-| `MONGO_ROOT_USERNAME` / `MONGO_ROOT_PASSWORD` | yes | Private MongoDB credentials; use URL-safe characters |
-| `MONGODB_DATABASE_NAME` | no | Database name; defaults to `declarativeforms` |
-| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | yes | Private object-storage credentials |
-| `MINIO_BUCKET` | no | Upload bucket; defaults to `declarativeforms` |
-| `AWS_REGION` | no | S3 compatibility region; defaults to `us-east-1` |
-| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | email features only | Sends verification and connection emails |
-
-Keep `.env` outside version control. Changing database or object-storage
-credentials after the first start also requires updating the corresponding
-stored service credentials or recreating the volumes.
-
-## Create and render a form
-
-Management requests use the deployment API key:
+The respondent application saves partial and completed submissions through the
+public API. Submission reads require `API_KEY`:
 
 ```bash
-export FORMS_HOST=https://forms.example.com
-export FORMS_API_KEY=replace-with-your-api-key
-```
-
-Create an API-managed form by sending its JSON definition:
-
-```bash
-curl --fail-with-body \
-  -X POST "$FORMS_HOST/api/v1/forms" \
+curl \
   -H "Authorization: Bearer $FORMS_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data '{
-    "version": 1,
-    "title": "Contact us",
-    "sections": [{
-      "id": "contact",
-      "title": "Your details",
-      "fields": [{
-        "id": "email",
-        "type": "email",
-        "label": "Email",
-        "validators": ["required"]
-      }],
-      "next": "done"
-    }]
-  }'
+  "$FORMS_HOST/api/v1/forms/<g-source-id>/submissions"
 ```
 
-The response contains a server-generated `f...` ID. Open
-`https://forms.example.com/<form-id>` to render it. IDs and timestamps are
-server controlled.
+The form GET response contains the internal `g.…` source ID used by submission,
+resume, email-verification, and upload endpoints. It encodes the GitHub source
+reference and does not require a database mapping. The complete contract is in
+[packages/api/openapi.yaml](packages/api/openapi.yaml).
 
-List, replace, or delete API-managed forms:
+## Architecture
 
-```bash
-curl -H "Authorization: Bearer $FORMS_API_KEY" \
-  "$FORMS_HOST/api/v1/forms"
+`@declarativeforms/core` owns untrusted YAML parsing, strict definition
+validation, compilation, navigation, and framework-independent response
+validation. `@declarativeforms/react` maps a compiled active-section view
+through an explicit component registry. The web application owns browser
+routing and effects; the API owns GitHub access and response persistence.
 
-curl -X PUT \
-  -H "Authorization: Bearer $FORMS_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data @form.json \
-  "$FORMS_HOST/api/v1/forms/f12345678"
-
-curl -X DELETE \
-  -H "Authorization: Bearer $FORMS_API_KEY" \
-  "$FORMS_HOST/api/v1/forms/f12345678"
-```
-
-`PUT` replaces the whole definition. Keep the source definition in version
-control and send the complete document on updates.
-
-### GitHub YAML
-
-Public GitHub repositories can be rendered without credentials using the
-GitHub-backed URL supported by the web application. To give a private source
-a stable, shareable form ID, first create a fine-grained token with read-only
-Contents access to that repository and set it as `GITHUB_TOKEN` on the server.
-Then register the source:
-
-```bash
-curl --fail-with-body \
-  -X POST "$FORMS_HOST/api/v1/forms/github" \
-  -H "Authorization: Bearer $FORMS_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data '{
-    "owner": "acme",
-    "repository": "internal-forms",
-    "path": "forms/contact.yaml",
-    "ref": "main"
-  }'
-```
-
-The returned `a...` ID can be opened at
-`https://forms.example.com/<form-id>`. `ref` is optional and defaults to
-`main`. The token never goes to the browser. Rotate it in `.env` and recreate
-the API container if it is exposed:
-
-```bash
-docker compose --env-file .env --file docker/compose.yaml up -d --no-deps --force-recreate api
-```
-
-### Submissions
-
-Respondents submit through the public form renderer. External clients can use
-the same public endpoint:
-
-```bash
-curl -X POST \
-  -H "Content-Type: application/json" \
-  --data '{"email":"person@example.com"}' \
-  "$FORMS_HOST/api/v1/forms/f12345678/submissions"
-```
-
-Reading submission data is always protected:
-
-```bash
-curl -H "Authorization: Bearer $FORMS_API_KEY" \
-  "$FORMS_HOST/api/v1/forms/f12345678/submissions"
-
-curl -H "Authorization: Bearer $FORMS_API_KEY" \
-  "$FORMS_HOST/api/v1/forms/f12345678/submissions/submission-id"
-```
-
-Use a restricted secret store when configuring Zapier, an agent, or another
-automation client with `FORMS_API_KEY`.
-
-## Use the packages
-
-The headless package can parse YAML and compile only the active section:
-
-```ts
-import {
-  compileFormView,
-  createFormRuntime,
-  parseFormYaml,
-} from "@declarativeforms/core";
-
-const definition = parseFormYaml(yamlSource);
-const firstSectionId = definition.sections?.[0]?.id ?? "";
-const view = compileFormView(definition, "en", {}, firstSectionId);
-const runtime = createFormRuntime(definition, { locale: "en" });
-```
-
-The React renderer includes defaults for the built-in field types. Applications
-can replace only the visual components they need:
-
-```tsx
-import type { FormDefinition } from "@declarativeforms/core";
-import {
-  FormRenderer,
-  type FieldComponentProps,
-  type FormRendererProps,
-} from "@declarativeforms/react";
-import "@declarativeforms/react/styles.css";
-
-function CustomRating(props: FieldComponentProps) {
-  return (
-    <label>
-      {props.field.label}
-      <input
-        type="range"
-        min="1"
-        max="5"
-        value={Number(props.controllerField.value ?? 1)}
-        onChange={(event) =>
-          props.controllerField.onChange(Number(event.target.value))
-        }
-      />
-    </label>
-  );
-}
-
-export function MyForm({
-  definition,
-  onEffect,
-}: {
-  definition: FormDefinition;
-  onEffect: FormRendererProps["onEffect"];
-}) {
-  return (
-    <FormRenderer
-      definition={definition}
-      locale="en"
-      initialData={{}}
-      components={{ rating: CustomRating }}
-      onEffect={onEffect}
-    />
-  );
-}
-```
-
-The definition and runtime remain independent of React; component overrides
-receive the compiled field view and its current value/change handler rather
-than needing API or routing knowledge.
+See [docs/contributing/architecture.mdx](docs/contributing/architecture.mdx)
+for the concrete execution path.
 
 ## Development
-
-Install dependencies, run tests, and build all workspaces:
 
 ```bash
 npm ci
 npm test
+npm run lint
+npm run check:openapi
 npm run build
 ```
 
-The main workspaces are:
-
-- `@declarativeforms/core`: YAML-to-view compiler and form runtime;
-- `@declarativeforms/react`: default React rendering and component registry;
-- `@declarativeforms/web`: hosted respondent application; and
-- `@declarativeforms/api`: form, submission, GitHub, upload, and connection API.
-
-There is intentionally no Studio or administrative frontend. API behavior is
-documented by the [OpenAPI contract](packages/api/openapi.yaml).
-
-For a local Docker stack without DNS or Let's Encrypt, run:
+For a local Docker stack without DNS or Let's Encrypt:
 
 ```bash
 docker compose \
@@ -290,8 +228,27 @@ docker compose \
   up -d --build mongodb minio create_bucket api web
 ```
 
-The renderer is then available at `http://localhost:8080`, with the API also
-available directly at `http://localhost:8081/api/v1`.
+Open `http://localhost:8080`; the API is also exposed at
+`http://localhost:8081/api/v1`.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before changing a field or the YAML
+contract. Security reports should follow [SECURITY.md](SECURITY.md).
+
+## Migration from database-managed definitions
+
+The current Git-native model no longer serves legacy `f…` database-managed
+forms or `a…` database-backed GitHub mappings. Before upgrading an older
+deployment:
+
+1. export each JSON definition through the old management API;
+2. convert it to version 1 YAML and commit it to GitHub;
+3. allowlist the repository when it needs trusted connections;
+4. replace the old share link with the source-addressed URL; and
+5. retain the old database until response-retention obligations are resolved.
+
+Existing form-definition and source-mapping collections are not automatically
+deleted. Historical submission-read endpoints can still access responses by
+their stored form IDs.
 
 ## License
 

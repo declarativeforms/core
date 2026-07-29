@@ -1,10 +1,10 @@
 import { Upload } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
 import { buildFieldValidation } from '../../supporting/validation';
 import { useFormI18n } from '../../supporting/use-form-i18n';
-import { uploadFile } from '../../../../lib/file-upload';
+import { useRendererApi } from '../../../../lib/renderer-api';
 import { cn } from '../../../../lib/utils';
 import { FilePreview, type FileMetadata } from './file-preview.component';
 
@@ -34,6 +34,7 @@ export function FileUploadField({
   controllerField,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
+  const { uploadFile } = useRendererApi();
   const [isDragging, setIsDragging] = useState(false);
   const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,24 +44,45 @@ export function FileUploadField({
   const acceptedMimeTypesLabel = acceptedMimeTypes.join(', ');
 
   const { minBound, maxBound } = buildFieldValidation(field);
-  const maxFiles = maxBound ?? 1;
+  const maxFiles = Math.max(1, maxBound ?? 1);
 
-  const currentUrls: string[] = Array.isArray(controllerField.value)
-    ? controllerField.value.filter(
-        (value): value is string =>
-          typeof value === 'string' && value.length > 0,
-      )
-    : typeof controllerField.value === 'string' && controllerField.value
-      ? [controllerField.value]
-      : [];
+  const currentUrls = useMemo<string[]>(
+    () =>
+      Array.isArray(controllerField.value)
+        ? controllerField.value.filter(
+            (value): value is string =>
+              typeof value === 'string' && value.length > 0,
+          )
+        : typeof controllerField.value === 'string' && controllerField.value
+          ? [controllerField.value]
+          : [],
+    [controllerField.value],
+  );
+  const uploadedFilesLabel = t('file_upload.uploaded_files');
 
-  const validateFile = (): string | null => {
-    if (fileMetadata.length >= maxFiles) {
-      return t('file_upload.max_reached', { max: String(maxFiles) });
-    }
-
-    return null;
-  };
+  useEffect(() => {
+    setFileMetadata((previous) => {
+      const transient = previous.filter(
+        (metadata) =>
+          metadata.status !== 'uploaded' || currentUrls.includes(metadata.url),
+      );
+      const knownUrls = new Set(transient.map((metadata) => metadata.url));
+      const restored = currentUrls
+        .filter((url) => !knownUrls.has(url))
+        .map<FileMetadata>((url) => ({
+          name: url.split('/').pop() || uploadedFilesLabel,
+          size: 0,
+          status: 'uploaded',
+          type: 'application/octet-stream',
+          url,
+        }));
+      const next = [...transient, ...restored];
+      return next.length === previous.length &&
+        next.every((metadata, index) => metadata === previous[index])
+        ? previous
+        : next;
+    });
+  }, [currentUrls, uploadedFilesLabel]);
 
   function getTempFileId(prefix: string): string {
     nextUploadIdRef.current += 1;
@@ -93,23 +115,37 @@ export function FileUploadField({
       return;
     }
 
-    const error = validateFile();
-    if (error) {
-      for (const file of acceptedFiles) {
+    const uploadingCount = fileMetadata.filter(
+      (metadata) => metadata.status === 'uploading',
+    ).length;
+    const availableSlots = Math.max(
+      0,
+      maxFiles - currentUrls.length - uploadingCount,
+    );
+    const filesToUpload = acceptedFiles.slice(0, availableSlots);
+    const rejectedForLimit = acceptedFiles.slice(availableSlots);
+    const maxError = t('file_upload.max_reached', { max: String(maxFiles) });
+
+    if (rejectedForLimit.length > 0) {
+      for (const file of rejectedForLimit) {
         const metadata: FileMetadata = {
-          url: '',
+          url: getTempFileId('limit'),
           name: file.name,
           size: file.size,
           type: file.type,
           status: 'error',
-          error,
+          error: maxError,
         };
         setFileMetadata((prev) => [...prev, metadata]);
       }
+    }
+
+    if (filesToUpload.length === 0) {
       return;
     }
 
-    for (const file of acceptedFiles) {
+    const nextUrls = [...currentUrls];
+    for (const file of filesToUpload) {
       const tempId = getTempFileId('temp');
       const metadata: FileMetadata = {
         url: tempId,
@@ -123,7 +159,7 @@ export function FileUploadField({
       setFileMetadata((prev) => [...prev, metadata]);
 
       try {
-        const url = await uploadFile(file);
+        const url = await uploadFile(file, undefined, field.id);
 
         setFileMetadata((prev) =>
           prev.map((m) =>
@@ -131,8 +167,8 @@ export function FileUploadField({
           ),
         );
 
-        const newUrls = maxFiles === 1 ? url : [...currentUrls, url];
-        controllerField.onChange(newUrls);
+        nextUrls.push(url);
+        controllerField.onChange(maxFiles === 1 ? url : [...nextUrls]);
       } catch (error) {
         const errorMessage =
           error instanceof Error
@@ -187,7 +223,11 @@ export function FileUploadField({
     }
   };
 
-  const canAddMore = fileMetadata.length < maxFiles;
+  const canAddMore =
+    currentUrls.length +
+      fileMetadata.filter((metadata) => metadata.status === 'uploading')
+        .length <
+    maxFiles;
 
   const getFileRequirements = () => {
     const requirements: string[] = [];

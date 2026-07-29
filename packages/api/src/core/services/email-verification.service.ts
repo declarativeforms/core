@@ -14,8 +14,9 @@ export class EmailVerificationService {
 
   public async create(
     email: string,
-    salt: string,
+    fieldId: string,
     useOneTimePin = false,
+    formId = '',
   ): Promise<{
     requestId: string;
     token: string;
@@ -28,12 +29,15 @@ export class EmailVerificationService {
 
     const emailVerificationRecord =
       await this.emailVerificationRepository.insert({
+        attempts: 0,
         created_at: now.toISOString(),
-        email,
-        expires_at: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
-        hash: this.createHash(email, salt, token),
+        email: email.trim().toLowerCase(),
+        expires_at: new Date(now.getTime() + 10 * 60 * 1000),
+        field_id: fieldId,
+        form_id: formId,
+        hash: this.createHash(email.trim().toLowerCase(), fieldId, token),
         id: randomBytes(6).toString('hex'),
-        salt,
+        salt: fieldId,
       });
 
     return {
@@ -54,6 +58,12 @@ export class EmailVerificationService {
       return null;
     }
 
+    const attempts =
+      await this.emailVerificationRepository.incrementAttempts(requestId);
+    if (attempts > 5) {
+      return null;
+    }
+
     if (new Date(emailVerification.expires_at).getTime() < Date.now()) {
       return null;
     }
@@ -69,6 +79,7 @@ export class EmailVerificationService {
       return null;
     }
 
+    await this.emailVerificationRepository.delete(requestId);
     return emailVerification.email;
   }
 }

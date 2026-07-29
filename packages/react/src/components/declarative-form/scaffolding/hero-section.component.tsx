@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Button } from '../../ui';
 import { useI18n } from '../../../i18n';
 import { buildThemeStyle } from '../../../lib/theme';
-import { HtmlText } from '../supporting/html-text';
+import { PlainText } from '../supporting/plain-text';
 import { stripHtml } from '@declarativeforms/core';
 
 export function HeroSection(props: {
@@ -29,12 +29,12 @@ export function HeroSection(props: {
     >
       <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
         <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-          <HtmlText html={props.title} />
+          <PlainText text={props.title} />
         </h1>
 
         {props.description ? (
           <p className="text-sm text-gray-500 mb-8">
-            <HtmlText html={props.description} />
+            <PlainText text={props.description} />
           </p>
         ) : null}
 
@@ -44,7 +44,7 @@ export function HeroSection(props: {
             className="inline-flex items-center justify-center w-full h-10 px-6 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {props.buttonLabel ? (
-              <HtmlText html={props.buttonLabel} />
+              <PlainText text={props.buttonLabel} />
             ) : (
               t('hero.continue')
             )}

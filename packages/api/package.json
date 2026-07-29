@@ -1,7 +1,7 @@
 {
   "name": "@declarativeforms/api",
   "version": "1.0.0",
-  "description": "",
+  "description": "GitHub form source and submission API for Declarative Forms",
   "type": "commonjs",
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",

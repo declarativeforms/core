@@ -2,9 +2,7 @@ import type { IDeclarativeForm } from '@declarativeforms/core';
 import jwt from 'jsonwebtoken';
 import type { IValidationStrategy } from '.';
 
-export class EmailVerificationValidationStrategy
-  implements IValidationStrategy
-{
+export class EmailVerificationValidationStrategy implements IValidationStrategy {
   public async validate(
     form: IDeclarativeForm,
     data: Record<string, unknown>,
@@ -25,7 +23,7 @@ export class EmailVerificationValidationStrategy
 
         if (
           typeof token !== 'string' ||
-          !this.matchesEmail(token, email)
+          !this.matchesEmail(token, email, form.id || '', field.id)
         ) {
           return `Email verification is required for "${field.id}".`;
         }
@@ -35,7 +33,12 @@ export class EmailVerificationValidationStrategy
     return null;
   }
 
-  private matchesEmail(token: string, email: string): boolean {
+  private matchesEmail(
+    token: string,
+    email: string,
+    formId: string,
+    fieldId: string,
+  ): boolean {
     const secret = process.env.AUTH_JWT_SECRET;
 
     if (!secret) {
@@ -45,7 +48,12 @@ export class EmailVerificationValidationStrategy
     try {
       const payload = jwt.verify(token, secret);
 
-      return typeof payload !== 'string' && payload.sub === email;
+      return (
+        typeof payload !== 'string' &&
+        payload.sub === email.trim().toLowerCase() &&
+        payload.form_id === formId &&
+        payload.field_id === fieldId
+      );
     } catch {
       return false;
     }

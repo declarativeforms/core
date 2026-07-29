@@ -10,4 +10,6 @@ services:
     ports:
       - "${API_PORT:-8081}:8080"
     environment:
+      ALLOW_INSECURE_DEVELOPMENT: "true"
       AWS_S3_BASE_URL: http://localhost:${WEB_PORT:-8080}/api/v1/files
+      NODE_ENV: development

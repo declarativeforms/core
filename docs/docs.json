@@ -25,8 +25,16 @@
           {
             "group": "Getting Started",
             "pages": [
+              "getting-started/self-host",
               "getting-started/create-a-form",
               "getting-started/configure-coding-agents"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/yaml-schema",
+              "contributing/architecture"
             ]
           },
           {

@@ -2,6 +2,61 @@ import jsep from 'jsep';
 
 const SAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
+function validateNode(node: jsep.Expression): void {
+  switch (node.type) {
+    case 'Literal':
+      return;
+
+    case 'Identifier': {
+      const name = (node as jsep.Identifier).name;
+      if (!['data', 'true', 'false', 'null'].includes(name)) {
+        throw new Error(`Unsupported identifier: ${name}`);
+      }
+      return;
+    }
+
+    case 'MemberExpression': {
+      const member = node as jsep.MemberExpression;
+      validateNode(member.object);
+      if (member.computed) {
+        validateNode(member.property);
+      } else {
+        const property = (member.property as jsep.Identifier).name;
+        if (SAFE_KEYS.has(property)) {
+          throw new Error(`Unsupported property: ${property}`);
+        }
+      }
+      return;
+    }
+
+    case 'UnaryExpression': {
+      const unary = node as jsep.UnaryExpression;
+      if (!['!', '+', '-'].includes(unary.operator)) {
+        throw new Error(`Unsupported unary operator: ${unary.operator}`);
+      }
+      validateNode(unary.argument);
+      return;
+    }
+
+    case 'BinaryExpression': {
+      const binary = node as jsep.BinaryExpression;
+      if (
+        !['&&', '||', '===', '==', '!==', '!=', '<', '<=', '>', '>='].includes(
+          binary.operator,
+        )
+      ) {
+        throw new Error(`Unsupported binary operator: ${binary.operator}`);
+      }
+      validateNode(binary.left);
+      validateNode(binary.right);
+      return;
+    }
+
+    default:
+      throw new Error(`Unsupported expression node: ${node.type}`);
+  }
+}
+
 function evaluateNode(
   node: jsep.Expression,
   data: Record<string, unknown>,
@@ -89,7 +144,18 @@ export function evaluateExpression(
   data: Record<string, unknown>,
 ): boolean {
   try {
-    return Boolean(evaluateNode(jsep(expression), data));
+    const node = jsep(expression);
+    validateNode(node);
+    return Boolean(evaluateNode(node, data));
+  } catch {
+    return false;
+  }
+}
+
+export function isSupportedExpression(expression: string): boolean {
+  try {
+    validateNode(jsep(expression));
+    return true;
   } catch {
     return false;
   }

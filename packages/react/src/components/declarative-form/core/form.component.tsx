@@ -11,14 +11,19 @@ import { useFormRuntime } from './use-runtime';
 import { Button } from '../../ui';
 import { useI18n } from '../../../i18n';
 import { I18nProvider } from '../../../i18n';
-import { HtmlText } from '../supporting/html-text';
+import { PlainText } from '../supporting/plain-text';
+import { RendererApiProvider, useRendererApi } from '../../../lib/renderer-api';
 
 export type FormRendererProps = {
+  apiBaseUrl?: string;
   definition: FormDefinition;
   locale: string;
   initialData: FieldValues;
+  initialCompleted?: boolean;
   initialSectionId?: string;
+  formId?: string;
   components?: FieldComponentOverrides;
+  onFieldError?: (error: Error, fieldId?: string) => void;
   onEffect: (
     effect: FormEffect,
     state: { data: Record<string, unknown>; activeSectionId: string },
@@ -28,16 +33,22 @@ export type FormRendererProps = {
 function FormRendererContent(props: FormRendererProps) {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
-  const [completed, setCompleted] = useState(false);
+  const [completed, setCompleted] = useState(props.initialCompleted ?? false);
   const [isSaving, setIsSaving] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const { t } = useI18n();
-  const { state, dispatch, restore } = useFormRuntime(
+  const { pendingUploads } = useRendererApi();
+  const { state, dispatch, prepare, commit } = useFormRuntime(
     props.definition,
     props.locale,
     props.initialData,
     props.initialSectionId,
   );
+
+  useEffect(() => {
+    setCompleted(props.initialCompleted ?? false);
+    setSubmissionError(null);
+  }, [props.definition, props.initialCompleted, props.initialSectionId]);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -61,15 +72,11 @@ function FormRendererContent(props: FormRendererProps) {
     return (
       <div className="space-y-4 text-center">
         <h2 className="text-2xl font-semibold">
-          <HtmlText
-            html={completion?.title ?? t('thank_you.default_title')}
-          />
+          <PlainText text={completion?.title ?? t('thank_you.default_title')} />
         </h2>
         <div className="text-muted-foreground">
-          <HtmlText
-            html={
-              completion?.message ?? t('thank_you.default_description')
-            }
+          <PlainText
+            text={completion?.message ?? t('thank_you.default_description')}
           />
         </div>
         {completionUrl ? (
@@ -101,35 +108,37 @@ function FormRendererContent(props: FormRendererProps) {
         sectionHistory={state.sectionHistory}
         dispatch={dispatch}
         components={components}
-        disabled={isSaving}
+        disabled={isSaving || pendingUploads > 0}
+        onFieldError={props.onFieldError}
         onSubmit={async (sectionData: FieldValues) => {
           if (isSaving) {
             return;
           }
 
-          const previousState = state;
           setIsSaving(true);
           setSubmissionError(null);
-          const effectResult = dispatch({
+          const prepared = prepare({
             type: 'submit_section',
             data: sectionData,
           });
+          const effectResult = prepared.effect;
 
           if (effectResult.type === 'none') {
+            commit(prepared.state);
             setIsSaving(false);
             return;
           }
 
           try {
             await props.onEffect(effectResult, {
-              data: { ...state.data, ...sectionData },
-              activeSectionId: effectResult.activeSectionId,
+              data: prepared.state.data,
+              activeSectionId: prepared.state.activeSectionId,
             });
+            commit(prepared.state);
             if (effectResult.type === 'complete') {
               setCompleted(true);
             }
           } catch {
-            restore(previousState);
             setSubmissionError(t('submission.save_failed'));
           } finally {
             setIsSaving(false);
@@ -155,9 +164,14 @@ function getSafeLink(value: string | undefined): string | null {
 
 export function FormRenderer(props: FormRendererProps) {
   return (
-    <I18nProvider locale={props.locale}>
-      <FormRendererContent {...props} />
-    </I18nProvider>
+    <RendererApiProvider
+      apiBaseUrl={props.apiBaseUrl}
+      formId={props.formId ?? props.definition.id}
+    >
+      <I18nProvider locale={props.locale}>
+        <FormRendererContent {...props} />
+      </I18nProvider>
+    </RendererApiProvider>
   );
 }
 

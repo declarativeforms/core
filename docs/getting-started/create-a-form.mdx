@@ -1,201 +1,128 @@
 ---
 title: "Create a form"
-description: "Create a form in YAML, store it in GitHub, and share it as a live URL — in under three minutes."
+description: "Commit a YAML form to GitHub and open its stable source URL."
 ---
 
-Define a form in a YAML file, push it to a GitHub repository, and Declarative Forms turns it into a live, shareable form. API-managed JSON definitions are available for automation-driven workflows.
+Declarative Forms reads version 1 YAML from GitHub. GitHub stores and reviews
+the definition; your deployment validates and renders it.
 
 <Info>
-**All you need is a GitHub repository.** Public or private — both work. There is nothing to install, sign up for, or deploy.
+This guide assumes you already have a deployment. See
+[Self-host Declarative Forms](/getting-started/self-host).
 </Info>
 
-## How it works
+## Create the YAML file
 
-```mermaid
-graph LR
-  A[YAML file in GitHub] --> B[frms.dev renders the form]
-  B --> C[Shareable URL]
+Create `forms/contact.yaml` in a GitHub repository:
+
+```yaml contact.yaml
+version: 1
+title: "Contact us"
+description: "Send us a message and we will get back to you."
+
+sections:
+  - id: contact
+    title: "Your details"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: message
+        type: long_text
+        label: "Message"
+        validators:
+          - required
+
+    next: done
 ```
 
-You create a `.yaml` file in a GitHub repository. Declarative Forms reads that file and renders it as an interactive form at a `frms.dev` URL. Every time you update the YAML and push to `main`, the form updates automatically.
+Commit and push the file. Unknown properties and unsupported field types are
+rejected with their YAML path instead of being silently ignored.
 
----
+## Open the stable URL
 
-## Create your form
-
-<Steps>
-  <Step title="Create a YAML file">
-    In any GitHub repository, create a new `.yaml` file on the `main` branch. The filename becomes part of the form URL — for example, `contact.yaml` becomes `/contact`.
-  </Step>
-
-  <Step title="Define the form">
-    Paste this complete contact form into your YAML file:
-
-    ```yaml contact.yaml
-    version: 1
-    title: "Contact us"
-    description: "Send us a message and we will get back to you."
-
-    sections:
-      - id: contact
-        title: "Your details"
-        fields:
-          - id: full_name
-            type: short_text
-            label: "Full name"
-            placeholder: "Jane Smith"
-            validators:
-              - required
-
-          - id: email
-            type: email
-            label: "Email address"
-            placeholder: "jane@example.com"
-            validators:
-              - required
-
-          - id: message
-            type: long_text
-            label: "Message"
-            placeholder: "How can we help?"
-            validators:
-              - required
-
-        next: done
-
-    connections:
-      - type: email
-        to: "hello@example.com"
-        subject: "New contact form submission"
-        include_responses: true
-    ```
-
-    Replace `hello@example.com` with the email address where you want to receive submissions.
-  </Step>
-
-  <Step title="Commit and push">
-    Commit the file to the `main` branch and push. Your form is now live.
-  </Step>
-</Steps>
-
----
-
-## Open your form
-
-Once your YAML file is on `main`, open it through `frms.dev`. The process differs slightly depending on whether your repository is public or private.
-
-<Tabs>
-  <Tab title="Public repository">
-    Navigate directly to:
-
-    ```text
-    https://frms.dev/<owner>/<repo>/<filename>
-    ```
-
-    | Placeholder    | Value                                         |
-    |----------------|-----------------------------------------------|
-    | `<owner>`      | Your GitHub username or organization           |
-    | `<repo>`       | The repository name                            |
-    | `<filename>`   | The YAML filename without `.yaml`              |
-
-    **Example:** If your GitHub username is `acme` and you created `contact.yaml` in the `forms` repository:
-
-    ```text
-    https://frms.dev/acme/forms/contact
-    ```
-
-    The form loads immediately. No authentication required — anyone with the link can fill it in.
-  </Tab>
-
-  <Tab title="Private repository">
-    Configure the self-hosted API with a read-only `GITHUB_TOKEN`, then register
-    the source through the protected management API:
-
-    ```bash
-    curl -X POST https://forms.example.com/api/v1/forms/github \
-      -H "Authorization: Bearer $FORMS_API_KEY" \
-      -H "Content-Type: application/json" \
-      --data '{"owner":"acme","repository":"forms","path":"contact.yaml"}'
-    ```
-
-    The response contains an `a...` form ID. Open and share
-    `https://forms.example.com/<form-id>`.
-
-    <Note>
-    **Your respondents never receive the GitHub token.** Private repositories
-    cannot be loaded through the public owner/repository path; they must be
-    registered by an API-key-authenticated management client.
-    </Note>
-  </Tab>
-</Tabs>
-
----
-
-## Share your form
-
-After you load the form for the first time, you'll be redirected to a permanent short URL like:
+Use the GitHub owner, repository, and YAML path:
 
 ```text
-https://forms.example.com/a12345678
+https://forms.example.com/<owner>/<repository>/<path>
 ```
 
-This is your form's **shareable link**. Share it with anyone who should fill in the form. It always points to the latest version of your YAML — every push to `main` updates the form automatically.
+For `forms/contact.yaml` in `acme/company-forms`:
 
-<Info>
-**This is the URL your respondents use — not the repository path.** The short URL works without GitHub authentication, including for a registered private source.
-</Info>
+```text
+https://forms.example.com/acme/company-forms/forms/contact
+```
 
-<Check>
-**No redeploy needed.** Edit the YAML, push to `main`, and the form updates. There is no build step, deploy step, or cache to clear.
-</Check>
+The `.yaml` suffix is optional. The URL stays source-addressed and does not
+redirect to a database-generated form ID.
 
----
+GitHub's default branch is used automatically. To pin another branch, tag, or
+commit, add a `ref` query parameter:
 
-## Verify it works
+```text
+https://forms.example.com/acme/company-forms/forms/contact?ref=release-v1
+```
 
-Open your form URL and run through these checks:
+## Public repositories
 
-<Steps>
-  <Step title="Form loads">
-    The title, description, and all fields should appear.
-  </Step>
-  <Step title="Validation works">
-    Submit with empty required fields — each one should show an error.
-  </Step>
-  <Step title="Submission succeeds">
-    Fill in every field and submit. You should see the default completion screen.
-  </Step>
-  <Step title="Email arrives">
-    Check the inbox you configured. A submission email with all responses should arrive within a few minutes.
-  </Step>
-</Steps>
+No GitHub credential is required. An arbitrary public repository is
+render-and-store only: its `connections` and external measurements are not
+trusted or executed by the deployment.
 
----
+## Trusted and private repositories
+
+The deployment operator allowlists trusted repositories in `.env`:
+
+```dotenv
+GITHUB_TRUSTED_REPOSITORIES=acme/company-forms,acme/internal-forms
+```
+
+For a private repository, also configure a fine-grained token with read-only
+Contents access to that repository:
+
+```dotenv
+GITHUB_TOKEN=github_pat_replace_me
+```
+
+Restart the API container after changing deployment configuration:
+
+```bash
+docker compose --env-file .env --file docker/compose.yaml up -d --no-deps --force-recreate api
+```
+
+Trusted definitions may execute configured email and HTTPS webhook
+connections. The GitHub token stays on the server. The form URL itself is a
+share link: respondents do not authenticate with GitHub.
+
+## Verify changes
+
+1. Open the source URL and confirm the form loads.
+2. Submit without a required answer and confirm a field error appears.
+3. Complete the form and confirm its completion message appears.
+4. Edit the YAML, commit, and wait up to 30 seconds for the in-memory source
+   cache to expire.
+5. For a trusted connection, inspect its delivery state through the protected
+   submission API.
 
 ## Troubleshooting
 
-<AccordionGroup>
-  <Accordion title="Form not loading">
-    - Confirm the file is on the `main` branch.
-    - Check that the URL matches the filename exactly (without `.yaml`).
-    - For private repos, make sure the server has a `GITHUB_TOKEN` with read
-      access to the repository.
-  </Accordion>
-
-  <Accordion title="YAML parse error">
-    - Use **spaces**, not tabs. YAML is whitespace-sensitive.
-    - Ensure all strings with special characters (`:`, `#`, `"`) are wrapped in quotes.
-    - Validate your YAML with an online linter like [yamllint.com](https://www.yamllint.com).
-  </Accordion>
-
-  <Accordion title="No submission email received">
-    - Confirm you replaced `hello@example.com` with your actual email address.
-    - Check your spam or junk folder.
-    - Verify the `connections` block is at the top level of the YAML (not nested inside a section).
-  </Accordion>
-
-  <Accordion title="Changes not showing up">
-    - Make sure you pushed to the `main` branch, not a different branch.
-    - Hard-refresh the form page (`Cmd+Shift+R` or `Ctrl+Shift+R`) to bypass browser cache.
-  </Accordion>
-</AccordionGroup>
+- **Invalid form YAML:** use the reported line and column to fix YAML syntax.
+- **Invalid form definition:** use the reported property path and compare it
+  with the [YAML reference](/reference/yaml-schema).
+- **GitHub source not found:** verify owner, repository, path, and `ref`; for a
+  private repository, verify the allowlist and token permissions.
+- **GitHub rate limit reached:** wait for the reported retry period or add an
+  appropriately scoped token to an allowlisted repository.
+- **Connection did not run:** only allowlisted repositories are trusted to
+  execute connections.

@@ -82,9 +82,3 @@ connections:
     to: "events@example.com"
     subject: "Registration from {{data.full_name}}"
     include_responses: true
-
-  # Store every registration in Airtable for easy management.
-  - type: airtable
-    connection_id: "your-airtable-connection-id"
-    base_id: "your-base-id"
-    table_id_or_name: "Registrations"

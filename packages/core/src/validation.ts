@@ -4,12 +4,15 @@ import { resolveLocalizedText } from './localization';
 import type {
   DeclarativeFieldType,
   IDeclarativeForm,
+  IDeclarativeFormField,
+  IDeclarativeFormSection,
   IDeclarativeFormValidator,
   ILocalizedText,
 } from './definition';
 import { isDeclarativeFieldType } from './definition';
 import { DEFAULT_MESSAGES, type ValidationMessages } from './messages';
 import type { CompiledField, CompiledOption, ValidationRule } from './types';
+import { isExternalNextSectionId, resolveNextSectionId } from './navigation';
 
 type ValidatorWithValue = {
   type: 'min' | 'max';
@@ -472,6 +475,338 @@ export function validateSectionData(
   }
 
   return errors;
+}
+
+export type FormDataValidationResult = {
+  data: Record<string, unknown>;
+  errors: Record<string, string>;
+};
+
+export function validateFormData(
+  schema: IDeclarativeForm,
+  locale: string,
+  input: Record<string, unknown>,
+  options: {
+    partial?: boolean;
+    now?: Date;
+    messages?: ValidationMessages;
+  } = {},
+): FormDataValidationResult {
+  const allowedFieldIds = new Set<string>();
+
+  for (const section of schema.sections ?? []) {
+    for (const field of section.fields ?? []) {
+      if (!field.id) {
+        continue;
+      }
+      allowedFieldIds.add(field.id);
+      if (field.type === 'email' && field.otp) {
+        allowedFieldIds.add(`${field.id}_token`);
+      }
+    }
+  }
+
+  const data: Record<string, unknown> = Object.fromEntries(
+    Object.entries(input).filter(([key]) => allowedFieldIds.has(key)),
+  );
+  const errors: Record<string, string> = {};
+
+  removeInvisibleSubmissionValues(schema, data);
+
+  if (options.partial) {
+    for (const section of schema.sections ?? []) {
+      for (const field of section.fields ?? []) {
+        if (
+          !field.id ||
+          !(field.id in data) ||
+          !isDeclarativeFieldType(field.type)
+        ) {
+          continue;
+        }
+
+        const rules = buildValidationRules(
+          field.type,
+          field.validators ?? [],
+          resolveLocalizedText(field.label, locale),
+          locale,
+          options.messages,
+        );
+        const ruleError = validateFieldValue(
+          field.type,
+          data[field.id],
+          rules,
+          data,
+        );
+        const valueError = validateSubmissionValue(
+          field,
+          data[field.id],
+          locale,
+        );
+        if (ruleError || valueError) {
+          errors[field.id] = ruleError || valueError || 'Invalid value.';
+        }
+      }
+    }
+    return { data, errors };
+  }
+
+  const now = (options.now ?? new Date()).getTime();
+  if (schema.start_date && Date.parse(schema.start_date) > now) {
+    errors._form = 'This form is not open yet.';
+  } else if (schema.end_date && Date.parse(schema.end_date) < now) {
+    errors._form = 'This form is closed.';
+  }
+
+  const sections = schema.sections ?? [];
+  let section: IDeclarativeFormSection | undefined = sections[0];
+  const visited = new Set<string>();
+
+  while (section?.id && !visited.has(section.id)) {
+    visited.add(section.id);
+    Object.assign(
+      errors,
+      validateSectionData(
+        schema,
+        locale,
+        section.id,
+        data,
+        data,
+        options.messages,
+      ),
+    );
+
+    for (const field of section.fields ?? []) {
+      if (
+        !field.id ||
+        !isDeclarativeFieldType(field.type) ||
+        (field.visible_when && !evaluateExpression(field.visible_when, data))
+      ) {
+        continue;
+      }
+
+      const valueError = validateSubmissionValue(field, data[field.id], locale);
+      if (valueError && !errors[field.id]) {
+        errors[field.id] = valueError;
+      }
+    }
+
+    const nextSectionId = resolveNextSectionId(section, data);
+    if (nextSectionId === 'done' || isExternalNextSectionId(nextSectionId)) {
+      section = undefined;
+      break;
+    }
+
+    section = sections.find((candidate) => candidate.id === nextSectionId);
+  }
+
+  if (section?.id && visited.has(section.id)) {
+    errors._form = 'The form navigation contains a cycle.';
+  }
+
+  return { data, errors };
+}
+
+function removeInvisibleSubmissionValues(
+  schema: IDeclarativeForm,
+  data: Record<string, unknown>,
+): void {
+  let changed: boolean;
+
+  do {
+    changed = false;
+    for (const section of schema.sections ?? []) {
+      for (const field of section.fields ?? []) {
+        if (
+          field.id &&
+          field.visible_when &&
+          !evaluateExpression(field.visible_when, data)
+        ) {
+          if (field.id in data || `${field.id}_token` in data) {
+            changed = true;
+          }
+          delete data[field.id];
+          delete data[`${field.id}_token`];
+        }
+      }
+    }
+  } while (changed);
+}
+
+function validateSubmissionValue(
+  field: IDeclarativeFormField,
+  value: unknown,
+  locale: string,
+): string | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  const label =
+    resolveLocalizedText(field.label, locale) || field.id || 'Field';
+
+  if (
+    [
+      'email',
+      'hidden',
+      'long_text',
+      'mobile_number',
+      'short_text',
+      'url',
+    ].includes(field.type || '') &&
+    typeof value !== 'string'
+  ) {
+    return `${label} must be text.`;
+  }
+
+  if (field.type === 'number') {
+    if (
+      (typeof value !== 'string' && typeof value !== 'number') ||
+      !/^\d+$/.test(String(value))
+    ) {
+      return `${label} must be a whole number.`;
+    }
+  }
+
+  if (
+    field.type === 'rating' &&
+    ((typeof value !== 'string' && typeof value !== 'number') ||
+      !Number.isInteger(Number(value)))
+  ) {
+    return `${label} must be a rating value.`;
+  }
+
+  if (
+    field.type === 'date' &&
+    (typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+      !isValidDateString(value))
+  ) {
+    return `${label} must be a valid date.`;
+  }
+
+  if (
+    field.type === 'date_month' &&
+    (typeof value !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value))
+  ) {
+    return `${label} must be a valid month.`;
+  }
+
+  if (
+    field.type === 'time' &&
+    (typeof value !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(value))
+  ) {
+    return `${label} must be a valid time.`;
+  }
+
+  if (
+    [
+      'address',
+      'address_country',
+      'address_locality',
+      'address_region',
+    ].includes(field.type || '')
+  ) {
+    const outputFormat =
+      'outputFormat' in field ? field.outputFormat || 'string' : 'string';
+    if (
+      (outputFormat === 'string' && typeof value !== 'string') ||
+      (outputFormat === 'structured' &&
+        (typeof value !== 'object' ||
+          value === null ||
+          typeof (value as Record<string, unknown>).formatted_address !==
+            'string' ||
+          typeof (value as Record<string, unknown>).place_id !== 'string'))
+    ) {
+      return `${label} must contain a valid address.`;
+    }
+  }
+
+  if (field.type === 'email') {
+    if (
+      typeof value !== 'string' ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+    ) {
+      return `${label} must be a valid email address.`;
+    }
+  }
+
+  if (field.type === 'url') {
+    try {
+      const url = new URL(String(value));
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return `${label} must be a valid web URL.`;
+      }
+    } catch {
+      return `${label} must be a valid web URL.`;
+    }
+  }
+
+  if (
+    field.type === 'dropdown' ||
+    field.type === 'single_select' ||
+    field.type === 'multiple_select'
+  ) {
+    const optionValues = new Set(
+      (field.options ?? []).map((option) =>
+        typeof option === 'string'
+          ? option
+          : (option.value ?? resolveLocalizedText(option.label, locale)),
+      ),
+    );
+    const values = Array.isArray(value) ? value : [value];
+    const unknownValues = values.filter(
+      (entry) => typeof entry !== 'string' || !optionValues.has(entry),
+    );
+    const allowOther = 'allow_other' in field && field.allow_other === true;
+
+    if (
+      (field.type === 'multiple_select' && !Array.isArray(value)) ||
+      (field.type !== 'multiple_select' && Array.isArray(value)) ||
+      (!allowOther && unknownValues.length > 0) ||
+      (allowOther && unknownValues.length > 1) ||
+      unknownValues.some((entry) => entry === '')
+    ) {
+      return `${label} contains an invalid option.`;
+    }
+  }
+
+  if (field.type === 'file_upload') {
+    const values = Array.isArray(value) ? value : [value];
+    if (values.some((entry) => typeof entry !== 'string' || !entry)) {
+      return `${label} contains an invalid file.`;
+    }
+  }
+
+  if (
+    (field.type === 'camera' || field.type === 'signature') &&
+    typeof value !== 'string'
+  ) {
+    return `${label} contains an invalid file.`;
+  }
+
+  if (field.type === 'geolocation') {
+    if (
+      typeof value !== 'object' ||
+      value === null ||
+      !['latitude', 'longitude', 'accuracy', 'timestamp'].every(
+        (key) =>
+          key in value &&
+          typeof (value as Record<string, unknown>)[key] === 'number' &&
+          Number.isFinite((value as Record<string, number>)[key]),
+      )
+    ) {
+      return `${label} must contain valid coordinates.`;
+    }
+  }
+
+  return undefined;
+}
+
+function isValidDateString(value: string): boolean {
+  const date = new Date(`${value}T00:00:00Z`);
+  return (
+    Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
 }
 
 export type RatingRange = {

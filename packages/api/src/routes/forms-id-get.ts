@@ -1,7 +1,13 @@
 import type { IDeclarativeForm } from '@declarativeforms/core';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { getContainer } from '../core';
-import { sendInvalidDefinition, sendNotFound } from './error-response';
+import {
+  sendFormSourceError,
+  sendInvalidDefinition,
+  sendInvalidYaml,
+  sendNotFound,
+} from './error-response';
+import { enforceRateLimit } from '../middleware';
 
 export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
   handler: async (
@@ -10,12 +16,23 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
     }>,
     reply: FastifyReply,
   ) => {
+    if (
+      !enforceRateLimit(
+        request,
+        reply,
+        `form-read:${request.params.id}`,
+        120,
+        60_000,
+      )
+    ) {
+      return;
+    }
+
     const { formService } = await getContainer();
 
     try {
-      const form: IDeclarativeForm | null = await formService.findById(
-        request.params.id,
-      );
+      const form: IDeclarativeForm | null =
+        await formService.findForRenderingById(request.params.id);
 
       if (!form) {
         sendNotFound(reply);
@@ -24,7 +41,11 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
 
       reply.status(200).send(form);
     } catch (error) {
-      if (!sendInvalidDefinition(reply, error)) {
+      if (
+        !sendInvalidDefinition(reply, error) &&
+        !sendInvalidYaml(reply, error) &&
+        !sendFormSourceError(reply, error)
+      ) {
         throw error;
       }
     }

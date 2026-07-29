@@ -4,11 +4,13 @@ import type {
   FormEffect,
   FormState,
 } from '@declarativeforms/core';
-import {
-  createRuntimeState,
-  transitionRuntime,
-} from '@declarativeforms/core';
+import { createRuntimeState, transitionRuntime } from '@declarativeforms/core';
 import { useEffect, useRef, useState } from 'react';
+
+type PreparedTransition = {
+  effect: FormEffect & { activeSectionId: string };
+  state: FormState;
+};
 
 export function useFormRuntime(
   schema: FormDefinition,
@@ -18,15 +20,40 @@ export function useFormRuntime(
 ): {
   state: FormState;
   dispatch: (action: FormAction) => FormEffect & { activeSectionId: string };
-  restore: (previousState: FormState) => void;
+  prepare: (action: FormAction) => PreparedTransition;
+  commit: (nextState: FormState) => void;
 } {
   const [state, setState] = useState<FormState>(() =>
     createRuntimeState(schema, locale, initialData, initialSectionId),
   );
   const stateRef = useRef(state);
   const localeRef = useRef(locale);
+  const schemaRef = useRef(schema);
+  const initialSectionIdRef = useRef(initialSectionId);
+  const initialDataFingerprintRef = useRef(JSON.stringify(initialData));
 
   useEffect(() => {
+    const initialDataFingerprint = JSON.stringify(initialData);
+    if (
+      schemaRef.current !== schema ||
+      initialSectionIdRef.current !== initialSectionId ||
+      initialDataFingerprintRef.current !== initialDataFingerprint
+    ) {
+      schemaRef.current = schema;
+      initialSectionIdRef.current = initialSectionId;
+      initialDataFingerprintRef.current = initialDataFingerprint;
+      localeRef.current = locale;
+      const nextState = createRuntimeState(
+        schema,
+        locale,
+        initialData,
+        initialSectionId,
+      );
+      stateRef.current = nextState;
+      setState(nextState);
+      return;
+    }
+
     if (localeRef.current === locale) {
       return;
     }
@@ -38,32 +65,37 @@ export function useFormRuntime(
     });
     stateRef.current = result.state;
     setState(result.state);
-  }, [locale, schema]);
+  }, [initialData, initialSectionId, locale, schema]);
 
-  function dispatch(
-    action: FormAction,
-  ): FormEffect & { activeSectionId: string } {
+  function prepare(action: FormAction): PreparedTransition {
     const transitionResult = transitionRuntime(
       schema,
       locale,
       stateRef.current,
       action,
     );
-    stateRef.current = transitionResult.state;
-    setState(transitionResult.state);
 
     return {
-      ...transitionResult.effect,
-      activeSectionId: transitionResult.state.activeSectionId,
-    } as FormEffect & {
-      activeSectionId: string;
+      state: transitionResult.state,
+      effect: {
+        ...transitionResult.effect,
+        activeSectionId: transitionResult.state.activeSectionId,
+      } as FormEffect & { activeSectionId: string },
     };
   }
 
-  function restore(previousState: FormState) {
-    stateRef.current = previousState;
-    setState(previousState);
+  function commit(nextState: FormState) {
+    stateRef.current = nextState;
+    setState(nextState);
   }
 
-  return { state, dispatch, restore };
+  function dispatch(
+    action: FormAction,
+  ): FormEffect & { activeSectionId: string } {
+    const transition = prepare(action);
+    commit(transition.state);
+    return transition.effect;
+  }
+
+  return { state, dispatch, prepare, commit };
 }

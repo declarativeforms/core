@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { EmailVerificationValidationStrategy } from './email-verification-validation.strategy';
 
 const form: IDeclarativeForm = {
+  id: 'f123',
   sections: [
     {
       id: 'contact',
@@ -28,7 +29,14 @@ describe('EmailVerificationValidationStrategy', () => {
 
   test('accepts a token issued for the submitted email', async () => {
     const strategy = new EmailVerificationValidationStrategy();
-    const token = jwt.sign({ sub: 'person@example.com' }, 'test-secret');
+    const token = jwt.sign(
+      {
+        sub: 'person@example.com',
+        field_id: 'email',
+        form_id: 'f123',
+      },
+      'test-secret',
+    );
 
     await expect(
       strategy.validate(form, {
@@ -40,7 +48,14 @@ describe('EmailVerificationValidationStrategy', () => {
 
   test('rejects a token issued for a different email', async () => {
     const strategy = new EmailVerificationValidationStrategy();
-    const token = jwt.sign({ sub: 'other@example.com' }, 'test-secret');
+    const token = jwt.sign(
+      {
+        sub: 'other@example.com',
+        field_id: 'email',
+        form_id: 'f123',
+      },
+      'test-secret',
+    );
 
     await expect(
       strategy.validate(form, {

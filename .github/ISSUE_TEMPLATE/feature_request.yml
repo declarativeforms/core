@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose a focused improvement to the Git-native forms workflow.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Which operator, YAML author, or contributor problem should be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Smallest useful change
+      description: Describe the behavior, not only an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: git_native
+    attributes:
+      label: Git-native fit
+      description: How does this preserve GitHub as the source of truth for form definitions?
+    validations:
+      required: true
+  - type: textarea
+    id: exclusions
+    attributes:
+      label: Scope exclusions and alternatives
+      description: What should remain unchanged, and what alternatives did you consider?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I checked the roadmap, documentation, and existing issues.
+          required: true
+

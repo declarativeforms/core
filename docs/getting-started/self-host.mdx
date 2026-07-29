@@ -1,0 +1,117 @@
+---
+title: "Self-host Declarative Forms"
+description: "Deploy the production Docker Compose stack with GitHub access and automatic HTTPS."
+---
+
+## Prerequisites
+
+- A Linux host with Docker Engine and Docker Compose v2
+- An A or AAAA DNS record for the forms hostname
+- Public ports 80 and 443
+- A GitHub token only when trusted private repositories are used
+
+## Configure and start
+
+Clone the repository and generate `.env` with unique secrets:
+
+```bash
+./scripts/create-env.sh forms.example.com admin@example.com
+```
+
+The helper refuses to overwrite an existing `.env` and creates it with
+owner-only permissions. Review every value before starting.
+
+Allowlist repositories whose connections and measurements you trust:
+
+```dotenv
+GITHUB_TRUSTED_REPOSITORIES=acme/company-forms
+```
+
+For private repositories, set a fine-grained GitHub token with read-only
+Contents access limited to the allowlisted repositories:
+
+```dotenv
+GITHUB_TOKEN=github_pat_replace_me
+```
+
+Start the stack:
+
+```bash
+docker compose --env-file .env --file docker/compose.yaml up -d --build
+```
+
+Traefik redirects HTTP to HTTPS and obtains a Let's Encrypt certificate after
+DNS reaches the host. Only ports 80 and 443 are exposed.
+
+## Services and persistence
+
+| Service | Responsibility | Persistence |
+| --- | --- | --- |
+| Traefik | TLS and routing | `traefik_certs` |
+| Web | Static respondent application and API proxy | none |
+| API | GitHub, validation, submissions, uploads, integrations | none |
+| MongoDB | Responses, resume state, verification | `mongodb_data` |
+| MinIO | Uploaded response files | `minio_data` |
+| create_bucket | MinIO bucket and restricted application user | one-shot |
+
+GitHub remains authoritative for form definitions. MongoDB and MinIO contain
+response data and must be backed up according to your retention requirements.
+The application currently retains this data indefinitely.
+
+## Verify and troubleshoot
+
+```bash
+docker compose --env-file .env --file docker/compose.yaml ps
+docker compose --env-file .env --file docker/compose.yaml logs --follow api web traefik
+curl https://forms.example.com/api/v1/health
+curl https://forms.example.com/api/v1/ready
+```
+
+`health` checks the API process. `ready` also checks MongoDB and the upload
+bucket. The API will refuse to start when required environment values are
+missing or placeholder secrets are used.
+
+Common failures:
+
+- Certificate failures usually mean DNS or ports 80/443 are incorrect.
+- A healthy API with a failing readiness check indicates MongoDB or MinIO.
+- A private source returning not found or authorization failed usually
+  indicates an absent allowlist entry, missing token, insufficient Contents
+  permission, or a bad path/ref.
+- Changing MongoDB or MinIO credentials after first startup requires updating
+  the stored service credentials or recreating the associated volumes.
+
+## Local evaluation
+
+Use the local overlay when DNS and Let's Encrypt are not available:
+
+```bash
+docker compose \
+  --env-file .env.example \
+  --file docker/compose.yaml \
+  --file docker/compose.local.yaml \
+  up -d --build mongodb minio create_bucket api web
+```
+
+Open `http://localhost:8080`. The API is also exposed at
+`http://localhost:8081/api/v1`. The local overlay enables insecure placeholder
+secrets only outside production.
+
+## Upgrade
+
+1. Back up `mongodb_data`, `minio_data`, and `traefik_certs`.
+2. Read release and migration notes.
+3. Pull the desired revision.
+4. Validate configuration with `docker compose ... config`.
+5. Re-run the `up -d --build` command.
+6. Confirm health, readiness, source loading, and a test submission.
+
+Older deployments with `f…` or `a…` form links must follow the migration in
+the repository README before upgrading.
+
+## Reverse proxies and security
+
+The included production stack already terminates HTTPS with Traefik. If another
+proxy sits in front, preserve the original host and protocol and allow response
+uploads up to 10 MB. Keep MongoDB and MinIO private. Never place GitHub,
+operator API, MongoDB, MinIO, Resend, or signing secrets in a form definition.

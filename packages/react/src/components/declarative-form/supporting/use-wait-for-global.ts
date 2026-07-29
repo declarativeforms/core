@@ -9,18 +9,21 @@ export function useWaitForGlobal(
   useEffect(() => {
     if (ready) return;
 
-    const iv = setInterval(() => {
+    const checkForGlobal = () => {
       if (check()) {
         setReady(true);
-        clearInterval(iv);
       }
-    }, interval);
+    };
+    let poll = setInterval(checkForGlobal, interval);
 
-    const to = setTimeout(() => clearInterval(iv), timeout);
+    const slowDown = setTimeout(() => {
+      clearInterval(poll);
+      poll = setInterval(checkForGlobal, Math.max(interval, 1_000));
+    }, timeout);
 
     return () => {
-      clearInterval(iv);
-      clearTimeout(to);
+      clearInterval(poll);
+      clearTimeout(slowDown);
     };
   }, [check, interval, timeout, ready]);
 

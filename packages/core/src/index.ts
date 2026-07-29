@@ -17,12 +17,14 @@ export {
   getNumericRuleValue,
   getRatingRange,
   validateFieldValue,
+  validateFormData,
   validateSectionData,
 } from './validation';
 export type {
   FieldValidationConfig,
   FieldValidator,
   FieldMetadata,
+  FormDataValidationResult,
   RatingRange,
 } from './validation';
 
@@ -64,9 +66,9 @@ export type * from './address';
 export type * from './connection';
 export type * from './submission';
 
-export { evaluateExpression } from './expression';
+export { evaluateExpression, isSupportedExpression } from './expression';
 export { resolveLocalizedText } from './localization';
 export { stripHtml } from './strip-html';
 export { interpolateTemplate } from './template';
-export { parseFormYaml } from './yaml';
+export { FormYamlParseError, parseFormYaml } from './yaml';
 export { validateFormDefinition } from './validate-definition';

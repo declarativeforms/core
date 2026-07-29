@@ -1,5 +1,19 @@
 export { EmailVerificationService } from './email-verification.service';
 export { FileService } from './file.service';
-export { FormService } from './form.service';
-export { ManagedFormService } from './managed-form.service';
-export { SubmissionService } from './submission.service';
+export {
+  decodeGitHubFormId,
+  encodeGitHubFormId,
+  FormService,
+  FormSourceError,
+  InvalidGitHubSourceError,
+  normalizeGitHubSource,
+  repositoryKey,
+  type FormSourceErrorCode,
+  type GitHubFormSource,
+  type GitHubSourceConfig,
+  type ResolvedForm,
+} from './form.service';
+export {
+  SubmissionService,
+  SubmissionValidationError,
+} from './submission.service';

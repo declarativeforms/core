@@ -1,4 +1,9 @@
 import {
+  DECLARATIVE_FIELD_TYPES,
+  parseFormYaml,
+  validateFormDefinition,
+} from '@declarativeforms/core';
+import {
   createFieldComponentRegistry,
   defaultFieldComponents,
   FormRenderer,
@@ -68,4 +73,57 @@ test('renders a compiled form section with a custom field component', () => {
   expect(markup).toContain('aria-label="Contact details"');
   expect(markup).toContain('data-custom-field="name"');
   expect(markup).toContain('Next');
+});
+
+test('keeps the declared field types and default registry in sync', () => {
+  expect(Object.keys(defaultFieldComponents).sort()).toEqual(
+    [...DECLARATIVE_FIELD_TYPES].sort(),
+  );
+});
+
+test('parses, validates, compiles, and renders every supported field type', () => {
+  const fields = DECLARATIVE_FIELD_TYPES.map((type, index) => `
+      - id: field_${index}
+        type: ${type}
+        label: Field ${index}
+        ${
+          ['dropdown', 'multiple_select', 'single_select'].includes(type)
+            ? 'options: [One, Two]'
+            : ''
+        }`).join('\n');
+  const definition = parseFormYaml(`
+version: 1
+title: All fields
+sections:
+  - id: fields
+    title: Supported fields
+    fields:
+${fields}
+    next: done
+`);
+
+  expect(validateFormDefinition(definition)).toEqual([]);
+
+  const components = Object.fromEntries(
+    DECLARATIVE_FIELD_TYPES.map((type) => [
+      type,
+      (({ field }) =>
+        createElement('span', {
+          'data-rendered-field': field.type,
+        })) as DeclarativeFieldRenderer,
+    ]),
+  );
+  const markup = renderToStaticMarkup(
+    createElement(FormRenderer, {
+      definition,
+      locale: 'en',
+      initialData: {},
+      components,
+      onEffect: () => undefined,
+    }),
+  );
+
+  for (const type of DECLARATIVE_FIELD_TYPES) {
+    expect(markup).toContain(`data-rendered-field="${type}"`);
+  }
 });

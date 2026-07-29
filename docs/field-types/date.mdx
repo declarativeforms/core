@@ -24,9 +24,6 @@ sections:
           - type: max
             value: "2026-12-31"
             message: "Use a date on or before 2026-12-31."
-          - type: expression
-            expression: "![0, 6].includes(new Date(data.question_1).getUTCDay())"
-            message: "Choose a weekday."
 
     next: done
 ```

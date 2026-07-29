@@ -10,6 +10,7 @@ import { useFormI18n } from '../supporting/use-form-i18n';
 import { sendEmailOtp, verifyEmailOtp } from './email/api';
 import { isEmailValid, sanitizeOtpCode, toFieldString } from './email/utils';
 import { getSecondaryValidationTokenFieldName } from './secondary-token-field';
+import { useRendererApi } from '../../../lib/renderer-api';
 
 export function EmailField({
   field,
@@ -17,6 +18,7 @@ export function EmailField({
   form,
 }: DeclarativeFieldComponentProps) {
   const { t } = useFormI18n();
+  const { formId, getUrl } = useRendererApi();
   const otpEnabled = field.type === 'email' && field.otp === true;
   const tokenFieldName = useMemo(
     () => getSecondaryValidationTokenFieldName(field.id),
@@ -134,15 +136,18 @@ export function EmailField({
     setStatusMessage(null);
 
     try {
-      const { requestId: nextRequestId, resendAfterSeconds } = await sendEmailOtp({
-        email: emailValue,
-        fieldId: field.id,
-        messages: {
-          requestFailed: otpMessages.requestFailed,
-          startFailed: otpMessages.startFailed,
-          tokenMissing: otpMessages.tokenMissing,
-        },
-      });
+      const { requestId: nextRequestId, resendAfterSeconds } =
+        await sendEmailOtp({
+          email: emailValue,
+          fieldId: field.id,
+          formId,
+          getUrl,
+          messages: {
+            requestFailed: otpMessages.requestFailed,
+            startFailed: otpMessages.startFailed,
+            tokenMissing: otpMessages.tokenMissing,
+          },
+        });
 
       const options = {
         shouldDirty: true,
@@ -180,16 +185,21 @@ export function EmailField({
     setStatusMessage(null);
 
     try {
-      const { verificationToken: nextVerificationToken } = await verifyEmailOtp({
-        email: emailValue,
-        otp: otpCode.trim(),
-        requestId,
-        messages: {
-          requestFailed: otpMessages.requestFailed,
-          startFailed: otpMessages.startFailed,
-          tokenMissing: otpMessages.tokenMissing,
+      const { verificationToken: nextVerificationToken } = await verifyEmailOtp(
+        {
+          email: emailValue,
+          fieldId: field.id,
+          formId,
+          getUrl,
+          otp: otpCode.trim(),
+          requestId,
+          messages: {
+            requestFailed: otpMessages.requestFailed,
+            startFailed: otpMessages.startFailed,
+            tokenMissing: otpMessages.tokenMissing,
+          },
         },
-      });
+      );
 
       const options = {
         shouldDirty: true,
@@ -276,7 +286,9 @@ export function EmailField({
         <div className="relative">
           <Input
             value={otpCode}
-            onChange={(event) => setOtpCode(sanitizeOtpCode(event.target.value))}
+            onChange={(event) =>
+              setOtpCode(sanitizeOtpCode(event.target.value))
+            }
             placeholder={t('email.otp.verification_code_placeholder')}
             inputMode="numeric"
             autoComplete="one-time-code"

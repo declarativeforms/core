@@ -30,6 +30,7 @@ export function CameraField({
   const { upload, errorMessage: uploadErrorMessage } = useUploadBlob(
     controllerField.onChange,
     'camera.upload_failed',
+    field.id,
   );
   const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(
     null,

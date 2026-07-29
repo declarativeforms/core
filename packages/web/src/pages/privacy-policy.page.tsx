@@ -15,8 +15,9 @@ export function PrivacyPolicyPage() {
             Introduction
           </h2>
           <p>
-            This Privacy Policy explains how we collect, use, and protect your
-            information when you use Declarative Forms.
+            This installation is operated by the organization or person who
+            shared the form with you. They are responsible for explaining how
+            they use and protect your information.
           </p>
         </section>
 
@@ -25,8 +26,8 @@ export function PrivacyPolicyPage() {
             Information We Collect
           </h2>
           <p>
-            We collect information you provide directly through forms, including
-            names, email addresses, and any other data you choose to submit.
+            The installation stores the answers and files you submit, together
+            with basic request metadata such as your browser and IP address.
           </p>
         </section>
 
@@ -35,9 +36,8 @@ export function PrivacyPolicyPage() {
             How We Use Information
           </h2>
           <p>
-            We use the information collected to process form submissions and
-            provide our services. We do not sell your personal information to
-            third parties.
+            Your information is used to process the form submission. The form
+            owner decides its purpose, retention period, and who can read it.
           </p>
         </section>
 
@@ -46,8 +46,9 @@ export function PrivacyPolicyPage() {
             Third-Party Services
           </h2>
           <p>
-            A form owner may configure integrations such as email, GitHub, or
-            analytics. Those services have their own privacy policies.
+            A trusted form owner may configure email, webhooks, analytics, or
+            address lookup. Those providers receive data only when the
+            corresponding feature is enabled and have their own privacy terms.
           </p>
         </section>
 
@@ -56,8 +57,8 @@ export function PrivacyPolicyPage() {
             Contact Us
           </h2>
           <p>
-            If you have any questions about this Privacy Policy, please contact
-            us.
+            Contact the organization or person who shared the form for privacy
+            questions, access requests, or deletion requests.
           </p>
         </section>
 
