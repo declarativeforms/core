@@ -230,9 +230,3 @@ export type IDeclarativeForm = {
   measurements?: { mixpanel?: string };
   theme?: IDeclarativeFormTheme;
 };
-
-export type IStudioForm = IDeclarativeForm & {
-  created_at?: string;
-  updated_at?: string;
-  collaborators?: string[];
-};

@@ -26,7 +26,9 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<ExternalRedirect url="https://studio.frms.dev" />}
+            element={
+              <ExternalRedirect url="https://docs.declarativeforms.com" />
+            }
           />
           <Route path="/:id" element={<MainPage />} />
           <Route path="/:id/thank-you" element={<ThankYouPage />} />

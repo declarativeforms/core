@@ -10,14 +10,6 @@ export class SubmissionRepository {
       .findOne({ id, form_id: formId });
   }
 
-  public async findAll(formId: string): Promise<Array<ISubmission>> {
-    return this.db
-      .collection<ISubmission>('submissions')
-      .find({ form_id: formId })
-      .sort({ updated_at: -1, created_at: -1 })
-      .toArray();
-  }
-
   public async insert(submission: ISubmission): Promise<void> {
     await this.db.collection<ISubmission>('submissions').insertOne(submission);
   }

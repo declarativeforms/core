@@ -6,8 +6,6 @@ import type { SubmissionRepository } from '../repositories';
 import type { IConnectionStrategy, IValidationStrategy } from '../strategies';
 import type { FormService } from './form.service';
 
-const STUDIO_FORM_PREFIX = 'b';
-
 export class SubmissionService {
   constructor(
     private formService: FormService,
@@ -101,20 +99,6 @@ export class SubmissionService {
     submissionId: string,
   ): Promise<ISubmission | null> {
     return this.submissionRepository.find(formId, submissionId);
-  }
-
-  public async list(formId: string): Promise<Array<ISubmission> | null> {
-    if (!formId.startsWith(STUDIO_FORM_PREFIX)) {
-      return null;
-    }
-
-    const form = await this.formService.findById(formId);
-
-    if (!form) {
-      return null;
-    }
-
-    return this.submissionRepository.findAll(formId);
   }
 
   private async processConnections(

@@ -4,15 +4,12 @@ import { GitHubGateway } from './gateways';
 import {
   EmailVerificationRepository,
   GitHubFileRepository,
-  StudioFormRepository,
   SubmissionRepository,
 } from './repositories';
 import {
-  AuthService,
   EmailVerificationService,
   FileService,
   FormService,
-  StudioFormService,
   SubmissionService,
 } from './services';
 import {
@@ -26,11 +23,8 @@ export type Container = {
   gitHubGateway: GitHubGateway;
   gitHubFileRepository: GitHubFileRepository;
   submissionRepository: SubmissionRepository;
-  authService: AuthService;
   fileService: FileService;
   formService: FormService;
-  studioFormRepository: StudioFormRepository;
-  studioFormService: StudioFormService;
   emailVerificationRepository: EmailVerificationRepository;
   emailVerificationService: EmailVerificationService;
   submissionService: SubmissionService;
@@ -58,19 +52,12 @@ export async function getContainer() {
   const gitHubGateway = new GitHubGateway();
   const emailVerificationRepository = new EmailVerificationRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
-  const studioFormRepository = new StudioFormRepository(db);
   const submissionRepository = new SubmissionRepository(db);
-  const authService = new AuthService();
   const emailVerificationService = new EmailVerificationService(
     emailVerificationRepository,
   );
   const fileService = new FileService(s3Client);
-  const formService = new FormService(
-    gitHubFileRepository,
-    studioFormRepository,
-    gitHubGateway,
-  );
-  const studioFormService = new StudioFormService(studioFormRepository);
+  const formService = new FormService(gitHubFileRepository, gitHubGateway);
   const connectionStrategies = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
@@ -89,12 +76,9 @@ export async function getContainer() {
     emailVerificationService,
     gitHubGateway,
     gitHubFileRepository,
-    authService,
     fileService,
     formService,
     mongoClient,
-    studioFormRepository,
-    studioFormService,
     submissionRepository,
     submissionService,
   };

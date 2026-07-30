@@ -2,26 +2,17 @@ import type { IDeclarativeForm } from '@declarativeforms/types';
 import yaml from 'js-yaml';
 import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
-import type {
-  GitHubFileRepository,
-  StudioFormRepository,
-} from '../repositories';
+import type { GitHubFileRepository } from '../repositories';
 
 const GITHUB_FORM_PREFIX = 'a';
-const STUDIO_FORM_PREFIX = 'b';
 
 export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
-    private studioFormRepository: StudioFormRepository,
     private gitHubGateway: GitHubGateway,
   ) {}
 
   public async findById(id: string): Promise<IDeclarativeForm | null> {
-    if (id.startsWith(STUDIO_FORM_PREFIX)) {
-      return this.studioFormRepository.find(id);
-    }
-
     if (!id.startsWith(GITHUB_FORM_PREFIX)) {
       return null;
     }
