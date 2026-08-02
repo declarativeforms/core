@@ -3,7 +3,6 @@ import { Route, Routes, useSearchParams } from 'react-router-dom';
 import {
   MainPage,
   NotFoundPage,
-  OAuthGitHubPage,
   PrivacyPolicyPage,
   ThankYouPage,
 } from './pages';
@@ -33,7 +32,6 @@ function App() {
           <Route path="/:id" element={<MainPage />} />
           <Route path="/:id/thank-you" element={<ThankYouPage />} />
           <Route path="/:owner/:repository/*" element={<MainPage />} />
-          <Route path="/oauth/github" element={<OAuthGitHubPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

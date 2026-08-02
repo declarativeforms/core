@@ -14,13 +14,7 @@ import { useI18n } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 import { BasePage } from './base.page';
 
-const RESERVED_QUERY_KEYS = new Set([
-  'access_token',
-  'embed',
-  'lang',
-  'submission_id',
-  'step',
-]);
+const RESERVED_QUERY_KEYS = new Set(['embed', 'lang', 'submission_id', 'step']);
 
 export function MainPage() {
   const navigate = useNavigate();
@@ -31,7 +25,6 @@ export function MainPage() {
   const slugPath = params['*'];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
-  const accessToken = searchParams.get('access_token');
   const embed = searchParams.get('embed') === 'true';
   const submissionId = searchParams.get('submission_id');
   const stepParam = searchParams.get('step');
@@ -45,14 +38,7 @@ export function MainPage() {
   }, [submissionId]);
 
   const { data: form, error } = useQuery({
-    queryKey: [
-      'form',
-      params.id,
-      params.owner,
-      params.repository,
-      slugPath,
-      accessToken,
-    ],
+    queryKey: ['form', params.id, params.owner, params.repository, slugPath],
     queryFn: async () => {
       const url = params.id
         ? getBackendUrl(`forms/${params.id}`)
@@ -64,20 +50,7 @@ export function MainPage() {
 
       const fetchUrl = new URL(url, window.location.origin);
 
-      if (accessToken) {
-        fetchUrl.searchParams.set('access_token', accessToken);
-      }
-
       const response = await fetch(fetchUrl.toString());
-
-      if (response.status === 403) {
-        const state = encodeURIComponent(
-          `${window.location.pathname}${window.location.search}`,
-        );
-        window.location.href = `${window.location.origin}/oauth/github?state=${state}`;
-
-        return;
-      }
 
       if (!response.ok) {
         throw new Error(`Form not found: ${response.status}`);
@@ -93,7 +66,6 @@ export function MainPage() {
     if (!isSlugRoute || !form?.id) return;
 
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete('access_token');
 
     const nextSearch = nextParams.toString();
     navigate(nextSearch ? `/${form.id}?${nextSearch}` : `/${form.id}`, {
@@ -168,7 +140,10 @@ export function MainPage() {
       return;
     }
 
-    const url = new URL(getBackendUrl(`forms/${submitFormId}/submissions`));
+    const url = new URL(
+      getBackendUrl(`forms/${submitFormId}/submissions`),
+      window.location.origin,
+    );
 
     if (isPartial) {
       url.searchParams.set('partial', 'true');

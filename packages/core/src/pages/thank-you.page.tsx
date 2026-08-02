@@ -25,12 +25,6 @@ export function ThankYouPage() {
       const url = getBackendUrl(`forms/${params.id}`);
       const response = await fetch(url);
 
-      if (response.status === 403) {
-        const state = encodeURIComponent(window.location.pathname);
-        window.location.href = `${window.location.origin}/oauth/github?state=${state}`;
-        return;
-      }
-
       if (!response.ok) {
         throw new Error(`Form not found: ${response.status}`);
       }

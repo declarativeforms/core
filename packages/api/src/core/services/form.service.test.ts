@@ -5,6 +5,7 @@ import { FormService } from './form.service';
 describe('FormService', () => {
   const gitHubFileRepository = {
     find: jest.fn(),
+    upsert: jest.fn(),
   } as unknown as GitHubFileRepository;
   const gitHubGateway = {
     retrieveYamlFile: jest.fn(),
@@ -44,5 +45,25 @@ describe('FormService', () => {
       'forms',
       'contact',
     );
+  });
+
+  test('stores GitHub form metadata without credentials', async () => {
+    jest
+      .mocked(gitHubGateway.retrieveYamlFile)
+      .mockResolvedValue('title: Private form');
+
+    const service = new FormService(gitHubFileRepository, gitHubGateway);
+    const form = await service.findBySlug('forms/acme/private-forms/contact');
+
+    expect(form).toMatchObject({
+      id: expect.stringMatching(/^a[a-f0-9]{8}$/),
+      title: 'Private form',
+    });
+    expect(gitHubFileRepository.upsert).toHaveBeenCalledWith({
+      file: 'contact',
+      id: form?.id,
+      owner: 'acme',
+      repository: 'private-forms',
+    });
   });
 });

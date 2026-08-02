@@ -5,12 +5,12 @@ import * as qs from 'qs';
 import {
   EMAIL_CHALLENGES_SEND_POST,
   EMAIL_CHALLENGES_VERIFY_POST,
+  FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
-  OAUTH_GITHUB_ACCESS_TOKEN_POST,
 } from './routes';
 
 export async function startServer() {
@@ -51,12 +51,12 @@ export async function startServer() {
 
   server.route(EMAIL_CHALLENGES_SEND_POST);
   server.route(EMAIL_CHALLENGES_VERIFY_POST);
+  server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
-  server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
 
   server.route({
     handler: async (_request, reply) => {

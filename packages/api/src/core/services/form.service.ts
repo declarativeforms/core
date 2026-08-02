@@ -23,24 +23,6 @@ export class FormService {
       return null;
     }
 
-    if (gitHubFile.access_token) {
-      const text = await this.gitHubGateway.retrieveYamlFile(
-        gitHubFile.owner,
-        gitHubFile.repository,
-        gitHubFile.file,
-        gitHubFile.access_token,
-      );
-
-      if (!text) {
-        return null;
-      }
-
-      return {
-        ...(yaml.load(text) as IDeclarativeForm),
-        id,
-      };
-    }
-
     const text = await this.gitHubGateway.retrieveYamlFile(
       gitHubFile.owner,
       gitHubFile.repository,
@@ -57,10 +39,7 @@ export class FormService {
     };
   }
 
-  public async findBySlug(
-    slug: string,
-    accessToken?: string,
-  ): Promise<IDeclarativeForm | null> {
+  public async findBySlug(slug: string): Promise<IDeclarativeForm | null> {
     const parts = slug.split('/');
 
     if (parts.length < 4) {
@@ -71,20 +50,11 @@ export class FormService {
     const repository = parts[2];
     const file = parts.slice(3).join('/');
 
-    let text = await this.gitHubGateway.retrieveYamlFile(
+    const text = await this.gitHubGateway.retrieveYamlFile(
       owner,
       repository,
       file,
     );
-
-    if (!text && accessToken) {
-      text = await this.gitHubGateway.retrieveYamlFile(
-        owner,
-        repository,
-        file,
-        accessToken,
-      );
-    }
 
     if (!text) {
       return null;
@@ -99,7 +69,6 @@ export class FormService {
       id,
       owner,
       repository,
-      ...(accessToken ? { access_token: accessToken } : {}),
     });
 
     return {

@@ -1,5 +1,14 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { randomBytes } from 'node:crypto';
+
+export type DownloadedFile = {
+  body: Buffer;
+  contentType?: string;
+};
 
 export class FileService {
   constructor(private s3Client: S3Client) {}
@@ -12,7 +21,6 @@ export class FileService {
     const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${filename.split('.').pop()}`;
 
     const command = new PutObjectCommand({
-      ACL: 'public-read',
       Body: buffer,
       Bucket: process.env.AWS_S3_BUCKET_NAME as string,
       ContentType: contentType,
@@ -21,6 +29,38 @@ export class FileService {
 
     await this.s3Client.send(command);
 
-    return `${process.env.AWS_S3_BASE_URL}/${key}`;
+    const encodedKey = key.split('/').map(encodeURIComponent).join('/');
+    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.replace(/\/$/, '') || '';
+
+    return `${publicBaseUrl}/api/v1/files/${encodedKey}`;
+  }
+
+  public async download(key: string): Promise<DownloadedFile | null> {
+    try {
+      const result = await this.s3Client.send(
+        new GetObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+          Key: key,
+        }),
+      );
+
+      if (!result.Body) {
+        return null;
+      }
+
+      return {
+        body: Buffer.from(await result.Body.transformToByteArray()),
+        contentType: result.ContentType,
+      };
+    } catch (error: any) {
+      if (
+        error?.name === 'NoSuchKey' ||
+        error?.$metadata?.httpStatusCode === 404
+      ) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 }
