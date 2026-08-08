@@ -1,16 +1,16 @@
-import { resolveLocalizedText } from '@declarativeforms/common';
-import type { FormEffect } from '@declarativeforms/runtime';
+import { resolveLocalizedText } from '@declarativeforms/engine';
 import { useQuery } from '@tanstack/react-query';
 import mixpanel from 'mixpanel-browser';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   DeclarativeForm,
   HeroSection,
+  type FormEffect,
   type IDeclarativeForm,
 } from '@/components';
-import { useI18n } from '@/i18n';
+import { useI18n, useSyncLangParam } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 import { BasePage } from './base.page';
 
@@ -25,10 +25,13 @@ export function MainPage() {
   const slugPath = params['*'];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
+  // TODO: instead of creating variables for these, just inline all of them.
   const embed = searchParams.get('embed') === 'true';
   const submissionId = searchParams.get('submission_id');
   const stepParam = searchParams.get('step');
-  const langParam = searchParams.get('lang');
+
+  // TODO: instead of explictly keeping track of the submissionId, use the query string as the source of truth, and remove all the non required variables then.
+  const [resumeSubmissionId] = useState(submissionId);
 
   const submissionIdRef = useRef(submissionId);
   const isCompletingRef = useRef(false);
@@ -62,6 +65,20 @@ export function MainPage() {
 
   const formId = form?.id ?? params.id ?? '';
 
+  // Restore previously-submitted answers on refresh/resume. Partial submits are
+  // merged server-side, so this holds every prior section's data.
+  const { data: savedSubmission, isLoading: isRestoringSubmission } = useQuery({
+    queryKey: ['submission', formId, resumeSubmissionId],
+    queryFn: async () => {
+      const response = await fetch(
+        getBackendUrl(`forms/${formId}/submissions/${resumeSubmissionId}`),
+      );
+      if (!response.ok) return null;
+      return (await response.json()) as { data?: Record<string, unknown> };
+    },
+    enabled: !!formId && !!resumeSubmissionId,
+  });
+
   useEffect(() => {
     if (!isSlugRoute || !form?.id) return;
 
@@ -73,25 +90,17 @@ export function MainPage() {
     });
   }, [isSlugRoute, form?.id, navigate, searchParams]);
 
-  const initialData: FieldValues = {};
+  const urlPrefill: FieldValues = {};
 
   for (const [key, value] of searchParams.entries()) {
     if (RESERVED_QUERY_KEYS.has(key)) {
       continue;
     }
 
-    initialData[key] = value;
+    urlPrefill[key] = value;
   }
 
-  useEffect(() => {
-    if (!form?.locale || langParam === form.locale) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set('lang', form.locale);
-    setSearchParams(nextParams, { replace: true });
-  }, [form?.locale, langParam, searchParams, setSearchParams]);
+  useSyncLangParam(form?.locale);
 
   useEffect(() => {
     if (form?.measurements?.mixpanel) {
@@ -254,6 +263,12 @@ export function MainPage() {
     return null;
   }
 
+  // Seed the form only once the saved submission has loaded — the hook captures
+  // initialData at mount, so mounting early would strip the restored answers.
+  if (resumeSubmissionId && isRestoringSubmission) {
+    return null;
+  }
+
   if (form.start_date && new Date(form.start_date) > new Date()) {
     return (
       <HeroSection
@@ -273,6 +288,11 @@ export function MainPage() {
       />
     );
   }
+
+  const initialData: FieldValues = {
+    ...urlPrefill,
+    ...(savedSubmission?.data ?? {}),
+  };
 
   const initialSectionId =
     stepParam &&

@@ -18,8 +18,8 @@ export type {
   IDeclarativeFormSection,
   IDeclarativeFormCompletion,
   IDeclarativeFormCompletionRule,
-  IDeclarativeFormRawWebhookConnection,
-  IDeclarativeFormRawEmailConnection,
+  IDeclarativeFormWebhookConnection as IDeclarativeFormRawWebhookConnection,
+  IDeclarativeFormEmailConnection as IDeclarativeFormRawEmailConnection,
   IDeclarativeForm,
   IDeclarativeFormTheme,
   ISubmission,
@@ -27,11 +27,11 @@ export type {
   IConnection,
   IWebhookConnection,
   IEmailConnection,
-} from '@declarativeforms/types';
+} from '@declarativeforms/engine';
 
 export {
   DECLARATIVE_FIELD_TYPES,
   isDeclarativeFieldType,
   DECLARATIVE_CONNECTION_TYPES,
   isDeclarativeConnectionType,
-} from '@declarativeforms/types';
+} from '@declarativeforms/engine';

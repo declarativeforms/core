@@ -1,10 +1,9 @@
-import type { FormEffect } from '@declarativeforms/runtime';
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
 
-import type { IDeclarativeForm } from '../supporting/types';
+import type { IDeclarativeForm } from '@declarativeforms/engine';
 import { DeclarativeFormSection } from './section.component';
-import { useFormRuntime } from './use-runtime';
+import { useDeclarativeForm, type FormEffect } from './use-declarative-form';
 
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
@@ -18,12 +17,14 @@ export function DeclarativeForm(props: {
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
-  const { state, dispatch } = useFormRuntime(
-    props.form,
-    props.locale,
-    props.initialData,
-    props.initialSectionId,
-  );
+  // TODO: don't deconstruct the variable, name it and then use it such as declarativeForm.section.
+  const { section, activeSectionId, data, goBack, submitSection } =
+    useDeclarativeForm(
+      props.form,
+      props.locale,
+      props.initialData,
+      props.initialSectionId,
+    );
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -32,36 +33,25 @@ export function DeclarativeForm(props: {
     }
     window.scrollTo(0, 0);
     sectionRef.current?.focus();
-  }, [state.activeSectionId]);
+  }, [activeSectionId]);
 
-  const activeSection = state.compiled.sections.find(
-    (section) => section.id === state.activeSectionId,
-  );
-
-  if (!activeSection) {
+  if (!section) {
     return null;
   }
 
   return (
     <DeclarativeFormSection
       ref={sectionRef}
-      key={state.activeSectionId}
-      section={activeSection}
-      data={state.data}
-      sectionHistory={state.sectionHistory}
-      dispatch={dispatch}
+      key={activeSectionId}
+      section={section}
+      data={data}
+      onBack={goBack}
       onSubmit={async (sectionData: FieldValues) => {
-        const effectResult = dispatch({
-          type: 'submit_section',
-          data: sectionData,
+        const result = submitSection(sectionData);
+        await props.onEffect(result, {
+          data: result.data,
+          activeSectionId: result.activeSectionId,
         });
-
-        if (effectResult.type !== 'none') {
-          await props.onEffect(effectResult, {
-            data: { ...state.data, ...sectionData },
-            activeSectionId: effectResult.activeSectionId,
-          });
-        }
       }}
     />
   );

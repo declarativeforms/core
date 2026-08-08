@@ -15,15 +15,12 @@ import {
   SignatureField,
   SingleSelectField,
 } from '../fields';
-import type { DeclarativeFieldType } from '../supporting/types';
+import type { IRenderableField } from '@declarativeforms/engine';
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
 
 type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 
-export const fieldRegistry: Record<
-  DeclarativeFieldType,
-  DeclarativeFieldRenderer
-> = {
+export const fieldRegistry = {
   address: AddressField,
   address_country: AddressField,
   address_locality: AddressField,
@@ -46,4 +43,4 @@ export const fieldRegistry: Record<
   single_select: SingleSelectField,
   time: InputField,
   url: InputField,
-};
+} as Record<IRenderableField['type'], DeclarativeFieldRenderer>;

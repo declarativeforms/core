@@ -1,4 +1,4 @@
-import type { IDeclarativeForm } from '@declarativeforms/types';
+import type { IDeclarativeForm } from '@declarativeforms/engine';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { getContainer } from '../core';
 

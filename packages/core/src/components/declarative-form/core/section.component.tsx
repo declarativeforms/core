@@ -6,21 +6,16 @@ import {
   type FieldValues,
 } from 'react-hook-form';
 
+import { evaluateExpression, type IRenderableSection } from '@declarativeforms/engine';
 import { Button } from '../../ui';
 import { useI18n } from '@/i18n';
-import {
-  buildDefaultValues,
-  resolveFieldVisibility,
-  type CompiledSection,
-  type FormAction,
-} from '@declarativeforms/runtime';
 import { DeclarativeFormField } from './field.component';
 
+// TODO: rather inline these types for props
 type DeclarativeFormSectionProps = {
-  section: CompiledSection;
+  section: IRenderableSection;
   data: Record<string, unknown>;
-  sectionHistory: string[];
-  dispatch: (action: FormAction) => void;
+  onBack: () => void;
   onSubmit: (sectionData: FieldValues) => void | Promise<void>;
 };
 
@@ -29,17 +24,17 @@ export const DeclarativeFormSection = forwardRef<
   DeclarativeFormSectionProps
 >(function DeclarativeFormSection(props, ref) {
   const { t } = useI18n();
-  const form = useForm({
-    defaultValues: buildDefaultValues(props.section, props.data),
-  });
+  const form = useForm({ defaultValues: props.section.defaultValues });
 
-  const hasVisibleWhen = props.section.fields.some((f) => f.visible_when);
-  const watchedValues = useWatch({ control: form.control });
-  const currentData = watchedValues
-    ? hasVisibleWhen
-      ? { ...props.data, ...watchedValues }
-      : props.data
-    : props.data;
+  // TODO: instead of liveValues, name them a bit closer to what they really are such as values
+  const liveValues = useWatch({ control: form.control });
+  // TODO: this variable is a bit confusing and misleading, change it or simplifying it
+  const answers = { ...props.data, ...(liveValues ?? {}) };
+  const fields = props.section.fields.map((field) =>
+    field.visibleWhen
+      ? { ...field, visible: evaluateExpression(field.visibleWhen, answers) }
+      : field,
+  );
 
   const handleSubmit = form.handleSubmit(
     (data: FieldValues) => props.onSubmit(data),
@@ -62,22 +57,18 @@ export const DeclarativeFormSection = forwardRef<
         className="outline-none"
       >
         <div className="space-y-6">
-          {props.section.fields.map((field) => (
-            <DeclarativeFormField
-              key={field.id}
-              field={resolveFieldVisibility(field, currentData)}
-              form={form}
-            />
+          {fields.map((field) => (
+            <DeclarativeFormField key={field.id} field={field} form={form} />
           ))}
         </div>
 
         <div className="mt-8 flex justify-between items-center">
-          {props.sectionHistory.length > 0 ? (
+          {props.section.canGoBack ? (
             <Button
               type="button"
               variant="outline"
               disabled={form.formState.isSubmitting}
-              onClick={() => props.dispatch({ type: 'go_back' })}
+              onClick={props.onBack}
             >
               {t('section.back')}
             </Button>

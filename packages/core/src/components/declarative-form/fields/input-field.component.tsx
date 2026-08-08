@@ -1,52 +1,75 @@
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { buildFieldValidation } from '../supporting/validation';
 import { Input } from '@/components/ui';
-import { useFormI18n } from '../supporting/use-form-i18n';
+import { useI18n } from '@/i18n';
 
 export function InputField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
-  const { minLength, maxLength, hasPattern, minRule, maxRule } =
-    buildFieldValidation(field);
+  const { t } = useI18n();
+  const placeholder = field.placeholder || t('input.placeholder');
 
-  const inputType =
-    field.type === 'date'
-      ? 'date'
-      : field.type === 'date_month'
-        ? 'month'
-        : field.type === 'time'
-          ? 'time'
-          : field.type === 'email'
-            ? 'email'
-            : field.type === 'mobile_number'
-              ? 'tel'
-              : field.type === 'number'
-                ? 'text'
-                : field.type === 'url'
-                  ? 'url'
-                  : 'text';
+  if (field.type === 'number') {
+    return (
+      <Input
+        {...controllerField}
+        className="text-sm/4"
+        placeholder={placeholder}
+        type="text"
+        inputMode="numeric"
+        pattern={field.integer ? '^[0-9]+$' : undefined}
+        required={field.required}
+        aria-required={field.required}
+      />
+    );
+  }
 
-  const isDate =
+  if (
     field.type === 'date' ||
     field.type === 'date_month' ||
-    field.type === 'time';
+    field.type === 'time'
+  ) {
+    return (
+      <Input
+        {...controllerField}
+        className="text-sm/4"
+        placeholder={placeholder}
+        type={field.inputType}
+        required={field.required}
+        aria-required={field.required}
+        min={field.min}
+        max={field.max}
+      />
+    );
+  }
+
+  if (
+    field.type === 'short_text' ||
+    field.type === 'url' ||
+    field.type === 'mobile_number'
+  ) {
+    return (
+      <Input
+        {...controllerField}
+        className="text-sm/4"
+        placeholder={placeholder}
+        type={field.inputType}
+        required={field.required}
+        aria-required={field.required}
+        minLength={field.min}
+        maxLength={field.max}
+      />
+    );
+  }
 
   return (
     <Input
       {...controllerField}
       className="text-sm/4"
-      placeholder={field.placeholder || t('input.placeholder')}
-      type={inputType}
-      inputMode={field.type === 'number' ? 'numeric' : undefined}
-      pattern={field.type === 'number' && !hasPattern ? '^[0-9]+$' : undefined}
+      placeholder={placeholder}
+      type="text"
       required={field.required}
       aria-required={field.required}
-      minLength={isDate ? undefined : minLength}
-      maxLength={isDate ? undefined : maxLength}
-      min={isDate && minRule ? String(minRule.value) : undefined}
-      max={isDate && maxRule ? String(maxRule.value) : undefined}
     />
   );
 }

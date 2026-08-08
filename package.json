@@ -4,8 +4,7 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "build": "npm run build --workspaces",
-    "build:types": "npm run build -w @declarativeforms/types",
-    "build:common": "npm run build -w @declarativeforms/common",
+    "build:engine": "npm run build -w @declarativeforms/engine",
     "build:core": "npm run build -w @declarativeforms/core",
     "build:api": "npm run build -w @declarativeforms/api",
     "dev:core": "npm run dev -w @declarativeforms/core",

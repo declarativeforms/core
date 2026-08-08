@@ -1,4 +1,4 @@
-import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
+import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 
 export interface IConnectionStrategy {
   readonly type: string;

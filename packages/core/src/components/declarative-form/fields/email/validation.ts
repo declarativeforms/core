@@ -1,6 +1,6 @@
 import type { RegisterOptions, Validate } from 'react-hook-form';
 
-import type { CompiledField } from '@declarativeforms/runtime';
+import type { IRenderableField } from '@declarativeforms/engine';
 import { FREE_EMAIL_DOMAINS } from './free-email-domains';
 import { getSecondaryValidationTokenFieldName } from '../secondary-token-field';
 
@@ -10,7 +10,7 @@ export type EmailValidationMessages = {
 };
 
 export function getEmailValidation(
-  field: CompiledField,
+  field: IRenderableField,
   messages?: EmailValidationMessages,
 ): RegisterOptions['validate'] | undefined {
   if (field.type !== 'email') return undefined;
@@ -20,7 +20,7 @@ export function getEmailValidation(
     Validate<unknown, Record<string, unknown>>
   > = {};
 
-  if (field.block_free_email) {
+  if (field.blockFreeEmail) {
     validators.blockFreeEmail = (value) => {
       if (!value || typeof value !== 'string') return true;
       const domain = value.split('@')[1]?.toLowerCase();
@@ -31,9 +31,10 @@ export function getEmailValidation(
     };
   }
 
-  if (field.otp) {
+  if (field.otpEnabled) {
     validators.otpVerified = (_value, formValues) => {
-      const tokenFieldName = getSecondaryValidationTokenFieldName(field.id);
+      const tokenFieldName =
+        field.tokenFieldName ?? getSecondaryValidationTokenFieldName(field.id);
       const verificationToken = formValues[tokenFieldName];
 
       if (typeof verificationToken === 'string' && verificationToken.trim()) {

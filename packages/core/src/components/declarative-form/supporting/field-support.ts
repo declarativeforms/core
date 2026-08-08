@@ -4,10 +4,13 @@ import type {
   UseFormReturn,
 } from 'react-hook-form';
 
-import type { CompiledField } from '@declarativeforms/runtime';
+import type { IRenderableField } from '@declarativeforms/engine';
 
-export type DeclarativeFieldComponentProps = {
+// TODO: move these types into their own file
+export type DeclarativeFieldComponentProps<
+  T extends IRenderableField = IRenderableField,
+> = {
   controllerField: ControllerRenderProps<FieldValues, string>;
-  field: CompiledField;
+  field: T;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 };

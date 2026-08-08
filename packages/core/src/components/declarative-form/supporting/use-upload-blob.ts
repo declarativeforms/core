@@ -3,13 +3,14 @@ import { useCallback, useState } from 'react';
 import type { TranslationKey } from '@/i18n/messages/en';
 import { uploadFile } from '@/lib/file-upload';
 
-import { useFormI18n } from './use-form-i18n';
+import { useI18n } from '@/i18n';
 
 export function useUploadBlob(
   onChange: (value: string | null) => void,
   fallbackErrorKey: TranslationKey,
 ) {
-  const { t } = useFormI18n();
+  const { t } = useI18n();
+  // TODO: if possible replace all the useState, useCallback with a single useQuery for this useUploadBlob hook
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

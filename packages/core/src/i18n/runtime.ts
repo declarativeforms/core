@@ -1,4 +1,4 @@
-import { interpolateTemplate } from '@declarativeforms/common';
+import { interpolateTemplate } from '@declarativeforms/engine';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from './locales';
 import {
   enMessages,

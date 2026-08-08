@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
+import type { IRenderableDropdownField } from '@declarativeforms/engine';
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { buildFieldValidation } from '../supporting/validation';
 import { HtmlText } from '../supporting/html-text';
 import {
   Button,
@@ -20,19 +20,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui';
-import { useFormI18n } from '../supporting/use-form-i18n';
+import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 
 export function DropdownField({
   field,
   controllerField,
   form,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
+}: DeclarativeFieldComponentProps<IRenderableDropdownField>) {
+  const { t } = useI18n();
 
-  const { options } = buildFieldValidation(field);
+  const { options } = field;
 
-  if ('searchable' in field && field.searchable) {
+  if (field.searchable) {
     return (
       <SearchableDropdown
         field={field}
@@ -71,10 +71,10 @@ export function DropdownField({
 function SearchableDropdown({
   field,
   controllerField,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
+}: DeclarativeFieldComponentProps<IRenderableDropdownField>) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const { options } = buildFieldValidation(field);
+  const { options } = field;
   const selectedOption = options?.find(
     (option) => option.value === controllerField.value,
   );

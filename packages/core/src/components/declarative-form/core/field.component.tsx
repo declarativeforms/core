@@ -7,13 +7,15 @@ import {
 
 import { Field, FieldLabel as BaseFieldLabel, FieldError } from '../../ui';
 import { useI18n } from '@/i18n';
-import type { CompiledField } from '@declarativeforms/runtime';
+import type { IRenderableField } from '@declarativeforms/engine';
 import { buildFieldValidation } from '../supporting/validation';
 import { HtmlText } from '../supporting/html-text';
 import { FieldErrorBoundary } from '../supporting/field-error-boundary.component';
 import { fieldRegistry } from './field-registry';
 
-function FieldLabel({ field }: { field: CompiledField }) {
+
+// TODO: Move this to it's own file. All react components should be in their own file
+function FieldLabel({ field }: { field: IRenderableField }) {
   return (
     <BaseFieldLabel className="text-sm/4.5">
       <HtmlText html={field.label} />
@@ -27,10 +29,11 @@ function FieldLabel({ field }: { field: CompiledField }) {
 }
 
 export function DeclarativeFormField(props: {
-  field: CompiledField;
+  field: IRenderableField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
   const { t } = useI18n();
+  // TODO: Don't deconstruct variables, just use them where needed.
   const { visible, id } = props.field;
 
   useEffect(() => {
@@ -43,38 +46,41 @@ export function DeclarativeFormField(props: {
     return null;
   }
 
-  const compiledField = props.field;
-  const { registerOptions: rules } = buildFieldValidation(compiledField, {
+  // TODO: don't create variables where not needed, just use them directly such as props.field.type.
+  const renderableField = props.field;
+  const rules = buildFieldValidation(renderableField, {
     emailFreeEmailBlocked: t('validation.email_free_blocked'),
     emailOtpRequired: t('validation.email_otp_required'),
   });
-  const Renderer = fieldRegistry[compiledField.type];
+  const Renderer = fieldRegistry[renderableField.type];
   if (!Renderer) {
     return null;
   }
-  const isHiddenField = compiledField.type === 'hidden';
+
+  // TODO: inline this condition where needed instead of creating it's own variable.
+  const isHiddenField = renderableField.type === 'hidden';
 
   return (
     <Controller
       control={props.form.control}
-      name={compiledField.id}
+      name={renderableField.id}
       rules={rules}
       render={({ field, fieldState }) =>
         isHiddenField ? (
-          <FieldErrorBoundary fieldId={compiledField.id}>
+          <FieldErrorBoundary fieldId={renderableField.id}>
             <Renderer
               controllerField={field}
-              field={compiledField}
+              field={renderableField}
               form={props.form}
             />
           </FieldErrorBoundary>
         ) : (
           <Field>
-            <FieldLabel field={compiledField} />
-            <FieldErrorBoundary fieldId={compiledField.id}>
+            <FieldLabel field={renderableField} />
+            <FieldErrorBoundary fieldId={renderableField.id}>
               <Renderer
                 controllerField={field}
-                field={compiledField}
+                field={renderableField}
                 form={props.form}
               />
             </FieldErrorBoundary>

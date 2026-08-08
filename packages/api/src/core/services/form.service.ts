@@ -1,5 +1,4 @@
-import type { IDeclarativeForm } from '@declarativeforms/types';
-import yaml from 'js-yaml';
+import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
 import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
 import type { GitHubFileRepository } from '../repositories';
@@ -34,7 +33,7 @@ export class FormService {
     }
 
     return {
-      ...(yaml.load(text) as IDeclarativeForm),
+      ...parse(text),
       id,
     };
   }
@@ -60,7 +59,7 @@ export class FormService {
       return null;
     }
 
-    const form = yaml.load(text) as IDeclarativeForm;
+    const form = parse(text);
 
     const id = `${GITHUB_FORM_PREFIX}${md5(slug).substring(0, 8)}`;
 

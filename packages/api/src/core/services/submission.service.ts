@@ -1,6 +1,6 @@
-import { evaluateExpression } from '@declarativeforms/common';
-import { isDeclarativeConnectionType } from '@declarativeforms/types';
-import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
+import { evaluateExpression } from '@declarativeforms/engine';
+import { isDeclarativeConnectionType } from '@declarativeforms/engine';
+import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { faker } from '@faker-js/faker';
 import type { SubmissionRepository } from '../repositories';
 import type { IConnectionStrategy, IValidationStrategy } from '../strategies';

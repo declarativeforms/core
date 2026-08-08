@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components';
 import { HtmlText } from '@/components/declarative-form/supporting/html-text';
-import { stripHtml } from '@declarativeforms/common';
+import { stripHtml } from '@/lib/strip-html';
 import { useI18n } from '@/i18n';
 import { buildThemeStyle } from '@/lib/theme';
 

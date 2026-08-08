@@ -1,9 +1,7 @@
 {
   "files": [],
   "references": [
-    { "path": "../types" },
-    { "path": "../common" },
-    { "path": "../runtime" },
+    { "path": "../engine" },
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
