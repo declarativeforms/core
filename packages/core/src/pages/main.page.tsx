@@ -9,7 +9,13 @@ import { useI18n, useSyncLangParam } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 import { BasePage } from './base.page';
 
-const RESERVED_QUERY_KEYS = new Set(['embed', 'lang', 'submission_id', 'step']);
+const RESERVED_QUERY_KEYS = new Set([
+  'embed',
+  'lang',
+  'submission_id',
+  'step',
+  'branch',
+]);
 
 export function MainPage() {
   const navigate = useNavigate();
@@ -19,6 +25,7 @@ export function MainPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const slugPath = params['*'];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
+  const branch = searchParams.get('branch');
 
   // Frozen at mount: the form hook captures initialData once, so the submission
   // we restore from must stay fixed even if the URL's submission_id changes as
@@ -31,7 +38,14 @@ export function MainPage() {
   const isCompletingRef = useRef(false);
 
   const { data: form, error } = useQuery({
-    queryKey: ['form', params.id, params.owner, params.repository, slugPath],
+    queryKey: [
+      'form',
+      params.id,
+      params.owner,
+      params.repository,
+      slugPath,
+      branch,
+    ],
     queryFn: async () => {
       const url = params.id
         ? getBackendUrl(`forms/${params.id}`)
@@ -42,6 +56,10 @@ export function MainPage() {
           : '/default.yaml';
 
       const fetchUrl = new URL(url, window.location.origin);
+
+      if (branch && url !== '/default.yaml') {
+        fetchUrl.searchParams.set('branch', branch);
+      }
 
       const response = await fetch(fetchUrl.toString());
 

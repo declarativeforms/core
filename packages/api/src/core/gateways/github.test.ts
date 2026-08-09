@@ -46,7 +46,7 @@ describe('GitHubGateway', () => {
       gateway.retrieveYamlFile('acme', 'private-forms', 'sales/contact'),
     ).resolves.toBe('title: Private form');
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.github.com/repos/acme/private-forms/contents/sales/contact.yaml',
+      'https://api.github.com/repos/acme/private-forms/contents/sales/contact.yaml?ref=main',
       {
         cache: 'no-store',
         headers: {
@@ -66,5 +66,48 @@ describe('GitHubGateway', () => {
     await expect(
       gateway.retrieveYamlFile('acme', 'private-forms', 'missing'),
     ).resolves.toBeNull();
+  });
+
+  it('fetches the requested branch via the raw endpoint', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: jest.fn().mockResolvedValue('title: Branch form'),
+    });
+    global.fetch = fetchMock;
+
+    await new GitHubGateway().retrieveYamlFile(
+      'acme',
+      'forms',
+      'contact',
+      'version-0-0-1',
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://raw.githubusercontent.com/acme/forms/version-0-0-1/contact.yaml',
+      { cache: 'no-store' },
+    );
+  });
+
+  it('passes the requested branch as the Contents API ref', async () => {
+    process.env.GITHUB_TOKEN = 'server-pat';
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: jest.fn().mockResolvedValue('title: Branch form'),
+    });
+    global.fetch = fetchMock;
+
+    await new GitHubGateway().retrieveYamlFile(
+      'acme',
+      'forms',
+      'contact',
+      'version-0-0-1',
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.github.com/repos/acme/forms/contents/contact.yaml?ref=version-0-0-1',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer server-pat',
+        }),
+      }),
+    );
   });
 });

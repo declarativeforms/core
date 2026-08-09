@@ -23,8 +23,9 @@ describe('FormService', () => {
     expect(gitHubGateway.retrieveYamlFile).not.toHaveBeenCalled();
   });
 
-  test('continues to resolve GitHub-backed form IDs', async () => {
+  test('continues to resolve GitHub-backed form IDs from their stored branch', async () => {
     jest.mocked(gitHubFileRepository.find).mockResolvedValue({
+      branch: 'main',
       file: 'contact',
       id: 'a12345678',
       owner: 'acme',
@@ -44,10 +45,11 @@ describe('FormService', () => {
       'acme',
       'forms',
       'contact',
+      'main',
     );
   });
 
-  test('stores GitHub form metadata without credentials', async () => {
+  test('stores GitHub form metadata (with branch) without credentials', async () => {
     jest
       .mocked(gitHubGateway.retrieveYamlFile)
       .mockResolvedValue('title: Private form');
@@ -60,10 +62,36 @@ describe('FormService', () => {
       title: 'Private form',
     });
     expect(gitHubFileRepository.upsert).toHaveBeenCalledWith({
+      branch: 'main',
       file: 'contact',
       id: form?.id,
       owner: 'acme',
       repository: 'private-forms',
     });
+  });
+
+  test('resolves and stores a form from a specified branch', async () => {
+    jest
+      .mocked(gitHubGateway.retrieveYamlFile)
+      .mockResolvedValue('title: Feature form');
+
+    const service = new FormService(gitHubFileRepository, gitHubGateway);
+    const form = await service.findBySlug(
+      'forms/acme/forms/contact',
+      'feature-branch',
+    );
+
+    expect(gitHubGateway.retrieveYamlFile).toHaveBeenCalledWith(
+      'acme',
+      'forms',
+      'contact',
+      'feature-branch',
+    );
+    expect(gitHubFileRepository.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ branch: 'feature-branch' }),
+    );
+    // The same file on a different branch resolves to a different short id.
+    const mainForm = await service.findBySlug('forms/acme/forms/contact');
+    expect(form?.id).not.toEqual(mainForm?.id);
   });
 });

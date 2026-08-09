@@ -9,7 +9,7 @@ export class GitHubGateway {
 
     if (token) {
       const response = await fetch(
-        `https://api.github.com/repos/${owner}/${repository}/contents/${file}.yaml`,
+        `https://api.github.com/repos/${owner}/${repository}/contents/${file}.yaml?ref=${branch}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

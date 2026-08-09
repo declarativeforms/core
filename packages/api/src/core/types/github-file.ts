@@ -3,4 +3,5 @@ export type IGitHubFile = {
   id: string;
   owner: string;
   repository: string;
+  branch: string;
 };

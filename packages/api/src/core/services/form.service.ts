@@ -4,6 +4,7 @@ import type { GitHubGateway } from '../gateways';
 import type { GitHubFileRepository } from '../repositories';
 
 const GITHUB_FORM_PREFIX = 'a';
+const DEFAULT_BRANCH = 'main';
 
 export class FormService {
   constructor(
@@ -26,6 +27,7 @@ export class FormService {
       gitHubFile.owner,
       gitHubFile.repository,
       gitHubFile.file,
+      gitHubFile.branch || DEFAULT_BRANCH,
     );
 
     if (!text) {
@@ -38,7 +40,10 @@ export class FormService {
     };
   }
 
-  public async findBySlug(slug: string): Promise<IDeclarativeForm | null> {
+  public async findBySlug(
+    slug: string,
+    branch: string = DEFAULT_BRANCH,
+  ): Promise<IDeclarativeForm | null> {
     const parts = slug.split('/');
 
     if (parts.length < 4) {
@@ -53,6 +58,7 @@ export class FormService {
       owner,
       repository,
       file,
+      branch,
     );
 
     if (!text) {
@@ -61,9 +67,12 @@ export class FormService {
 
     const form = parse(text);
 
-    const id = `${GITHUB_FORM_PREFIX}${md5(slug).substring(0, 8)}`;
+    // The branch is part of the form's identity, so the same file on two
+    // branches resolves to two stable short ids.
+    const id = `${GITHUB_FORM_PREFIX}${md5(`${slug}@${branch}`).substring(0, 8)}`;
 
     await this.gitHubFileRepository.upsert({
+      branch,
       file,
       id,
       owner,
