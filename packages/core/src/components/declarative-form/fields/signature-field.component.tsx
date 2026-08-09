@@ -1,9 +1,9 @@
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { useI18n } from '@/i18n';
-import { useUploadBlob } from '../supporting/use-upload-blob';
+import { useUploadBlob } from './use-upload-blob';
 import { cn } from '@/lib/utils';
 
 type Point = {

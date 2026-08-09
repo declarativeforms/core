@@ -1,89 +1,68 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import {
   Controller,
   type FieldValues,
+  type RegisterOptions,
   type UseFormReturn,
-} from 'react-hook-form';
+} from "react-hook-form";
 
-import { Field, FieldLabel as BaseFieldLabel, FieldError } from '../../ui';
-import { useI18n } from '@/i18n';
-import type { IRenderableField } from '@declarativeforms/engine';
-import { buildFieldValidation } from '../supporting/validation';
-import { HtmlText } from '../supporting/html-text';
-import { FieldErrorBoundary } from '../supporting/field-error-boundary.component';
-import { fieldRegistry } from './field-registry';
-
-
-// TODO: Move this to it's own file. All react components should be in their own file
-function FieldLabel({ field }: { field: IRenderableField }) {
-  return (
-    <BaseFieldLabel className="text-sm/4.5">
-      <HtmlText html={field.label} />
-      {field.required ? (
-        <span className="font-medium text-red-500" aria-hidden="true">
-          *
-        </span>
-      ) : null}
-    </BaseFieldLabel>
-  );
-}
+import { Field, FieldError } from "../../ui";
+import { useI18n } from "@/i18n";
+import { validateField, type IRenderableField } from "@declarativeforms/engine";
+import { FieldLabel } from "./field-label.component";
+import { fieldRegistry } from "./field-registry";
 
 export function DeclarativeFormField(props: {
   field: IRenderableField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
   const { t } = useI18n();
-  // TODO: Don't deconstruct variables, just use them where needed.
-  const { visible, id } = props.field;
 
   useEffect(() => {
-    if (!visible) {
-      props.form.unregister(id);
+    if (!props.field.visible) {
+      props.form.unregister(props.field.id);
     }
-  }, [visible, id, props.form]);
+  }, [props.field.visible, props.field.id, props.form]);
 
-  if (!visible) {
+  if (!props.field.visible) {
     return null;
   }
 
-  // TODO: don't create variables where not needed, just use them directly such as props.field.type.
-  const renderableField = props.field;
-  const rules = buildFieldValidation(renderableField, {
-    emailFreeEmailBlocked: t('validation.email_free_blocked'),
-    emailOtpRequired: t('validation.email_otp_required'),
-  });
-  const Renderer = fieldRegistry[renderableField.type];
-  if (!Renderer) {
+  const entry = fieldRegistry[props.field.type];
+  if (!entry) {
     return null;
   }
 
-  // TODO: inline this condition where needed instead of creating it's own variable.
-  const isHiddenField = renderableField.type === 'hidden';
+  const Renderer = entry.component;
+
+  const validate = {
+    rules: (value: unknown, values: Record<string, unknown>) =>
+      validateField(props.field, value, values) ?? true,
+    ...entry.validate?.(props.field, t),
+  };
+
+  const rules = { validate } as RegisterOptions;
 
   return (
     <Controller
       control={props.form.control}
-      name={renderableField.id}
+      name={props.field.id}
       rules={rules}
       render={({ field, fieldState }) =>
-        isHiddenField ? (
-          <FieldErrorBoundary fieldId={renderableField.id}>
-            <Renderer
-              controllerField={field}
-              field={renderableField}
-              form={props.form}
-            />
-          </FieldErrorBoundary>
+        props.field.type === "hidden" ? (
+          <Renderer
+            controllerField={field}
+            field={props.field}
+            form={props.form}
+          />
         ) : (
           <Field>
-            <FieldLabel field={renderableField} />
-            <FieldErrorBoundary fieldId={renderableField.id}>
-              <Renderer
-                controllerField={field}
-                field={renderableField}
-                form={props.form}
-              />
-            </FieldErrorBoundary>
+            <FieldLabel field={props.field} />
+            <Renderer
+              controllerField={field}
+              field={props.field}
+              form={props.form}
+            />
             <FieldError errors={[fieldState.error]} />
           </Field>
         )

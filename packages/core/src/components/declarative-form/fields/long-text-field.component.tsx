@@ -1,5 +1,5 @@
 import type { IRenderableLongTextField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { Textarea } from '@/components/ui';
 import { useI18n } from '@/i18n';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import type { IRenderableSingleSelectField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { HtmlText } from '../supporting/html-text';
 import {
   Field,

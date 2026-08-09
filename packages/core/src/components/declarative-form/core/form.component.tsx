@@ -3,7 +3,8 @@ import type { FieldValues } from 'react-hook-form';
 
 import type { IDeclarativeForm } from '@declarativeforms/engine';
 import { DeclarativeFormSection } from './section.component';
-import { useDeclarativeForm, type FormEffect } from './use-declarative-form';
+import { useDeclarativeForm } from './use-declarative-form';
+import type { FormEffect } from './use-declarative-form.types';
 
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
@@ -17,14 +18,12 @@ export function DeclarativeForm(props: {
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
-  // TODO: don't deconstruct the variable, name it and then use it such as declarativeForm.section.
-  const { section, activeSectionId, data, goBack, submitSection } =
-    useDeclarativeForm(
-      props.form,
-      props.locale,
-      props.initialData,
-      props.initialSectionId,
-    );
+  const declarativeForm = useDeclarativeForm(
+    props.form,
+    props.locale,
+    props.initialData,
+    props.initialSectionId,
+  );
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -33,21 +32,21 @@ export function DeclarativeForm(props: {
     }
     window.scrollTo(0, 0);
     sectionRef.current?.focus();
-  }, [activeSectionId]);
+  }, [declarativeForm.activeSectionId]);
 
-  if (!section) {
+  if (!declarativeForm.section) {
     return null;
   }
 
   return (
     <DeclarativeFormSection
       ref={sectionRef}
-      key={activeSectionId}
-      section={section}
-      data={data}
-      onBack={goBack}
+      key={declarativeForm.activeSectionId}
+      section={declarativeForm.section}
+      data={declarativeForm.data}
+      onBack={declarativeForm.goBack}
       onSubmit={async (sectionData: FieldValues) => {
-        const result = submitSection(sectionData);
+        const result = declarativeForm.submitSection(sectionData);
         await props.onEffect(result, {
           data: result.data,
           activeSectionId: result.activeSectionId,

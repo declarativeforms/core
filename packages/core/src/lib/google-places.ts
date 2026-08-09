@@ -1,5 +1,7 @@
 /// <reference types="google.maps" />
 
+import type { IStructuredAddress, PlacePrediction } from './google-places.types';
+
 type TextValue = {
   toString(): string;
 };
@@ -35,15 +37,6 @@ type GooglePlacesLibrary = {
     fetchFields(options: { fields: string[] }): Promise<void>;
   };
 };
-
-export interface PlacePrediction {
-  place_id: string;
-  description: string;
-  structured_formatting: {
-    main_text: string;
-    secondary_text: string;
-  };
-}
 
 export async function getPlacePredictions(
   input: string,
@@ -162,15 +155,4 @@ export function formatAddressString(
   place: google.maps.places.PlaceResult,
 ): string {
   return place.formatted_address || '';
-}
-
-export interface IStructuredAddress {
-  formatted_address: string;
-  street_number?: string;
-  route?: string;
-  locality?: string;
-  administrative_area_level_1?: string;
-  country?: string;
-  postal_code?: string;
-  place_id: string;
 }

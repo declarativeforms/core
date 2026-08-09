@@ -6,8 +6,9 @@ import type { IRenderableNavigation } from './navigation';
  * currently-invisible fields (carrying a `visible` flag) so the renderer can
  * filter. `next` is the provisional navigation target for the current answers,
  * recomputed per render and authoritative at submit. `canGoBack` drives the
- * Back affordance (derived from navigation history). `defaultValues` seeds the
- * section's fields (submitted answers merged with per-type empty defaults).
+ * Back affordance (true when a prior section leads here under the current
+ * answers). `defaultValues` seeds the section's fields (submitted answers
+ * merged with per-type empty defaults).
  */
 export type IRenderableSection = {
   id: string;

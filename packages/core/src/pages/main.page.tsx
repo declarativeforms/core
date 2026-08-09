@@ -1,15 +1,10 @@
-import { resolveLocalizedText } from '@declarativeforms/engine';
+import { resolveLocalizedText, type IDeclarativeForm } from '@declarativeforms/engine';
 import { useQuery } from '@tanstack/react-query';
 import mixpanel from 'mixpanel-browser';
 import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import {
-  DeclarativeForm,
-  HeroSection,
-  type FormEffect,
-  type IDeclarativeForm,
-} from '@/components';
+import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 import { BasePage } from './base.page';
@@ -25,20 +20,15 @@ export function MainPage() {
   const slugPath = params['*'];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
 
-  // TODO: instead of creating variables for these, just inline all of them.
-  const embed = searchParams.get('embed') === 'true';
-  const submissionId = searchParams.get('submission_id');
-  const stepParam = searchParams.get('step');
+  // Frozen at mount: the form hook captures initialData once, so the submission
+  // we restore from must stay fixed even if the URL's submission_id changes as
+  // sections are submitted. Everything else reads submission_id straight from
+  // the query string, the source of truth.
+  const [resumeSubmissionId] = useState(() =>
+    searchParams.get('submission_id'),
+  );
 
-  // TODO: instead of explictly keeping track of the submissionId, use the query string as the source of truth, and remove all the non required variables then.
-  const [resumeSubmissionId] = useState(submissionId);
-
-  const submissionIdRef = useRef(submissionId);
   const isCompletingRef = useRef(false);
-
-  useEffect(() => {
-    submissionIdRef.current = submissionId;
-  }, [submissionId]);
 
   const { data: form, error } = useQuery({
     queryKey: ['form', params.id, params.owner, params.repository, slugPath],
@@ -158,8 +148,9 @@ export function MainPage() {
       url.searchParams.set('partial', 'true');
     }
 
-    if (submissionIdRef.current) {
-      url.searchParams.set('id', submissionIdRef.current);
+    const currentSubmissionId = searchParams.get('submission_id');
+    if (currentSubmissionId) {
+      url.searchParams.set('id', currentSubmissionId);
     }
 
     const response = await fetch(url.toString(), {
@@ -191,7 +182,7 @@ export function MainPage() {
           effect.isPartial,
         );
         updateProgressQuery({
-          submissionId: submissionId ?? submissionIdRef.current,
+          submissionId: submissionId ?? searchParams.get('submission_id'),
           step: runtimeState.activeSectionId,
         });
         return;
@@ -206,7 +197,8 @@ export function MainPage() {
 
         try {
           const submissionId = await submitToBackend(runtimeState.data, false);
-          const finalSubmissionId = submissionId ?? submissionIdRef.current;
+          const finalSubmissionId =
+            submissionId ?? searchParams.get('submission_id');
 
           updateProgressQuery({
             submissionId: finalSubmissionId,
@@ -237,7 +229,7 @@ export function MainPage() {
           const submissionId = await submitToBackend(runtimeState.data, false);
 
           updateProgressQuery({
-            submissionId: submissionId ?? submissionIdRef.current,
+            submissionId: submissionId ?? searchParams.get('submission_id'),
             step: 'done',
           });
           window.location.href = effect.url;
@@ -294,6 +286,7 @@ export function MainPage() {
     ...(savedSubmission?.data ?? {}),
   };
 
+  const stepParam = searchParams.get('step');
   const initialSectionId =
     stepParam &&
     (form.sections ?? []).some((section) => section.id === stepParam)
@@ -311,7 +304,7 @@ export function MainPage() {
       title={resolvedTitle}
       description={resolvedDescription}
       theme={form.theme}
-      embed={embed}
+      embed={searchParams.get('embed') === 'true'}
     >
       <DeclarativeForm
         form={form}

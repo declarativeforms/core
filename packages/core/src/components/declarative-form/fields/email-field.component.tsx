@@ -5,7 +5,7 @@ import { useWatch } from 'react-hook-form';
 import { Input } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { IRenderableEmailField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { useI18n } from '@/i18n';
 import { sendEmailOtp, verifyEmailOtp } from './email/api';
 import { isEmailValid, sanitizeOtpCode, toFieldString } from './email/utils';

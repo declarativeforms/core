@@ -10,7 +10,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import type { TranslationKey } from '@/i18n/messages/en';
-import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../../supporting/field-support.types';
 import { useI18n } from '@/i18n';
 
 const GeolocationMapPreview = lazy(() => import('./geolocation-map-preview'));

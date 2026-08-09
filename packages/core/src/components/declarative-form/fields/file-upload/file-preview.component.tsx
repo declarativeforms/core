@@ -9,8 +9,7 @@ import {
   FileArchiveIcon,
 } from 'lucide-react';
 
-import type { TranslationKey } from '@/i18n/messages/en';
-import type { TranslationValues } from '@/i18n/runtime';
+import type { TranslationKey, TranslationValues } from '@/i18n';
 import { cn } from '@/lib/utils';
 
 export interface FileMetadata {

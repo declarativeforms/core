@@ -9,13 +9,5 @@ export interface IConnectionStrategy {
   ): Promise<void>;
 }
 
-export interface IValidationStrategy {
-  validate(
-    form: IDeclarativeForm,
-    data: Record<string, unknown>,
-    metadata?: { ipAddress?: string; isPartial?: boolean },
-  ): Promise<string | null>;
-}
-
 export { EmailConnectionStrategy } from './email-connection.strategy';
 export { WebhookConnectionStrategy } from './webhook-connection.strategy';

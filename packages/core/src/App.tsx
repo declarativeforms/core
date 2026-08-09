@@ -6,21 +6,20 @@ import {
   PrivacyPolicyPage,
   ThankYouPage,
 } from './pages';
-
-function ExternalRedirect({ url }: { url: string }) {
-  window.location.replace(url);
-  return null;
-}
+import { ExternalRedirect } from './components/external-redirect.component';
 
 function App() {
   const [searchParams] = useSearchParams();
-  const embed = searchParams.get('embed') === 'true';
 
   return (
     <>
       <main
         id="main-content"
-        className={embed ? 'min-h-lvh bg-white' : undefined}
+        className={
+          searchParams.get('embed') === 'true'
+            ? 'min-h-lvh bg-white'
+            : undefined
+        }
       >
         <Routes>
           <Route

@@ -1,5 +1,4 @@
 import type { IDeclarativeFormTheme } from '../schema/form-theme';
-import type { IRenderableProgress } from './progress';
 import type { IRenderableSection } from './section';
 
 /**
@@ -16,5 +15,4 @@ export type IRenderableForm = {
   locale: string;
   theme?: IDeclarativeFormTheme;
   section: IRenderableSection;
-  progress?: IRenderableProgress;
 };

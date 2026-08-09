@@ -19,12 +19,12 @@ import {
   formatStructuredAddress,
   getPlaceDetails,
   getPlacePredictions,
-  type PlacePrediction,
 } from '@/lib/google-places';
+import type { PlacePrediction } from '@/lib/google-places.types';
 import type { IRenderableAddressField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { useI18n } from '@/i18n';
-import { useWaitForGlobal } from '../supporting/use-wait-for-global';
+import { useWaitForGlobal } from '@/hooks/use-wait-for-global';
 
 const AUTOCOMPLETE_TYPE = {
   address: 'address',

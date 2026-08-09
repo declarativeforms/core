@@ -2,10 +2,10 @@ import { Camera, Loader2, RefreshCw, VideoOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IRenderableCameraField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/i18n';
-import { useUploadBlob } from '../supporting/use-upload-blob';
+import { useUploadBlob } from './use-upload-blob';
 import { cn } from '@/lib/utils';
 
 type CameraStatus = 'idle' | 'previewing' | 'uploading' | 'captured' | 'error';

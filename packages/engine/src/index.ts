@@ -12,6 +12,7 @@ export { compile, DEFAULT_MESSAGES } from './compile';
 export type { ValidationMessages } from './compile';
 export { render } from './render';
 export type { RenderOptions } from './render';
+export { findPreviousSectionId } from './render';
 
 // Standalone utilities (used across the pipeline; exposed for consumers).
 export { resolveLocalizedText } from './resolve/localize';
@@ -23,7 +24,6 @@ export type ToRenderableFormOptions = {
   locale: string;
   data?: Record<string, unknown>;
   sectionId?: string;
-  history?: string[];
 };
 
 /**
@@ -40,6 +40,5 @@ export function toRenderableForm(
   const compiled = compile(resolved, data);
   return render(compiled, data, {
     sectionId: options.sectionId,
-    history: options.history,
   });
 }

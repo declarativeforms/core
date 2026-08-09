@@ -1,5 +1,5 @@
 import type { IRenderableRatingField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { HtmlText } from '../supporting/html-text';
 import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '@/components/ui';
 import { cn } from '@/lib/utils';

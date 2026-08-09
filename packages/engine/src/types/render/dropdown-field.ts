@@ -1,4 +1,4 @@
-import type { ICompiledFormOption } from '../compiled/form-option';
+import type { ICompiledFormOption } from '../compiled';
 import type { IRenderableFieldBase } from './field-base';
 
 /** A dropdown/select. `searchable` renders a filterable combobox. */

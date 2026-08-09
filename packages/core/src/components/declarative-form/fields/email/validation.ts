@@ -1,47 +1,51 @@
-import type { RegisterOptions, Validate } from 'react-hook-form';
-
 import type { IRenderableField } from '@declarativeforms/engine';
-import { FREE_EMAIL_DOMAINS } from './free-email-domains';
+
+import type { Translate } from '@/i18n';
 import { getSecondaryValidationTokenFieldName } from '../secondary-token-field';
+import { FREE_EMAIL_DOMAINS } from './free-email-domains';
 
-export type EmailValidationMessages = {
-  emailFreeEmailBlocked?: string;
-  emailOtpRequired?: string;
-};
+type FieldValidator = (
+  value: unknown,
+  values: Record<string, unknown>,
+) => true | string;
 
-export function getEmailValidation(
+/**
+ * The email field's extra, client-only validators: block free-email domains and
+ * require a verified OTP token. Wired in through the field registry, so the
+ * generic validation builder never imports the email field.
+ */
+export function getEmailValidators(
   field: IRenderableField,
-  messages?: EmailValidationMessages,
-): RegisterOptions['validate'] | undefined {
-  if (field.type !== 'email') return undefined;
+  t: Translate,
+): Record<string, FieldValidator> | undefined {
+  if (field.type !== 'email') {
+    return undefined;
+  }
 
-  const validators: Record<
-    string,
-    Validate<unknown, Record<string, unknown>>
-  > = {};
+  const validators: Record<string, FieldValidator> = {};
 
   if (field.blockFreeEmail) {
     validators.blockFreeEmail = (value) => {
-      if (!value || typeof value !== 'string') return true;
+      if (!value || typeof value !== 'string') {
+        return true;
+      }
       const domain = value.split('@')[1]?.toLowerCase();
       if (domain && FREE_EMAIL_DOMAINS.has(domain)) {
-        return messages?.emailFreeEmailBlocked ?? '';
+        return t('validation.email_free_blocked');
       }
       return true;
     };
   }
 
   if (field.otpEnabled) {
-    validators.otpVerified = (_value, formValues) => {
+    validators.otpVerified = (_value, values) => {
       const tokenFieldName =
         field.tokenFieldName ?? getSecondaryValidationTokenFieldName(field.id);
-      const verificationToken = formValues[tokenFieldName];
-
-      if (typeof verificationToken === 'string' && verificationToken.trim()) {
+      const token = values[tokenFieldName];
+      if (typeof token === 'string' && token.trim()) {
         return true;
       }
-
-      return messages?.emailOtpRequired ?? '';
+      return t('validation.email_otp_required');
     };
   }
 

@@ -1,4 +1,4 @@
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 

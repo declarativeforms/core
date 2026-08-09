@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
 import type { IRenderableMultipleSelectField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { HtmlText } from '../supporting/html-text';
 import { stripHtml } from '@/lib/strip-html';
 import { Checkbox, Field, FieldLabel, Input } from '@/components/ui';

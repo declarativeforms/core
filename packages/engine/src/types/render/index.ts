@@ -14,7 +14,6 @@ export * from './long-text-field';
 export * from './multiple-select-field';
 export * from './navigation';
 export * from './number-field';
-export * from './progress';
 export * from './rating-field';
 export * from './section';
 export * from './signature-field';

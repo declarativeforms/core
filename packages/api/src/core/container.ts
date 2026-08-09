@@ -68,7 +68,6 @@ export async function getContainer() {
   const submissionService = new SubmissionService(
     formService,
     submissionRepository,
-    [],
     connectionStrategies,
   );
 

@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-import { HeroSection, type IDeclarativeForm } from '@/components';
-import { compile, resolve } from '@declarativeforms/engine';
+import { HeroSection } from '@/components';
+import { compile, resolve, type IDeclarativeForm } from '@declarativeforms/engine';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 
@@ -60,9 +60,8 @@ export function ThankYouPage() {
     return null;
   }
 
-  const submissionData = submission?.data ?? {};
   const completion = form
-    ? compile(resolve(form, locale), submissionData).completion
+    ? compile(resolve(form, locale), submission?.data ?? {}).completion
     : undefined;
 
   if (completion) {

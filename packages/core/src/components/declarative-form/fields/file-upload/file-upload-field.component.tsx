@@ -2,7 +2,7 @@ import { Upload } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 import type { IRenderableFileUploadField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
+import type { DeclarativeFieldComponentProps } from '../../supporting/field-support.types';
 import { useI18n } from '@/i18n';
 import { uploadFile } from '@/lib/file-upload';
 import { cn } from '@/lib/utils';

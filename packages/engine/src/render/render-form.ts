@@ -1,11 +1,10 @@
 import type { ICompiledForm, IRenderableForm } from '../types';
+import { findPreviousSectionId } from './find-previous-section';
 import { renderFormSection } from './render-form-section';
 
 export type RenderOptions = {
   /** The active section to render; defaults to the first section. */
   sectionId?: string;
-  /** Visited section ids, used for `canGoBack` and `progress`. */
-  history?: string[];
 };
 
 /**
@@ -26,8 +25,6 @@ export function render(
     throw new Error('Cannot render a form with no sections.');
   }
 
-  const history = options.history ?? [];
-
   return {
     ...(compiled.id !== undefined && { id: compiled.id }),
     ...(compiled.title && { title: compiled.title }),
@@ -36,7 +33,10 @@ export function render(
     }),
     locale: compiled.locale,
     ...(compiled.theme !== undefined && { theme: compiled.theme }),
-    section: renderFormSection(section, data, history.length > 0),
-    progress: { position: history.length + 1, total: compiled.sections.length },
+    section: renderFormSection(
+      section,
+      data,
+      findPreviousSectionId(compiled, section.id) !== undefined,
+    ),
   };
 }

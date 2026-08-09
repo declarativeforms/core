@@ -1,4 +1,4 @@
-import type { ICompiledValidationRule } from '../compiled/validation-rule';
+import type { ICompiledValidationRule } from '../compiled';
 
 /**
  * Properties every renderable field carries.
