@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 export interface FileMetadata {
   url: string;
   name: string;
-  size: number;
+  // Unknown for files restored from a submission (only the URL was stored).
+  size?: number;
   type: string;
   status: 'uploading' | 'uploaded' | 'error';
   error?: string;
@@ -114,11 +115,11 @@ export function FilePreview({
           <p className="text-sm text-destructive" aria-live="polite">
             {metadata.error}
           </p>
-        ) : (
+        ) : metadata.size !== undefined ? (
           <p className="text-sm text-muted-foreground">
             {formatFileSize(metadata.size)}
           </p>
-        )}
+        ) : null}
         {isUploading && (
           <div className="mt-1">
             <div className="w-full bg-muted rounded-full h-1">

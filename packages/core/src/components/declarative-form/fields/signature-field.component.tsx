@@ -31,6 +31,13 @@ export function SignatureField({
     'signature.upload_failed',
   );
 
+  // Show the saved signature image on reload, until the user draws a new one.
+  const savedUrl =
+    typeof controllerField.value === 'string' && controllerField.value
+      ? controllerField.value
+      : null;
+  const showSavedPreview = !!savedUrl && !hasSignature;
+
   const redrawSignature = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -196,7 +203,16 @@ export function SignatureField({
             onPointerCancel={handlePointerUp}
             aria-label={field.label}
           />
-          {!hasSignature && !isUploading && (
+          {showSavedPreview && (
+            <div className="absolute inset-0 overflow-hidden rounded-md bg-white">
+              <img
+                src={savedUrl}
+                alt={field.label}
+                className="h-full w-full object-contain"
+              />
+            </div>
+          )}
+          {!hasSignature && !isUploading && !showSavedPreview && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-sm text-muted-foreground">
                 {t('signature.draw')}
@@ -222,7 +238,7 @@ export function SignatureField({
             'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted',
             'transition-colors',
           )}
-          disabled={!hasSignature || isUploading}
+          disabled={(!hasSignature && !savedUrl) || isUploading}
         >
           <X className="h-4 w-4" aria-hidden="true" />
           {t('signature.clear')}

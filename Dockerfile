@@ -16,6 +16,10 @@ COPY packages ./packages
 ARG VITE_API_BASE_URL=/api/v1
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
+# Optional. Enables Google Places address autocomplete in the web build.
+ARG VITE_GOOGLE_MAPS_API_KEY=
+ENV VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY}
+
 RUN npm run build
 
 # Run the API from the build image so every workspace dependency resolves.

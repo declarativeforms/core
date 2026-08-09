@@ -40,6 +40,21 @@ type AddressSearch = {
   loading: boolean;
 };
 
+// The visible input holds the user's search query. Seed it from the committed
+// field value so a restored or prefilled address shows on mount. The value is a
+// plain string for string output and a structured object otherwise.
+function toAddressDisplay(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value && typeof value === 'object' && 'formatted_address' in value) {
+    const formatted = (value as { formatted_address?: unknown })
+      .formatted_address;
+    return typeof formatted === 'string' ? formatted : '';
+  }
+  return '';
+}
+
 export function AddressField({
   field,
   controllerField,
@@ -53,12 +68,12 @@ export function AddressField({
   );
   const isApiLoaded = useWaitForGlobal(checkGooglePlaces, { timeout: 10_000 });
 
-  const [search, setSearch] = useState<AddressSearch>({
+  const [search, setSearch] = useState<AddressSearch>(() => ({
     open: false,
-    input: '',
+    input: toAddressDisplay(controllerField.value),
     suggestions: [],
     loading: false,
-  });
+  }));
 
   const debouncedInput = useDebounce(search.input, 300);
   const visibleSuggestions =
@@ -111,6 +126,8 @@ export function AddressField({
     return (
       <Input
         {...controllerField}
+        value={toAddressDisplay(controllerField.value)}
+        onChange={(event) => controllerField.onChange(event.target.value)}
         className="text-sm/4"
         placeholder={field.placeholder || t('address.placeholder')}
         required={field.required}

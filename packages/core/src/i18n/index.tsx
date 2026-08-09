@@ -44,7 +44,10 @@ function translate(
 ): string {
   const template =
     TRANSLATIONS[locale][key] ?? TRANSLATIONS[DEFAULT_LOCALE][key];
-  return interpolateTemplate(template ?? key, values ?? {});
+  // UI messages use top-level placeholders (e.g. {{min}}, {{label}}, {{count}}).
+  // The engine resolves those from the interpolation context (its third
+  // argument); the second argument is reserved for `{{data.*}}` form values.
+  return interpolateTemplate(template ?? key, {}, values ?? {});
 }
 
 function resolveLocale(queryLang?: string | null): {
