@@ -1,23 +1,20 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 import {
   Controller,
   type FieldValues,
   type RegisterOptions,
   type UseFormReturn,
-} from "react-hook-form";
+} from 'react-hook-form';
 
-import { Field, FieldError } from "../../ui";
-import { useI18n } from "@/i18n";
-import { validateField, type IRenderableField } from "@declarativeforms/engine";
-import { FieldLabel } from "./field-label.component";
-import { fieldRegistry } from "./field-registry";
+import { Field, FieldError } from '../../ui';
+import { validateField, type IRenderableField } from '@declarativeforms/engine';
+import { FieldLabel } from './field-label.component';
+import { fieldRegistry } from './field-registry';
 
 export function DeclarativeFormField(props: {
   field: IRenderableField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
 }) {
-  const { t } = useI18n();
-
   useEffect(() => {
     if (!props.field.visible) {
       props.form.unregister(props.field.id);
@@ -28,20 +25,17 @@ export function DeclarativeFormField(props: {
     return null;
   }
 
-  const entry = fieldRegistry[props.field.type];
-  if (!entry) {
+  const Renderer = fieldRegistry[props.field.type];
+  if (!Renderer) {
     return null;
   }
 
-  const Renderer = entry.component;
-
-  const validate = {
-    rules: (value: unknown, values: Record<string, unknown>) =>
-      validateField(props.field, value, values) ?? true,
-    ...entry.validate?.(props.field, t),
-  };
-
-  const rules = { validate } as RegisterOptions;
+  const rules = {
+    validate: {
+      rules: (value: unknown, values: Record<string, unknown>) =>
+        validateField(props.field, value, values) ?? true,
+    },
+  } as RegisterOptions;
 
   return (
     <Controller
@@ -49,7 +43,7 @@ export function DeclarativeFormField(props: {
       name={props.field.id}
       rules={rules}
       render={({ field, fieldState }) =>
-        props.field.type === "hidden" ? (
+        props.field.type === 'hidden' ? (
           <Renderer
             controllerField={field}
             field={props.field}

@@ -42,14 +42,7 @@ export function compileFormField(
 
   switch (field.type) {
     case 'email':
-      return {
-        ...base,
-        type: 'email',
-        ...(field.block_free_email !== undefined && {
-          block_free_email: field.block_free_email,
-        }),
-        ...(field.otp !== undefined && { otp: field.otp }),
-      };
+      return { ...base, type: 'email' };
     case 'dropdown':
       return {
         ...base,

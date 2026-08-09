@@ -1,8 +1,7 @@
-import type { ComponentType } from "react";
+import type { ComponentType } from 'react';
 
-import type { IRenderableField } from "@declarativeforms/engine";
+import type { IRenderableField } from '@declarativeforms/engine';
 
-import type { Translate } from "@/i18n";
 import {
   AddressField,
   CameraField,
@@ -17,44 +16,32 @@ import {
   RatingField,
   SignatureField,
   SingleSelectField,
-} from "../fields";
-import { getEmailValidators } from "../fields/email/validation";
-import type { DeclarativeFieldComponentProps } from "../supporting/field-support.types";
+} from '../fields';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 
-/**
- * Everything the form engine needs to know about a field type in one place: the
- * component that renders it and any extra client-only validators it contributes.
- * Adding a field type is a single entry here plus its component.
- */
-type FieldRegistryEntry = {
-  component: ComponentType<DeclarativeFieldComponentProps>;
-  validate?: (
-    field: IRenderableField,
-    t: Translate,
-  ) => Record<string, any> | undefined;
-};
+type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
 
 export const fieldRegistry = {
-  address: { component: AddressField },
-  address_country: { component: AddressField },
-  address_locality: { component: AddressField },
-  address_region: { component: AddressField },
-  camera: { component: CameraField },
-  date: { component: InputField },
-  date_month: { component: InputField },
-  dropdown: { component: DropdownField },
-  email: { component: EmailField, validate: getEmailValidators },
-  geolocation: { component: GeolocationField },
-  file_upload: { component: FileUploadField },
-  hidden: { component: HiddenField },
-  long_text: { component: LongTextField },
-  mobile_number: { component: InputField },
-  multiple_select: { component: MultipleSelectField },
-  number: { component: InputField },
-  rating: { component: RatingField },
-  short_text: { component: InputField },
-  signature: { component: SignatureField },
-  single_select: { component: SingleSelectField },
-  time: { component: InputField },
-  url: { component: InputField },
-} as Record<IRenderableField["type"], FieldRegistryEntry>;
+  address: AddressField,
+  address_country: AddressField,
+  address_locality: AddressField,
+  address_region: AddressField,
+  camera: CameraField,
+  date: InputField,
+  date_month: InputField,
+  dropdown: DropdownField,
+  email: EmailField,
+  geolocation: GeolocationField,
+  file_upload: FileUploadField,
+  hidden: HiddenField,
+  long_text: LongTextField,
+  mobile_number: InputField,
+  multiple_select: MultipleSelectField,
+  number: InputField,
+  rating: RatingField,
+  short_text: InputField,
+  signature: SignatureField,
+  single_select: SingleSelectField,
+  time: InputField,
+  url: InputField,
+} as Record<IRenderableField['type'], DeclarativeFieldRenderer>;

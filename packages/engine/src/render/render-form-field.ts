@@ -80,13 +80,9 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
     case 'email': {
       const min = getCharLimit(field.validation, 'min_length');
       const max = getCharLimit(field.validation, 'max_length');
-      const otpEnabled = field.otp === true;
       return {
         ...base,
         type: 'email',
-        otpEnabled,
-        blockFreeEmail: field.block_free_email === true,
-        ...(otpEnabled && { tokenFieldName: `${field.id}_token` }),
         ...(min !== undefined && { min }),
         ...(max !== undefined && { max }),
       };

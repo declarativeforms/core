@@ -1,5 +1,3 @@
-export * from './email-challenges-send-post';
-export * from './email-challenges-verify-post';
 export * from './files-key-get';
 export * from './files-upload-post';
 export * from './forms-id-get';

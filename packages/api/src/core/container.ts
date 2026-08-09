@@ -1,17 +1,8 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
 import { GitHubGateway } from './gateways';
-import {
-  EmailVerificationRepository,
-  GitHubFileRepository,
-  SubmissionRepository,
-} from './repositories';
-import {
-  EmailVerificationService,
-  FileService,
-  FormService,
-  SubmissionService,
-} from './services';
+import { GitHubFileRepository, SubmissionRepository } from './repositories';
+import { FileService, FormService, SubmissionService } from './services';
 import {
   EmailConnectionStrategy,
   WebhookConnectionStrategy,
@@ -25,8 +16,6 @@ export type Container = {
   submissionRepository: SubmissionRepository;
   fileService: FileService;
   formService: FormService;
-  emailVerificationRepository: EmailVerificationRepository;
-  emailVerificationService: EmailVerificationService;
   submissionService: SubmissionService;
 };
 
@@ -52,12 +41,8 @@ export async function getContainer() {
   );
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
-  const emailVerificationRepository = new EmailVerificationRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
   const submissionRepository = new SubmissionRepository(db);
-  const emailVerificationService = new EmailVerificationService(
-    emailVerificationRepository,
-  );
   const fileService = new FileService(s3Client);
   const formService = new FormService(gitHubFileRepository, gitHubGateway);
   const connectionStrategies = [
@@ -73,8 +58,6 @@ export async function getContainer() {
 
   container = {
     db,
-    emailVerificationRepository,
-    emailVerificationService,
     gitHubGateway,
     gitHubFileRepository,
     fileService,

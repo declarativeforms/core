@@ -17,7 +17,7 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
 
 export type TranslationValues = Record<string, string | number>;
-export type Translate = (key: TranslationKey, values?: TranslationValues) => string;
+type Translate = (key: TranslationKey, values?: TranslationValues) => string;
 
 const TRANSLATIONS: Record<Locale, TranslationMessages> = {
   en: enMessages,

@@ -25,24 +25,6 @@ export const esMessages: TranslationMessages = {
   'address.loading_suggestions': 'Cargando sugerencias',
   'address.no_results': 'No se encontraron resultados.',
   'email.placeholder_default': 'Tu respuesta',
-  'email.placeholder_otp': 'nombre@ejemplo.com',
-  'email.otp.enter_code': 'Introduce el código de verificación.',
-  'email.otp.invalid_code': 'El código de verificación no es válido o expiró.',
-  'email.otp.invalid_email_before_send':
-    'Introduce un correo electrónico válido antes de solicitar un código.',
-  'email.otp.request_code_first':
-    'Solicita primero un código de verificación.',
-  'email.otp.request_failed': 'No se pudo completar la solicitud.',
-  'email.otp.send_failed': 'No se pudo enviar el código de verificación.',
-  'email.otp.start_failed': 'No se pudo iniciar la verificación por correo.',
-  'email.otp.token_missing':
-    'La verificación se completó pero no se recibió ningún token.',
-  'email.otp.resend_in_seconds': 'Reenviar en {{seconds}} s',
-  'email.otp.resend': 'Reenviar',
-  'email.otp.send_code': 'Enviar código',
-  'email.otp.verification_code_placeholder': 'Código de verificación',
-  'email.otp.verification_code_aria_label': 'Código de verificación',
-  'email.otp.verify': 'Verificar código',
   'cookie.message': 'Usamos cookies para mejorar tu experiencia.',
   'cookie.learn_more': 'Más información',
   'cookie.decline': 'Rechazar',
@@ -72,10 +54,6 @@ export const esMessages: TranslationMessages = {
   'validation.min_length': '{{label}} debe tener al menos {{min}} caracteres.',
   'validation.max_length':
     '{{label}} debe tener como máximo {{max}} caracteres.',
-  'validation.email_free_blocked':
-    'Por favor, utiliza un correo electrónico de trabajo.',
-  'validation.email_otp_required':
-    'Verifica esta dirección de correo para continuar.',
   'validation.date_min': '{{label}} debe ser en o después de {{min}}.',
   'validation.date_max': '{{label}} debe ser en o antes de {{max}}.',
   'validation.whole_number': '{{label}} debe ser un número entero.',

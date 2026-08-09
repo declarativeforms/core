@@ -3,8 +3,6 @@ import fastifyMultipart from '@fastify/multipart';
 import fastify from 'fastify';
 import * as qs from 'qs';
 import {
-  EMAIL_CHALLENGES_SEND_POST,
-  EMAIL_CHALLENGES_VERIFY_POST,
   FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
@@ -49,8 +47,6 @@ export async function startServer() {
     },
   );
 
-  server.route(EMAIL_CHALLENGES_SEND_POST);
-  server.route(EMAIL_CHALLENGES_VERIFY_POST);
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);

@@ -41,8 +41,6 @@ export type ICompiledFormGenericField = ICompiledFormFieldBase & {
 };
 export type ICompiledFormEmailField = ICompiledFormFieldBase & {
   type: 'email';
-  block_free_email?: boolean;
-  otp?: boolean;
 };
 export type ICompiledFormDropdownField = ICompiledFormFieldBase & {
   type: 'dropdown';

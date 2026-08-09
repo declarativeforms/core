@@ -46,8 +46,6 @@ export type FormGenericField<Text> = FormFieldBase<Text> & {
 
 export type FormEmailField<Text> = FormFieldBase<Text> & {
   type: 'email';
-  block_free_email?: boolean;
-  otp?: boolean;
 };
 
 export type FormDropdownField<Text> = FormFieldBase<Text> & {
