@@ -137,7 +137,7 @@ which is handy for `hidden` fields and campaign links.
 | **Connections** | Fire a webhook or send an email (via Resend) on submit, gated by a condition. |
 | **Partial submissions** | Answers are saved per section, so a refresh does not lose progress. |
 | **Theming** | Set an accent color to match your brand. |
-| **Analytics** | Optional Mixpanel page-view and completion tracking. |
+| **Analytics** | Optional Mixpanel and PostHog page-view and section-completion tracking. |
 | **Embedding** | Drop a form into any page with an `iframe` using `?embed=true`. |
 
 The complete, field-by-field reference is in **[SCHEMA.md](./SCHEMA.md)**.

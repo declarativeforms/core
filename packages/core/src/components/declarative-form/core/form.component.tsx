@@ -13,7 +13,11 @@ export function DeclarativeForm(props: {
   initialSectionId?: string;
   onEffect: (
     effect: FormEffect,
-    state: { data: Record<string, unknown>; activeSectionId: string },
+    state: {
+      data: Record<string, unknown>;
+      activeSectionId: string;
+      completedSectionId: string;
+    },
   ) => void | Promise<void>;
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
@@ -46,10 +50,12 @@ export function DeclarativeForm(props: {
       data={declarativeForm.data}
       onBack={declarativeForm.goBack}
       onSubmit={async (sectionData: FieldValues) => {
+        const completedSectionId = declarativeForm.activeSectionId;
         const result = declarativeForm.submitSection(sectionData);
         await props.onEffect(result, {
           data: result.data,
           activeSectionId: result.activeSectionId,
+          completedSectionId,
         });
       }}
     />

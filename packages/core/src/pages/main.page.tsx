@@ -1,11 +1,11 @@
 import { resolveLocalizedText, type IDeclarativeForm } from '@declarativeforms/engine';
 import { useQuery } from '@tanstack/react-query';
-import mixpanel from 'mixpanel-browser';
 import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 import { useI18n, useSyncLangParam } from '@/i18n';
+import { createAnalytics, type Analytics } from '@/lib/analytics';
 import { getBackendUrl } from '@/lib/api';
 import { BasePage } from './base.page';
 
@@ -36,6 +36,7 @@ export function MainPage() {
   );
 
   const isCompletingRef = useRef(false);
+  const analyticsRef = useRef<Analytics | null>(null);
 
   const { data: form, error } = useQuery({
     queryKey: [
@@ -111,16 +112,20 @@ export function MainPage() {
   useSyncLangParam(form?.locale);
 
   useEffect(() => {
-    if (form?.measurements?.mixpanel) {
-      mixpanel.init(form.measurements.mixpanel, {
-        api_host: 'https://api-eu.mixpanel.com',
-      });
+    const analytics = createAnalytics(form?.measurements);
+    analyticsRef.current = analytics;
 
-      mixpanel.track('page_view', {
-        form_id: formId || undefined,
-      });
-    }
-  }, [form?.measurements?.mixpanel, formId]);
+    analytics.capture('page_view', {
+      form_id: formId || undefined,
+    });
+
+    return () => {
+      if (analyticsRef.current === analytics) {
+        analyticsRef.current = null;
+      }
+      analytics.shutdown();
+    };
+  }, [form?.measurements, formId]);
 
   function updateProgressQuery(progress: {
     submissionId: string | null;
@@ -185,13 +190,17 @@ export function MainPage() {
 
   async function handleEffect(
     effect: FormEffect,
-    runtimeState: { data: Record<string, unknown>; activeSectionId: string },
+    runtimeState: {
+      data: Record<string, unknown>;
+      activeSectionId: string;
+      completedSectionId: string;
+    },
   ) {
-    if (form?.measurements?.mixpanel) {
-      mixpanel.track('section_completed', {
-        form_id: formId || undefined,
-      });
-    }
+    analyticsRef.current?.capture('section_completed', {
+      form_id: formId || undefined,
+      section_id: runtimeState.completedSectionId,
+      is_final: effect.type !== 'submit',
+    });
 
     switch (effect.type) {
       case 'submit': {

@@ -39,6 +39,9 @@ theme:
   primary: "#542EBC"
 measurements:
   mixpanel: "your-project-token"
+  posthog:
+    token: "your-project-token"
+    api_host: "https://eu.i.posthog.com"
 sections: []       # required
 completion: {}     # optional
 connections: []    # optional
@@ -56,7 +59,7 @@ connections: []    # optional
 | `end_date` | string (`YYYY-MM-DD`) | No | After this date the form is closed. |
 | `locale` | string | No | Default language code, for example `en`. |
 | `theme` | object | No | `primary` accent color as a hex string. |
-| `measurements` | object | No | `mixpanel` project token for analytics. |
+| `measurements` | object | No | Mixpanel and/or PostHog configuration for analytics. |
 
 `id` is assigned by the server. Do not set it in your YAML.
 
@@ -468,8 +471,29 @@ theme:
   primary: "#542EBC"       # accent color, any hex string
 
 measurements:
-  mixpanel: "your-token"   # optional Mixpanel project token
+  mixpanel: "your-token"   # optional shorthand
+  posthog:
+    token: "your-token"
+    api_host: "https://eu.i.posthog.com"
 ```
 
-`theme.primary` sets the accent color used across the form. `measurements.mixpanel`
-enables page-view and completion tracking when set.
+`theme.primary` sets the accent color used across the form. Configure either or
+both analytics providers under `measurements`. A provider can be a project token
+string, or an object with these keys:
+
+| Key | Required | Description |
+| --- | --- | --- |
+| `token` | Yes | The provider's public project token. |
+| `api_host` | No | Ingestion host for another cloud region, reverse proxy, or self-hosted instance. |
+
+The string shorthand keeps the existing Mixpanel EU host
+(`https://api-eu.mixpanel.com`) and uses PostHog's US host
+(`https://us.i.posthog.com`). Use the object form to choose a different host.
+
+Each configured provider receives the same explicit events; automatic pageview,
+click, session-recording, survey, and person-profile collection is disabled.
+
+| Event | Properties | When it is sent |
+| --- | --- | --- |
+| `page_view` | `form_id` | Once the form definition and its analytics configuration load. |
+| `section_completed` | `form_id`, `section_id`, `is_final` | After a section passes validation and the respondent continues, completes, or redirects. |
