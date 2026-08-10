@@ -10,8 +10,8 @@ import {
 
 import { cn } from '@/lib/utils';
 import type { TranslationKey } from '@/i18n/messages/en';
-import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
-import { useFormI18n } from '../../supporting/use-form-i18n';
+import type { DeclarativeFieldComponentProps } from '../../supporting/field-support.types';
+import { useI18n } from '@/i18n';
 
 const GeolocationMapPreview = lazy(() => import('./geolocation-map-preview'));
 
@@ -56,7 +56,7 @@ const ERROR_MESSAGE_KEYS: Record<ErrorCode, TranslationKey> = {
 export function GeolocationField({
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
+  const { t } = useI18n();
 
   const [state, setState] = useState<GeolocationState>(() => {
     if (isGeolocationValue(controllerField.value)) {

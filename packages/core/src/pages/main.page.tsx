@@ -1,25 +1,20 @@
-import { resolveLocalizedText } from '@declarativeforms/common';
-import type { FormEffect } from '@declarativeforms/runtime';
+import { resolveLocalizedText, type IDeclarativeForm } from '@declarativeforms/engine';
 import { useQuery } from '@tanstack/react-query';
 import mixpanel from 'mixpanel-browser';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import {
-  DeclarativeForm,
-  HeroSection,
-  type IDeclarativeForm,
-} from '@/components';
-import { useI18n } from '@/i18n';
+import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
+import { useI18n, useSyncLangParam } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 import { BasePage } from './base.page';
 
 const RESERVED_QUERY_KEYS = new Set([
-  'access_token',
   'embed',
   'lang',
   'submission_id',
   'step',
+  'branch',
 ]);
 
 export function MainPage() {
@@ -30,19 +25,17 @@ export function MainPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const slugPath = params['*'];
   const isSlugRoute = !!(params.owner && params.repository && slugPath);
+  const branch = searchParams.get('branch');
 
-  const accessToken = searchParams.get('access_token');
-  const embed = searchParams.get('embed') === 'true';
-  const submissionId = searchParams.get('submission_id');
-  const stepParam = searchParams.get('step');
-  const langParam = searchParams.get('lang');
+  // Frozen at mount: the form hook captures initialData once, so the submission
+  // we restore from must stay fixed even if the URL's submission_id changes as
+  // sections are submitted. Everything else reads submission_id straight from
+  // the query string, the source of truth.
+  const [resumeSubmissionId] = useState(() =>
+    searchParams.get('submission_id'),
+  );
 
-  const submissionIdRef = useRef(submissionId);
   const isCompletingRef = useRef(false);
-
-  useEffect(() => {
-    submissionIdRef.current = submissionId;
-  }, [submissionId]);
 
   const { data: form, error } = useQuery({
     queryKey: [
@@ -51,7 +44,7 @@ export function MainPage() {
       params.owner,
       params.repository,
       slugPath,
-      accessToken,
+      branch,
     ],
     queryFn: async () => {
       const url = params.id
@@ -64,20 +57,11 @@ export function MainPage() {
 
       const fetchUrl = new URL(url, window.location.origin);
 
-      if (accessToken) {
-        fetchUrl.searchParams.set('access_token', accessToken);
+      if (branch && url !== '/default.yaml') {
+        fetchUrl.searchParams.set('branch', branch);
       }
 
       const response = await fetch(fetchUrl.toString());
-
-      if (response.status === 403) {
-        const state = encodeURIComponent(
-          `${window.location.pathname}${window.location.search}`,
-        );
-        window.location.href = `${window.location.origin}/oauth/github?state=${state}`;
-
-        return;
-      }
 
       if (!response.ok) {
         throw new Error(`Form not found: ${response.status}`);
@@ -89,11 +73,24 @@ export function MainPage() {
 
   const formId = form?.id ?? params.id ?? '';
 
+  // Restore previously-submitted answers on refresh/resume. Partial submits are
+  // merged server-side, so this holds every prior section's data.
+  const { data: savedSubmission, isLoading: isRestoringSubmission } = useQuery({
+    queryKey: ['submission', formId, resumeSubmissionId],
+    queryFn: async () => {
+      const response = await fetch(
+        getBackendUrl(`forms/${formId}/submissions/${resumeSubmissionId}`),
+      );
+      if (!response.ok) return null;
+      return (await response.json()) as { data?: Record<string, unknown> };
+    },
+    enabled: !!formId && !!resumeSubmissionId,
+  });
+
   useEffect(() => {
     if (!isSlugRoute || !form?.id) return;
 
     const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete('access_token');
 
     const nextSearch = nextParams.toString();
     navigate(nextSearch ? `/${form.id}?${nextSearch}` : `/${form.id}`, {
@@ -101,25 +98,17 @@ export function MainPage() {
     });
   }, [isSlugRoute, form?.id, navigate, searchParams]);
 
-  const initialData: FieldValues = {};
+  const urlPrefill: FieldValues = {};
 
   for (const [key, value] of searchParams.entries()) {
     if (RESERVED_QUERY_KEYS.has(key)) {
       continue;
     }
 
-    initialData[key] = value;
+    urlPrefill[key] = value;
   }
 
-  useEffect(() => {
-    if (!form?.locale || langParam === form.locale) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set('lang', form.locale);
-    setSearchParams(nextParams, { replace: true });
-  }, [form?.locale, langParam, searchParams, setSearchParams]);
+  useSyncLangParam(form?.locale);
 
   useEffect(() => {
     if (form?.measurements?.mixpanel) {
@@ -168,14 +157,18 @@ export function MainPage() {
       return;
     }
 
-    const url = new URL(getBackendUrl(`forms/${submitFormId}/submissions`));
+    const url = new URL(
+      getBackendUrl(`forms/${submitFormId}/submissions`),
+      window.location.origin,
+    );
 
     if (isPartial) {
       url.searchParams.set('partial', 'true');
     }
 
-    if (submissionIdRef.current) {
-      url.searchParams.set('id', submissionIdRef.current);
+    const currentSubmissionId = searchParams.get('submission_id');
+    if (currentSubmissionId) {
+      url.searchParams.set('id', currentSubmissionId);
     }
 
     const response = await fetch(url.toString(), {
@@ -207,7 +200,7 @@ export function MainPage() {
           effect.isPartial,
         );
         updateProgressQuery({
-          submissionId: submissionId ?? submissionIdRef.current,
+          submissionId: submissionId ?? searchParams.get('submission_id'),
           step: runtimeState.activeSectionId,
         });
         return;
@@ -222,7 +215,8 @@ export function MainPage() {
 
         try {
           const submissionId = await submitToBackend(runtimeState.data, false);
-          const finalSubmissionId = submissionId ?? submissionIdRef.current;
+          const finalSubmissionId =
+            submissionId ?? searchParams.get('submission_id');
 
           updateProgressQuery({
             submissionId: finalSubmissionId,
@@ -253,7 +247,7 @@ export function MainPage() {
           const submissionId = await submitToBackend(runtimeState.data, false);
 
           updateProgressQuery({
-            submissionId: submissionId ?? submissionIdRef.current,
+            submissionId: submissionId ?? searchParams.get('submission_id'),
             step: 'done',
           });
           window.location.href = effect.url;
@@ -279,6 +273,12 @@ export function MainPage() {
     return null;
   }
 
+  // Seed the form only once the saved submission has loaded — the hook captures
+  // initialData at mount, so mounting early would strip the restored answers.
+  if (resumeSubmissionId && isRestoringSubmission) {
+    return null;
+  }
+
   if (form.start_date && new Date(form.start_date) > new Date()) {
     return (
       <HeroSection
@@ -299,6 +299,12 @@ export function MainPage() {
     );
   }
 
+  const initialData: FieldValues = {
+    ...urlPrefill,
+    ...(savedSubmission?.data ?? {}),
+  };
+
+  const stepParam = searchParams.get('step');
   const initialSectionId =
     stepParam &&
     (form.sections ?? []).some((section) => section.id === stepParam)
@@ -316,7 +322,7 @@ export function MainPage() {
       title={resolvedTitle}
       description={resolvedDescription}
       theme={form.theme}
-      embed={embed}
+      embed={searchParams.get('embed') === 'true'}
     >
       <DeclarativeForm
         form={form}

@@ -1,4 +1,4 @@
-import type { IDeclarativeForm } from '@declarativeforms/types';
+import type { IDeclarativeForm } from '@declarativeforms/engine';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { getContainer } from '../core';
 
@@ -7,7 +7,7 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
     request: FastifyRequest<{
       Body: Record<string, string>;
       Params: { owner: string; repository: string; '*': string };
-      Querystring: { access_token?: string };
+      Querystring: { branch?: string };
     }>,
     reply: FastifyReply,
   ) => {
@@ -25,11 +25,11 @@ export const FORMS_SLUG_GET: RouteOptions<any, any, any, any> = {
 
     const form: IDeclarativeForm | null = await formService.findBySlug(
       slug,
-      request.query.access_token,
+      request.query.branch || undefined,
     );
 
     if (!form) {
-      reply.status(request.query.access_token ? 404 : 403).send();
+      reply.status(404).send();
 
       return;
     }

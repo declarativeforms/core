@@ -1,15 +1,15 @@
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
+import type { IRenderableRatingField } from '@declarativeforms/engine';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { HtmlText } from '../supporting/html-text';
-import { buildFieldValidation } from '../supporting/validation';
 import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 export function RatingField({
   field,
   controllerField,
-}: DeclarativeFieldComponentProps) {
-  const { ratingRange } = buildFieldValidation(field);
-  const { min, max } = ratingRange ?? { min: 1, max: 5 };
+}: DeclarativeFieldComponentProps<IRenderableRatingField>) {
+  const min = field.min ?? 1;
+  const max = field.max ?? 5;
   const values = Array.from({ length: max - min + 1 }, (_, index) =>
     String(min + index),
   );
@@ -18,8 +18,8 @@ export function RatingField({
       ? ''
       : String(controllerField.value);
 
-  const minLabel = 'min_label' in field ? field.min_label : undefined;
-  const maxLabel = 'max_label' in field ? field.max_label : undefined;
+  const minLabel = field.minLabel;
+  const maxLabel = field.maxLabel;
   const hasLabels = !!(minLabel || maxLabel);
   const labelsId = `rating-labels-${field.id}`;
 

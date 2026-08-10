@@ -12,7 +12,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
   ) => {
     const { submissionService } = await getContainer();
 
-    const submission = await submissionService.createOrUpdate(
+    const result = await submissionService.createOrUpdate(
       request.params.id,
       request.body,
       request.query.partial === 'true',
@@ -23,13 +23,19 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
       request.query.id,
     );
 
-    if (!submission) {
+    if (!result) {
       reply.status(422).send();
 
       return;
     }
 
-    reply.status(200).send(submission);
+    if (result.type === 'invalid') {
+      reply.status(422).send({ errors: result.errors });
+
+      return;
+    }
+
+    reply.status(200).send(result.submission);
   },
   method: 'POST',
   url: '/api/v1/forms/:id/submissions',

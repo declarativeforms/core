@@ -1,5 +1,5 @@
 {
-  "references": [{ "path": "../types" }, { "path": "../common" }, { "path": "../runtime" }],
+  "references": [{ "path": "../engine" }],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
@@ -27,9 +27,7 @@
 
     "baseUrl": ".",
     "paths": {
-      "@declarativeforms/common": ["../common/src/index.ts"],
-      "@declarativeforms/runtime": ["../runtime/src/index.ts"],
-      "@declarativeforms/types": ["../types/src/index.ts"],
+      "@declarativeforms/engine": ["../engine/src/index.ts"],
       "@/*": ["./src/*"]
     },
     "ignoreDeprecations": "6.0"

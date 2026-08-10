@@ -19,33 +19,48 @@ import {
   formatStructuredAddress,
   getPlaceDetails,
   getPlacePredictions,
-  type PlacePrediction,
 } from '@/lib/google-places';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { useFormI18n } from '../supporting/use-form-i18n';
-import { useWaitForGlobal } from '../supporting/use-wait-for-global';
+import type { PlacePrediction } from '@/lib/google-places.types';
+import type { IRenderableAddressField } from '@declarativeforms/engine';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import { useI18n } from '@/i18n';
+import { useWaitForGlobal } from '@/hooks/use-wait-for-global';
+
+const AUTOCOMPLETE_TYPE = {
+  address: 'address',
+  address_locality: 'locality',
+  address_region: 'region',
+  address_country: 'country',
+} as const;
+
+type AddressSearch = {
+  open: boolean;
+  input: string;
+  suggestions: PlacePrediction[];
+  loading: boolean;
+};
+
+// The visible input holds the user's search query. Seed it from the committed
+// field value so a restored or prefilled address shows on mount. The value is a
+// plain string for string output and a structured object otherwise.
+function toAddressDisplay(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value && typeof value === 'object' && 'formatted_address' in value) {
+    const formatted = (value as { formatted_address?: unknown })
+      .formatted_address;
+    return typeof formatted === 'string' ? formatted : '';
+  }
+  return '';
+}
 
 export function AddressField({
   field,
   controllerField,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
-  const autocompleteType = (() => {
-    switch (field.type) {
-      case 'address_locality':
-        return 'locality';
-      case 'address_region':
-        return 'region';
-      case 'address_country':
-        return 'country';
-      case 'address':
-      default:
-        return 'address';
-    }
-  })();
-
-  const outputFormat =
-    'outputFormat' in field ? field.outputFormat || 'string' : 'string';
+}: DeclarativeFieldComponentProps<IRenderableAddressField>) {
+  const { t } = useI18n();
+  const autocompleteType = AUTOCOMPLETE_TYPE[field.type];
 
   const checkGooglePlaces = useCallback(
     () => typeof window !== 'undefined' && !!window.google?.maps?.places,
@@ -53,13 +68,16 @@ export function AddressField({
   );
   const isApiLoaded = useWaitForGlobal(checkGooglePlaces, { timeout: 10_000 });
 
-  const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState<AddressSearch>(() => ({
+    open: false,
+    input: toAddressDisplay(controllerField.value),
+    suggestions: [],
+    loading: false,
+  }));
 
-  const debouncedInput = useDebounce(inputValue, 300);
-  const visibleSuggestions = debouncedInput && isApiLoaded ? suggestions : [];
+  const debouncedInput = useDebounce(search.input, 300);
+  const visibleSuggestions =
+    debouncedInput && isApiLoaded ? search.suggestions : [];
 
   useEffect(() => {
     if (!debouncedInput || !isApiLoaded) {
@@ -72,35 +90,18 @@ export function AddressField({
         ? ['administrative_area_level_1']
         : [autocompleteType];
 
-    void Promise.resolve().then(() => {
-      if (isCancelled) {
-        return;
-      }
-
-      setLoading(true);
-
-      getPlacePredictions(debouncedInput, types)
-        .then((predictions) => {
-          if (isCancelled) {
-            return;
-          }
-
-          setSuggestions(predictions);
-        })
-        .catch((err) => {
-          if (isCancelled) {
-            return;
-          }
-
-          console.error('Error fetching place predictions:', err);
-          setSuggestions([]);
-        })
-        .finally(() => {
-          if (!isCancelled) {
-            setLoading(false);
-          }
-        });
-    });
+    setSearch((s) => ({ ...s, loading: true }));
+    getPlacePredictions(debouncedInput, types)
+      .then((predictions) => {
+        if (!isCancelled) setSearch((s) => ({ ...s, suggestions: predictions }));
+      })
+      .catch((err) => {
+        console.error('Error fetching place predictions:', err);
+        if (!isCancelled) setSearch((s) => ({ ...s, suggestions: [] }));
+      })
+      .finally(() => {
+        if (!isCancelled) setSearch((s) => ({ ...s, loading: false }));
+      });
 
     return () => {
       isCancelled = true;
@@ -110,14 +111,12 @@ export function AddressField({
   const handleSelect = async (placeId: string) => {
     try {
       const place = await getPlaceDetails(placeId);
-      const selectedAddress =
-        outputFormat === 'structured'
+      controllerField.onChange(
+        field.outputFormat === 'structured'
           ? formatStructuredAddress(place)
-          : formatAddressString(place);
-
-      controllerField.onChange(selectedAddress);
-      setInputValue(place.formatted_address || '');
-      setOpen(false);
+          : formatAddressString(place),
+      );
+      setSearch((s) => ({ ...s, input: place.formatted_address || '', open: false }));
     } catch (err) {
       console.error('Error fetching place details:', err);
     }
@@ -127,6 +126,8 @@ export function AddressField({
     return (
       <Input
         {...controllerField}
+        value={toAddressDisplay(controllerField.value)}
+        onChange={(event) => controllerField.onChange(event.target.value)}
         className="text-sm/4"
         placeholder={field.placeholder || t('address.placeholder')}
         required={field.required}
@@ -135,38 +136,38 @@ export function AddressField({
     );
   }
 
+  const isOpen = search.open && visibleSuggestions.length > 0;
+
   return (
-    <Popover
-      open={open && visibleSuggestions.length > 0}
-      onOpenChange={setOpen}
-    >
+    <Popover open={isOpen} onOpenChange={(open) => setSearch((s) => ({ ...s, open }))}>
       <PopoverTrigger asChild>
-        <div className="relative w-full" aria-busy={loading}>
+        <div className="relative w-full" aria-busy={search.loading}>
           <Input
-            value={inputValue}
+            value={search.input}
             className="text-sm/4"
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              if (e.target.value.trim()) {
-                setOpen(true);
-              }
-            }}
+            onChange={(e) =>
+              setSearch((s) => ({
+                ...s,
+                input: e.target.value,
+                open: e.target.value.trim() ? true : s.open,
+              }))
+            }
             onBlur={controllerField.onBlur}
             placeholder={field.placeholder || t('address.placeholder')}
             required={field.required}
             aria-required={field.required}
             role="combobox"
             aria-autocomplete="list"
-            aria-expanded={open && visibleSuggestions.length > 0}
+            aria-expanded={isOpen}
             aria-controls={`address-suggestions-${field.id}`}
           />
-          {loading && (
+          {search.loading && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           )}
           <span className="sr-only" aria-live="polite">
-            {loading ? t('address.loading_suggestions') : ''}
+            {search.loading ? t('address.loading_suggestions') : ''}
           </span>
         </div>
       </PopoverTrigger>

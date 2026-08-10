@@ -2,27 +2,13 @@ import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
 import fastify from 'fastify';
 import * as qs from 'qs';
-import { requireStudioAuth } from './middleware';
 import {
-  AUTH_DEMO_POST,
-  AUTH_GITHUB_POST,
-  AUTH_MAGIC_LINK_SEND_POST,
-  AUTH_MAGIC_LINK_VERIFY_POST,
-  AUTH_ME_GET,
-  EMAIL_CHALLENGES_SEND_POST,
-  EMAIL_CHALLENGES_VERIFY_POST,
+  FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
-  OAUTH_GITHUB_ACCESS_TOKEN_POST,
-  STUDIO_FORMS_GET,
-  STUDIO_FORMS_ID_DELETE,
-  STUDIO_FORMS_ID_GET,
-  STUDIO_FORMS_ID_PUT,
-  STUDIO_FORMS_ID_SUBMISSIONS_GET,
-  STUDIO_FORMS_POST,
 } from './routes';
 
 export async function startServer() {
@@ -61,43 +47,12 @@ export async function startServer() {
     },
   );
 
-  server.route(AUTH_DEMO_POST);
-  server.route(AUTH_GITHUB_POST);
-  server.route(AUTH_MAGIC_LINK_SEND_POST);
-  server.route(AUTH_MAGIC_LINK_VERIFY_POST);
-  server.route(AUTH_ME_GET);
-  server.route(EMAIL_CHALLENGES_SEND_POST);
-  server.route(EMAIL_CHALLENGES_VERIFY_POST);
+  server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
-  server.route(OAUTH_GITHUB_ACCESS_TOKEN_POST);
-  server.route({
-    ...STUDIO_FORMS_GET,
-    preHandler: requireStudioAuth,
-  });
-  server.route({
-    ...STUDIO_FORMS_POST,
-    preHandler: requireStudioAuth,
-  });
-  server.route({
-    ...STUDIO_FORMS_ID_GET,
-    preHandler: requireStudioAuth,
-  });
-  server.route({
-    ...STUDIO_FORMS_ID_PUT,
-    preHandler: requireStudioAuth,
-  });
-  server.route({
-    ...STUDIO_FORMS_ID_DELETE,
-    preHandler: requireStudioAuth,
-  });
-  server.route({
-    ...STUDIO_FORMS_ID_SUBMISSIONS_GET,
-    preHandler: requireStudioAuth,
-  });
 
   server.route({
     handler: async (_request, reply) => {

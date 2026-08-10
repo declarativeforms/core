@@ -3,16 +3,14 @@ WORKDIR /usr/src/app
 
 # Copy workspace config + relevant packages
 COPY package.json package-lock.json ./
-COPY packages/types/ packages/types/
-COPY packages/common/ packages/common/
+COPY packages/engine/ packages/engine/
 COPY packages/api/ packages/api/
 
-# Install dependencies for API + types + common workspaces
-RUN npm install --workspace=@declarativeforms/types --workspace=@declarativeforms/common --workspace=@declarativeforms/api
+# Install dependencies for API + engine workspaces
+RUN npm install --workspace=@declarativeforms/engine --workspace=@declarativeforms/api
 
-# Build types, then common, then API
-RUN npm run build --workspace=@declarativeforms/types
-RUN npm run build --workspace=@declarativeforms/common
+# Build engine, then API
+RUN npm run build --workspace=@declarativeforms/engine
 RUN npm run build --workspace=@declarativeforms/api
 
 # Run tests

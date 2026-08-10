@@ -1,10 +1,10 @@
-import type { FormEffect } from '@declarativeforms/runtime';
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
 
-import type { IDeclarativeForm } from '../supporting/types';
+import type { IDeclarativeForm } from '@declarativeforms/engine';
 import { DeclarativeFormSection } from './section.component';
-import { useFormRuntime } from './use-runtime';
+import { useDeclarativeForm } from './use-declarative-form';
+import type { FormEffect } from './use-declarative-form.types';
 
 export function DeclarativeForm(props: {
   form: IDeclarativeForm;
@@ -18,7 +18,7 @@ export function DeclarativeForm(props: {
 }) {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
-  const { state, dispatch } = useFormRuntime(
+  const declarativeForm = useDeclarativeForm(
     props.form,
     props.locale,
     props.initialData,
@@ -32,36 +32,25 @@ export function DeclarativeForm(props: {
     }
     window.scrollTo(0, 0);
     sectionRef.current?.focus();
-  }, [state.activeSectionId]);
+  }, [declarativeForm.activeSectionId]);
 
-  const activeSection = state.compiled.sections.find(
-    (section) => section.id === state.activeSectionId,
-  );
-
-  if (!activeSection) {
+  if (!declarativeForm.section) {
     return null;
   }
 
   return (
     <DeclarativeFormSection
       ref={sectionRef}
-      key={state.activeSectionId}
-      section={activeSection}
-      data={state.data}
-      sectionHistory={state.sectionHistory}
-      dispatch={dispatch}
+      key={declarativeForm.activeSectionId}
+      section={declarativeForm.section}
+      data={declarativeForm.data}
+      onBack={declarativeForm.goBack}
       onSubmit={async (sectionData: FieldValues) => {
-        const effectResult = dispatch({
-          type: 'submit_section',
-          data: sectionData,
+        const result = declarativeForm.submitSection(sectionData);
+        await props.onEffect(result, {
+          data: result.data,
+          activeSectionId: result.activeSectionId,
         });
-
-        if (effectResult.type !== 'none') {
-          await props.onEffect(effectResult, {
-            data: { ...state.data, ...sectionData },
-            activeSectionId: effectResult.activeSectionId,
-          });
-        }
       }}
     />
   );

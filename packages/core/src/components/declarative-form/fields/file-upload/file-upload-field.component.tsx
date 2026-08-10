@@ -1,9 +1,9 @@
 import { Upload } from 'lucide-react';
 import { useState, useRef } from 'react';
 
-import type { DeclarativeFieldComponentProps } from '../../supporting/field-support';
-import { buildFieldValidation } from '../../supporting/validation';
-import { useFormI18n } from '../../supporting/use-form-i18n';
+import type { IRenderableFileUploadField } from '@declarativeforms/engine';
+import type { DeclarativeFieldComponentProps } from '../../supporting/field-support.types';
+import { useI18n } from '@/i18n';
 import { uploadFile } from '@/lib/file-upload';
 import { cn } from '@/lib/utils';
 import { FilePreview, type FileMetadata } from './file-preview.component';
@@ -29,30 +29,53 @@ function acceptsMimeType(file: File, acceptedMimeTypes: string[]) {
   });
 }
 
+function extractUrls(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (entry): entry is string => typeof entry === 'string' && entry.length > 0,
+    );
+  }
+  return typeof value === 'string' && value ? [value] : [];
+}
+
+// Rebuild a list entry for an already-uploaded file (e.g. a restored
+// submission), where only the stored URL is known.
+function restoredFile(url: string): FileMetadata {
+  const name = decodeURIComponent(url.split('/').pop() || url);
+  const extension = name.split('.').pop()?.toLowerCase() ?? '';
+  const type =
+    extension === 'png'
+      ? 'image/png'
+      : extension === 'jpg' || extension === 'jpeg'
+        ? 'image/jpeg'
+        : extension === 'gif'
+          ? 'image/gif'
+          : extension === 'webp'
+            ? 'image/webp'
+            : extension === 'pdf'
+              ? 'application/pdf'
+              : '';
+  return { url, name, type, status: 'uploaded' };
+}
+
 export function FileUploadField({
   field,
   controllerField,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
+}: DeclarativeFieldComponentProps<IRenderableFileUploadField>) {
+  const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
-  const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>([]);
+  const [fileMetadata, setFileMetadata] = useState<FileMetadata[]>(() =>
+    extractUrls(controllerField.value).map(restoredFile),
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nextUploadIdRef = useRef(0);
-  const acceptedMimeTypes =
-    field.type === 'file_upload' ? (field.accepted_mime_types ?? []) : [];
+  const acceptedMimeTypes = field.acceptedMimeTypes;
   const acceptedMimeTypesLabel = acceptedMimeTypes.join(', ');
 
-  const { minBound, maxBound } = buildFieldValidation(field);
-  const maxFiles = maxBound ?? 1;
+  const minFiles = field.min ?? 0;
+  const maxFiles = field.max ?? 1;
 
-  const currentUrls: string[] = Array.isArray(controllerField.value)
-    ? controllerField.value.filter(
-        (value): value is string =>
-          typeof value === 'string' && value.length > 0,
-      )
-    : typeof controllerField.value === 'string' && controllerField.value
-      ? [controllerField.value]
-      : [];
+  const currentUrls = extractUrls(controllerField.value);
 
   const validateFile = (): string | null => {
     if (fileMetadata.length >= maxFiles) {
@@ -131,7 +154,7 @@ export function FileUploadField({
           ),
         );
 
-        const newUrls = maxFiles === 1 ? url : [...currentUrls, url];
+        const newUrls = field.storesScalar ? url : [...currentUrls, url];
         controllerField.onChange(newUrls);
       } catch (error) {
         const errorMessage =
@@ -170,8 +193,9 @@ export function FileUploadField({
   const handleRemove = (url: string) => {
     setFileMetadata((prev) => prev.filter((m) => m.url !== url));
 
-    const newUrls =
-      maxFiles === 1 ? null : currentUrls.filter((u) => u !== url);
+    const newUrls = field.storesScalar
+      ? null
+      : currentUrls.filter((u) => u !== url);
     controllerField.onChange(newUrls);
   };
 
@@ -191,7 +215,6 @@ export function FileUploadField({
 
   const getFileRequirements = () => {
     const requirements: string[] = [];
-    const minFiles = minBound ?? 0;
 
     if (minFiles > 0 && maxFiles > minFiles) {
       requirements.push(

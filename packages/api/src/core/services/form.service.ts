@@ -1,27 +1,18 @@
-import type { IDeclarativeForm } from '@declarativeforms/types';
-import yaml from 'js-yaml';
+import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
 import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
-import type {
-  GitHubFileRepository,
-  StudioFormRepository,
-} from '../repositories';
+import type { GitHubFileRepository } from '../repositories';
 
 const GITHUB_FORM_PREFIX = 'a';
-const STUDIO_FORM_PREFIX = 'b';
+const DEFAULT_BRANCH = 'main';
 
 export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
-    private studioFormRepository: StudioFormRepository,
     private gitHubGateway: GitHubGateway,
   ) {}
 
   public async findById(id: string): Promise<IDeclarativeForm | null> {
-    if (id.startsWith(STUDIO_FORM_PREFIX)) {
-      return this.studioFormRepository.find(id);
-    }
-
     if (!id.startsWith(GITHUB_FORM_PREFIX)) {
       return null;
     }
@@ -32,28 +23,11 @@ export class FormService {
       return null;
     }
 
-    if (gitHubFile.access_token) {
-      const text = await this.gitHubGateway.retrieveYamlFile(
-        gitHubFile.owner,
-        gitHubFile.repository,
-        gitHubFile.file,
-        gitHubFile.access_token,
-      );
-
-      if (!text) {
-        return null;
-      }
-
-      return {
-        ...(yaml.load(text) as IDeclarativeForm),
-        id,
-      };
-    }
-
     const text = await this.gitHubGateway.retrieveYamlFile(
       gitHubFile.owner,
       gitHubFile.repository,
       gitHubFile.file,
+      gitHubFile.branch || DEFAULT_BRANCH,
     );
 
     if (!text) {
@@ -61,14 +35,14 @@ export class FormService {
     }
 
     return {
-      ...(yaml.load(text) as IDeclarativeForm),
+      ...parse(text),
       id,
     };
   }
 
   public async findBySlug(
     slug: string,
-    accessToken?: string,
+    branch: string = DEFAULT_BRANCH,
   ): Promise<IDeclarativeForm | null> {
     const parts = slug.split('/');
 
@@ -80,35 +54,29 @@ export class FormService {
     const repository = parts[2];
     const file = parts.slice(3).join('/');
 
-    let text = await this.gitHubGateway.retrieveYamlFile(
+    const text = await this.gitHubGateway.retrieveYamlFile(
       owner,
       repository,
       file,
+      branch,
     );
-
-    if (!text && accessToken) {
-      text = await this.gitHubGateway.retrieveYamlFile(
-        owner,
-        repository,
-        file,
-        accessToken,
-      );
-    }
 
     if (!text) {
       return null;
     }
 
-    const form = yaml.load(text) as IDeclarativeForm;
+    const form = parse(text);
 
-    const id = `${GITHUB_FORM_PREFIX}${md5(slug).substring(0, 8)}`;
+    // The branch is part of the form's identity, so the same file on two
+    // branches resolves to two stable short ids.
+    const id = `${GITHUB_FORM_PREFIX}${md5(`${slug}@${branch}`).substring(0, 8)}`;
 
     await this.gitHubFileRepository.upsert({
+      branch,
       file,
       id,
       owner,
       repository,
-      ...(accessToken ? { access_token: accessToken } : {}),
     });
 
     return {

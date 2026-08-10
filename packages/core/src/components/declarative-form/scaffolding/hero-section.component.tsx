@@ -4,7 +4,7 @@ import { Button } from '@/components';
 import { useI18n } from '@/i18n';
 import { buildThemeStyle } from '@/lib/theme';
 import { HtmlText } from '../supporting/html-text';
-import { stripHtml } from '@declarativeforms/common';
+import { stripHtml } from '@/lib/strip-html';
 
 export function HeroSection(props: {
   title: string;

@@ -8,17 +8,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@declarativeforms/common": path.resolve(
+      "@declarativeforms/engine": path.resolve(
         __dirname,
-        "../common/src/index.ts",
-      ),
-      "@declarativeforms/runtime": path.resolve(
-        __dirname,
-        "../runtime/src/index.ts",
-      ),
-      "@declarativeforms/types": path.resolve(
-        __dirname,
-        "../types/src/index.ts",
+        "../engine/src/index.ts",
       ),
       "@": path.resolve(__dirname, "./src"),
     },

@@ -1,0 +1,300 @@
+# Comprehensive test form. Exercises every field type, validator, conditional
+# navigation, visibility expression, cross-field expression, templating,
+# localization, a conditional completion screen, and a gated webhook connection.
+version: 1
+
+title:
+  en: "Kitchen sink form"
+  es: "Formulario completo"
+
+description:
+  en: "A comprehensive form that exercises every feature of the platform."
+  es: "Un formulario que ejercita todas las funciones de la plataforma."
+
+theme:
+  primary: "#542EBC"
+
+start_date: "2020-01-01"
+end_date: "2099-12-31"
+
+sections:
+  - id: basics
+    title: "About you"
+    fields:
+      - id: utm_source
+        type: hidden
+
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+          - type: min_length
+            value: 2
+            message: "Name is too short."
+          - type: max_length
+            value: 60
+            message: "Name is too long."
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: confirm_email
+        type: email
+        label: "Confirm email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+          - type: expression
+            expression: "data.confirm_email === data.email"
+            message: "Email addresses do not match."
+
+      - id: website
+        type: url
+        label: "Website or portfolio"
+        placeholder: "https://example.com"
+
+      - id: phone
+        type: mobile_number
+        label: "Phone number"
+        placeholder: "+1 555 123 4567"
+        validators:
+          - type: pattern
+            regex: "^\\+?[0-9 ()-]{7,20}$"
+            message: "Enter a valid phone number."
+
+      - id: age
+        type: number
+        label: "Age"
+        placeholder: "18"
+        validators:
+          - type: min
+            value: 18
+            message: "You must be at least 18."
+          - type: max
+            value: 120
+            message: "Enter a realistic age."
+
+      - id: respondent_type
+        type: single_select
+        label: "I am responding as"
+        validators:
+          - required
+        options:
+          - "Individual"
+          - "Business"
+          - "Nonprofit"
+
+    next:
+      - when: "data.respondent_type === 'Business'"
+        go: "organization"
+      - else: "preferences"
+
+  - id: organization
+    title: "Organization details"
+    fields:
+      - id: org_name
+        type: short_text
+        label: "Organization name"
+        validators:
+          - required
+
+      - id: org_size
+        type: dropdown
+        label: "Organization size"
+        searchable: true
+        options:
+          - label: "1 to 10"
+            value: "1-10"
+          - label: "11 to 50"
+            value: "11-50"
+          - label: "51 to 200"
+            value: "51-200"
+          - label: "200+"
+            value: "200+"
+
+      - id: enterprise_features
+        type: single_select
+        label: "Do you need enterprise features?"
+        # Only shown for large organizations.
+        visible_when: "data.org_size === '200+'"
+        options:
+          - "Yes"
+          - "No"
+
+      - id: hq_address
+        type: address
+        label: "Headquarters address"
+        placeholder: "Start typing your address..."
+        outputFormat: structured
+
+      - id: founded
+        type: date_month
+        label: "Founded (month and year)"
+
+    next: "preferences"
+
+  - id: preferences
+    title: "Preferences for {{data.full_name}}"
+    fields:
+      - id: interests
+        type: multiple_select
+        label: "What are you interested in?"
+        allow_other: true
+        validators:
+          - type: min
+            value: 1
+            message: "Pick at least one."
+          - type: max
+            value: 3
+            message: "Pick at most three."
+        options:
+          - "Design"
+          - "Engineering"
+          - "Marketing"
+          - "Sales"
+          - "Support"
+
+      - id: experience
+        type: rating
+        label: "How experienced are you?"
+        min_label: "Novice"
+        max_label: "Expert"
+        validators:
+          - type: min
+            value: 1
+          - type: max
+            value: 5
+
+      - id: referral
+        type: single_select
+        label: "How did you hear about us?"
+        validators:
+          - required
+        options:
+          - "Search"
+          - "A friend"
+          - "Social media"
+          - "Other"
+
+      - id: referral_detail
+        type: short_text
+        label: "Please tell us more"
+        # Only shown when "Other" is selected above.
+        visible_when: "data.referral === 'Other'"
+
+      - id: preferred_date
+        type: date
+        label: "Preferred start date"
+
+      - id: preferred_time
+        type: time
+        label: "Preferred time of day"
+
+      - id: budget
+        type: number
+        label: "Monthly budget (EUR)"
+        validators:
+          - type: min
+            value: 0
+
+      - id: newsletter
+        type: single_select
+        label: "Subscribe to our newsletter?"
+        validators:
+          - required
+        options:
+          - "Yes"
+          - "No"
+
+      - id: newsletter_frequency
+        type: dropdown
+        label: "How often?"
+        # Only shown when the newsletter is enabled.
+        visible_when: "data.newsletter === 'Yes'"
+        options:
+          - "Daily"
+          - "Weekly"
+          - "Monthly"
+
+    next: "media"
+
+  - id: media
+    title: "Media and location"
+    fields:
+      - id: bio
+        type: long_text
+        label: "Short bio"
+        placeholder: "Tell us about yourself"
+        validators:
+          - type: max_length
+            value: 500
+            message: "Keep it under 500 characters."
+
+      - id: avatar
+        type: camera
+        label: "Take a profile photo"
+        facing_mode: front
+
+      - id: resume
+        type: file_upload
+        label: "Upload a document (PDF or image)"
+        accepted_mime_types:
+          - "application/pdf"
+          - "image/png"
+          - "image/jpeg"
+        validators:
+          - type: max
+            value: 2
+            message: "Upload at most two files."
+
+      - id: signature
+        type: signature
+        label: "Sign here"
+
+      - id: location
+        type: geolocation
+        label: "Share your location"
+
+      - id: city
+        type: address_locality
+        label: "City"
+
+      - id: region
+        type: address_region
+        label: "State or region"
+
+      - id: country
+        type: address_country
+        label: "Country"
+
+    next:
+      # Businesses are routed to an external page; everyone else completes here.
+      - when: "data.respondent_type === 'Business'"
+        go: "https://docs.declarativeforms.com"
+      - else: "done"
+
+completion:
+  - when: "data.respondent_type === 'Business'"
+    title: "Thanks, {{data.org_name}}"
+    message: "We received your submission, {{data.full_name}}, and will reach out about your organization."
+  - title:
+      en: "Thanks, {{data.full_name}}!"
+      es: "¡Gracias, {{data.full_name}}!"
+    message:
+      en: "We received your submission and will reply to {{data.email}}."
+      es: "Recibimos tu envío y responderemos a {{data.email}}."
+    button:
+      label: "Read the docs"
+      url: "https://docs.declarativeforms.com"
+
+connections:
+  - type: webhook
+    url: "https://httpbin.org/post"
+    # Only fires when the respondent opted into the newsletter.
+    when: "data.newsletter === 'Yes'"

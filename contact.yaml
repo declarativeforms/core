@@ -1,0 +1,47 @@
+version: 1
+title: "Contact us"
+description: "Send us a message and we will get back to you."
+
+sections:
+  - id: contact
+    title: "Your details"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Full name"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+
+      - id: topic
+        type: single_select
+        label: "What is this about?"
+        options:
+          - "General enquiry"
+          - "Support"
+          - "Partnership"
+        validators:
+          - required
+
+      - id: message
+        type: long_text
+        label: "Message"
+        placeholder: "How can we help?"
+        validators:
+          - required
+          - type: min_length
+            value: 20
+            message: "Please write at least 20 characters."
+
+    next: done
+
+completion:
+  title: "Thanks, {{data.full_name}}"
+  message: "We received your message and will reply to {{data.email}}."

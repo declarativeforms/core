@@ -1,0 +1,57 @@
+import type { ILocalizedText } from '../types';
+
+function normalizeLocaleKey(locale: string): string {
+  return locale.trim().toLowerCase().replace(/_/g, '-');
+}
+
+function getObjectLocalizedValue(
+  input: Record<string, string>,
+  locale: string,
+): string | undefined {
+  const normalizedLocale = normalizeLocaleKey(locale);
+
+  const normalizedEntries = Object.entries(input).reduce(
+    (acc, [key, value]) => {
+      acc[normalizeLocaleKey(key)] = value;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
+  const baseLocale = normalizedLocale.split('-')[0];
+  const candidates = [normalizedLocale, baseLocale, 'en'];
+
+  for (const candidate of candidates) {
+    const localizedValue = normalizedEntries[candidate];
+    if (typeof localizedValue === 'string' && localizedValue.length > 0) {
+      return localizedValue;
+    }
+  }
+
+  for (const localizedValue of Object.values(normalizedEntries)) {
+    if (typeof localizedValue === 'string' && localizedValue.length > 0) {
+      return localizedValue;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Resolve a piece of localized text to a plain string for the given locale.
+ *
+ * Order: exact locale (case/underscore-normalized), then the base language,
+ * then `en`, then the first non-empty value; falling back to `''`.
+ */
+export function resolveLocalizedText(
+  input: ILocalizedText | undefined,
+  locale = 'en',
+): string {
+  if (typeof input === 'string') {
+    return input;
+  }
+  if (!input) {
+    return '';
+  }
+  return getObjectLocalizedValue(input, locale) ?? '';
+}

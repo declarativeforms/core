@@ -1,4 +1,4 @@
-import type { IDeclarativeForm, ISubmission } from '@declarativeforms/types';
+import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 
 export interface IConnectionStrategy {
   readonly type: string;
@@ -7,14 +7,6 @@ export interface IConnectionStrategy {
     submission: ISubmission,
     form: IDeclarativeForm,
   ): Promise<void>;
-}
-
-export interface IValidationStrategy {
-  validate(
-    form: IDeclarativeForm,
-    data: Record<string, unknown>,
-    metadata?: { ipAddress?: string; isPartial?: boolean },
-  ): Promise<string | null>;
 }
 
 export { EmailConnectionStrategy } from './email-connection.strategy';

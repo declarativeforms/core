@@ -11,8 +11,11 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Google Places API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEmicnGnXuIdTN6Bekukh29ifa8obqYDI&libraries=places" async defer></script>
+    <!--
+      The Google Maps SDK (address autocomplete) is loaded at runtime from
+      src/lib/google-maps-loader.ts, and only when VITE_GOOGLE_MAPS_API_KEY is
+      set. See .env.example.
+    -->
   </head>
   <body class="bg-neutral-50 min-h-lvh">
     <div id="root"></div>

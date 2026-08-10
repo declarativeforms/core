@@ -1,9 +1,9 @@
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { useFormI18n } from '../supporting/use-form-i18n';
-import { useUploadBlob } from '../supporting/use-upload-blob';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import { useI18n } from '@/i18n';
+import { useUploadBlob } from './use-upload-blob';
 import { cn } from '@/lib/utils';
 
 type Point = {
@@ -18,7 +18,7 @@ export function SignatureField({
   field,
   controllerField,
 }: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointsRef = useRef<Point[]>([]);
   const isDrawingRef = useRef(false);
@@ -30,6 +30,13 @@ export function SignatureField({
     controllerField.onChange,
     'signature.upload_failed',
   );
+
+  // Show the saved signature image on reload, until the user draws a new one.
+  const savedUrl =
+    typeof controllerField.value === 'string' && controllerField.value
+      ? controllerField.value
+      : null;
+  const showSavedPreview = !!savedUrl && !hasSignature;
 
   const redrawSignature = useCallback(() => {
     const canvas = canvasRef.current;
@@ -196,7 +203,16 @@ export function SignatureField({
             onPointerCancel={handlePointerUp}
             aria-label={field.label}
           />
-          {!hasSignature && !isUploading && (
+          {showSavedPreview && (
+            <div className="absolute inset-0 overflow-hidden rounded-md bg-white">
+              <img
+                src={savedUrl}
+                alt={field.label}
+                className="h-full w-full object-contain"
+              />
+            </div>
+          )}
+          {!hasSignature && !isUploading && !showSavedPreview && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-sm text-muted-foreground">
                 {t('signature.draw')}
@@ -222,7 +238,7 @@ export function SignatureField({
             'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted',
             'transition-colors',
           )}
-          disabled={!hasSignature || isUploading}
+          disabled={(!hasSignature && !savedUrl) || isUploading}
         >
           <X className="h-4 w-4" aria-hidden="true" />
           {t('signature.clear')}

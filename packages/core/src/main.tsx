@@ -4,7 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { I18nProvider } from './i18n';
 import App from './App.tsx';
+import { loadGoogleMaps } from './lib/google-maps-loader';
 import './index.css';
+
+// Optional: enables address autocomplete when a Google Maps key is configured.
+loadGoogleMaps();
 
 const queryClient = new QueryClient();
 

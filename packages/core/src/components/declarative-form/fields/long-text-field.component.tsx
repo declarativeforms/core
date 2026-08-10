@@ -1,14 +1,13 @@
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { buildFieldValidation } from '../supporting/validation';
+import type { IRenderableLongTextField } from '@declarativeforms/engine';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { Textarea } from '@/components/ui';
-import { useFormI18n } from '../supporting/use-form-i18n';
+import { useI18n } from '@/i18n';
 
 export function LongTextField({
   field,
   controllerField,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
-  const { minLength, maxLength } = buildFieldValidation(field);
+}: DeclarativeFieldComponentProps<IRenderableLongTextField>) {
+  const { t } = useI18n();
 
   return (
     <Textarea
@@ -17,8 +16,8 @@ export function LongTextField({
       placeholder={field.placeholder || t('long_text.placeholder')}
       required={field.required}
       aria-required={field.required}
-      minLength={minLength}
-      maxLength={maxLength}
+      minLength={field.min}
+      maxLength={field.max}
     />
   );
 }

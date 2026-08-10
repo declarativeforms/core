@@ -1,24 +1,23 @@
 import { useState } from 'react';
 import { useWatch } from 'react-hook-form';
 
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { buildFieldValidation } from '../supporting/validation';
+import type { IRenderableMultipleSelectField } from '@declarativeforms/engine';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { HtmlText } from '../supporting/html-text';
-import { stripHtml } from '@declarativeforms/common';
+import { stripHtml } from '@/lib/strip-html';
 import { Checkbox, Field, FieldLabel, Input } from '@/components/ui';
 import { Controller } from 'react-hook-form';
-import { useFormI18n } from '../supporting/use-form-i18n';
+import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 
 export function MultipleSelectField({
   field,
   form,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
-  const { minBound, maxBound, options } = buildFieldValidation(field);
-  const minSelections = minBound ?? 0;
-  const maxSelections = maxBound;
-  const allowOther = 'allow_other' in field && field.allow_other;
+}: DeclarativeFieldComponentProps<IRenderableMultipleSelectField>) {
+  const { t } = useI18n();
+  const { options, allowOther } = field;
+  const minSelections = field.min ?? 0;
+  const maxSelections = field.max;
 
   // Watch the current value to show selection count
   const currentValue = useWatch({

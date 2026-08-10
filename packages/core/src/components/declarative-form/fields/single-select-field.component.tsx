@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support';
-import { buildFieldValidation } from '../supporting/validation';
+import type { IRenderableSingleSelectField } from '@declarativeforms/engine';
+import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { HtmlText } from '../supporting/html-text';
 import {
   Field,
@@ -11,46 +11,42 @@ import {
   RadioGroupItem,
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { useFormI18n } from '../supporting/use-form-i18n';
+import { useI18n } from '@/i18n';
 
 const OTHER_VALUE = '__other__';
 
 export function SingleSelectField({
   field,
   controllerField,
-}: DeclarativeFieldComponentProps) {
-  const { t } = useFormI18n();
-  const { options } = buildFieldValidation(field);
-  const allowOther = 'allow_other' in field && field.allow_other;
+}: DeclarativeFieldComponentProps<IRenderableSingleSelectField>) {
+  const { t } = useI18n();
+  const { options, allowOther } = field;
 
-  const [isOtherMode, setIsOtherMode] = useState(
-    () =>
-      allowOther &&
+  const [other, setOther] = useState(() => {
+    const active =
+      !!allowOther &&
       !!controllerField.value &&
-      !options?.some((o) => o.value === controllerField.value),
-  );
-
-  const [otherText, setOtherText] = useState<string>(
-    isOtherMode ? String(controllerField.value) : '',
-  );
+      !options?.some((o) => o.value === controllerField.value);
+    return { active, text: active ? String(controllerField.value) : '' };
+  });
 
   const handleValueChange = (value: string) => {
     if (value === OTHER_VALUE) {
-      setIsOtherMode(true);
-      controllerField.onChange(otherText || '');
+      setOther((o) => ({ ...o, active: true }));
+      controllerField.onChange(other.text || '');
     } else {
-      setIsOtherMode(false);
+      setOther((o) => ({ ...o, active: false }));
       controllerField.onChange(value);
     }
   };
 
   const handleOtherTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
-    setOtherText(text);
+    setOther((o) => ({ ...o, text }));
     controllerField.onChange(text);
   };
 
-  const radioValue = isOtherMode ? OTHER_VALUE : controllerField.value;
+  const radioValue = other.active ? OTHER_VALUE : controllerField.value;
 
   return (
     <RadioGroup
@@ -81,17 +77,17 @@ export function SingleSelectField({
           <FieldLabel
             className={cn(
               'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
-              { 'border-ring': isOtherMode },
+              { 'border-ring': other.active },
             )}
           >
             <RadioGroupItem value={OTHER_VALUE} />
             <span>{t('select.other')}</span>
           </FieldLabel>
-          {isOtherMode && (
+          {other.active && (
             <Input
               className="mt-2 text-sm/4"
               placeholder={t('select.other_placeholder')}
-              value={otherText}
+              value={other.text}
               onChange={handleOtherTextChange}
               autoFocus
             />

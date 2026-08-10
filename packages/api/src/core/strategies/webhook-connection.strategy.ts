@@ -1,4 +1,4 @@
-import type { ISubmission, IWebhookConnection } from '@declarativeforms/types';
+import type { ISubmission, IWebhookConnection } from '@declarativeforms/engine';
 
 export class WebhookConnectionStrategy {
   readonly type = 'webhook';
