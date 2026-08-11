@@ -489,6 +489,10 @@ configure_operator() {
 
   copy_operator_key
   if [[ "$HARDEN_SSH" == true ]]; then
+    # Ubuntu's socket-activated SSH service normally creates this ephemeral
+    # directory. Package upgrades can briefly remove it before our standalone
+    # configuration check runs.
+    install -d -o root -g root -m 0755 /run/sshd
     cat >/etc/ssh/sshd_config.d/00-declarativeforms-hardening.conf <<'EOF'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
