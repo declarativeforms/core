@@ -33,7 +33,7 @@ CMD ["node", "packages/api/dist/main.js"]
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS web
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/packages/core/dist /usr/share/nginx/html
+COPY --chown=nginx:nginx --chmod=0644 docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chown=nginx:nginx --from=build /app/packages/core/dist /usr/share/nginx/html
 
 EXPOSE 8080
