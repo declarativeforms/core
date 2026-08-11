@@ -202,8 +202,39 @@ repositories. The stack runs as one Docker Compose project: the web app, the
 API, MongoDB for submissions, MinIO for file storage, and Traefik for automatic
 HTTPS.
 
-**Prerequisites:** a host with Docker and Docker Compose, and a domain name
-pointed at it.
+**Prerequisites:** a domain name pointed at the host. The automated setup below
+installs Docker on a fresh Ubuntu Droplet; the manual setup requires Docker and
+Docker Compose to be installed already.
+
+### Automated DigitalOcean setup
+
+For a fresh Ubuntu 24.04 LTS Droplet, download and run the production bootstrap
+script after the domain's `A` record points to the Droplet:
+
+```bash
+curl --fail --remote-name \
+  https://raw.githubusercontent.com/declarativeforms/core/main/scripts/setup-digitalocean.sh
+chmod +x setup-digitalocean.sh
+sudo ./setup-digitalocean.sh \
+  --domain forms.example.com \
+  --email admin@example.com
+```
+
+The script installs Docker from its official APT repository, creates a
+non-root `deploy` user, hardens SSH, configures swap and bounded container logs,
+and installs a persistent host firewall. The firewall covers both ordinary host
+traffic and Docker-published ports, opening public HTTP and HTTPS while leaving
+the VM's existing SSH firewall policy untouched. Docker publications other than
+ports 80 and 443 are blocked on the public interface.
+
+The script then generates production credentials, clones the selected public
+Git revision, starts the stack, and waits for trusted HTTPS and API health
+checks. Run `./setup-digitalocean.sh --help` for repository, ref, path, sizing,
+firewall, optional integration-secret, and smoke-test parameters. No separate
+firewall setup is required. DigitalOcean backups and monitoring remain optional
+account-level settings. For deliberately proxied DNS, pass `--skip-dns-check`.
+
+### Manual setup
 
 ```bash
 git clone https://github.com/declarativeforms/core.git
