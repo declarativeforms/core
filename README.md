@@ -134,7 +134,7 @@ which is handy for `hidden` fields and campaign links.
 | **Conditional logic** | Show or hide fields with `visible_when`. Branch between sections with conditional `next` rules. |
 | **Templating** | Personalize titles and messages with `{{data.field_id}}` placeholders. |
 | **Localization** | Provide any text as a per-language map. Switch with `?lang=`. |
-| **Connections** | Fire a webhook or send an email (via Resend) on submit, gated by a condition. |
+| **Connections** | Queue immediate or delayed webhooks and emails, filtered by submission status and conditions. |
 | **Partial submissions** | Answers are saved per section, so a refresh does not lose progress. |
 | **Theming** | Set an accent color to match your brand. |
 | **Analytics** | Optional Mixpanel and PostHog page-view and section-completion tracking. |
@@ -285,10 +285,12 @@ docker compose -f compose.yaml -f compose.local.yaml up --build
 Clarity on data matters, so here is exactly where everything goes when you
 self-host.
 
-- **Form definitions** are read live from GitHub on each request. They are never
-  copied into a database. GitHub remains the single source of truth.
+- **Form definitions** are read live from GitHub on each request. GitHub remains
+  the source of truth; an immutable snapshot is retained only inside a queued
+  connection job so later form edits cannot change an existing delivery.
 - **Submissions** are stored in your MongoDB, including partial (in-progress)
   responses.
+- **Connection jobs** are stored in MongoDB until the scheduler delivers them.
 - **Uploaded files** (uploads, camera photos, signatures) are stored in your
   S3-compatible bucket, served through your own domain.
 - **No third-party form service** is involved. On the public frms.dev instance,
@@ -302,21 +304,26 @@ The repository is an npm-workspaces monorepo with three packages.
 | --- | --- |
 | `@declarativeforms/engine` | The shared library. Parses YAML and runs the `parse → resolve → compile → render` pipeline, plus all shared types. Framework-agnostic. |
 | `@declarativeforms/core` | The web app. React 19, Vite, Tailwind. Renders forms and handles submission. |
-| `@declarativeforms/api` | The backend. Fastify. Reads forms from GitHub, stores submissions, handles uploads and connections. |
+| `@declarativeforms/api` | The backend and scheduler worker. Fastify reads forms, stores submissions, and handles uploads; the separate worker delivers queued connections. |
 
 ```mermaid
 flowchart LR
   A[Respondent] --> B[Web app<br/>core]
   B --> C[API<br/>api]
   C --> D[(GitHub<br/>form YAML)]
-  C --> E[(MongoDB<br/>submissions)]
+  C --> E[(MongoDB<br/>submissions + connection jobs)]
   C --> F[(S3 / MinIO<br/>uploaded files)]
+  E --> G[Scheduler worker]
+  G --> H[Email / webhook]
 ```
 
 When a form URL is opened, the API fetches the YAML from GitHub, the engine
 turns it into a renderable form, and the web app renders it. Submissions flow
-back through the API into your storage, and any configured connections fire on
-completion.
+back through the API into your storage. The API queues a generic `submission`
+job for each matching connection, and the scheduler delivers it at the
+configured time. Connections default to completed submissions; see the
+[connection schema](./SCHEMA.md#connections) for partial triggers and delayed
+delivery.
 
 ## Local development
 
@@ -329,6 +336,9 @@ npm run build:engine
 
 # Run the API (needs MongoDB and MinIO; start them with Docker Compose)
 npm run dev:api
+
+# In another terminal, deliver immediate and scheduled connections
+npm run dev:scheduler
 
 # Run the web app
 npm run dev:core
@@ -345,6 +355,7 @@ Useful scripts:
 | `npm run build` | Build every package. |
 | `npm run dev:core` | Start the web app in dev mode. |
 | `npm run dev:api` | Start the API in watch mode. |
+| `npm run dev:scheduler` | Start the connection scheduler in watch mode. |
 | `npm test` | Run the API test suite. |
 
 ## Contributing

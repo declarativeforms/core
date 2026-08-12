@@ -414,8 +414,10 @@ completion:
 
 ## Connections
 
-Connections fire once, when the form is finally submitted. Each has an optional
-`when` [expression](#expressions) that gates whether it runs.
+Connections are queued in MongoDB and delivered by the scheduler. By default,
+they run only for completed submissions. Use `trigger_on` to include partial
+submissions, `delay_minutes` to delay delivery, and `when` to add an
+[expression](#expressions) condition.
 
 **Webhook.** POSTs the submission as JSON to a URL.
 
@@ -424,6 +426,8 @@ connections:
   - type: webhook
     url: "https://example.com/hooks/new-lead"
     when: "data.newsletter === 'Yes'"
+    trigger_on: completed
+    delay_minutes: 30
 ```
 
 **Email.** Sends an email through Resend. Requires `RESEND_API_KEY` and
@@ -437,6 +441,7 @@ connections:
     body: "A new response came in."
     include_responses: true    # append the answers to the email
     when: "data.topic === 'Support'"
+    delay_minutes: 30
 ```
 
 | Key | Applies to | Description |
@@ -448,6 +453,27 @@ connections:
 | `body` | email | Email body. Supports templating. |
 | `include_responses` | email | Append all answers to the email. |
 | `when` | both | Only fire when this expression is truthy. |
+| `trigger_on` | both | `completed` (default), `partial`, or `any`. |
+| `delay_minutes` | both | Minutes to wait before delivery. Defaults to `0`. |
+
+### Submission triggers
+
+`trigger_on` controls which saved submission states create delivery jobs:
+
+| Value | Behavior |
+| --- | --- |
+| `completed` | Deliver once after final validation succeeds. This is the default. |
+| `partial` | Deliver after every partial section save, but not on completion. |
+| `any` | Deliver after every partial save and again on completion. |
+
+Use `partial` and `any` deliberately: a multi-section form may create several
+deliveries for one respondent. Retrying an already-completed submission does
+not create another completion delivery.
+
+`delay_minutes` must be a non-negative integer. Omit it or use `0` for delivery
+on the scheduler's next polling cycle. The connection, form, and submission are
+stored in the job's `data` payload, so later form edits do not change queued
+work. Failed jobs are moved one minute forward and retried.
 
 ## Prefilling fields from the URL
 

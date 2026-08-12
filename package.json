@@ -9,6 +9,7 @@
     "build:api": "npm run build -w @declarativeforms/api",
     "dev:core": "npm run dev -w @declarativeforms/core",
     "dev:api": "npm run dev -w @declarativeforms/api",
+    "dev:scheduler": "npm run dev:scheduler -w @declarativeforms/api",
     "deploy:core": "npm run deploy -w @declarativeforms/core",
     "test": "npm test -w @declarativeforms/api"
   }

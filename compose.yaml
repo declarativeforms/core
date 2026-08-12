@@ -90,8 +90,6 @@ services:
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
       AWS_S3_BUCKET_NAME: ${MINIO_BUCKET:-declarativeforms}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
-      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-}
     networks:
       - backend
       - egress
@@ -114,6 +112,25 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  scheduler:
+    build:
+      context: .
+      target: api
+    command: ["node", "packages/api/dist/scheduler.js"]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      MONGODB_CONNECTION_STRING: mongodb://${MONGO_ROOT_USERNAME:?Set MONGO_ROOT_USERNAME in .env}:${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in .env}@mongodb:27017/?authSource=admin
+      MONGODB_DATABASE_NAME: ${MONGODB_DATABASE_NAME:-declarativeforms}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-}
+    networks:
+      - backend
+      - egress
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
   mongodb:
     image: mongo:8.0

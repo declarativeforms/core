@@ -8,8 +8,8 @@ import {
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
 import type { SubmissionRepository } from '../repositories';
-import type { IConnectionStrategy } from '../strategies';
 import type { FormService } from './form.service';
+import type { JobService } from './job.service';
 
 /**
  * The outcome of a submission attempt. `null` (returned separately) means the
@@ -23,7 +23,7 @@ export class SubmissionService {
   constructor(
     private formService: FormService,
     private submissionRepository: SubmissionRepository,
-    private connectionStrategies: Array<IConnectionStrategy>,
+    private jobService: JobService,
   ) {}
 
   public async createOrUpdate(
@@ -52,7 +52,8 @@ export class SubmissionService {
       }
     }
 
-    const now = new Date().toISOString();
+    const now = new Date();
+    const timestamp = now.toISOString();
     const status = isPartial ? 'partial' : 'completed';
     const persistedFormId = form.id || '';
 
@@ -79,13 +80,13 @@ export class SubmissionService {
           ...data,
         },
         status,
-        updated_at: now,
+        updated_at: timestamp,
       };
 
       await this.submissionRepository.update(persistedFormId, submission);
     } else {
       submission = {
-        created_at: now,
+        created_at: timestamp,
         data,
         form_id: persistedFormId,
         id: randomBytes(4).toString('hex'),
@@ -94,13 +95,13 @@ export class SubmissionService {
           user_agent: metadata.userAgent,
         },
         status,
-        updated_at: now,
+        updated_at: timestamp,
       };
 
       await this.submissionRepository.insert(submission);
     }
 
-    await this.processConnections(form, submission);
+    await this.scheduleConnections(form, submission, now);
 
     return { type: 'created', submission };
   }
@@ -161,16 +162,18 @@ export class SubmissionService {
     return errors;
   }
 
-  private async processConnections(
+  private async scheduleConnections(
     form: IDeclarativeForm,
     submission: ISubmission,
+    now: Date,
   ): Promise<void> {
-    if (!form.connections || form.connections.length === 0) {
-      return;
-    }
-
-    for (const connection of form.connections) {
+    for (const connection of form.connections ?? []) {
       if (!isDeclarativeConnectionType(connection.type)) {
+        continue;
+      }
+
+      const trigger = connection.trigger_on ?? 'completed';
+      if (trigger !== 'any' && trigger !== submission.status) {
         continue;
       }
 
@@ -181,15 +184,18 @@ export class SubmissionService {
         continue;
       }
 
-      const strategy = this.connectionStrategies.find(
-        (entry) => entry.type === connection.type,
-      );
-
-      if (!strategy) {
-        continue;
+      const delayMinutes = connection.delay_minutes ?? 0;
+      if (!Number.isInteger(delayMinutes) || delayMinutes < 0) {
+        throw new Error(
+          'Connection delay_minutes must be a non-negative integer',
+        );
       }
 
-      await strategy.handle(connection, submission, form);
+      await this.jobService.schedule(
+        'submission',
+        { connection, form, submission },
+        new Date(now.getTime() + delayMinutes * 60_000),
+      );
     }
   }
 }

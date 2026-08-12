@@ -852,7 +852,7 @@ verify_https() {
   done
 
   docker compose --project-directory "$INSTALL_DIR" --env-file "$INSTALL_DIR/.env" \
-    -f "$INSTALL_DIR/compose.yaml" logs --tail=100 traefik web api >&2 || true
+    -f "$INSTALL_DIR/compose.yaml" logs --tail=100 traefik web api scheduler >&2 || true
   fatal "HTTPS did not become healthy within $WAIT_TIMEOUT seconds"
 }
 

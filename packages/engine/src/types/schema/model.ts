@@ -121,25 +121,28 @@ export type FormCompletionRule<Text> = FormCompletion<Text> & {
   when?: string;
 };
 
-export type FormWebhookConnection = {
-  type: 'webhook';
-  url?: string;
+export type FormConnectionBase = {
   when?: string;
+  trigger_on?: 'completed' | 'partial' | 'any';
+  delay_minutes?: number;
 };
 
-export type FormEmailConnection<Text> = {
+export type FormWebhookConnection = FormConnectionBase & {
+  type: 'webhook';
+  url?: string;
+};
+
+export type FormEmailConnection<Text> = FormConnectionBase & {
   type: 'email';
   to?: string;
   subject?: Text;
   body?: Text;
   include_responses?: boolean;
-  when?: string;
 };
 
 /** The discriminated union of every connection a form may declare. */
 export type FormConnection<Text> =
-  | FormWebhookConnection
-  | FormEmailConnection<Text>;
+  FormWebhookConnection | FormEmailConnection<Text>;
 
 /** The top-level form model. */
 export type Form<Text> = {

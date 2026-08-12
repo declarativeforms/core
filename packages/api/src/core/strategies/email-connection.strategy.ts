@@ -45,10 +45,6 @@ export class EmailConnectionStrategy {
     submission: ISubmission,
     form: IDeclarativeForm,
   ): Promise<void> {
-    if (submission.status !== 'completed') {
-      return;
-    }
-
     if (!connection.to) {
       return;
     }

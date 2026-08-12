@@ -1,11 +1,21 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
 import { GitHubGateway } from './gateways';
-import { GitHubFileRepository, SubmissionRepository } from './repositories';
-import { FileService, FormService, SubmissionService } from './services';
+import {
+  GitHubFileRepository,
+  JobRepository,
+  SubmissionRepository,
+} from './repositories';
+import {
+  FileService,
+  FormService,
+  JobService,
+  SubmissionService,
+} from './services';
 import {
   EmailConnectionStrategy,
   WebhookConnectionStrategy,
+  type IConnectionStrategy,
 } from './strategies';
 
 export type Container = {
@@ -14,9 +24,11 @@ export type Container = {
   gitHubGateway: GitHubGateway;
   gitHubFileRepository: GitHubFileRepository;
   submissionRepository: SubmissionRepository;
+  jobRepository: JobRepository;
   fileService: FileService;
   formService: FormService;
   submissionService: SubmissionService;
+  jobService: JobService;
 };
 
 const s3Client = new S3Client({
@@ -31,7 +43,7 @@ const s3Client = new S3Client({
 
 let container: Container | null = null;
 
-export async function getContainer() {
+export async function getContainer(): Promise<Container> {
   if (container) {
     return container;
   }
@@ -43,25 +55,41 @@ export async function getContainer() {
   const gitHubGateway = new GitHubGateway();
   const gitHubFileRepository = new GitHubFileRepository(db);
   const submissionRepository = new SubmissionRepository(db);
+  const jobRepository = new JobRepository(db);
   const fileService = new FileService(s3Client);
   const formService = new FormService(gitHubFileRepository, gitHubGateway);
-  const connectionStrategies = [
+  const connectionStrategies: IConnectionStrategy[] = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
   ];
+  const jobService = new JobService(jobRepository, {
+    submission: async (data) => {
+      const { connection, form, submission } = data as any;
+      const strategy = connectionStrategies.find(
+        (entry) => entry.type === connection.type,
+      );
 
+      if (!strategy) {
+        return;
+      }
+
+      await strategy.handle(connection, submission, form);
+    },
+  });
   const submissionService = new SubmissionService(
     formService,
     submissionRepository,
-    connectionStrategies,
+    jobService,
   );
 
   container = {
     db,
-    gitHubGateway,
-    gitHubFileRepository,
     fileService,
     formService,
+    gitHubFileRepository,
+    gitHubGateway,
+    jobRepository,
+    jobService,
     mongoClient,
     submissionRepository,
     submissionService,
@@ -70,12 +98,11 @@ export async function getContainer() {
   return container;
 }
 
-export async function disposeContainer() {
+export async function disposeContainer(): Promise<void> {
   if (!container) {
     return;
   }
 
   await container.mongoClient.close();
-
   container = null;
 }

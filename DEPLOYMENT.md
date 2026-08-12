@@ -1,8 +1,8 @@
 # DigitalOcean deployment
 
 Declarative Forms is designed to run inexpensively on one Ubuntu Droplet. The
-production Compose stack contains Traefik, the web app, the API, MongoDB, and
-MinIO.
+production Compose stack contains Traefik, the web app, the API, a connection
+scheduler worker, MongoDB, and MinIO.
 
 ## Architecture
 
@@ -12,8 +12,10 @@ MinIO.
   Docker-published ports through the `DOCKER-USER` chain. It does not add,
   remove, or alter SSH firewall rules.
 - MongoDB and MinIO are available only on an internal Docker network. The API
-  joins that network and a separate outbound network for GitHub form reads,
-  email delivery, and webhooks.
+  joins that network and a separate outbound network for GitHub form reads.
+- The scheduler joins MongoDB's internal network and the outbound network. It
+  exposes no port and is the only process that delivers queued email and
+  webhook connections.
 - Submissions, uploads, and certificate state live in named Docker volumes on
   the Droplet's root disk.
 - There is no load balancer, managed database, block volume, or managed object
@@ -132,9 +134,21 @@ docker compose --project-directory /opt/frms ps
 docker compose --project-directory /opt/frms logs --since=15m
 ```
 
-The expected long-running services are Traefik, web, API, MongoDB, and MinIO.
+The expected long-running services are Traefik, web, API, scheduler, MongoDB,
+and MinIO.
 The `create_bucket` service should exit successfully after ensuring the bucket
 exists.
+
+Connection deliveries are stored as jobs in MongoDB. If the scheduler is
+restarted, pending jobs remain available. Inspect worker activity with:
+
+```sh
+docker compose --project-directory /opt/frms logs --since=15m scheduler
+```
+
+Run one scheduler replica. This intentionally simple queue provides
+at-least-once delivery, so a process crash immediately after sending can cause
+a retry.
 
 Persistent volumes are named `declarativeforms_mongodb_data`,
 `declarativeforms_minio_data`, and `declarativeforms_traefik_certs`. Restoring a
