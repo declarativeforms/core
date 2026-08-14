@@ -27,6 +27,8 @@ MINIO_ROOT_USER="declarativeforms"
 MINIO_BUCKET="declarativeforms"
 AWS_REGION="us-east-1"
 GITHUB_TOKEN_FILE=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET_FILE=""
 GOOGLE_MAPS_API_KEY_FILE=""
 RESEND_API_KEY_FILE=""
 RESEND_FROM_EMAIL=""
@@ -46,6 +48,9 @@ Usage:
 Required:
   --domain DOMAIN                 Public hostname already pointing at this VM.
   --email EMAIL                   Email used for Let's Encrypt notices.
+  --github-client-id ID           GitHub App OAuth client ID.
+  --github-client-secret-file PATH
+                                  File containing the GitHub App client secret.
 
 Source and host options:
   --repo-url URL                  Public HTTPS Git repository.
@@ -76,6 +81,8 @@ database volumes, object-storage volumes, and certificate state are preserved.
 
 Example:
   sudo ./$SCRIPT_NAME --domain forms.example.com --email admin@example.com \\
+    --github-client-id Iv1.example \\
+    --github-client-secret-file /root/github-app-secret \\
     --smoke-form declarativeforms/core/contact
 EOF
 }
@@ -187,6 +194,16 @@ while (($# > 0)); do
       GITHUB_TOKEN_FILE="$2"
       shift 2
       ;;
+    --github-client-id)
+      require_value "$1" "${2-}"
+      GITHUB_CLIENT_ID="$2"
+      shift 2
+      ;;
+    --github-client-secret-file)
+      require_value "$1" "${2-}"
+      GITHUB_CLIENT_SECRET_FILE="$2"
+      shift 2
+      ;;
     --google-maps-key-file)
       require_value "$1" "${2-}"
       GOOGLE_MAPS_API_KEY_FILE="$2"
@@ -256,9 +273,13 @@ validate_identifier() {
 
 [[ -n "$DOMAIN" ]] || fatal "--domain is required"
 [[ -n "$LETSENCRYPT_EMAIL" ]] || fatal "--email is required"
+[[ -n "$GITHUB_CLIENT_ID" ]] || fatal "--github-client-id is required"
+[[ -n "$GITHUB_CLIENT_SECRET_FILE" ]] || \
+  fatal "--github-client-secret-file is required"
 DOMAIN="$(printf '%s' "$DOMAIN" | tr '[:upper:]' '[:lower:]')"
 validate_domain "$DOMAIN"
 validate_email "$LETSENCRYPT_EMAIL"
+validate_identifier "GitHub client ID" "$GITHUB_CLIENT_ID"
 validate_identifier "MongoDB user" "$MONGO_ROOT_USERNAME"
 validate_identifier "MongoDB database" "$MONGODB_DATABASE_NAME"
 validate_identifier "MinIO user" "$MINIO_ROOT_USER"
@@ -293,7 +314,7 @@ if [[ -n "$SMOKE_FORM" ]]; then
     fatal "--smoke-form contains an unsafe path sequence"
 fi
 
-for secret_file in "$GITHUB_TOKEN_FILE" "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
+for secret_file in "$GITHUB_TOKEN_FILE" "$GITHUB_CLIENT_SECRET_FILE" "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
   [[ -z "$secret_file" || -r "$secret_file" ]] || fatal "cannot read secret file: $secret_file"
 done
 
@@ -717,6 +738,7 @@ configure_environment() {
   local env_file="$INSTALL_DIR/.env"
   local env_tmp
   local github_token
+  local github_client_secret
   local google_maps_key
   local resend_api_key
   local mongo_password
@@ -730,15 +752,20 @@ configure_environment() {
       fatal "existing .env must set MCP_DOMAIN=mcp.$DOMAIN; edit it explicitly before rerunning"
     [[ "$(existing_env_value LETSENCRYPT_EMAIL)" == "$LETSENCRYPT_EMAIL" ]] || \
       fatal "existing .env uses a different LETSENCRYPT_EMAIL; edit it explicitly before rerunning"
+    [[ "$(existing_env_value GITHUB_CLIENT_ID)" == "$GITHUB_CLIENT_ID" ]] || \
+      fatal "existing .env uses a different GITHUB_CLIENT_ID; edit it explicitly before rerunning"
+    [[ -n "$(existing_env_value GITHUB_CLIENT_SECRET)" ]] || \
+      fatal "existing .env must set GITHUB_CLIENT_SECRET; edit it explicitly before rerunning"
     chown "$DEPLOY_USER:$DEPLOY_GROUP" "$env_file"
     chmod 0600 "$env_file"
-    if [[ -n "$GITHUB_TOKEN_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
+    if [[ -n "$GITHUB_TOKEN_FILE$GITHUB_CLIENT_SECRET_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
       warn "existing .env preserved; secret-file and sender options were not applied"
     fi
     return
   fi
 
   github_token="$(read_secret_file "$GITHUB_TOKEN_FILE")"
+  github_client_secret="$(read_secret_file "$GITHUB_CLIENT_SECRET_FILE")"
   google_maps_key="$(read_secret_file "$GOOGLE_MAPS_API_KEY_FILE")"
   resend_api_key="$(read_secret_file "$RESEND_API_KEY_FILE")"
   mongo_password="$(openssl rand -hex 32)"
@@ -751,6 +778,8 @@ DOMAIN=$DOMAIN
 MCP_DOMAIN=mcp.$DOMAIN
 LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL
 PUBLIC_BASE_URL=https://$DOMAIN
+GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET=$github_client_secret
 
 MONGO_ROOT_USERNAME=$MONGO_ROOT_USERNAME
 MONGO_ROOT_PASSWORD=$mongo_password

@@ -12,15 +12,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://mcp.frms.dev/mcp",
-      "headers": [
-        {
-          "name": "Authorization",
-          "description": "Authorization value: Bearer <GitHub token> with Contents write access",
-          "isRequired": true,
-          "isSecret": true
-        }
-      ]
+      "url": "https://mcp.frms.dev/mcp"
     }
   ]
 }

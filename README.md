@@ -229,7 +229,8 @@ ports 80 and 443 are blocked on the public interface.
 
 The script then generates production credentials, clones the selected public
 Git revision, starts the stack, and waits for trusted HTTPS and API health
-checks. Run `./setup-digitalocean.sh --help` for repository, ref, path, sizing,
+checks. Pass the GitHub App client ID and a file containing its client secret;
+run `./setup-digitalocean.sh --help` for repository, ref, path, sizing,
 firewall, optional integration-secret, and smoke-test parameters. No separate
 firewall setup is required. DigitalOcean backups and monitoring remain optional
 account-level settings. For deliberately proxied DNS, pass `--skip-dns-check`.
@@ -240,8 +241,8 @@ account-level settings. For deliberately proxied DNS, pass `--skip-dns-check`.
 git clone https://github.com/declarativeforms/core.git
 cd core
 cp .env.example .env
-# Edit .env: set DOMAIN, LETSENCRYPT_EMAIL, and strong database and storage
-# credentials. See the table below.
+# Edit .env: set DOMAIN, LETSENCRYPT_EMAIL, GitHub App credentials, and strong
+# database and storage credentials. See the table below.
 docker compose up -d
 ```
 
@@ -258,6 +259,7 @@ Copy [`.env.example`](./.env.example) to `.env` and fill it in.
 | `DOMAIN` | Yes | Public hostname. Traefik issues TLS for it. |
 | `MCP_DOMAIN` | Yes | Public hostname for the remote MCP server. |
 | `LETSENCRYPT_EMAIL` | Yes | Address for Let's Encrypt certificate notices. |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Yes | GitHub App OAuth credentials used to authenticate MCP users. |
 | `MONGO_ROOT_USERNAME` / `MONGO_ROOT_PASSWORD` | Yes | MongoDB credentials. Use long, URL-safe values. |
 | `MONGODB_DATABASE_NAME` | No | Database name. Defaults to `declarativeforms`. |
 | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | Yes | Object storage credentials for file uploads. |
@@ -271,6 +273,12 @@ To read forms from a private repository, create a
 [fine-grained personal access token](https://github.com/settings/tokens?type=beta)
 with read-only **Contents** permission on that repository, and set it as
 `GITHUB_TOKEN`. Grant no write permissions.
+
+The MCP server uses the GitHub App web authorization flow. Configure the app's
+callback URL as `https://<MCP_DOMAIN>/oauth/callback`, grant read/write
+**Contents** permission, and install the app on the public repositories that
+users should manage. MCP clients discover the OAuth endpoints automatically;
+users do not supply personal access tokens.
 
 ### Running locally without TLS
 
@@ -307,7 +315,7 @@ The repository is an npm-workspaces monorepo with four packages.
 | `@declarativeforms/engine` | The shared library. Parses YAML and runs the `parse → resolve → compile → render` pipeline, plus all shared types. Framework-agnostic. |
 | `@declarativeforms/core` | The web app. React 19, Vite, Tailwind. Renders forms and handles submission. |
 | `@declarativeforms/api` | The backend and scheduler worker. Fastify reads forms, stores submissions, and handles uploads; the separate worker delivers queued connections. |
-| `@declarativeforms/mcp-server` | The remote MCP server. Creates and updates form YAML in public GitHub repositories and returns public frms.dev links. |
+| `@declarativeforms/mcp-server` | The remote MCP server. Authenticates users through the GitHub App, creates and updates form YAML in public GitHub repositories, and returns public frms.dev links. |
 
 ```mermaid
 flowchart LR
@@ -342,8 +350,9 @@ npm run build:engine
 # Run the API (needs MongoDB and MinIO; start them with Docker Compose)
 npm run dev:api
 
-# In another terminal, run the MCP server on http://localhost:8081/mcp
-# GitHub bearer tokens are supplied by MCP clients.
+# In another terminal, run the MCP server on http://localhost:8081/mcp.
+# Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET first. The GitHub App callback
+# URL must match http://localhost:8081/oauth/callback for local OAuth testing.
 npm run dev:mcp
 
 # In another terminal, deliver immediate and scheduled connections

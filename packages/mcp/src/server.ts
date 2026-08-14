@@ -1,5 +1,13 @@
 import fastify from 'fastify';
-import { MCP_POST } from './routes';
+import {
+  MCP_POST,
+  OAUTH_AUTHORIZATION_SERVER_GET,
+  OAUTH_AUTHORIZE_GET,
+  OAUTH_CALLBACK_GET,
+  OAUTH_PROTECTED_RESOURCE_GET,
+  OAUTH_REGISTER_POST,
+  OAUTH_TOKEN_POST,
+} from './routes';
 
 export async function startServer() {
   const server = fastify({
@@ -12,7 +20,21 @@ export async function startServer() {
     },
   });
 
+  server.addContentTypeParser(
+    'application/x-www-form-urlencoded',
+    { parseAs: 'string' },
+    (_request, payload, done) => {
+      done(null, Object.fromEntries(new URLSearchParams(payload.toString())));
+    },
+  );
+
   server.route(MCP_POST);
+  server.route(OAUTH_AUTHORIZATION_SERVER_GET);
+  server.route(OAUTH_AUTHORIZE_GET);
+  server.route(OAUTH_CALLBACK_GET);
+  server.route(OAUTH_PROTECTED_RESOURCE_GET);
+  server.route(OAUTH_REGISTER_POST);
+  server.route(OAUTH_TOKEN_POST);
 
   server.route({
     handler: async (_request, reply) => {

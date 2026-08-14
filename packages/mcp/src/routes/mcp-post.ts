@@ -1,21 +1,49 @@
-import { createMcpHandler } from '@modelcontextprotocol/server';
+import {
+  bearerAuthChallengeResponse,
+  createMcpHandler,
+  verifyBearerToken,
+} from '@modelcontextprotocol/server';
 import { toNodeHandler } from '@modelcontextprotocol/node';
 import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
-import { FormService, GitHubGateway } from '../core';
+import { FormService, getContainer, GitHubGateway } from '../core';
 import { createDeclarativeFormsServer } from '../mcp';
 
 export const MCP_POST: RouteOptions = {
   handler: async () => {},
   method: 'POST',
   onRequest: async (request: FastifyRequest, reply: FastifyReply) => {
-    const token = getBearerToken(request.headers.authorization);
+    const { authenticationService } = getContainer();
+    const authenticationOptions = {
+      requiredScopes: ['mcp'],
+      resourceMetadataUrl: authenticationService.getResourceMetadataUrl(),
+      verifier: authenticationService,
+    };
+    let authentication;
 
-    if (!token) {
-      await reply.header('WWW-Authenticate', 'Bearer').status(401).send();
+    try {
+      authentication = await verifyBearerToken(
+        request.headers.authorization,
+        authenticationOptions,
+      );
+    } catch (error) {
+      const response = bearerAuthChallengeResponse(
+        error,
+        authenticationOptions,
+      );
+
+      response.headers.forEach((value, name) => reply.header(name, value));
+      await reply.status(response.status).send(await response.text());
       return;
     }
 
-    const formService = new FormService(new GitHubGateway(token));
+    const githubToken = authentication.extra?.githubToken;
+
+    if (typeof githubToken !== 'string') {
+      await reply.status(401).send();
+      return;
+    }
+
+    const formService = new FormService(new GitHubGateway(githubToken));
     const handler = toNodeHandler(
       createMcpHandler(() => createDeclarativeFormsServer(formService)),
     );
@@ -25,12 +53,3 @@ export const MCP_POST: RouteOptions = {
   },
   url: '/mcp',
 };
-
-function getBearerToken(header: string | undefined): string | null {
-  if (!header?.startsWith('Bearer ')) {
-    return null;
-  }
-
-  const token = header.slice('Bearer '.length).trim();
-  return token || null;
-}
