@@ -726,6 +726,8 @@ configure_environment() {
     [[ -f "$env_file" && ! -L "$env_file" ]] || fatal "$env_file must be a regular file"
     [[ "$(existing_env_value DOMAIN)" == "$DOMAIN" ]] || \
       fatal "existing .env uses a different DOMAIN; edit it explicitly before rerunning"
+    [[ "$(existing_env_value MCP_DOMAIN)" == "mcp.$DOMAIN" ]] || \
+      fatal "existing .env must set MCP_DOMAIN=mcp.$DOMAIN; edit it explicitly before rerunning"
     [[ "$(existing_env_value LETSENCRYPT_EMAIL)" == "$LETSENCRYPT_EMAIL" ]] || \
       fatal "existing .env uses a different LETSENCRYPT_EMAIL; edit it explicitly before rerunning"
     chown "$DEPLOY_USER:$DEPLOY_GROUP" "$env_file"
@@ -746,6 +748,7 @@ configure_environment() {
 
   cat >"$env_tmp" <<EOF
 DOMAIN=$DOMAIN
+MCP_DOMAIN=mcp.$DOMAIN
 LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL
 PUBLIC_BASE_URL=https://$DOMAIN
 
@@ -780,6 +783,7 @@ digitalocean_public_ip() {
 
 verify_dns() {
   local public_ip
+  local hostname
   local -a resolved_ips
 
   if [[ "$SKIP_DNS_CHECK" == true ]]; then
@@ -789,17 +793,23 @@ verify_dns() {
 
   public_ip="$(digitalocean_public_ip)" || \
     fatal "DigitalOcean metadata did not return this Droplet's public IPv4 address"
-  mapfile -t resolved_ips < <(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u)
-  ((${#resolved_ips[@]} > 0)) || fatal "$DOMAIN does not currently resolve to an IPv4 address"
 
-  for resolved_ip in "${resolved_ips[@]}"; do
-    if [[ "$resolved_ip" == "$public_ip" ]]; then
-      log "DNS verified: $DOMAIN resolves to $public_ip"
-      return
-    fi
+  for hostname in "$DOMAIN" "mcp.$DOMAIN"; do
+    mapfile -t resolved_ips < <(getent ahostsv4 "$hostname" | awk '{print $1}' | sort -u)
+    ((${#resolved_ips[@]} > 0)) || fatal "$hostname does not currently resolve to an IPv4 address"
+
+    local matched=false
+    for resolved_ip in "${resolved_ips[@]}"; do
+      if [[ "$resolved_ip" == "$public_ip" ]]; then
+        matched=true
+        break
+      fi
+    done
+
+    [[ "$matched" == true ]] || \
+      fatal "$hostname resolves to ${resolved_ips[*]}, not this Droplet ($public_ip). Use --skip-dns-check only for an intentional proxy."
+    log "DNS verified: $hostname resolves to $public_ip"
   done
-
-  fatal "$DOMAIN resolves to ${resolved_ips[*]}, not this Droplet ($public_ip). Use --skip-dns-check only for an intentional proxy."
 }
 
 deploy_stack() {
@@ -831,7 +841,12 @@ verify_https() {
         --connect-timeout 5 \
         --max-time 15 \
         "https://$DOMAIN/healthz" 2>/dev/null
-    )" && [[ "$health_body" == "ok" ]]; then
+    )" && [[ "$health_body" == "ok" ]] && \
+      curl --fail --silent --show-error \
+        --connect-timeout 5 \
+        --max-time 15 \
+        --output /dev/null \
+        "https://mcp.$DOMAIN/health"; then
       curl --fail --silent --show-error \
         --connect-timeout 5 \
         --max-time 15 \
@@ -852,7 +867,7 @@ verify_https() {
   done
 
   docker compose --project-directory "$INSTALL_DIR" --env-file "$INSTALL_DIR/.env" \
-    -f "$INSTALL_DIR/compose.yaml" logs --tail=100 traefik web api scheduler >&2 || true
+    -f "$INSTALL_DIR/compose.yaml" logs --tail=100 traefik web api mcp scheduler >&2 || true
   fatal "HTTPS did not become healthy within $WAIT_TIMEOUT seconds"
 }
 
@@ -876,6 +891,7 @@ main() {
     -f "$INSTALL_DIR/compose.yaml" ps
 
   log "Declarative Forms is live at https://$DOMAIN (revision $revision)"
+  log "MCP server is live at https://mcp.$DOMAIN/mcp"
   log "Production configuration: $INSTALL_DIR/.env"
   log "Persistent data is stored in Docker named volumes; enable DigitalOcean backups separately"
 }

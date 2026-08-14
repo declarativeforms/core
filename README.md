@@ -199,12 +199,12 @@ full **[schema reference](./SCHEMA.md)**.
 
 Self-hosting gives you full data ownership and lets you read forms from private
 repositories. The stack runs as one Docker Compose project: the web app, the
-API, MongoDB for submissions, MinIO for file storage, and Traefik for automatic
-HTTPS.
+API, the MCP server, MongoDB for submissions, MinIO for file storage, and
+Traefik for automatic HTTPS.
 
-**Prerequisites:** a domain name pointed at the host. The automated setup below
-installs Docker on a fresh Ubuntu Droplet; the manual setup requires Docker and
-Docker Compose to be installed already.
+**Prerequisites:** the main domain and its `mcp` subdomain pointed at the host.
+The automated setup below installs Docker on a fresh Ubuntu Droplet; the manual
+setup requires Docker and Docker Compose to be installed already.
 
 ### Automated DigitalOcean setup
 
@@ -245,8 +245,9 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Traefik obtains a Let's Encrypt certificate for your `DOMAIN` automatically.
-Once the services are healthy, your instance is live at `https://<DOMAIN>`.
+Traefik obtains Let's Encrypt certificates for `DOMAIN` and `MCP_DOMAIN`
+automatically. Once the services are healthy, the form renderer is live at
+`https://<DOMAIN>` and the MCP endpoint at `https://<MCP_DOMAIN>/mcp`.
 
 ### Configuration
 
@@ -255,6 +256,7 @@ Copy [`.env.example`](./.env.example) to `.env` and fill it in.
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DOMAIN` | Yes | Public hostname. Traefik issues TLS for it. |
+| `MCP_DOMAIN` | Yes | Public hostname for the remote MCP server. |
 | `LETSENCRYPT_EMAIL` | Yes | Address for Let's Encrypt certificate notices. |
 | `MONGO_ROOT_USERNAME` / `MONGO_ROOT_PASSWORD` | Yes | MongoDB credentials. Use long, URL-safe values. |
 | `MONGODB_DATABASE_NAME` | No | Database name. Defaults to `declarativeforms`. |
@@ -298,18 +300,21 @@ self-host.
 
 ## Architecture
 
-The repository is an npm-workspaces monorepo with three packages.
+The repository is an npm-workspaces monorepo with four packages.
 
 | Package | What it is |
 | --- | --- |
 | `@declarativeforms/engine` | The shared library. Parses YAML and runs the `parse → resolve → compile → render` pipeline, plus all shared types. Framework-agnostic. |
 | `@declarativeforms/core` | The web app. React 19, Vite, Tailwind. Renders forms and handles submission. |
 | `@declarativeforms/api` | The backend and scheduler worker. Fastify reads forms, stores submissions, and handles uploads; the separate worker delivers queued connections. |
+| `@declarativeforms/mcp-server` | The remote MCP server. Creates and updates form YAML in public GitHub repositories and returns public frms.dev links. |
 
 ```mermaid
 flowchart LR
   A[Respondent] --> B[Web app<br/>core]
   B --> C[API<br/>api]
+  I[MCP client] --> J[MCP server<br/>mcp]
+  J --> D
   C --> D[(GitHub<br/>form YAML)]
   C --> E[(MongoDB<br/>submissions + connection jobs)]
   C --> F[(S3 / MinIO<br/>uploaded files)]
@@ -327,8 +332,8 @@ delivery.
 
 ## Local development
 
-You need Node.js 22 or newer. The engine builds first because both other
-packages depend on it.
+You need Node.js 22 or newer. The engine builds first because the dependent
+packages use it.
 
 ```bash
 npm install
@@ -336,6 +341,10 @@ npm run build:engine
 
 # Run the API (needs MongoDB and MinIO; start them with Docker Compose)
 npm run dev:api
+
+# In another terminal, run the MCP server on http://localhost:8081/mcp
+# GitHub bearer tokens are supplied by MCP clients.
+npm run dev:mcp
 
 # In another terminal, deliver immediate and scheduled connections
 npm run dev:scheduler
@@ -355,8 +364,9 @@ Useful scripts:
 | `npm run build` | Build every package. |
 | `npm run dev:core` | Start the web app in dev mode. |
 | `npm run dev:api` | Start the API in watch mode. |
+| `npm run dev:mcp` | Start the remote MCP server in watch mode. |
 | `npm run dev:scheduler` | Start the connection scheduler in watch mode. |
-| `npm test` | Run the API test suite. |
+| `npm test` | Run the API and MCP test suites. |
 
 ## Contributing
 
