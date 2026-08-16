@@ -1,8 +1,8 @@
 # DigitalOcean deployment
 
 Declarative Forms is designed to run inexpensively on one Ubuntu Droplet. The
-production Compose stack contains Traefik, the web app, the API, the MCP server,
-a connection scheduler worker, MongoDB, and MinIO.
+production Compose stack contains Traefik, the web app, the API, a connection
+scheduler worker, MongoDB, and MinIO.
 
 ## Architecture
 
@@ -13,8 +13,10 @@ a connection scheduler worker, MongoDB, and MinIO.
   remove, or alter SSH firewall rules.
 - MongoDB and MinIO are available only on an internal Docker network. The API
   joins that network and a separate outbound network for GitHub form reads.
-- The MCP server joins the public edge and outbound networks. It writes form
-  YAML to public GitHub repositories but cannot access MongoDB or MinIO.
+- The API uses browser-based GitHub OAuth for its hosted MCP endpoint. It
+  issues encrypted, expiring MCP tokens and uses their enclosed GitHub
+  credentials to write form YAML to public repositories the user can access.
+  GitHub tokens are not stored in MongoDB or returned to callers.
 - The scheduler joins MongoDB's internal network and the outbound network. It
   exposes no port and is the only process that delivers queued email and
   webhook connections.
@@ -34,11 +36,9 @@ At the DigitalOcean account level:
 
 1. Add an SSH key when creating the Droplet.
 2. Enable monitoring and weekly or daily Droplet backups.
-3. Point DNS `A` records for the desired domain and its `mcp` subdomain at the
-   Droplet's public IPv4 address. For example, use `forms.example.com` and
-   `mcp.forms.example.com`. Keep them DNS-only for the initial deployment, or
-   use `--skip-dns-check` if an intentional reverse proxy hides the origin
-   address.
+3. Point a DNS `A` record for the desired domain at the Droplet's public IPv4
+   address. Keep it DNS-only for the initial deployment, or use
+   `--skip-dns-check` if an intentional reverse proxy hides the origin address.
 
 Backups and monitoring cannot be enabled from inside the VM and are therefore
 not managed by the setup script. A DigitalOcean Cloud Firewall is optional
@@ -62,8 +62,16 @@ Run it as root after DNS resolves to the VM:
 sudo ./setup-digitalocean.sh \
   --domain forms.example.com \
   --email admin@example.com \
+  --github-client-id Ov23example \
+  --github-client-secret-file /root/secrets/github-client-secret \
   --smoke-form declarativeforms/core/contact
 ```
+
+Before running the setup, set the GitHub OAuth App authorization callback URL
+to `https://forms.example.com/oauth/callback`. The API requests the
+`public_repo` scope during authorization. Store the OAuth App secret in the file
+supplied to `--github-client-secret-file`; the script reads it without placing
+the secret in the process list.
 
 The script:
 
@@ -76,9 +84,10 @@ The script:
 - installs persistent IPv4 and IPv6 rules for HTTP/HTTPS plus Docker-aware
   forwarding rules, without changing SSH firewall access;
 - clones the requested public repository branch or tag into `/opt/frms`;
-- generates URL-safe MongoDB and MinIO credentials without printing them;
+- generates URL-safe MongoDB, MinIO, and API-token encryption credentials
+  without printing them;
 - builds and starts the stack, then verifies its trusted certificate, web
-  health, API health, MCP health, and an optional GitHub-backed form.
+  health, API health, and an optional GitHub-backed form.
 
 View every parameter with:
 
@@ -110,8 +119,12 @@ origin differs from `--repo-url`.
 
 An existing `/opt/frms/.env` is never regenerated. This preserves the
 credentials associated with existing MongoDB and MinIO volumes. If the domain,
-MCP domain, Let's Encrypt email, or an integration secret must change, edit
-`.env` explicitly before rerunning the script.
+Let's Encrypt email, or an integration secret must change, edit `.env`
+explicitly before rerunning the script.
+
+Deployments created before hosted MCP authorization was added must set
+`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `AUTH_TOKEN_SECRET` in
+`/opt/frms/.env` before rerunning the setup script.
 
 Production credentials are stored only in `/opt/frms/.env`, owned by the deploy
 user with mode `0600`.
@@ -126,7 +139,7 @@ git fetch --depth=1 origin main
 git checkout --detach --force FETCH_HEAD
 docker compose build --pull
 docker compose pull --ignore-buildable
-docker compose up -d --wait --wait-timeout 300
+docker compose up -d --remove-orphans --wait --wait-timeout 300
 ```
 
 ## Verification and operations
@@ -134,13 +147,12 @@ docker compose up -d --wait --wait-timeout 300
 ```sh
 curl --fail https://forms.example.com/healthz
 curl --fail https://forms.example.com/api/v1/health
-curl --fail https://mcp.forms.example.com/health
 docker compose --project-directory /opt/frms ps
 docker compose --project-directory /opt/frms logs --since=15m
 ```
 
-The expected long-running services are Traefik, web, API, MCP, scheduler,
-MongoDB, and MinIO.
+The expected long-running services are Traefik, web, API, scheduler, MongoDB,
+and MinIO.
 The `create_bucket` service should exit successfully after ensuring the bucket
 exists.
 

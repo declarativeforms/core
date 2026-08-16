@@ -3,7 +3,6 @@
   "references": [
     { "path": "packages/engine" },
     { "path": "packages/core" },
-    { "path": "packages/api" },
-    { "path": "packages/mcp" }
+    { "path": "packages/api" }
   ]
 }

@@ -26,9 +26,9 @@ MONGODB_DATABASE_NAME="declarativeforms"
 MINIO_ROOT_USER="declarativeforms"
 MINIO_BUCKET="declarativeforms"
 AWS_REGION="us-east-1"
-GITHUB_TOKEN_FILE=""
 GITHUB_CLIENT_ID=""
 GITHUB_CLIENT_SECRET_FILE=""
+GITHUB_TOKEN_FILE=""
 GOOGLE_MAPS_API_KEY_FILE=""
 RESEND_API_KEY_FILE=""
 RESEND_FROM_EMAIL=""
@@ -48,9 +48,9 @@ Usage:
 Required:
   --domain DOMAIN                 Public hostname already pointing at this VM.
   --email EMAIL                   Email used for Let's Encrypt notices.
-  --github-client-id ID           GitHub App OAuth client ID.
+  --github-client-id ID           Client ID of the publishing GitHub OAuth App.
   --github-client-secret-file PATH
-                                  File containing the GitHub App client secret.
+                                  File containing the GitHub OAuth App secret.
 
 Source and host options:
   --repo-url URL                  Public HTTPS Git repository.
@@ -81,8 +81,8 @@ database volumes, object-storage volumes, and certificate state are preserved.
 
 Example:
   sudo ./$SCRIPT_NAME --domain forms.example.com --email admin@example.com \\
-    --github-client-id Iv1.example \\
-    --github-client-secret-file /root/github-app-secret \\
+    --github-client-id Ov23example \\
+    --github-client-secret-file /root/github-client-secret \\
     --smoke-form declarativeforms/core/contact
 EOF
 }
@@ -314,7 +314,8 @@ if [[ -n "$SMOKE_FORM" ]]; then
     fatal "--smoke-form contains an unsafe path sequence"
 fi
 
-for secret_file in "$GITHUB_TOKEN_FILE" "$GITHUB_CLIENT_SECRET_FILE" "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
+for secret_file in "$GITHUB_CLIENT_SECRET_FILE" "$GITHUB_TOKEN_FILE" \
+  "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
   [[ -z "$secret_file" || -r "$secret_file" ]] || fatal "cannot read secret file: $secret_file"
 done
 
@@ -737,49 +738,51 @@ existing_env_value() {
 configure_environment() {
   local env_file="$INSTALL_DIR/.env"
   local env_tmp
-  local github_token
   local github_client_secret
+  local github_token
   local google_maps_key
   local resend_api_key
   local mongo_password
   local minio_password
+  local auth_token_secret
 
   if [[ -e "$env_file" ]]; then
     [[ -f "$env_file" && ! -L "$env_file" ]] || fatal "$env_file must be a regular file"
     [[ "$(existing_env_value DOMAIN)" == "$DOMAIN" ]] || \
       fatal "existing .env uses a different DOMAIN; edit it explicitly before rerunning"
-    [[ "$(existing_env_value MCP_DOMAIN)" == "mcp.$DOMAIN" ]] || \
-      fatal "existing .env must set MCP_DOMAIN=mcp.$DOMAIN; edit it explicitly before rerunning"
     [[ "$(existing_env_value LETSENCRYPT_EMAIL)" == "$LETSENCRYPT_EMAIL" ]] || \
       fatal "existing .env uses a different LETSENCRYPT_EMAIL; edit it explicitly before rerunning"
     [[ "$(existing_env_value GITHUB_CLIENT_ID)" == "$GITHUB_CLIENT_ID" ]] || \
       fatal "existing .env uses a different GITHUB_CLIENT_ID; edit it explicitly before rerunning"
+    [[ -n "$(existing_env_value AUTH_TOKEN_SECRET)" ]] || \
+      fatal "existing .env must set AUTH_TOKEN_SECRET; edit it explicitly before rerunning"
     [[ -n "$(existing_env_value GITHUB_CLIENT_SECRET)" ]] || \
       fatal "existing .env must set GITHUB_CLIENT_SECRET; edit it explicitly before rerunning"
     chown "$DEPLOY_USER:$DEPLOY_GROUP" "$env_file"
     chmod 0600 "$env_file"
-    if [[ -n "$GITHUB_TOKEN_FILE$GITHUB_CLIENT_SECRET_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
+    if [[ -n "$GITHUB_CLIENT_SECRET_FILE$GITHUB_TOKEN_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
       warn "existing .env preserved; secret-file and sender options were not applied"
     fi
     return
   fi
 
-  github_token="$(read_secret_file "$GITHUB_TOKEN_FILE")"
   github_client_secret="$(read_secret_file "$GITHUB_CLIENT_SECRET_FILE")"
+  github_token="$(read_secret_file "$GITHUB_TOKEN_FILE")"
   google_maps_key="$(read_secret_file "$GOOGLE_MAPS_API_KEY_FILE")"
   resend_api_key="$(read_secret_file "$RESEND_API_KEY_FILE")"
   mongo_password="$(openssl rand -hex 32)"
   minio_password="$(openssl rand -hex 32)"
+  auth_token_secret="$(openssl rand -hex 32)"
   env_tmp="$(mktemp "$INSTALL_DIR/.env.tmp.XXXXXX")"
   TEMP_ENV_FILE="$env_tmp"
 
   cat >"$env_tmp" <<EOF
 DOMAIN=$DOMAIN
-MCP_DOMAIN=mcp.$DOMAIN
 LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL
 PUBLIC_BASE_URL=https://$DOMAIN
 GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
 GITHUB_CLIENT_SECRET=$github_client_secret
+AUTH_TOKEN_SECRET=$auth_token_secret
 
 MONGO_ROOT_USERNAME=$MONGO_ROOT_USERNAME
 MONGO_ROOT_PASSWORD=$mongo_password
@@ -823,7 +826,7 @@ verify_dns() {
   public_ip="$(digitalocean_public_ip)" || \
     fatal "DigitalOcean metadata did not return this Droplet's public IPv4 address"
 
-  for hostname in "$DOMAIN" "mcp.$DOMAIN"; do
+  for hostname in "$DOMAIN"; do
     mapfile -t resolved_ips < <(getent ahostsv4 "$hostname" | awk '{print $1}' | sort -u)
     ((${#resolved_ips[@]} > 0)) || fatal "$hostname does not currently resolve to an IPv4 address"
 
@@ -856,7 +859,7 @@ deploy_stack() {
 
   log "Starting the production stack"
   docker compose --project-directory "$INSTALL_DIR" --env-file "$INSTALL_DIR/.env" \
-    -f "$INSTALL_DIR/compose.yaml" up -d --wait --wait-timeout "$WAIT_TIMEOUT"
+    -f "$INSTALL_DIR/compose.yaml" up -d --remove-orphans --wait --wait-timeout "$WAIT_TIMEOUT"
 }
 
 verify_https() {
@@ -875,12 +878,7 @@ verify_https() {
         --connect-timeout 5 \
         --max-time 15 \
         --output /dev/null \
-        "https://mcp.$DOMAIN/health"; then
-      curl --fail --silent --show-error \
-        --connect-timeout 5 \
-        --max-time 15 \
-        --output /dev/null \
-        "https://$DOMAIN/api/v1/health"
+        "https://$DOMAIN/api/v1/health"; then
 
       if [[ -n "$SMOKE_FORM" ]]; then
         curl --fail --silent --show-error \
@@ -896,7 +894,7 @@ verify_https() {
   done
 
   docker compose --project-directory "$INSTALL_DIR" --env-file "$INSTALL_DIR/.env" \
-    -f "$INSTALL_DIR/compose.yaml" logs --tail=100 traefik web api mcp scheduler >&2 || true
+    -f "$INSTALL_DIR/compose.yaml" logs --tail=100 traefik web api scheduler >&2 || true
   fatal "HTTPS did not become healthy within $WAIT_TIMEOUT seconds"
 }
 
@@ -920,7 +918,6 @@ main() {
     -f "$INSTALL_DIR/compose.yaml" ps
 
   log "Declarative Forms is live at https://$DOMAIN (revision $revision)"
-  log "MCP server is live at https://mcp.$DOMAIN/mcp"
   log "Production configuration: $INSTALL_DIR/.env"
   log "Persistent data is stored in Docker named volumes; enable DigitalOcean backups separately"
 }

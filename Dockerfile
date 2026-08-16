@@ -6,7 +6,6 @@ COPY package.json package-lock.json tsconfig.json ./
 COPY packages/api/package.json ./packages/api/package.json
 COPY packages/core/package.json ./packages/core/package.json
 COPY packages/engine/package.json ./packages/engine/package.json
-COPY packages/mcp/package.json ./packages/mcp/package.json
 
 FROM workspace AS build
 
@@ -31,13 +30,6 @@ ENV NODE_ENV=production
 EXPOSE 8080
 
 CMD ["node", "packages/api/dist/main.js"]
-
-FROM build AS mcp
-
-ENV NODE_ENV=production
-EXPOSE 8080
-
-CMD ["node", "packages/mcp/dist/main.js"]
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS web
 

@@ -110,4 +110,107 @@ describe('GitHubGateway', () => {
       }),
     );
   });
+
+  it('checks that an authenticated repository is public', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ private: false }),
+      ok: true,
+    });
+    global.fetch = fetchMock;
+
+    await expect(
+      new GitHubGateway().isPublicRepository('acme', 'forms', 'github-token'),
+    ).resolves.toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.github.com/repos/acme/forms',
+      {
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: 'Bearer github-token',
+        },
+      },
+    );
+  });
+
+  it('returns empty metadata when a form does not exist yet', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 404 });
+
+    await expect(
+      new GitHubGateway().retrieveYamlFileMetadata(
+        'acme',
+        'forms',
+        'sales/contact',
+        'draft',
+        'github-token',
+      ),
+    ).resolves.toEqual({});
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://api.github.com/repos/acme/forms/contents/sales/contact.yaml?ref=draft',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer github-token',
+        }),
+      }),
+    );
+  });
+
+  it('retrieves the sha required to update an existing form', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ sha: 'old-file-sha' }),
+      ok: true,
+      status: 200,
+    });
+
+    await expect(
+      new GitHubGateway().retrieveYamlFileMetadata(
+        'acme',
+        'forms',
+        'contact',
+        'main',
+        'github-token',
+      ),
+    ).resolves.toEqual({ sha: 'old-file-sha' });
+  });
+
+  it('writes a form with the authenticated GitHub token', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      json: jest.fn().mockResolvedValue({
+        content: { sha: 'new-file-sha' },
+      }),
+      ok: true,
+    });
+    global.fetch = fetchMock;
+
+    await expect(
+      new GitHubGateway().createOrUpdateYamlFile(
+        'acme',
+        'forms',
+        'contact',
+        'title: Contact',
+        'Update form',
+        'main',
+        'github-token',
+        'old-file-sha',
+      ),
+    ).resolves.toBe('new-file-sha');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.github.com/repos/acme/forms/contents/contact.yaml',
+      {
+        body: JSON.stringify({
+          branch: 'main',
+          content: Buffer.from('title: Contact').toString('base64'),
+          message: 'Update form',
+          sha: 'old-file-sha',
+        }),
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: 'Bearer github-token',
+          'Content-Type': 'application/json',
+        },
+        method: 'PUT',
+      },
+    );
+  });
 });

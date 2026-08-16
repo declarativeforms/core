@@ -89,6 +89,9 @@ services:
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
       AWS_S3_BUCKET_NAME: ${MINIO_BUCKET:-declarativeforms}
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     networks:
       - backend
@@ -112,42 +115,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-
-  mcp:
-    build:
-      context: .
-      target: mcp
-    restart: unless-stopped
-    environment:
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set GITHUB_CLIENT_ID in .env}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Set GITHUB_CLIENT_SECRET in .env}
-      MCP_BASE_URL: https://${MCP_DOMAIN:?Set MCP_DOMAIN in .env}
-      NODE_ENV: production
-      PORT: "8080"
-      RENDER_BASE_URL: https://${DOMAIN:-forms.example.com}
-    networks:
-      - edge
-      - egress
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=declarativeforms_edge
-      - "traefik.http.routers.declarativeforms-mcp.rule=Host(`${MCP_DOMAIN:?Set MCP_DOMAIN in .env}`)"
-      - traefik.http.routers.declarativeforms-mcp.entrypoints=websecure
-      - traefik.http.routers.declarativeforms-mcp.tls=true
-      - traefik.http.routers.declarativeforms-mcp.tls.certresolver=letsencrypt
-      - traefik.http.services.declarativeforms-mcp.loadbalancer.server.port=8080
 
   scheduler:
     build:

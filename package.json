@@ -7,13 +7,10 @@
     "build:engine": "npm run build -w @declarativeforms/engine",
     "build:core": "npm run build -w @declarativeforms/core",
     "build:api": "npm run build -w @declarativeforms/api",
-    "build:mcp": "npm run build -w @declarativeforms/mcp-server",
     "dev:core": "npm run dev -w @declarativeforms/core",
     "dev:api": "npm run dev -w @declarativeforms/api",
-    "dev:mcp": "npm run dev -w @declarativeforms/mcp-server",
     "dev:scheduler": "npm run dev:scheduler -w @declarativeforms/api",
     "deploy:core": "npm run deploy -w @declarativeforms/core",
-    "test": "npm test -w @declarativeforms/api && npm test -w @declarativeforms/mcp-server",
-    "test:mcp": "npm test -w @declarativeforms/mcp-server"
+    "test": "npm test -w @declarativeforms/api"
   }
 }

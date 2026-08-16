@@ -157,7 +157,7 @@ Every field shares these keys, then adds type-specific keys.
 
 ## Field types
 
-There are 23 field types.
+There are 22 field types.
 
 ### Text and numbers
 
