@@ -9,7 +9,6 @@ import {
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
-  MCP_ROUTES,
 } from './routes';
 
 export async function startServer() {
@@ -54,7 +53,6 @@ export async function startServer() {
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
-  MCP_ROUTES.forEach((route) => server.route(route));
 
   server.route({
     handler: async (_request, reply) => {

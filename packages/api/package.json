@@ -7,7 +7,7 @@
     "build": "tsc -b",
     "dev": "tsx watch src/main.ts",
     "dev:scheduler": "tsx watch src/scheduler.ts",
-    "lint": "prettier --write --config prettier.config.cjs --list-different src/**/*.ts",
+    "lint": "prettier --write --config prettier.config.js --list-different src/**/*.ts",
     "start": "node dist/main.js",
     "scheduler": "node dist/scheduler.js",
     "test": "jest"
@@ -28,14 +28,12 @@
     "@declarativeforms/engine": "*",
     "@fastify/cors": "^11.2.0",
     "@fastify/multipart": "^10.1.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
     "@types/md5": "^2.3.6",
     "dotenv": "^17.4.2",
     "fastify": "^5.11.3",
     "md5": "^2.3.0",
     "mongodb": "^7.2.0",
     "qs": "^6.15.1",
-    "resend": "^6.19.0",
-    "zod": "^4.4.3"
+    "resend": "^6.19.0"
   }
 }

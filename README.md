@@ -36,10 +36,10 @@ is the whole workflow.
 
 - [Why Declarative Forms](#why-declarative-forms)
 - [Quick start](#quick-start)
+- [Create forms with an AI agent](#create-forms-with-an-ai-agent)
 - [How a URL maps to a form](#how-a-url-maps-to-a-form)
 - [What you can build](#what-you-can-build)
 - [Defining a form](#defining-a-form)
-- [Publishing forms](#publishing-forms)
 - [Self-hosting](#self-hosting)
 - [Where your data lives](#where-your-data-lives)
 - [Architecture](#architecture)
@@ -105,6 +105,45 @@ without touching your default branch, append `?branch=<branch-name>`.
 Two example forms ship in this repo:
 [`contact.yaml`](./contact.yaml) is a minimal starting point, and
 [`kitchen-sink.yaml`](./kitchen-sink.yaml) exercises every feature.
+
+## Create forms with an AI agent
+
+The repository ships a portable
+[`create-declarative-form`](./skills/create-declarative-form) Agent Skill. It
+teaches an agent the complete form schema, how the renderer behaves, how to
+turn an objective into an effective form, and how to update an existing form
+without breaking its IDs, logic, or integrations.
+
+Install the skill into your agent's personal skill directory after cloning or
+downloading this repository:
+
+```bash
+# Codex
+mkdir -p ~/.codex/skills
+cp -R skills/create-declarative-form ~/.codex/skills/
+
+# Claude Code
+mkdir -p ~/.claude/skills
+cp -R skills/create-declarative-form ~/.claude/skills/
+```
+
+Then open the repository where the form should live and ask the agent, for
+example:
+
+```text
+Use $create-declarative-form to create a concise customer feedback form in
+forms/customer-feedback.yaml. Make the rating required, comments optional, and
+include a clear completion message.
+```
+
+In Claude Code, invoke the same skill as `/create-declarative-form` followed by
+the request.
+
+The skill creates or updates the YAML locally, validates its structure and
+respondent paths, and returns the prospective render URL. It does not need a
+hosted write API or GitHub credentials, and it does not commit or push unless
+you ask. Review the diff, commit the form to your repository, and the normal
+Declarative Forms URL renders it.
 
 ## How a URL maps to a form
 
@@ -196,46 +235,6 @@ connections:
 For every key, field type, validator, and the expression language, read the
 full **[schema reference](./SCHEMA.md)**.
 
-## Publishing forms
-
-ChatGPT, Codex, Claude, and other compatible agents can create forms through
-the hosted Streamable HTTP MCP endpoint:
-
-```text
-https://frms.dev/mcp
-```
-
-It exposes three tools: `get_form_schema`, `get_form`, and `publish_form`. The
-client opens a browser for GitHub authorization, then receives an encrypted
-Declarative Forms credential valid for up to 30 days. GitHub credentials are
-never returned directly to the agent or stored in the database. The
-`publish_form` tool validates the YAML, creates or replaces the file in the
-user's public repository, and returns its public frms.dev URL.
-
-Add it to Codex, then complete the browser login:
-
-```bash
-codex mcp add declarative-forms --url https://frms.dev/mcp
-codex mcp login declarative-forms
-```
-
-Add it to Claude Code and use `/mcp` to complete the browser login:
-
-```bash
-claude mcp add --transport http declarative-forms https://frms.dev/mcp
-```
-
-In ChatGPT, add `https://frms.dev/mcp` as a custom remote MCP server in the
-Plugins settings and complete the same GitHub login. Availability of custom
-plugins is controlled by the user's ChatGPT plan and workspace settings.
-
-After connecting, a request can be as direct as:
-
-```text
-Create a short event feedback form in acme/community-forms at
-forms/event-feedback, publish it, and give me the public link.
-```
-
 ## Self-hosting
 
 Self-hosting gives you full data ownership and lets you read forms from private
@@ -243,9 +242,9 @@ repositories. The stack runs as one Docker Compose project: the web app, the
 API, MongoDB for submissions, MinIO for file storage, and Traefik for automatic
 HTTPS.
 
-**Prerequisites:** the main domain pointed at the host. The automated setup
-below installs Docker on a fresh Ubuntu Droplet; the manual setup requires
-Docker and Docker Compose to be installed already.
+**Prerequisites:** a domain name pointed at the host. The automated setup below
+installs Docker on a fresh Ubuntu Droplet; the manual setup requires Docker and
+Docker Compose to be installed already.
 
 ### Automated DigitalOcean setup
 
@@ -258,9 +257,7 @@ curl --fail --remote-name \
 chmod +x setup-digitalocean.sh
 sudo ./setup-digitalocean.sh \
   --domain forms.example.com \
-  --email admin@example.com \
-  --github-client-id Ov23example \
-  --github-client-secret-file /root/secrets/github-client-secret
+  --email admin@example.com
 ```
 
 The script installs Docker from its official APT repository, creates a
@@ -283,14 +280,13 @@ account-level settings. For deliberately proxied DNS, pass `--skip-dns-check`.
 git clone https://github.com/declarativeforms/core.git
 cd core
 cp .env.example .env
-# Edit .env: set the domain, GitHub OAuth values, AUTH_TOKEN_SECRET, and strong
-# database and storage credentials. See the table below.
+# Edit .env: set DOMAIN, LETSENCRYPT_EMAIL, and strong database and storage
+# credentials. See the table below.
 docker compose up -d
 ```
 
-Traefik obtains a Let's Encrypt certificate for `DOMAIN` automatically. Once
-the services are healthy, the form renderer and API are live at
-`https://<DOMAIN>`.
+Traefik obtains a Let's Encrypt certificate for your `DOMAIN` automatically.
+Once the services are healthy, your instance is live at `https://<DOMAIN>`.
 
 ### Configuration
 
@@ -300,9 +296,6 @@ Copy [`.env.example`](./.env.example) to `.env` and fill it in.
 | --- | --- | --- |
 | `DOMAIN` | Yes | Public hostname. Traefik issues TLS for it. |
 | `LETSENCRYPT_EMAIL` | Yes | Address for Let's Encrypt certificate notices. |
-| `GITHUB_CLIENT_ID` | Yes | Client ID of the GitHub OAuth App used for MCP publishing. |
-| `GITHUB_CLIENT_SECRET` | Yes | Client secret used by browser-based MCP authorization. |
-| `AUTH_TOKEN_SECRET` | Yes | Long random secret used to encrypt MCP authorization and access tokens. |
 | `MONGO_ROOT_USERNAME` / `MONGO_ROOT_PASSWORD` | Yes | MongoDB credentials. Use long, URL-safe values. |
 | `MONGODB_DATABASE_NAME` | No | Database name. Defaults to `declarativeforms`. |
 | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | Yes | Object storage credentials for file uploads. |
@@ -311,10 +304,6 @@ Copy [`.env.example`](./.env.example) to `.env` and fill it in.
 | `GITHUB_TOKEN` | No | Fine-grained PAT with read-only Contents access. Enables private repos. |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | No | Required only for email connections. |
 | `VITE_GOOGLE_MAPS_API_KEY` | No | Enables Google Places address autocomplete. Without it, address fields fall back to manual entry. |
-
-Set the GitHub OAuth App authorization callback URL to
-`<PUBLIC_BASE_URL>/oauth/callback`. The MCP login requests `public_repo` access,
-and the API separately rejects private repositories.
 
 To read forms from a private repository, create a
 [fine-grained personal access token](https://github.com/settings/tokens?type=beta)
@@ -355,13 +344,12 @@ The repository is an npm-workspaces monorepo with three packages.
 | --- | --- |
 | `@declarativeforms/engine` | The shared library. Parses YAML and runs the `parse → resolve → compile → render` pipeline, plus all shared types. Framework-agnostic. |
 | `@declarativeforms/core` | The web app. React 19, Vite, Tailwind. Renders forms and handles submission. |
-| `@declarativeforms/api` | The backend and scheduler worker. Fastify reads and publishes forms, stores submissions, and handles uploads; the separate worker delivers queued connections. |
+| `@declarativeforms/api` | The backend and scheduler worker. Fastify reads forms, stores submissions, and handles uploads; the separate worker delivers queued connections. |
 
 ```mermaid
 flowchart LR
   A[Respondent] --> B[Web app<br/>core]
   B --> C[API<br/>api]
-  I[MCP client] --> C
   C --> D[(GitHub<br/>form YAML)]
   C --> E[(MongoDB<br/>submissions + connection jobs)]
   C --> F[(S3 / MinIO<br/>uploaded files)]
@@ -379,8 +367,8 @@ delivery.
 
 ## Local development
 
-You need Node.js 22 or newer. The engine builds first because the dependent
-packages use it.
+You need Node.js 22 or newer. The engine builds first because both other
+packages depend on it.
 
 ```bash
 npm install

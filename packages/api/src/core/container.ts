@@ -12,7 +12,6 @@ import {
   JobService,
   SubmissionService,
 } from './services';
-import { McpAuthentication } from '../mcp/authentication';
 import {
   EmailConnectionStrategy,
   WebhookConnectionStrategy,
@@ -20,7 +19,6 @@ import {
 } from './strategies';
 
 export type Container = {
-  mcpAuthentication: McpAuthentication;
   db: Db;
   mongoClient: MongoClient;
   gitHubGateway: GitHubGateway;
@@ -55,13 +53,6 @@ export async function getContainer(): Promise<Container> {
   );
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
-  const baseUrl = process.env.PUBLIC_BASE_URL || 'https://frms.dev';
-  const mcpAuthentication = new McpAuthentication(
-    process.env.GITHUB_CLIENT_ID || '',
-    process.env.GITHUB_CLIENT_SECRET || '',
-    process.env.AUTH_TOKEN_SECRET || '',
-    baseUrl,
-  );
   const gitHubFileRepository = new GitHubFileRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const jobRepository = new JobRepository(db);
@@ -99,7 +90,6 @@ export async function getContainer(): Promise<Container> {
     gitHubGateway,
     jobRepository,
     jobService,
-    mcpAuthentication,
     mongoClient,
     submissionRepository,
     submissionService,

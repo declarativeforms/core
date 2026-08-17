@@ -26,8 +26,6 @@ MONGODB_DATABASE_NAME="declarativeforms"
 MINIO_ROOT_USER="declarativeforms"
 MINIO_BUCKET="declarativeforms"
 AWS_REGION="us-east-1"
-GITHUB_CLIENT_ID=""
-GITHUB_CLIENT_SECRET_FILE=""
 GITHUB_TOKEN_FILE=""
 GOOGLE_MAPS_API_KEY_FILE=""
 RESEND_API_KEY_FILE=""
@@ -48,9 +46,6 @@ Usage:
 Required:
   --domain DOMAIN                 Public hostname already pointing at this VM.
   --email EMAIL                   Email used for Let's Encrypt notices.
-  --github-client-id ID           Client ID of the publishing GitHub OAuth App.
-  --github-client-secret-file PATH
-                                  File containing the GitHub OAuth App secret.
 
 Source and host options:
   --repo-url URL                  Public HTTPS Git repository.
@@ -81,8 +76,6 @@ database volumes, object-storage volumes, and certificate state are preserved.
 
 Example:
   sudo ./$SCRIPT_NAME --domain forms.example.com --email admin@example.com \\
-    --github-client-id Ov23example \\
-    --github-client-secret-file /root/github-client-secret \\
     --smoke-form declarativeforms/core/contact
 EOF
 }
@@ -194,16 +187,6 @@ while (($# > 0)); do
       GITHUB_TOKEN_FILE="$2"
       shift 2
       ;;
-    --github-client-id)
-      require_value "$1" "${2-}"
-      GITHUB_CLIENT_ID="$2"
-      shift 2
-      ;;
-    --github-client-secret-file)
-      require_value "$1" "${2-}"
-      GITHUB_CLIENT_SECRET_FILE="$2"
-      shift 2
-      ;;
     --google-maps-key-file)
       require_value "$1" "${2-}"
       GOOGLE_MAPS_API_KEY_FILE="$2"
@@ -273,13 +256,9 @@ validate_identifier() {
 
 [[ -n "$DOMAIN" ]] || fatal "--domain is required"
 [[ -n "$LETSENCRYPT_EMAIL" ]] || fatal "--email is required"
-[[ -n "$GITHUB_CLIENT_ID" ]] || fatal "--github-client-id is required"
-[[ -n "$GITHUB_CLIENT_SECRET_FILE" ]] || \
-  fatal "--github-client-secret-file is required"
 DOMAIN="$(printf '%s' "$DOMAIN" | tr '[:upper:]' '[:lower:]')"
 validate_domain "$DOMAIN"
 validate_email "$LETSENCRYPT_EMAIL"
-validate_identifier "GitHub client ID" "$GITHUB_CLIENT_ID"
 validate_identifier "MongoDB user" "$MONGO_ROOT_USERNAME"
 validate_identifier "MongoDB database" "$MONGODB_DATABASE_NAME"
 validate_identifier "MinIO user" "$MINIO_ROOT_USER"
@@ -314,8 +293,7 @@ if [[ -n "$SMOKE_FORM" ]]; then
     fatal "--smoke-form contains an unsafe path sequence"
 fi
 
-for secret_file in "$GITHUB_CLIENT_SECRET_FILE" "$GITHUB_TOKEN_FILE" \
-  "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
+for secret_file in "$GITHUB_TOKEN_FILE" "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
   [[ -z "$secret_file" || -r "$secret_file" ]] || fatal "cannot read secret file: $secret_file"
 done
 
@@ -738,13 +716,11 @@ existing_env_value() {
 configure_environment() {
   local env_file="$INSTALL_DIR/.env"
   local env_tmp
-  local github_client_secret
   local github_token
   local google_maps_key
   local resend_api_key
   local mongo_password
   local minio_password
-  local auth_token_secret
 
   if [[ -e "$env_file" ]]; then
     [[ -f "$env_file" && ! -L "$env_file" ]] || fatal "$env_file must be a regular file"
@@ -752,27 +728,19 @@ configure_environment() {
       fatal "existing .env uses a different DOMAIN; edit it explicitly before rerunning"
     [[ "$(existing_env_value LETSENCRYPT_EMAIL)" == "$LETSENCRYPT_EMAIL" ]] || \
       fatal "existing .env uses a different LETSENCRYPT_EMAIL; edit it explicitly before rerunning"
-    [[ "$(existing_env_value GITHUB_CLIENT_ID)" == "$GITHUB_CLIENT_ID" ]] || \
-      fatal "existing .env uses a different GITHUB_CLIENT_ID; edit it explicitly before rerunning"
-    [[ -n "$(existing_env_value AUTH_TOKEN_SECRET)" ]] || \
-      fatal "existing .env must set AUTH_TOKEN_SECRET; edit it explicitly before rerunning"
-    [[ -n "$(existing_env_value GITHUB_CLIENT_SECRET)" ]] || \
-      fatal "existing .env must set GITHUB_CLIENT_SECRET; edit it explicitly before rerunning"
     chown "$DEPLOY_USER:$DEPLOY_GROUP" "$env_file"
     chmod 0600 "$env_file"
-    if [[ -n "$GITHUB_CLIENT_SECRET_FILE$GITHUB_TOKEN_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
+    if [[ -n "$GITHUB_TOKEN_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
       warn "existing .env preserved; secret-file and sender options were not applied"
     fi
     return
   fi
 
-  github_client_secret="$(read_secret_file "$GITHUB_CLIENT_SECRET_FILE")"
   github_token="$(read_secret_file "$GITHUB_TOKEN_FILE")"
   google_maps_key="$(read_secret_file "$GOOGLE_MAPS_API_KEY_FILE")"
   resend_api_key="$(read_secret_file "$RESEND_API_KEY_FILE")"
   mongo_password="$(openssl rand -hex 32)"
   minio_password="$(openssl rand -hex 32)"
-  auth_token_secret="$(openssl rand -hex 32)"
   env_tmp="$(mktemp "$INSTALL_DIR/.env.tmp.XXXXXX")"
   TEMP_ENV_FILE="$env_tmp"
 
@@ -780,9 +748,6 @@ configure_environment() {
 DOMAIN=$DOMAIN
 LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL
 PUBLIC_BASE_URL=https://$DOMAIN
-GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
-GITHUB_CLIENT_SECRET=$github_client_secret
-AUTH_TOKEN_SECRET=$auth_token_secret
 
 MONGO_ROOT_USERNAME=$MONGO_ROOT_USERNAME
 MONGO_ROOT_PASSWORD=$mongo_password
@@ -815,7 +780,6 @@ digitalocean_public_ip() {
 
 verify_dns() {
   local public_ip
-  local hostname
   local -a resolved_ips
 
   if [[ "$SKIP_DNS_CHECK" == true ]]; then
@@ -825,23 +789,17 @@ verify_dns() {
 
   public_ip="$(digitalocean_public_ip)" || \
     fatal "DigitalOcean metadata did not return this Droplet's public IPv4 address"
+  mapfile -t resolved_ips < <(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u)
+  ((${#resolved_ips[@]} > 0)) || fatal "$DOMAIN does not currently resolve to an IPv4 address"
 
-  for hostname in "$DOMAIN"; do
-    mapfile -t resolved_ips < <(getent ahostsv4 "$hostname" | awk '{print $1}' | sort -u)
-    ((${#resolved_ips[@]} > 0)) || fatal "$hostname does not currently resolve to an IPv4 address"
-
-    local matched=false
-    for resolved_ip in "${resolved_ips[@]}"; do
-      if [[ "$resolved_ip" == "$public_ip" ]]; then
-        matched=true
-        break
-      fi
-    done
-
-    [[ "$matched" == true ]] || \
-      fatal "$hostname resolves to ${resolved_ips[*]}, not this Droplet ($public_ip). Use --skip-dns-check only for an intentional proxy."
-    log "DNS verified: $hostname resolves to $public_ip"
+  for resolved_ip in "${resolved_ips[@]}"; do
+    if [[ "$resolved_ip" == "$public_ip" ]]; then
+      log "DNS verified: $DOMAIN resolves to $public_ip"
+      return
+    fi
   done
+
+  fatal "$DOMAIN resolves to ${resolved_ips[*]}, not this Droplet ($public_ip). Use --skip-dns-check only for an intentional proxy."
 }
 
 deploy_stack() {
@@ -859,7 +817,7 @@ deploy_stack() {
 
   log "Starting the production stack"
   docker compose --project-directory "$INSTALL_DIR" --env-file "$INSTALL_DIR/.env" \
-    -f "$INSTALL_DIR/compose.yaml" up -d --remove-orphans --wait --wait-timeout "$WAIT_TIMEOUT"
+    -f "$INSTALL_DIR/compose.yaml" up -d --wait --wait-timeout "$WAIT_TIMEOUT"
 }
 
 verify_https() {
@@ -873,12 +831,12 @@ verify_https() {
         --connect-timeout 5 \
         --max-time 15 \
         "https://$DOMAIN/healthz" 2>/dev/null
-    )" && [[ "$health_body" == "ok" ]] && \
+    )" && [[ "$health_body" == "ok" ]]; then
       curl --fail --silent --show-error \
         --connect-timeout 5 \
         --max-time 15 \
         --output /dev/null \
-        "https://$DOMAIN/api/v1/health"; then
+        "https://$DOMAIN/api/v1/health"
 
       if [[ -n "$SMOKE_FORM" ]]; then
         curl --fail --silent --show-error \

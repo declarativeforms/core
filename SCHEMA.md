@@ -111,7 +111,7 @@ sections:
 target or a list of conditional rules.
 
 **Single target.** A section `id`, the literal `done` (finish the form and show
-the completion screen), or an absolute URL (redirect the respondent).
+the completion screen), or an absolute `https://` URL (redirect the respondent).
 
 ```yaml
 next: preferences        # go to the section with id "preferences"
@@ -291,8 +291,8 @@ rule accepts an optional `message` to override the default text.
 | Pattern | `{ type: pattern, regex }` | text | The value must match the regular expression. |
 | Min length | `{ type: min_length, value }` | text | At least `value` characters. |
 | Max length | `{ type: max_length, value }` | text | At most `value` characters. |
-| Min | `{ type: min, value }` | number, select, files | See note below. |
-| Max | `{ type: max, value }` | number, select, files | See note below. |
+| Min | `{ type: min, value }` | number, date/time, rating, multiple select, files | See note below. |
+| Max | `{ type: max, value }` | number, date/time, rating, multiple select, files | See note below. |
 | Expression | `{ type: expression, expression }` | any | The [expression](#expressions) must be truthy. |
 
 ```yaml
