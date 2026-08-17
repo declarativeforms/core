@@ -1,0 +1,139 @@
+# Pre-viewing enquiry form. Financial, household, animal, credit, identity, and
+# document requests intentionally belong to later stages of the rental process.
+version: 1
+title: "Request an apartment viewing — Berlin-Neukölln"
+description: "Request a viewing for apartment APT-3OG-L (listing NK-2026-08-03), available from 1 October 2026. Monthly rent is €1,250 cold and €1,490 warm; a WBS is not required. Please do not send identity, income, or credit documents at this stage."
+locale: "en"
+
+sections:
+  - id: contact
+    title: "About you"
+    fields:
+      - id: application_source
+        type: hidden
+
+      - id: source_code
+        type: hidden
+
+      - id: property_id
+        type: hidden
+
+      - id: unit_id
+        type: hidden
+
+      - id: listing_reference
+        type: hidden
+
+      - id: first_name
+        type: short_text
+        label: "First name"
+        validators:
+          - required
+
+      - id: last_name
+        type: short_text
+        label: "Last name"
+        validators:
+          - required
+
+      - id: preferred_contact_method
+        type: single_select
+        label: "How should we contact you about a viewing?"
+        options:
+          - label: "Email"
+            value: "email"
+          - label: "Phone"
+            value: "phone"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "Email address"
+        placeholder: "anna.becker@example.com"
+        visible_when: "data.preferred_contact_method === 'email'"
+        validators:
+          - required
+
+      - id: phone
+        type: mobile_number
+        label: "Phone number"
+        placeholder: "+49 151 23456789"
+        visible_when: "data.preferred_contact_method === 'phone'"
+        validators:
+          - required
+          - type: pattern
+            regex: "^\\+?[0-9 ()/-]{7,24}$"
+            message: "Enter a valid phone number."
+
+    next: availability
+
+  - id: availability
+    title: "Move-in and viewing availability"
+    fields:
+      - id: desired_move_in_date
+        type: date
+        label: "Desired move-in date"
+        validators:
+          - required
+          - type: min
+            value: "2026-10-01"
+            message: "The apartment is available from 1 October 2026."
+
+      - id: move_in_flexibility
+        type: single_select
+        label: "How flexible is your move-in date?"
+        options:
+          - label: "The selected date is fixed"
+            value: "fixed"
+          - label: "Plus or minus one week"
+            value: "plus_minus_1_week"
+          - label: "Plus or minus two weeks"
+            value: "plus_minus_2_weeks"
+          - label: "Flexible by more than two weeks"
+            value: "flexible"
+        validators:
+          - required
+
+      - id: viewing_windows
+        type: multiple_select
+        label: "When are you generally available for a viewing?"
+        options:
+          - label: "Weekdays, 08:00–12:00"
+            value: "weekday_morning"
+          - label: "Weekdays, 12:00–17:00"
+            value: "weekday_afternoon"
+          - label: "Weekdays, 17:00–20:00"
+            value: "weekday_evening"
+          - label: "Saturday, 09:00–13:00"
+            value: "saturday_morning"
+          - label: "Saturday, 13:00–17:00"
+            value: "saturday_afternoon"
+        validators:
+          - type: min
+            value: 1
+            message: "Select at least one viewing window."
+          - type: max
+            value: 3
+            message: "Select up to three viewing windows."
+
+      - id: viewing_notice
+        type: single_select
+        label: "How much notice do you usually need for a viewing?"
+        options:
+          - label: "Same day"
+            value: "same_day"
+          - label: "One day"
+            value: "one_day"
+          - label: "Two days"
+            value: "two_days"
+          - label: "Up to one week"
+            value: "one_week"
+        validators:
+          - required
+
+    next: done
+
+completion:
+  title: "Thanks, {{data.first_name}}"
+  message: "Your viewing request has been received. If a suitable viewing slot is available, the property team will contact you using your preferred method. Please do not send identity, income, or credit documents unless they are requested at a later stage."
