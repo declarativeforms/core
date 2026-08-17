@@ -25,7 +25,7 @@ function App() {
           <Route
             path="/"
             element={
-              <ExternalRedirect url="https://docs.declarativeforms.com" />
+              <ExternalRedirect url="https://github.com/declarativeforms" />
             }
           />
           <Route path="/:id" element={<MainPage />} />
