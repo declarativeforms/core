@@ -231,11 +231,12 @@ export function MainPage() {
             submissionId: finalSubmissionId,
             step: 'done',
           });
+          const thankYouPath = `/${encodeURIComponent(formId)}/thank-you`;
           navigate(
             withLang(
               finalSubmissionId
-                ? `thank-you?submission_id=${finalSubmissionId}`
-                : 'thank-you',
+                ? `${thankYouPath}?submission_id=${encodeURIComponent(finalSubmissionId)}`
+                : thankYouPath,
             ),
           );
           return;
