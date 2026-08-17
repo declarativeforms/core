@@ -61,6 +61,23 @@ sudo ./setup-digitalocean.sh \
   --smoke-form declarativeforms/core/contact
 ```
 
+To install an existing production environment instead of generating new
+MongoDB and MinIO credentials, copy it to the Droplet and pass it explicitly:
+
+```sh
+scp .env.production root@YOUR_DROPLET_IP:/root/.env.production
+ssh root@YOUR_DROPLET_IP chmod 0600 /root/.env.production
+sudo ./setup-digitalocean.sh \
+  --domain forms.example.com \
+  --email admin@example.com \
+  --env-file /root/.env.production
+```
+
+The supplied file must be a readable regular file rather than a symbolic link,
+and its `DOMAIN` and `LETSENCRYPT_EMAIL` values must match the command. It is
+installed as `/opt/frms/.env` with mode `0600`; the source file remains under
+the operator's control and can be removed after setup succeeds.
+
 The script:
 
 - supports Ubuntu 22.04, 24.04, and 26.04 LTS Droplets;
@@ -109,8 +126,8 @@ credentials associated with existing MongoDB and MinIO volumes. If the domain,
 Let's Encrypt email, or an integration secret must change, edit `.env`
 explicitly before rerunning the script.
 
-Production credentials are stored only in `/opt/frms/.env`, owned by the deploy
-user with mode `0600`.
+Production credentials used by the stack are stored in `/opt/frms/.env`, owned
+by the deploy user with mode `0600`.
 
 ## Manual update
 

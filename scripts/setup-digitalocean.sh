@@ -31,6 +31,7 @@ GOOGLE_MAPS_API_KEY_FILE=""
 RESEND_API_KEY_FILE=""
 RESEND_FROM_EMAIL=""
 SMOKE_FORM=""
+ENVIRONMENT_FILE=""
 SKIP_DNS_CHECK=false
 HARDEN_SSH=true
 TEMP_ENV_FILE=""
@@ -59,6 +60,9 @@ Source and host options:
   --no-ssh-hardening              Leave the existing SSH daemon configuration unchanged.
 
 Application options:
+  --env-file PATH                 Existing Compose environment file to install.
+                                   DOMAIN and LETSENCRYPT_EMAIL must match the
+                                   required command arguments.
   --mongo-user USER               Default: declarativeforms
   --mongo-database NAME           Default: declarativeforms
   --minio-user USER               Default: declarativeforms
@@ -207,6 +211,11 @@ while (($# > 0)); do
       SMOKE_FORM="$2"
       shift 2
       ;;
+    --env-file)
+      require_value "$1" "${2-}"
+      ENVIRONMENT_FILE="$2"
+      shift 2
+      ;;
     --skip-dns-check)
       SKIP_DNS_CHECK=true
       shift
@@ -296,6 +305,10 @@ fi
 for secret_file in "$GITHUB_TOKEN_FILE" "$GOOGLE_MAPS_API_KEY_FILE" "$RESEND_API_KEY_FILE"; do
   [[ -z "$secret_file" || -r "$secret_file" ]] || fatal "cannot read secret file: $secret_file"
 done
+if [[ -n "$ENVIRONMENT_FILE" ]]; then
+  [[ -f "$ENVIRONMENT_FILE" && ! -L "$ENVIRONMENT_FILE" && -r "$ENVIRONMENT_FILE" ]] || \
+    fatal "--env-file must be a readable regular file, not a symbolic link"
+fi
 
 [[ $EUID -eq 0 ]] || fatal "run this script as root (for example, with sudo)"
 [[ -r /etc/os-release ]] || fatal "cannot identify the operating system"
@@ -733,6 +746,16 @@ configure_environment() {
     if [[ -n "$GITHUB_TOKEN_FILE$GOOGLE_MAPS_API_KEY_FILE$RESEND_API_KEY_FILE$RESEND_FROM_EMAIL" ]]; then
       warn "existing .env preserved; secret-file and sender options were not applied"
     fi
+    return
+  fi
+
+  if [[ -n "$ENVIRONMENT_FILE" ]]; then
+    [[ "$(awk -F= '$1 == "DOMAIN" { print substr($0, length($1) + 2); exit }' "$ENVIRONMENT_FILE")" == "$DOMAIN" ]] || \
+      fatal "--env-file uses a different DOMAIN"
+    [[ "$(awk -F= '$1 == "LETSENCRYPT_EMAIL" { print substr($0, length($1) + 2); exit }' "$ENVIRONMENT_FILE")" == "$LETSENCRYPT_EMAIL" ]] || \
+      fatal "--env-file uses a different LETSENCRYPT_EMAIL"
+    install -o "$DEPLOY_USER" -g "$DEPLOY_GROUP" -m 0600 \
+      "$ENVIRONMENT_FILE" "$env_file"
     return
   fi
 
