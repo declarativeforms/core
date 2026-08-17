@@ -35,7 +35,7 @@ export function DeclarativeForm(props: {
       return;
     }
     window.scrollTo(0, 0);
-    sectionRef.current?.focus();
+    sectionRef.current?.focus({ preventScroll: true });
   }, [declarativeForm.activeSectionId]);
 
   if (!declarativeForm.section) {
