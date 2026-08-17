@@ -521,7 +521,13 @@ EOF
       fatal "effective SSH configuration still permits keyboard-interactive authentication"
     grep -Fxq 'permitrootlogin no' <<<"$effective_sshd_config" || \
       fatal "effective SSH configuration still permits direct root login"
-    systemctl reload ssh
+    if systemctl is-active --quiet ssh.service; then
+      systemctl reload ssh.service
+    else
+      systemctl is-active --quiet ssh.socket || \
+        fatal "neither ssh.service nor ssh.socket is active"
+      log "Socket-activated SSH will apply hardening to new connections"
+    fi
   fi
 
   cat >/etc/fail2ban/jail.d/declarativeforms-sshd.local <<'EOF'
