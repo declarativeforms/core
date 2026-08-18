@@ -15,25 +15,26 @@
   "devDependencies": {
     "@types/busboy": "^1.5.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.7.0",
+    "@types/node": "^26.2.0",
     "@types/qs": "^6.15.1",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "jest": "^30.4.2",
     "prettier": "^3.9.6",
     "ts-jest": "^29.4.9",
     "tsx": "^4.23.12",
-    "typescript": "^6.0.3"
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1107.0",
+    "@aws-sdk/client-s3": "^3.1112.0",
     "@declarativeforms/engine": "*",
     "@fastify/cors": "^11.2.0",
-    "@fastify/multipart": "^10.1.0",
+    "@fastify/multipart": "^10.1.1",
     "@types/md5": "^2.3.6",
     "dotenv": "^17.4.2",
-    "fastify": "^5.11.3",
+    "fastify": "^5.12.0",
     "md5": "^2.3.0",
     "mongodb": "^7.2.0",
     "qs": "^6.15.1",
-    "resend": "^6.19.0"
+    "resend": "^6.20.0"
   }
 }

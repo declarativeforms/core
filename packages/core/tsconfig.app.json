@@ -25,7 +25,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "baseUrl": ".",
     "paths": {
       "@declarativeforms/engine": ["../engine/src/index.ts"],
       "@/*": ["./src/*"]
