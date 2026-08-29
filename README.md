@@ -36,6 +36,7 @@ is the whole workflow.
 
 - [Why Declarative Forms](#why-declarative-forms)
 - [Quick start](#quick-start)
+- [Validate your form](#validate-your-form)
 - [Create forms with an AI agent](#create-forms-with-an-ai-agent)
 - [How a URL maps to a form](#how-a-url-maps-to-a-form)
 - [What you can build](#what-you-can-build)
@@ -105,6 +106,43 @@ without touching your default branch, append `?branch=<branch-name>`.
 Two example forms ship in this repo:
 [`contact.yaml`](./contact.yaml) is a minimal starting point, and
 [`kitchen-sink.yaml`](./kitchen-sink.yaml) exercises every feature.
+
+## Validate your form
+
+The complete schema is published as a JSON Schema at
+**<https://frms.dev/schema.json>**. It is generated from the engine, so it
+always describes exactly what this version of the product accepts.
+
+Point your editor at it with a modeline on the first line of the file, and you
+get inline errors and autocompletion for all 22 field types as you type:
+
+```yaml
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Contact us"
+sections:
+  - id: contact
+    fields:
+      - id: email
+        type: email
+        label: "Email address"
+        validators:
+          - required
+```
+
+That modeline is read by the VS Code YAML extension, Neovim, JetBrains IDEs, and
+anything else built on `yaml-language-server`. To check a file in CI instead:
+
+```bash
+pip install check-jsonschema
+check-jsonschema --schemafile https://frms.dev/schema.json forms/*.yaml
+```
+
+The schema is strict: it rejects unknown keys. A misspelled `min_lenght`, a
+`searchable` on a field that is not a dropdown, or a stray `helpText` is caught
+at authoring time rather than being silently ignored at render time. It is also
+a good thing to hand an LLM or a coding agent, since it describes not just the
+shape of a form but the behaviour behind it.
 
 ## Create forms with an AI agent
 

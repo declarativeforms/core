@@ -104,6 +104,25 @@ Then perform all semantic checks below:
 - Localized respondent-facing text has sensible fallbacks.
 - No secrets or repository credentials appear in the YAML.
 
+Validate the file against the published JSON Schema before reporting back.
+It is generated from the engine, so it is the authoritative contract and it is
+strict about unknown keys:
+
+```bash
+check-jsonschema --schemafile https://frms.dev/schema.json <path>
+```
+
+If `check-jsonschema` is not installed (`pip install check-jsonschema`), say so
+rather than skipping the step quietly: the modeline below still gives the author
+validation in their editor.
+
+Add the modeline as the first line of every form you write, so the author's
+editor validates it too:
+
+```yaml
+# yaml-language-server: $schema=https://frms.dev/schema.json
+```
+
 Mentally render representative answer paths using the walkthrough in
 [references/rendering.md](references/rendering.md). For an update, cover both
 the changed path and the previously supported paths. If the target repository

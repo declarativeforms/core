@@ -20,6 +20,9 @@ export { interpolateTemplate } from './compile/template';
 export { evaluateExpression } from './compile/expression';
 export { validateField } from './validate/validate-field';
 
+// The published JSON Schema for the authored YAML (https://frms.dev/schema.json).
+export { FORM_JSON_SCHEMA, assertJsonSchemaCoverage } from './json-schema';
+
 export type ToRenderableFormOptions = {
   locale: string;
   data?: Record<string, unknown>;

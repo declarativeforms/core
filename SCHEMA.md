@@ -9,6 +9,15 @@ ready-to-copy examples ship in this repo:
 [`contact.yaml`](./contact.yaml) (minimal) and
 [`kitchen-sink.yaml`](./kitchen-sink.yaml) (every feature).
 
+Everything below is also published as a machine-readable JSON Schema at
+**<https://frms.dev/schema.json>**, generated from the engine itself. Add
+this modeline to the top of your form and your editor will validate it as you
+type:
+
+```yaml
+# yaml-language-server: $schema=https://frms.dev/schema.json
+```
+
 ## Contents
 
 - [Top-level keys](#top-level-keys)
