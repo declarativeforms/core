@@ -8,9 +8,6 @@ scheduler worker, MongoDB, and MinIO.
 
 - Traefik exposes ports 80 and 443 and obtains a Let's Encrypt certificate with
   HTTP-01 validation.
-- A persistent host firewall permits public HTTP/HTTPS and filters
-  Docker-published ports through the `DOCKER-USER` chain. It does not add,
-  remove, or alter SSH firewall rules.
 - MongoDB and MinIO are available only on an internal Docker network. The API
   joins that network and a separate outbound network for GitHub form reads.
 - The scheduler joins MongoDB's internal network and the outbound network. It
@@ -24,117 +21,57 @@ scheduler worker, MongoDB, and MinIO.
 
 ## Create the Droplet
 
-Ubuntu 24.04 LTS with 1 shared vCPU, 2 GiB RAM, and 50 GiB disk is the practical
-minimum for the full stack. The setup script adds 2 GiB of swap for build-time
-headroom.
+Ubuntu 24.04 LTS, 50 GiB disk, 4 GiB RAM. Size for the build rather than the
+running stack: the `api` image compiles the monorepo inside the container, and
+2 GiB is not enough without swap.
 
-At the DigitalOcean account level:
+Then, at the account level:
 
 1. Add an SSH key when creating the Droplet.
-2. Enable monitoring and weekly or daily Droplet backups.
-3. Point the desired DNS `A` record at the Droplet's public IPv4 address. Keep
-   it DNS-only for the initial deployment, or use `--skip-dns-check` if an
-   intentional reverse proxy hides the origin address.
-
-Backups and monitoring cannot be enabled from inside the VM and are therefore
-not managed by the setup script. A DigitalOcean Cloud Firewall is optional
-defence in depth; the script installs all required firewall rules on the host.
-If a Cloud Firewall is attached, it must allow HTTP and HTTPS or it will take
-precedence before packets reach the host. SSH policy remains operator-managed.
+2. Enable monitoring and Droplet backups.
+3. Attach a Cloud Firewall allowing SSH, HTTP, and HTTPS.
+4. Point the DNS `A` record at the Droplet and let it resolve. Traefik uses the
+   ACME HTTP-01 challenge, so Let's Encrypt cannot issue a certificate until it
+   does.
 
 ## Run the automated setup
 
-Download the script from the public repository:
+Fill in an environment file from [`.env.example`](./.env.example). `DOMAIN` and
+`LETSENCRYPT_EMAIL` are required, and the MongoDB and MinIO passwords must be
+URL-safe because Compose interpolates them into a connection URI;
+`openssl rand -hex 32` produces a suitable value.
+
+```sh
+scp .env root@YOUR_DROPLET_IP:/root/.env
+```
+
+Then, on the Droplet as root:
 
 ```sh
 curl --fail --remote-name \
   https://raw.githubusercontent.com/declarativeforms/core/main/scripts/setup-digitalocean.sh
 chmod +x setup-digitalocean.sh
+sudo ./setup-digitalocean.sh --env-file /root/.env
 ```
 
-Run it as root after DNS resolves to the VM:
+It installs Docker, clones the repository, installs the environment file as
+`/opt/frms/.env` with mode `0600`, and starts the stack. `--help` lists the
+remaining options.
+
+## Updates
+
+Rerun the script to deploy the latest commit at the selected `--ref`.
+`--env-file` can be omitted; the installed `/opt/frms/.env` is reused.
+
+Do not change the MongoDB or MinIO credentials in a working deployment. They are
+fixed when those volumes are first initialised, so replacing them leaves the
+stack unable to authenticate against its own data. To change any other setting,
+edit `/opt/frms/.env` and rerun the script.
+
+By hand:
 
 ```sh
-sudo ./setup-digitalocean.sh \
-  --domain forms.example.com \
-  --email admin@example.com \
-  --smoke-form declarativeforms/core/contact
-```
-
-To install an existing production environment instead of generating new
-MongoDB and MinIO credentials, copy it to the Droplet and pass it explicitly:
-
-```sh
-scp .env.production root@YOUR_DROPLET_IP:/root/.env.production
-ssh root@YOUR_DROPLET_IP chmod 0600 /root/.env.production
-sudo ./setup-digitalocean.sh \
-  --domain forms.example.com \
-  --email admin@example.com \
-  --env-file /root/.env.production
-```
-
-The supplied file must be a readable regular file rather than a symbolic link,
-and its `DOMAIN` and `LETSENCRYPT_EMAIL` values must match the command. It is
-installed as `/opt/frms/.env` with mode `0600`; the source file remains under
-the operator's control and can be removed after setup succeeds.
-
-The script:
-
-- supports Ubuntu 22.04, 24.04, and 26.04 LTS Droplets;
-- installs Docker Engine, Buildx, and Compose from Docker's official APT
-  repository on a fresh host;
-- configures a 2 GiB swap file and bounded Docker logs;
-- creates a non-root `deploy` account, copies the invoking operator's SSH keys,
-  disables password and direct root SSH, and enables Fail2ban;
-- installs persistent IPv4 and IPv6 rules for HTTP/HTTPS plus Docker-aware
-  forwarding rules, without changing SSH firewall access;
-- clones the requested public repository branch or tag into `/opt/frms`;
-- generates URL-safe MongoDB and MinIO credentials without printing them;
-- builds and starts the stack, then verifies its trusted certificate, web
-  health, API health, and an optional GitHub-backed form.
-
-View every parameter with:
-
-```sh
-./setup-digitalocean.sh --help
-```
-
-The generated `declarativeforms-firewall.service` reapplies the policy after
-reboots and Docker restarts. Its `DOCKER-USER` rules prevent a future Compose
-port publication from silently bypassing the HTTP/HTTPS-only Docker policy.
-Host SSH traffic falls through to the VM's pre-existing firewall policy.
-
-Optional API keys are accepted through files rather than command-line values,
-so they do not appear in the process list. For example:
-
-```sh
-sudo ./setup-digitalocean.sh \
-  --domain forms.example.com \
-  --email admin@example.com \
-  --resend-api-key-file /root/secrets/resend \
-  --resend-from-email forms@example.com
-```
-
-## Idempotency and updates
-
-Rerun the same command to fetch and deploy the latest commit at the selected
-`--ref`. The script refuses to replace a dirty checkout or a checkout whose
-origin differs from `--repo-url`.
-
-An existing `/opt/frms/.env` is never regenerated. This preserves the
-credentials associated with existing MongoDB and MinIO volumes. If the domain,
-Let's Encrypt email, or an integration secret must change, edit `.env`
-explicitly before rerunning the script.
-
-Production credentials used by the stack are stored in `/opt/frms/.env`, owned
-by the deploy user with mode `0600`.
-
-## Manual update
-
-```sh
-ssh deploy@YOUR_DROPLET_IP
 cd /opt/frms
-git status --short
 git fetch --depth=1 origin main
 git checkout --detach --force FETCH_HEAD
 docker compose build --pull
@@ -152,20 +89,16 @@ docker compose --project-directory /opt/frms logs --since=15m
 ```
 
 The expected long-running services are Traefik, web, API, scheduler, MongoDB,
-and MinIO.
-The `create_bucket` service should exit successfully after ensuring the bucket
+and MinIO. The `create_bucket` service exits successfully once the bucket
 exists.
 
-Connection deliveries are stored as jobs in MongoDB. If the scheduler is
-restarted, pending jobs remain available. Inspect worker activity with:
+Connection deliveries are queued as jobs in MongoDB and survive a scheduler
+restart. Run one replica: the queue is deliberately simple and at-least-once, so
+a crash immediately after sending can cause a retry.
 
 ```sh
 docker compose --project-directory /opt/frms logs --since=15m scheduler
 ```
-
-Run one scheduler replica. This intentionally simple queue provides
-at-least-once delivery, so a process crash immediately after sending can cause
-a retry.
 
 Persistent volumes are named `declarativeforms_mongodb_data`,
 `declarativeforms_minio_data`, and `declarativeforms_traefik_certs`. Restoring a
