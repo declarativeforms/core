@@ -1,3 +1,5 @@
+'use client';
+
 import type { IRenderableField } from '@declarativeforms/engine';
 
 import { FieldLabel as BaseFieldLabel } from '../../ui';

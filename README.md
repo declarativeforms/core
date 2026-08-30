@@ -305,7 +305,7 @@ The repository is an npm-workspaces monorepo with three packages.
 | Package | What it is |
 | --- | --- |
 | `@declarativeforms/engine` | The shared library. Parses YAML and runs the `parse → resolve → compile → render` pipeline, plus all shared types. Framework-agnostic. |
-| `@declarativeforms/core` | The web app. React 19, Vite, Tailwind. Renders forms and handles submission. |
+| `@declarativeforms/core` | The web app. React 19, Next.js, Tailwind. Renders forms and handles submission. |
 | `@declarativeforms/api` | The backend and scheduler worker. Fastify reads forms, stores submissions, and handles uploads; the separate worker delivers queued connections. |
 
 ```mermaid
@@ -345,6 +345,18 @@ npm run dev:scheduler
 # Run the web app
 npm run dev:core
 ```
+
+The web app proxies `/api/*` to the backend, so point it at whichever API you
+are running by putting `API_INTERNAL_ORIGIN` in `packages/core/.env.local`:
+
+```bash
+# packages/core/.env.local
+API_INTERNAL_ORIGIN=http://127.0.0.1:8080
+GOOGLE_MAPS_API_KEY=          # optional, enables address autocomplete
+```
+
+The browser always calls `/api/v1/...` on the same origin, so there is no CORS
+hop in development either.
 
 The API expects MongoDB and S3-compatible storage. The simplest way to provide
 them during development is to run the stack with

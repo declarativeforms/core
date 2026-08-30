@@ -269,7 +269,7 @@ their URLs.
 ```
 
 Address fields use Google Places autocomplete when a Google Maps key is
-configured (`VITE_GOOGLE_MAPS_API_KEY`). Without a key, they fall back to plain
+configured (`GOOGLE_MAPS_API_KEY`). Without a key, they fall back to plain
 text entry, so they always work. With `outputFormat: structured`, the answer is
 an object (`formatted_address`, `locality`, `country`, `postal_code`, and more).
 The default, `string`, stores the formatted address as a single string.

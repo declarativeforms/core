@@ -1,3 +1,5 @@
+'use client';
+
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 
 type HtmlTextProps<T extends ElementType = 'span'> = {

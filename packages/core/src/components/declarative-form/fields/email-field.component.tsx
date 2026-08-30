@@ -1,3 +1,5 @@
+'use client';
+
 import { Input } from '@/components/ui';
 import type { IRenderableEmailField } from '@declarativeforms/engine';
 

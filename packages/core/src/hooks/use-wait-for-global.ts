@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 
 /**
@@ -9,7 +11,9 @@ export function useWaitForGlobal(
   check: () => boolean,
   { interval = 100, timeout = 10_000 } = {},
 ): boolean {
-  const [ready, setReady] = useState(check);
+  // Seeded `false`, never from `check()`: the probe reads a browser global,
+  // so seeding it would make the server and client disagree on first render.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (ready) return;

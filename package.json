@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build:engine && npm run build:core && npm run build:api",
     "build:engine": "npm run build -w @declarativeforms/engine",
     "build:core": "npm run build -w @declarativeforms/core",
     "build:api": "npm run build -w @declarativeforms/api",

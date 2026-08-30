@@ -1,12 +1,17 @@
+'use client';
+
 import { resolveLocalizedText, type IDeclarativeForm } from '@declarativeforms/engine';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { createAnalytics, type Analytics } from '@/lib/analytics';
 import { getBackendUrl } from '@/lib/api';
+import { replacePath, replaceSearchParams } from '@/lib/url-state';
+
 import { BasePage } from './base.page';
 
 const RESERVED_QUERY_KEYS = new Set([
@@ -17,14 +22,25 @@ const RESERVED_QUERY_KEYS = new Set([
   'branch',
 ]);
 
-export function MainPage() {
-  const navigate = useNavigate();
+/**
+ * Route params arrive as props from the server component rather than from a
+ * router hook, because two different route trees render this: `/[slug]` (a form
+ * id) and `/[slug]/[repository]/[...path]` (a GitHub slug).
+ */
+export type FormRouteProps = {
+  id?: string;
+  owner?: string;
+  repository?: string;
+  slugPath?: string;
+};
+
+export function FormRoute(props: FormRouteProps) {
+  const router = useRouter();
 
   const { locale, t, withLang } = useI18n();
-  const params = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const slugPath = params['*'];
-  const isSlugRoute = !!(params.owner && params.repository && slugPath);
+  const searchParams = useSearchParams();
+  const { id, owner, repository, slugPath } = props;
+  const isSlugRoute = !!(owner && repository && slugPath);
   const branch = searchParams.get('branch');
 
   // Frozen at mount: the form hook captures initialData once, so the submission
@@ -36,24 +52,16 @@ export function MainPage() {
   );
 
   const isCompletingRef = useRef(false);
+  const hasRewrittenSlugRef = useRef(false);
   const analyticsRef = useRef<Analytics | null>(null);
 
   const { data: form, error } = useQuery({
-    queryKey: [
-      'form',
-      params.id,
-      params.owner,
-      params.repository,
-      slugPath,
-      branch,
-    ],
+    queryKey: ['form', id, owner, repository, slugPath, branch],
     queryFn: async () => {
-      const url = params.id
-        ? getBackendUrl(`forms/${params.id}`)
-        : params.owner && params.repository && slugPath
-          ? getBackendUrl(
-              `forms/${params.owner}/${params.repository}/${slugPath}`,
-            )
+      const url = id
+        ? getBackendUrl(`forms/${id}`)
+        : owner && repository && slugPath
+          ? getBackendUrl(`forms/${owner}/${repository}/${slugPath}`)
           : '/default.yaml';
 
       const fetchUrl = new URL(url, window.location.origin);
@@ -72,7 +80,7 @@ export function MainPage() {
     },
   });
 
-  const formId = form?.id ?? params.id ?? '';
+  const formId = form?.id ?? id ?? '';
 
   // Restore previously-submitted answers on refresh/resume. Partial submits are
   // merged server-side, so this holds every prior section's data.
@@ -88,16 +96,22 @@ export function MainPage() {
     enabled: !!formId && !!resumeSubmissionId,
   });
 
+  // Swap the GitHub slug for the canonical form id once the form has loaded.
+  //
+  // `history.replaceState` rather than `router.replace`: the latter would fetch
+  // the `/[slug]` route from the server and remount, throwing away the frozen
+  // resume id and any in-progress answers. Nothing below reads the route props
+  // after this point (`submitToBackend` uses `form.id`), so leaving the mounted
+  // tree on the slug route is safe. Guarded by a ref because search params
+  // change on every section submit.
   useEffect(() => {
-    if (!isSlugRoute || !form?.id) return;
+    if (!isSlugRoute || !form?.id || hasRewrittenSlugRef.current) return;
 
-    const nextParams = new URLSearchParams(searchParams);
+    hasRewrittenSlugRef.current = true;
 
-    const nextSearch = nextParams.toString();
-    navigate(nextSearch ? `/${form.id}?${nextSearch}` : `/${form.id}`, {
-      replace: true,
-    });
-  }, [isSlugRoute, form?.id, navigate, searchParams]);
+    const nextSearch = new URLSearchParams(searchParams).toString();
+    replacePath(nextSearch ? `/${form.id}?${nextSearch}` : `/${form.id}`);
+  }, [isSlugRoute, form?.id, searchParams]);
 
   const urlPrefill: FieldValues = {};
 
@@ -145,7 +159,7 @@ export function MainPage() {
       nextParams.delete('step');
     }
 
-    setSearchParams(nextParams, { replace: true });
+    replaceSearchParams(nextParams);
   }
 
   async function submitToBackend(
@@ -156,7 +170,7 @@ export function MainPage() {
       return;
     }
 
-    const submitFormId = form.id ?? params.id;
+    const submitFormId = form.id ?? id;
 
     if (!submitFormId) {
       return;
@@ -232,7 +246,7 @@ export function MainPage() {
             step: 'done',
           });
           const thankYouPath = `/${encodeURIComponent(formId)}/thank-you`;
-          navigate(
+          router.push(
             withLang(
               finalSubmissionId
                 ? `${thankYouPath}?submission_id=${encodeURIComponent(finalSubmissionId)}`
@@ -322,7 +336,7 @@ export function MainPage() {
       : form.sections?.[0]?.id;
 
   const resolvedTitle =
-    resolveLocalizedText(form.title, locale) || form.id || params.id || '';
+    resolveLocalizedText(form.title, locale) || form.id || id || '';
   const resolvedDescription = form.description
     ? resolveLocalizedText(form.description, locale)
     : undefined;

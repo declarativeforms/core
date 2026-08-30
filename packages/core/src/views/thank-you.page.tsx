@@ -1,6 +1,8 @@
+'use client';
+
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 
 import { HeroSection } from '@/components';
 import { compile, resolve, type IDeclarativeForm } from '@declarativeforms/engine';
@@ -11,16 +13,15 @@ type SubmissionPayload = {
   data: Record<string, unknown>;
 };
 
-export function ThankYouPage() {
+export function ThankYouPage(props: { id: string }) {
   const { locale, t } = useI18n();
-  const params = useParams();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const submissionId = searchParams.get('submission_id');
 
   const { data: form, isLoading: isFormLoading } = useQuery({
-    queryKey: ['form', params.id],
+    queryKey: ['form', props.id],
     queryFn: async () => {
-      const url = getBackendUrl(`forms/${params.id}`);
+      const url = getBackendUrl(`forms/${props.id}`);
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -29,10 +30,10 @@ export function ThankYouPage() {
 
       return (await response.json()) as IDeclarativeForm;
     },
-    enabled: !!params.id,
+    enabled: !!props.id,
   });
 
-  const formId = form?.id ?? params.id;
+  const formId = form?.id ?? props.id;
 
   const { data: submission } = useQuery({
     queryKey: ['submission', formId, submissionId],

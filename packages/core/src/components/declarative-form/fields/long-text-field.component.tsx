@@ -1,3 +1,5 @@
+'use client';
+
 import type { IRenderableLongTextField } from '@declarativeforms/engine';
 import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
 import { Textarea } from '@/components/ui';

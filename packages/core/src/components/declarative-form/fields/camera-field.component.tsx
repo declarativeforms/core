@@ -1,3 +1,5 @@
+'use client';
+
 import { Camera, Loader2, RefreshCw, VideoOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

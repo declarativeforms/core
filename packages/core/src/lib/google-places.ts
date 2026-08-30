@@ -1,5 +1,7 @@
 /// <reference types="google.maps" />
 
+'use client';
+
 import type { IStructuredAddress, PlacePrediction } from './google-places.types';
 
 type TextValue = {

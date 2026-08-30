@@ -1,3 +1,5 @@
+'use client';
+
 export * from './address-field.component';
 export * from './camera-field.component';
 export * from './dropdown-field.component';

@@ -1,8 +1,16 @@
+'use client';
+
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 
 import { interpolateTemplate } from '@declarativeforms/engine';
 
+import { replaceSearchParams } from '@/lib/url-state';
+import {
+  DEFAULT_LOCALE,
+  toSupportedLocale,
+  type Locale,
+} from './locale';
 import {
   enMessages,
   type TranslationKey,
@@ -11,10 +19,7 @@ import {
 import { esMessages } from './messages/es';
 
 export * from './messages/en';
-
-export const SUPPORTED_LOCALES = ['en', 'es'] as const;
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'en';
+export { SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from './locale';
 
 export type TranslationValues = Record<string, string | number>;
 type Translate = (key: TranslationKey, values?: TranslationValues) => string;
@@ -23,19 +28,6 @@ const TRANSLATIONS: Record<Locale, TranslationMessages> = {
   en: enMessages,
   es: esMessages,
 };
-
-function toSupportedLocale(value?: string | null): Locale | null {
-  const normalized = value ? value.trim().toLowerCase().replace('_', '-') : '';
-  if (!normalized) {
-    return null;
-  }
-  const base = normalized.split('-')[0];
-  return (
-    SUPPORTED_LOCALES.find((locale) => locale === normalized) ??
-    SUPPORTED_LOCALES.find((locale) => locale === base) ??
-    null
-  );
-}
 
 function translate(
   locale: Locale,
@@ -50,19 +42,17 @@ function translate(
   return interpolateTemplate(template ?? key, {}, values ?? {});
 }
 
-function resolveLocale(queryLang?: string | null): {
-  locale: Locale;
-  queryLocale: Locale | null;
-} {
+function resolveLocale(
+  queryLang: string | null,
+  fallbackLocale: Locale,
+): { locale: Locale; queryLocale: Locale | null } {
   const queryLocale = toSupportedLocale(queryLang);
   if (queryLocale) {
     return { locale: queryLocale, queryLocale };
   }
-  const browserLocale =
-    typeof navigator !== 'undefined'
-      ? toSupportedLocale(navigator.language)
-      : null;
-  return { locale: browserLocale ?? DEFAULT_LOCALE, queryLocale: null };
+  // The fallback is resolved server-side from `Accept-Language`, so this
+  // returns the same value during SSR and on the client.
+  return { locale: fallbackLocale, queryLocale: null };
 }
 
 type I18nContextValue = {
@@ -81,9 +71,15 @@ export function useI18n(): I18nContextValue {
   return context;
 }
 
-export function I18nProvider(props: { children: ReactNode }) {
-  const [searchParams] = useSearchParams();
-  const { locale, queryLocale } = resolveLocale(searchParams.get('lang'));
+export function I18nProvider(props: {
+  children: ReactNode;
+  fallbackLocale: Locale;
+}) {
+  const searchParams = useSearchParams();
+  const { locale, queryLocale } = resolveLocale(
+    searchParams.get('lang'),
+    props.fallbackLocale,
+  );
 
   const value: I18nContextValue = {
     locale,
@@ -92,9 +88,12 @@ export function I18nProvider(props: { children: ReactNode }) {
       if (!queryLocale) {
         return path;
       }
-      const url = new URL(path, window.location.origin);
-      url.searchParams.set('lang', queryLocale);
-      return `${url.pathname}${url.search}${url.hash}`;
+      // Built by hand rather than via `new URL`: this runs during render, and
+      // there is no `window.location.origin` on the server.
+      const [pathname, query = ''] = path.split('?');
+      const params = new URLSearchParams(query);
+      params.set('lang', queryLocale);
+      return `${pathname}?${params.toString()}`;
     },
   };
 
@@ -109,7 +108,7 @@ export function I18nProvider(props: { children: ReactNode }) {
  * loaded or when the param already matches.
  */
 export function useSyncLangParam(formLocale: string | undefined) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!formLocale || searchParams.get('lang') === formLocale) {
@@ -117,6 +116,6 @@ export function useSyncLangParam(formLocale: string | undefined) {
     }
     const next = new URLSearchParams(searchParams);
     next.set('lang', formLocale);
-    setSearchParams(next, { replace: true });
-  }, [formLocale, searchParams, setSearchParams]);
+    replaceSearchParams(next);
+  }, [formLocale, searchParams]);
 }

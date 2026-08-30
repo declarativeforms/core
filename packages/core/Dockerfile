@@ -7,29 +7,47 @@ COPY packages/engine/package.json ./packages/engine/
 COPY packages/api/package.json ./packages/api/
 COPY packages/core/package.json ./packages/core/
 
-RUN npm ci --workspace=@declarativeforms/core --include-workspace-root
+# The engine workspace is included so its devDependencies (TypeScript) are
+# available: the web app consumes the engine's built `dist`, not its source.
+RUN npm ci \
+      --workspace=@declarativeforms/core \
+      --workspace=@declarativeforms/engine \
+      --include-workspace-root
 
 COPY packages/engine ./packages/engine
 COPY packages/core ./packages/core
 
+# Validated at build time while prerendering /schema.json. Without them the
+# build fails, so they must land before the build step.
 COPY contact.yaml kitchen-sink.yaml ./
 
-ARG VITE_API_BASE_URL=/api/v1
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm run build --workspace=@declarativeforms/core
+RUN npm run build --workspace=@declarativeforms/engine \
+ && npm run build --workspace=@declarativeforms/core
 
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS web
+FROM node:22-alpine AS web
 
-COPY --chown=nginx:nginx --chmod=0644 packages/core/docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --chown=nginx:nginx --from=build /app/packages/core/dist /usr/share/nginx/html
-COPY --chmod=0755 packages/core/docker/web-entrypoint.sh /usr/local/bin/web-entrypoint.sh
+WORKDIR /app
 
-USER root
-RUN chown nginx:nginx /usr/share/nginx/html
-USER nginx
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=8080 \
+    # Without this the standalone server binds to localhost and Traefik cannot
+    # reach it.
+    HOSTNAME=0.0.0.0
+
+# `output: standalone` traces from the workspace root, so the server lands at
+# packages/core/server.js. Neither `public/` nor `.next/static` is included in
+# the traced output; both have to be copied in.
+COPY --from=build /app/packages/core/.next/standalone ./
+COPY --from=build /app/packages/core/.next/static ./packages/core/.next/static
+COPY --from=build /app/packages/core/public ./packages/core/public
+
+RUN mkdir -p /app/packages/core/.next/cache && chown -R node:node /app
+
+USER node
 
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/web-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "packages/core/server.js"]

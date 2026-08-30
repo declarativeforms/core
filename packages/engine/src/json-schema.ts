@@ -167,7 +167,7 @@ const fieldBranches: JsonSchemaNode[] = [
   ),
   fieldBranch(
     FIELD_TYPE_GROUPS.address,
-    'An address autocomplete. `address` captures a full address, `address_locality` a city, `address_region` a state or region, and `address_country` a country. Backed by Google Places when `VITE_GOOGLE_MAPS_API_KEY` is configured, falling back to plain text entry when it is not, so the field always works.',
+    'An address autocomplete. `address` captures a full address, `address_locality` a city, `address_region` a state or region, and `address_country` a country. Backed by Google Places when `GOOGLE_MAPS_API_KEY` is configured, falling back to plain text entry when it is not, so the field always works.',
     {
       outputFormat: {
         enum: ['string', 'structured'],

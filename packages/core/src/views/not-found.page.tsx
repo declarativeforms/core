@@ -1,3 +1,5 @@
+'use client';
+
 import { HeroSection } from '@/components/declarative-form/scaffolding/hero-section.component';
 import { useI18n } from '@/i18n';
 

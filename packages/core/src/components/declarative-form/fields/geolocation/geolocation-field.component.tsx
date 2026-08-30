@@ -1,6 +1,8 @@
+'use client';
+
+import dynamic from 'next/dynamic';
 import { AlertCircle, Loader2, MapPin, X } from 'lucide-react';
 import {
-  lazy,
   Suspense,
   useCallback,
   useEffect,
@@ -13,7 +15,12 @@ import type { TranslationKey } from '@/i18n/messages/en';
 import type { DeclarativeFieldComponentProps } from '../../supporting/field-support.types';
 import { useI18n } from '@/i18n';
 
-const GeolocationMapPreview = lazy(() => import('./geolocation-map-preview'));
+// `ssr: false` rather than `lazy`: React 19 awaits a lazy import during SSR,
+// and leaflet touches `window` at module scope.
+const GeolocationMapPreview = dynamic(
+  () => import('./geolocation-map-preview'),
+  { ssr: false },
+);
 
 type GeolocationValue = {
   latitude: number;
