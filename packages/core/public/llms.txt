@@ -1,0 +1,38 @@
+# Declarative Forms
+
+> Forms that live in your Git repository. A form is a YAML file you commit to GitHub, served as a live, hosted form. Open source under AGPL-3.0, self-hostable, with no visual builder and no vendor lock-in.
+
+Commit a YAML file to a public GitHub repository and it renders at
+`https://frms.dev/<owner>/<repo>/<path-without-.yaml>`. A commit is a deploy.
+Add `?branch=<name>` to preview a branch, which is also required whenever the
+repository's default branch is not `main`.
+
+A form file needs one key: `sections`. Each section is a page of `fields`, and
+each field has an `id`, a `type`, and optional `label`, `validators`, and a
+`visible_when` condition. There are 22 field types, 7 validators, conditional
+branching between sections, multi-language text, and webhook and email
+connections. Responses are stored in your own MongoDB, and uploaded files in
+your own S3-compatible bucket.
+
+Alternatives people compare it to: Tally, Jotform, Youform, Typeform, Google
+Forms. The difference is that forms are diffable files under code review rather
+than rows in someone else's database.
+
+## Agent instructions
+
+- [AGENTS.md](https://frms.dev/AGENTS.md): Complete instructions for creating and updating forms. The URL contract, the full schema, engine behaviour the schema cannot express, form design guidance, how to change a form without breaking stored responses, and a validation checklist. Start here.
+
+## Schema
+
+- [schema.json](https://frms.dev/schema.json): The authoritative JSON Schema (draft-07), generated from the engine. Strict: it rejects unknown keys. Use it with `check-jsonschema`, or as a `# yaml-language-server: $schema=` modeline for editor validation.
+- [SCHEMA.md](https://raw.githubusercontent.com/declarativeforms/core/main/SCHEMA.md): The same schema as prose. Every top-level key, field type, validator, the expression language, templating, completion screens, and connections.
+
+## Examples
+
+- [contact.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/contact.yaml): A minimal single-section form with validation and a templated completion screen.
+- [kitchen-sink.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/kitchen-sink.yaml): Every field type, every validator, conditional navigation, visibility conditions, a cross-field expression, localization, a conditional completion screen, and a gated webhook.
+
+## Optional
+
+- [README.md](https://raw.githubusercontent.com/declarativeforms/core/main/README.md): Project overview, quick start, where your data lives, architecture, and self-hosting with Docker Compose.
+- [Source repository](https://github.com/declarativeforms/core): The monorepo. Engine, web app, and API.

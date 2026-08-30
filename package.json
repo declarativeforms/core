@@ -1,7 +1,9 @@
 {
   "name": "declarativeforms",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build --workspaces",
     "build:engine": "npm run build -w @declarativeforms/engine",
@@ -10,7 +12,6 @@
     "dev:core": "npm run dev -w @declarativeforms/core",
     "dev:api": "npm run dev -w @declarativeforms/api",
     "dev:scheduler": "npm run dev:scheduler -w @declarativeforms/api",
-    "deploy:core": "npm run deploy -w @declarativeforms/core",
     "test": "npm test -w @declarativeforms/api"
   }
 }

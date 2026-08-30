@@ -373,9 +373,21 @@ conditions, not computation.
 
 ## Templating
 
-`title`, `description`, and the completion `title` and `message` support
-`{{data.field_id}}` placeholders. They are filled in with the respondent's
-answers.
+`{{data.field_id}}` placeholders are filled in with the respondent's answers.
+They are supported in:
+
+- the form `title` and `description`
+- a section `title`
+- a field `label` and `placeholder`
+- option labels, and a rating's `min_label` and `max_label`
+- the completion `title`, `message`, and the button's `label` and `url`
+- an email connection's `to`, `subject`, and `body`
+
+Templating is Handlebars with escaping turned off, and email bodies are sent as
+HTML. An answer interpolated into completion text or an email body is not
+escaped, so treat respondent input as untrusted when you template it.
+
+Inside an email connection only, `{{form.title}}` also resolves.
 
 ```yaml
 completion:

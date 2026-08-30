@@ -32,9 +32,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Firebase
-.firebase
-
 # Coverage
 coverage
 *.lcov

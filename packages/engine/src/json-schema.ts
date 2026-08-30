@@ -89,7 +89,7 @@ const fieldBaseProperties: Record<string, JsonSchemaNode> = {
   },
   visible_when: ref(
     'expression',
-    'The field is shown only while this expression is truthy, re-evaluated as the respondent types. A value entered before the field was hidden is still submitted: hiding a field does not clear its answer.',
+    'The field is shown only while this expression is truthy, re-evaluated as the respondent types. Hiding a field drops it from the section being filled: its answer is not submitted with that section and it is never required. An answer already saved by an earlier section survives, because partial saves are merged. Do not depend on a value from a field that the same answer path hides.',
   ),
 };
 

@@ -32,12 +32,18 @@ sections:
 Commit that file, then open `https://frms.dev/your-org/your-repo/contact`. That
 is the whole workflow.
 
+> **Using a coding agent?** Point it at **<https://frms.dev/AGENTS.md>** and it
+> can write and maintain forms for you. No install, no plugin.
+> <https://frms.dev/llms.txt> is the index, and
+> <https://frms.dev/schema.json> is the machine-readable schema.
+
 ## Contents
 
 - [Why Declarative Forms](#why-declarative-forms)
 - [Quick start](#quick-start)
 - [Validate your form](#validate-your-form)
 - [Create forms with an AI agent](#create-forms-with-an-ai-agent)
+- [For AI agents and LLMs](#for-ai-agents-and-llms)
 - [How a URL maps to a form](#how-a-url-maps-to-a-form)
 - [What you can build](#what-you-can-build)
 - [Defining a form](#defining-a-form)
@@ -141,46 +147,46 @@ The schema is strict: it rejects unknown keys. A misspelled `min_lenght`, a
 `searchable` on a field that is not a dropdown, or a stray `helpText` is caught
 at authoring time rather than being silently ignored at render time. It is also
 a good thing to hand an LLM or a coding agent, since it describes not just the
-shape of a form but the behaviour behind it.
+shape of a form but the behaviour behind it. For agents, pair it with
+[AGENTS.md](https://frms.dev/AGENTS.md) and
+[llms.txt](https://frms.dev/llms.txt).
 
 ## Create forms with an AI agent
 
-The repository ships a portable
-[`create-declarative-form`](./skills/create-declarative-form) Agent Skill. It
-teaches an agent the complete form schema, how the renderer behaves, how to
-turn an objective into an effective form, and how to update an existing form
-without breaking its IDs, logic, or integrations.
-
-Install the skill into your agent's personal skill directory after cloning or
-downloading this repository:
-
-```bash
-# Codex
-mkdir -p ~/.codex/skills
-cp -R skills/create-declarative-form ~/.codex/skills/
-
-# Claude Code
-mkdir -p ~/.claude/skills
-cp -R skills/create-declarative-form ~/.claude/skills/
-```
-
-Then open the repository where the form should live and ask the agent, for
-example:
+Any coding agent can author forms here. There is nothing to install: point it at
+the instructions and ask.
 
 ```text
-Use $create-declarative-form to create a concise customer feedback form in
-forms/customer-feedback.yaml. Make the rating required, comments optional, and
-include a clear completion message.
+Read https://frms.dev/AGENTS.md, then create a customer feedback form in
+forms/customer-feedback.yaml. Make the rating required, comments optional,
+and include a clear completion message.
 ```
 
-In Claude Code, invoke the same skill as `/create-declarative-form` followed by
-the request.
+[AGENTS.md](https://frms.dev/AGENTS.md) teaches an agent the complete schema, the behaviour
+the schema cannot express, how to turn an objective into an effective form, and
+how to update an existing form without breaking its IDs, logic, or stored
+responses. It works with Claude Code, Codex, Cursor, and anything else that can
+fetch a URL.
 
-The skill creates or updates the YAML locally, validates its structure and
-respondent paths, and returns the prospective render URL. It does not need a
-hosted write API or GitHub credentials, and it does not commit or push unless
-you ask. Review the diff, commit the form to your repository, and the normal
-Declarative Forms URL renders it.
+The agent writes the YAML locally, validates it against the published schema,
+and tells you the URL it will render at. It does not need a hosted write API or
+GitHub credentials, and it does not commit or push unless you ask. Review the
+diff, commit the form, and the normal Declarative Forms URL renders it.
+
+## For AI agents and LLMs
+
+Three files are published for machine consumption. All are served with
+`Access-Control-Allow-Origin: *`.
+
+| File | What it is |
+| --- | --- |
+| **[llms.txt](https://frms.dev/llms.txt)** | Discovery index in [llmstxt.org](https://llmstxt.org) format. Start here. |
+| **[AGENTS.md](https://frms.dev/AGENTS.md)** | Complete instructions for creating and updating forms. |
+| **[schema.json](https://frms.dev/schema.json)** | The authoritative JSON Schema, generated from the engine. |
+
+`AGENTS.md` and `llms.txt` are static assets in `packages/core/public/`, so
+they ship with the web app like any other file. The build fails if a field type
+is added to the engine without documenting it in `AGENTS.md`.
 
 ## How a URL maps to a form
 
@@ -194,12 +200,16 @@ https://frms.dev/your-org/your-repo/forms/signup?branch=draft&embed=true
 | --- | --- |
 | `owner` / `repo` | The GitHub repository the form is read from. |
 | file path | Path to the YAML file inside the repo, without `.yaml`. |
-| `?branch=` | Render the form from a specific branch. Defaults to the repo's default branch. |
+| `?branch=` | Render the form from a specific branch. Defaults to `main`, not to the repository's own default branch. |
 | `?embed=true` | Render for embedding in an `iframe`, without page chrome. |
 
 Forms are read live from GitHub each time, so a commit is a deploy. Any other
 query parameter [prefills a matching field](./SCHEMA.md#prefilling-fields-from-the-url),
 which is handy for `hidden` fields and campaign links.
+
+**If your default branch is not `main`,** pass it explicitly. The branch
+defaults to the literal `main`, so a repository on `master` or `develop`
+returns "not found" without `?branch=master`.
 
 ## What you can build
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Create Declarative Form"
-  short_description: "Create and update repository-native forms"
-  default_prompt: "Use $create-declarative-form to create or update a form in this repository."
