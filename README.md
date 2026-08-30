@@ -41,7 +41,6 @@ is the whole workflow.
 - [How a URL maps to a form](#how-a-url-maps-to-a-form)
 - [What you can build](#what-you-can-build)
 - [Defining a form](#defining-a-form)
-- [Self-hosting](#self-hosting)
 - [Where your data lives](#where-your-data-lives)
 - [Architecture](#architecture)
 - [Local development](#local-development)
@@ -273,84 +272,6 @@ connections:
 For every key, field type, validator, and the expression language, read the
 full **[schema reference](./SCHEMA.md)**.
 
-## Self-hosting
-
-Self-hosting gives you full data ownership and lets you read forms from private
-repositories. The stack runs as one Docker Compose project: the web app, the
-API, MongoDB for submissions, MinIO for file storage, and Traefik for automatic
-HTTPS.
-
-**Prerequisites:** a domain name pointed at the host. The automated setup below
-installs Docker on a fresh Ubuntu Droplet; the manual setup requires Docker and
-Docker Compose to be installed already.
-
-### Automated DigitalOcean setup
-
-Fill in `.env` from [`.env.example`](./.env.example) and copy it to a fresh
-Ubuntu 24.04 Droplet whose `A` record already points at it:
-
-```bash
-scp .env root@YOUR_DROPLET_IP:/root/.env
-```
-
-Then, on the Droplet:
-
-```bash
-curl --fail --remote-name \
-  https://raw.githubusercontent.com/declarativeforms/core/main/scripts/setup-digitalocean.sh
-chmod +x setup-digitalocean.sh
-sudo ./setup-digitalocean.sh --env-file /root/.env
-```
-
-The script installs Docker, clones the repository, and starts the stack. See
-[DEPLOYMENT.md](./DEPLOYMENT.md) for sizing and operations.
-
-### Manual setup
-
-```bash
-git clone https://github.com/declarativeforms/core.git
-cd core
-cp .env.example .env
-# Edit .env: set DOMAIN, LETSENCRYPT_EMAIL, and strong database and storage
-# credentials. See the table below.
-docker compose up -d
-```
-
-Traefik obtains a Let's Encrypt certificate for your `DOMAIN` automatically.
-Once the services are healthy, your instance is live at `https://<DOMAIN>`.
-
-### Configuration
-
-Copy [`.env.example`](./.env.example) to `.env` and fill it in.
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DOMAIN` | Yes | Public hostname. Traefik issues TLS for it. |
-| `LETSENCRYPT_EMAIL` | Yes | Address for Let's Encrypt certificate notices. |
-| `MONGO_ROOT_USERNAME` / `MONGO_ROOT_PASSWORD` | Yes | MongoDB credentials. Use long, URL-safe values. |
-| `MONGODB_DATABASE_NAME` | No | Database name. Defaults to `declarativeforms`. |
-| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | Yes | Object storage credentials for file uploads. |
-| `MINIO_BUCKET` | No | Bucket name. Defaults to `declarativeforms`. |
-| `PUBLIC_BASE_URL` | No | Base URL used in returned file links. Derived from `DOMAIN` if empty. |
-| `GITHUB_TOKEN` | No | Fine-grained PAT with read-only Contents access. Enables private repos. |
-| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | No | Required only for email connections. |
-| `VITE_GOOGLE_MAPS_API_KEY` | No | Enables Google Places address autocomplete. Without it, address fields fall back to manual entry. |
-
-To read forms from a private repository, create a
-[fine-grained personal access token](https://github.com/settings/tokens?type=beta)
-with read-only **Contents** permission on that repository, and set it as
-`GITHUB_TOKEN`. Grant no write permissions.
-
-### Running locally without TLS
-
-To try the full stack on your machine, layer the local override, which skips
-Traefik and exposes the app on a port:
-
-```bash
-docker compose -f compose.yaml -f compose.local.yaml up --build
-# Open http://localhost:8080
-```
-
 ## Where your data lives
 
 Clarity on data matters, so here is exactly where everything goes when you
@@ -417,7 +338,7 @@ npm run dev:core
 
 The API expects MongoDB and S3-compatible storage. The simplest way to provide
 them during development is to run the stack with
-`docker compose -f compose.yaml -f compose.local.yaml up`.
+`docker compose -f compose.yaml -f compose.local.yaml up --build`.
 
 Useful scripts:
 

@@ -37,13 +37,10 @@ services:
         condition: service_healthy
 
   web:
-    build:
-      context: .
-      target: web
-      args:
-        VITE_API_BASE_URL: /api/v1
-        VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY:-}
+    image: ghcr.io/declarativeforms/core-web:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-${VITE_GOOGLE_MAPS_API_KEY:-}}
     networks:
       - edge
       - backend
@@ -73,9 +70,7 @@ services:
       - traefik.http.services.declarativeforms.loadbalancer.server.port=8080
 
   api:
-    build:
-      context: .
-      target: api
+    image: ghcr.io/declarativeforms/core-api:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -114,9 +109,7 @@ services:
       start_period: 10s
 
   scheduler:
-    build:
-      context: .
-      target: api
+    image: ghcr.io/declarativeforms/core-api:${IMAGE_TAG:-latest}
     command: ["node", "packages/api/dist/scheduler.js"]
     restart: unless-stopped
     environment:

@@ -2,17 +2,18 @@
 #
 # Deploy Declarative Forms on an Ubuntu DigitalOcean Droplet.
 #
-# Installs Docker if it is missing, fetches the repository, and brings the
-# Compose stack up. Bring your own .env: see .env.example for the variables the
-# stack needs.
+# Installs Docker if it is missing, fetches compose.yaml, and starts the stack
+# from the images published to GHCR. Nothing is built on the Droplet.
+#
+# Bring your own .env: see .env.example for the variables the stack needs.
 
 set -Eeuo pipefail
 
 readonly SCRIPT_NAME="${0##*/}"
 readonly INSTALL_DIR="/opt/frms"
+readonly REPOSITORY="declarativeforms/core"
 
-REPOSITORY_URL="https://github.com/declarativeforms/core.git"
-REPOSITORY_REF="main"
+IMAGE_TAG="latest"
 ENVIRONMENT_FILE=""
 
 usage() {
@@ -20,18 +21,18 @@ usage() {
 Deploy Declarative Forms on an Ubuntu DigitalOcean Droplet.
 
 Usage:
-  sudo ./$SCRIPT_NAME [--env-file PATH] [options]
+  sudo ./$SCRIPT_NAME [--env-file PATH] [--tag TAG]
 
 Options:
   --env-file PATH   Environment file to install as $INSTALL_DIR/.env.
                     Required on a first run; afterwards the existing file is
                     reused. Copy .env.example and fill it in.
-  --repo-url URL    Default: $REPOSITORY_URL
-  --ref REF         Branch, tag, or commit to deploy. Default: $REPOSITORY_REF
+  --tag TAG         Published image tag to deploy, for example v1.2.0.
+                    Default: $IMAGE_TAG
   -h, --help        Show this help.
 
-Re-run to deploy a newer revision. The installed .env is left alone, so the
-credentials tied to the existing database and storage volumes are preserved.
+Images are pulled from ghcr.io/$REPOSITORY-{web,api}; nothing is compiled on the
+Droplet. Re-run to move to a newer tag.
 
 Example:
   sudo ./$SCRIPT_NAME --env-file /root/.env
@@ -52,7 +53,8 @@ require_value() {
 }
 
 compose() {
-  docker compose --project-directory "$INSTALL_DIR" \
+  IMAGE_TAG="$IMAGE_TAG" docker compose \
+    --project-directory "$INSTALL_DIR" \
     --env-file "$INSTALL_DIR/.env" "$@"
 }
 
@@ -67,7 +69,7 @@ install_docker() {
   log "Installing Docker Engine and Compose"
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
-  apt-get install -y ca-certificates curl git
+  apt-get install -y ca-certificates curl
 
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -77,6 +79,7 @@ install_docker() {
   source /etc/os-release
   codename="${UBUNTU_CODENAME:-${VERSION_CODENAME:-}}"
   [[ -n "$codename" ]] || fatal "cannot determine the Ubuntu codename"
+
   cat >/etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/ubuntu
@@ -91,17 +94,15 @@ EOF
     docker-compose-plugin
 }
 
-sync_repository() {
-  if [[ ! -d "$INSTALL_DIR/.git" ]]; then
-    log "Cloning $REPOSITORY_URL into $INSTALL_DIR"
-    git clone --depth=1 "$REPOSITORY_URL" "$INSTALL_DIR"
-  fi
+fetch_compose() {
+  # `latest` tracks the default branch; a release tag has a matching Git tag.
+  local ref="$IMAGE_TAG"
+  [[ "$ref" == "latest" ]] && ref="main"
 
-  # Fetching the ref and checking out FETCH_HEAD works the same for a branch,
-  # a tag, or a commit SHA.
-  log "Checking out $REPOSITORY_REF"
-  git -C "$INSTALL_DIR" fetch --depth=1 --force origin "$REPOSITORY_REF"
-  git -C "$INSTALL_DIR" checkout --detach --force FETCH_HEAD
+  log "Fetching compose.yaml at $ref"
+  install -d -m 0755 "$INSTALL_DIR"
+  curl -fsSL "https://raw.githubusercontent.com/$REPOSITORY/$ref/compose.yaml" \
+    -o "$INSTALL_DIR/compose.yaml"
 }
 
 install_env() {
@@ -115,11 +116,8 @@ install_env() {
 }
 
 deploy() {
-  log "Building images (this compiles the monorepo and takes a few minutes)"
-  compose build --pull
-
-  log "Pulling pinned service images"
-  compose pull --ignore-buildable
+  log "Pulling images at tag $IMAGE_TAG"
+  compose pull
 
   log "Starting the stack"
   compose up -d --wait --wait-timeout 300
@@ -128,8 +126,7 @@ deploy() {
 while (($# > 0)); do
   case "$1" in
     --env-file) require_value "$@"; ENVIRONMENT_FILE="$2"; shift 2 ;;
-    --repo-url) require_value "$@"; REPOSITORY_URL="$2"; shift 2 ;;
-    --ref) require_value "$@"; REPOSITORY_REF="$2"; shift 2 ;;
+    --tag) require_value "$@"; IMAGE_TAG="$2"; shift 2 ;;
     -h | --help) usage; exit 0 ;;
     *) fatal "unknown option: $1" ;;
   esac
@@ -140,7 +137,7 @@ done
 [[ $EUID -eq 0 ]] || fatal "run this script as root (for example, with sudo)"
 
 install_docker
-sync_repository
+fetch_compose
 install_env
 deploy
 

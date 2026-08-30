@@ -1,19 +1,22 @@
-FROM node:lts-slim
-WORKDIR /usr/src/app
+FROM node:22-alpine AS build
 
-# Copy workspace config + relevant packages
+WORKDIR /app
+
 COPY package.json package-lock.json ./
-COPY packages/engine/ packages/engine/
-COPY packages/api/ packages/api/
+COPY packages/engine/package.json ./packages/engine/
+COPY packages/api/package.json ./packages/api/
+COPY packages/core/package.json ./packages/core/
 
-# Install dependencies for API + engine workspaces
-RUN npm install --workspace=@declarativeforms/engine --workspace=@declarativeforms/api
+RUN npm ci --workspace=@declarativeforms/api --include-workspace-root
 
-# Build engine, then API
-RUN npm run build --workspace=@declarativeforms/engine
+COPY packages/engine ./packages/engine
+COPY packages/api ./packages/api
+
 RUN npm run build --workspace=@declarativeforms/api
 
-# Run tests
-RUN npm test --workspace=@declarativeforms/api
+FROM build AS api
+
+ENV NODE_ENV=production
+EXPOSE 8080
 
 CMD ["node", "packages/api/dist/main.js"]
