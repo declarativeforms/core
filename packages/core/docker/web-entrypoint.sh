@@ -1,3 +1,5 @@
+#!/bin/sh
+
 set -eu
 
 : "${GOOGLE_MAPS_API_KEY:=}"
