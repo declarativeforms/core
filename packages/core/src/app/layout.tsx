@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
+import { metadataBase, SITE_NAME } from '@/lib/form-metadata';
 import { resolveRequestLocale } from '@/i18n/server';
 
 import { GoogleMapsLoader } from './google-maps-loader.client';
@@ -12,10 +13,29 @@ import './globals.css';
 // and `?lang` through `useSearchParams`. Nothing here is prerenderable.
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Declarative Forms',
-  icons: { icon: '/favicon-32x32.png' },
-};
+const SITE_DESCRIPTION =
+  'Forms that live in your Git repo. Write a form as a YAML file, commit it, and it renders as a live, hosted form.';
+
+// A function rather than a constant so `metadataBase` can come from the request:
+// the app is self-hosted under whatever domain the operator points at it, and
+// without an origin Next resolves the OpenGraph image against localhost.
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    metadataBase: await metadataBase(),
+    // `%s — Declarative Forms` is the title `BasePage` has always assembled by
+    // hand for `document.title`; pages now supply only their own half.
+    title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
+    description: SITE_DESCRIPTION,
+    icons: { icon: '/favicon-32x32.png' },
+    openGraph: {
+      siteName: SITE_NAME,
+      title: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      type: 'website',
+    },
+    twitter: { card: 'summary_large_image' },
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',

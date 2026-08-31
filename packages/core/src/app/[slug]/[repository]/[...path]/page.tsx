@@ -1,6 +1,30 @@
+import type { Metadata } from 'next';
+
+import { formMetadata } from '@/lib/form-metadata';
 import { FormRoute } from '@/views/form-route';
 
 import { PageShell } from '../../../page-shell';
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string; repository: string; path: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const { slug, repository, path } = await params;
+  const { branch, lang } = await searchParams;
+
+  return formMetadata(
+    {
+      owner: slug,
+      repository,
+      path: path.join('/'),
+      branch: typeof branch === 'string' ? branch : undefined,
+    },
+    typeof lang === 'string' ? lang : undefined,
+  );
+}
 
 /**
  * A form addressed by its GitHub location: `/{owner}/{repository}/{path}`.
