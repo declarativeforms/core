@@ -1,6 +1,6 @@
-import cluster from 'cluster';
 import { config } from 'dotenv';
-import * as os from 'os';
+import cluster from 'node:cluster';
+import * as os from 'node:os';
 import { startServer } from './server';
 
 config();

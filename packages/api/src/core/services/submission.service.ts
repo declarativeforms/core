@@ -11,10 +11,6 @@ import type { SubmissionRepository } from '../repositories';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
 
-/**
- * The outcome of a submission attempt. `null` (returned separately) means the
- * form or the referenced submission was not found.
- */
 export type SubmissionResult =
   | { type: 'created'; submission: ISubmission }
   | { type: 'invalid'; errors: Record<string, string> };
@@ -42,8 +38,6 @@ export class SubmissionService {
       return null;
     }
 
-    // The server is the authority. A final submission is re-validated against
-    // the same engine rules the client used; partial (draft) saves are not.
     if (!isPartial) {
       const errors = this.validate(form, data);
 
@@ -113,22 +107,18 @@ export class SubmissionService {
     return this.submissionRepository.find(formId, submissionId);
   }
 
-  /**
-   * Validate a final submission. Compiles the form against the answers, then
-   * walks the navigation path those answers produce (following each section's
-   * resolved `next`), so sections skipped by conditional routing are never
-   * required. Each visible field is checked with the engine's `validateField`,
-   * the same code the browser runs. Returns `fieldId -> message` per failure.
-   */
   private validate(
     form: IDeclarativeForm,
     data: Record<string, unknown>,
   ): Record<string, string> {
     const compiled = compile(resolve(form, form.locale ?? 'en'), data);
+
     const sectionsById = new Map(
       compiled.sections.map((section) => [section.id, section]),
     );
+
     const errors: Record<string, string> = {};
+
     const visited = new Set<string>();
 
     let currentId: string | undefined = compiled.sections[0]?.id;
@@ -137,6 +127,7 @@ export class SubmissionService {
       visited.add(currentId);
 
       const section = sectionsById.get(currentId);
+
       if (!section) {
         break;
       }
@@ -147,16 +138,18 @@ export class SubmissionService {
         }
 
         const message = validateField(field, data[field.id], data);
+
         if (message) {
           errors[field.id] = message;
         }
       }
 
-      const next = section.next;
       currentId =
-        !next || next === 'done' || next.startsWith('https://')
+        !section.next ||
+        section.next === 'done' ||
+        section.next.startsWith('https://')
           ? undefined
-          : next;
+          : section.next;
     }
 
     return errors;
@@ -173,6 +166,7 @@ export class SubmissionService {
       }
 
       const trigger = connection.trigger_on ?? 'completed';
+
       if (trigger !== 'any' && trigger !== submission.status) {
         continue;
       }
@@ -185,6 +179,7 @@ export class SubmissionService {
       }
 
       const delayMinutes = connection.delay_minutes ?? 0;
+
       if (!Number.isInteger(delayMinutes) || delayMinutes < 0) {
         throw new Error(
           'Connection delay_minutes must be a non-negative integer',

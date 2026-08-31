@@ -4,11 +4,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { randomBytes } from 'node:crypto';
-
-export type DownloadedFile = {
-  body: Buffer;
-  contentType?: string;
-};
+import type { IDownloadedFile } from '../types';
 
 export class FileService {
   constructor(private s3Client: S3Client) {}
@@ -35,7 +31,7 @@ export class FileService {
     return `${publicBaseUrl}/api/v1/files/${encodedKey}`;
   }
 
-  public async download(key: string): Promise<DownloadedFile | null> {
+  public async download(key: string): Promise<IDownloadedFile | null> {
     try {
       const result = await this.s3Client.send(
         new GetObjectCommand({

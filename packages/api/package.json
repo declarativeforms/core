@@ -7,7 +7,7 @@
     "build": "tsc -b",
     "dev": "tsx watch src/main.ts",
     "dev:scheduler": "tsx watch src/scheduler.ts",
-    "lint": "prettier --write --config prettier.config.js --list-different src/**/*.ts",
+    "lint": "prettier --write --config prettier.config.cjs --list-different \"src/**/*.ts\"",
     "start": "node dist/main.js",
     "scheduler": "node dist/scheduler.js",
     "test": "jest"

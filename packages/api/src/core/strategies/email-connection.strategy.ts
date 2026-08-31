@@ -1,41 +1,14 @@
 import {
   interpolateTemplate,
+  isDeclarativeFieldType,
   resolveLocalizedText,
 } from '@declarativeforms/engine';
-import { isDeclarativeFieldType } from '@declarativeforms/engine';
 import type {
   IDeclarativeForm,
   IEmailConnection,
   ISubmission,
 } from '@declarativeforms/engine';
 import { Resend } from 'resend';
-
-function generateResponsesHTML(
-  form: IDeclarativeForm,
-  data: Record<string, unknown>,
-): string {
-  const rows: string[] = [];
-
-  for (const section of form.sections ?? []) {
-    for (const field of section.fields ?? []) {
-      if (isDeclarativeFieldType(field.type) && field.type === 'hidden') {
-        continue;
-      }
-
-      const fieldId = field.id;
-      if (!fieldId || data[fieldId] == null) {
-        continue;
-      }
-
-      const value = String(data[fieldId]);
-      const label = resolveLocalizedText(field.label, form.locale) || fieldId;
-
-      rows.push(`<tr><td><strong>${label}</strong></td><td>${value}</td></tr>`);
-    }
-  }
-
-  return `<table border="1" cellpadding="8" cellspacing="0">${rows.join('')}</table>`;
-}
 
 export class EmailConnectionStrategy {
   readonly type = 'email';
@@ -74,7 +47,7 @@ export class EmailConnectionStrategy {
     }
 
     if (connection.include_responses) {
-      html += generateResponsesHTML(form, submission.data);
+      html += this.generateResponsesHtml(form, submission.data);
     }
 
     await resend.emails.send({
@@ -83,5 +56,35 @@ export class EmailConnectionStrategy {
       subject,
       html: html || subject,
     });
+  }
+
+  private generateResponsesHtml(
+    form: IDeclarativeForm,
+    data: Record<string, unknown>,
+  ): string {
+    const rows: Array<string> = [];
+
+    for (const section of form.sections ?? []) {
+      for (const field of section.fields ?? []) {
+        if (isDeclarativeFieldType(field.type) && field.type === 'hidden') {
+          continue;
+        }
+
+        const fieldId = field.id;
+
+        if (!fieldId || data[fieldId] == null) {
+          continue;
+        }
+
+        const value = String(data[fieldId]);
+        const label = resolveLocalizedText(field.label, form.locale) || fieldId;
+
+        rows.push(
+          `<tr><td><strong>${label}</strong></td><td>${value}</td></tr>`,
+        );
+      }
+    }
+
+    return `<table border="1" cellpadding="8" cellspacing="0">${rows.join('')}</table>`;
   }
 }

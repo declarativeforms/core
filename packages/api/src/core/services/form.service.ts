@@ -3,8 +3,8 @@ import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
 import type { GitHubFileRepository } from '../repositories';
 
-const GITHUB_FORM_PREFIX = 'a';
-const DEFAULT_BRANCH = 'main';
+const GITHUB_FORM_PREFIX = process.env.GITHUB_FORM_PREFIX || 'a';
+const DEFAULT_BRANCH = process.env.GITHUB_DEFAULT_BRANCH || 'main';
 
 export class FormService {
   constructor(
@@ -67,8 +67,6 @@ export class FormService {
 
     const form = parse(text);
 
-    // The branch is part of the form's identity, so the same file on two
-    // branches resolves to two stable short ids.
     const id = `${GITHUB_FORM_PREFIX}${md5(`${slug}@${branch}`).substring(0, 8)}`;
 
     await this.gitHubFileRepository.upsert({

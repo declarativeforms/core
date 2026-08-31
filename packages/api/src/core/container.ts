@@ -58,7 +58,7 @@ export async function getContainer(): Promise<Container> {
   const jobRepository = new JobRepository(db);
   const fileService = new FileService(s3Client);
   const formService = new FormService(gitHubFileRepository, gitHubGateway);
-  const connectionStrategies: IConnectionStrategy[] = [
+  const connectionStrategies: Array<IConnectionStrategy> = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
   ];
