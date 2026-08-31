@@ -1,4 +1,3 @@
-/** A structured address, as returned by the Google Places integration. */
 export interface IStructuredAddress {
   formatted_address: string;
   street_number?: string;

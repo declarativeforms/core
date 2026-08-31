@@ -5,15 +5,10 @@ import { resolveFormCompletion } from './resolve-form-completion';
 import { resolveFormSection } from './resolve-form-section';
 import { resolveLocalizedText } from './localize';
 
-/**
- * Step 2 — localize an authored form for a locale.
- *
- * Every `ILocalizedText` becomes a plain string. Templates (`{{data.*}}`) and
- * expressions (`visible_when`, `next` rules, `when`) are left as source; data is
- * applied later in `compile`. Fields/connections with an unknown type are
- * dropped so the output is a well-typed `IResolvedForm`.
- */
-export function resolve(schema: IDeclarativeForm, locale: string): IResolvedForm {
+export function resolve(
+  schema: IDeclarativeForm,
+  locale: string,
+): IResolvedForm {
   return {
     ...(schema.id !== undefined && { id: schema.id }),
     ...(schema.version !== undefined && { version: schema.version }),

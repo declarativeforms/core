@@ -1,10 +1,3 @@
-/**
- * The canonical set of field types a form may declare.
- *
- * This tuple is the single source of truth: `DeclarativeFieldType`, the runtime
- * guard, and `IDeclarativeFormGenericFieldType` all derive from it, so the type
- * list can never drift from a hand-copied duplicate.
- */
 export const DECLARATIVE_FIELD_TYPES = [
   'address',
   'address_country',
@@ -37,6 +30,6 @@ export function isDeclarativeFieldType(
 ): value is DeclarativeFieldType {
   return (
     typeof value === 'string' &&
-    (DECLARATIVE_FIELD_TYPES as readonly string[]).includes(value)
+    (DECLARATIVE_FIELD_TYPES as ReadonlyArray<string>).includes(value)
   );
 }

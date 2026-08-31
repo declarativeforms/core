@@ -37,12 +37,6 @@ function getObjectLocalizedValue(
   return undefined;
 }
 
-/**
- * Resolve a piece of localized text to a plain string for the given locale.
- *
- * Order: exact locale (case/underscore-normalized), then the base language,
- * then `en`, then the first non-empty value; falling back to `''`.
- */
 export function resolveLocalizedText(
   input: ILocalizedText | undefined,
   locale = 'en',
@@ -50,8 +44,10 @@ export function resolveLocalizedText(
   if (typeof input === 'string') {
     return input;
   }
+
   if (!input) {
     return '';
   }
+
   return getObjectLocalizedValue(input, locale) ?? '';
 }

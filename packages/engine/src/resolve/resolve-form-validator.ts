@@ -4,10 +4,6 @@ import type {
 } from '../types';
 import { resolveLocalizedText } from './localize';
 
-/**
- * Localize a validator's message while preserving the authored DSL shape.
- * Normalization into compiled rules happens later, in `compile`.
- */
 export function resolveFormValidator(
   validator: IDeclarativeFormValidator,
   locale: string,
@@ -35,6 +31,10 @@ export function resolveFormValidator(
     case 'max_length':
       return { type: 'max_length', value: validator.value, ...message };
     case 'expression':
-      return { type: 'expression', expression: validator.expression, ...message };
+      return {
+        type: 'expression',
+        expression: validator.expression,
+        ...message,
+      };
   }
 }

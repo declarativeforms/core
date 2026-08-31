@@ -9,9 +9,7 @@ import { interpolateTemplate } from './template';
 
 function selectCompletion(
   completion:
-    | IResolvedFormCompletion
-    | IResolvedFormCompletionRule[]
-    | undefined,
+    IResolvedFormCompletion | Array<IResolvedFormCompletionRule> | undefined,
   data: Record<string, unknown>,
 ): IResolvedFormCompletion | undefined {
   if (!completion) {
@@ -31,15 +29,9 @@ function selectCompletion(
   return undefined;
 }
 
-/**
- * Select the completion screen matching the answers (first rule without a
- * `when`, or the first whose `when` is truthy) and interpolate its text.
- */
 export function compileFormCompletion(
   completion:
-    | IResolvedFormCompletion
-    | IResolvedFormCompletionRule[]
-    | undefined,
+    IResolvedFormCompletion | Array<IResolvedFormCompletionRule> | undefined,
   data: Record<string, unknown>,
 ): ICompiledFormCompletion | undefined {
   const matching = selectCompletion(completion, data);

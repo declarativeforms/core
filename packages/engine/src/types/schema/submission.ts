@@ -1,4 +1,3 @@
-/** A single stored response to a form. */
 export type ISubmission = {
   created_at: string;
   data: Record<string, unknown>;

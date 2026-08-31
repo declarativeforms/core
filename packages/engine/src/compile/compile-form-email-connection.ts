@@ -4,8 +4,6 @@ import type {
 } from '../types';
 import { interpolateTemplate } from './template';
 
-/** Interpolate an email connection's subject and body (the `when` gate is
- *  assessed by `compileConnection`). */
 export function compileFormEmailConnection(
   connection: IResolvedFormEmailConnection,
   data: Record<string, unknown>,

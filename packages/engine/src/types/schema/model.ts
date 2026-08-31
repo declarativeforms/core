@@ -3,17 +3,6 @@ import type { IDeclarativeFormMeasurements } from './form-measurements';
 import type { IDeclarativeFormNextRule } from './form-next-rule';
 import type { IDeclarativeFormTheme } from './form-theme';
 
-/**
- * The single generic form model, parameterized by how user-facing text is
- * represented.
- *
- * `Text` is `ILocalizedText` in the authored schema (a plain string or a
- * locale map) and `string` after localization is resolved. The schema and
- * resolved type families are just `Form<ILocalizedText>` and `Form<string>`,
- * so every field type is declared in exactly one place instead of once per
- * pipeline stage.
- */
-
 export type FormOption<Text> =
   | string
   | {
@@ -31,7 +20,6 @@ export type FormValidator<Text> =
   | { type: 'max_length'; value: number; message?: Text }
   | { type: 'expression'; expression: string; message?: Text };
 
-/** Properties shared by every field. The `type` discriminant lives on each member. */
 export type FormFieldBase<Text> = {
   id?: string;
   label?: Text;
@@ -78,14 +66,13 @@ export type FormCameraField<Text> = FormFieldBase<Text> & {
 
 export type FormFileUploadField<Text> = FormFieldBase<Text> & {
   type: 'file_upload';
-  accepted_mime_types?: string[];
+  accepted_mime_types?: Array<string>;
 };
 
 export type FormGeolocationField<Text> = FormFieldBase<Text> & {
   type: 'geolocation';
 };
 
-/** The discriminated union of every field a form may declare. Narrow on `type`. */
 export type FormField<Text> =
   | FormEmailField<Text>
   | FormDropdownField<Text>
@@ -109,14 +96,12 @@ export type FormButton<Text> = {
   url?: Text;
 };
 
-/** The screen shown once a form is completed. */
 export type FormCompletion<Text> = {
   title?: Text;
   message?: Text;
   button?: FormButton<Text>;
 };
 
-/** A completion screen guarded by an expression (first matching `when` wins). */
 export type FormCompletionRule<Text> = FormCompletion<Text> & {
   when?: string;
 };
@@ -140,17 +125,15 @@ export type FormEmailConnection<Text> = FormConnectionBase & {
   include_responses?: boolean;
 };
 
-/** The discriminated union of every connection a form may declare. */
 export type FormConnection<Text> =
   FormWebhookConnection | FormEmailConnection<Text>;
 
-/** The top-level form model. */
 export type Form<Text> = {
   id?: string;
   version?: number;
   title?: Text;
   description?: Text;
-  completion?: FormCompletion<Text> | FormCompletionRule<Text>[];
+  completion?: FormCompletion<Text> | Array<FormCompletionRule<Text>>;
   sections?: Array<FormSection<Text>>;
   connections?: Array<FormConnection<Text>>;
   start_date?: string;

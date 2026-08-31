@@ -1,4 +1,3 @@
-// Leaf types (enums, guards, and value shapes that carry no localized text).
 export * from './connection-type';
 export * from './field-type';
 export * from './form-generic-field-type';
@@ -9,10 +8,8 @@ export * from './localized-text';
 export * from './structured-address';
 export * from './submission';
 
-// The single generic form model. `Form<Text>` and friends.
 export * from './model';
 
-// The authored schema is the generic model instantiated with localized text.
 import type { ILocalizedText } from './localized-text';
 import type {
   Form,
@@ -53,12 +50,15 @@ export type IDeclarativeFormSelectField = FormSelectField<ILocalizedText>;
 export type IDeclarativeFormRatingField = FormRatingField<ILocalizedText>;
 export type IDeclarativeFormAddressField = FormAddressField<ILocalizedText>;
 export type IDeclarativeFormCameraField = FormCameraField<ILocalizedText>;
-export type IDeclarativeFormFileUploadField = FormFileUploadField<ILocalizedText>;
-export type IDeclarativeFormGeolocationField = FormGeolocationField<ILocalizedText>;
+export type IDeclarativeFormFileUploadField =
+  FormFileUploadField<ILocalizedText>;
+export type IDeclarativeFormGeolocationField =
+  FormGeolocationField<ILocalizedText>;
 export type IDeclarativeFormGenericField = FormGenericField<ILocalizedText>;
 
 export type IConnection = FormConnection<ILocalizedText>;
-export type IDeclarativeFormEmailConnection = FormEmailConnection<ILocalizedText>;
+export type IDeclarativeFormEmailConnection =
+  FormEmailConnection<ILocalizedText>;
 export type IDeclarativeFormWebhookConnection = FormWebhookConnection;
 export type IEmailConnection = FormEmailConnection<ILocalizedText>;
 export type IWebhookConnection = FormWebhookConnection;

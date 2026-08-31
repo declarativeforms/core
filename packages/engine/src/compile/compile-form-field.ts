@@ -5,11 +5,6 @@ import { evaluateExpression } from './expression';
 import { DEFAULT_MESSAGES, type ValidationMessages } from './messages';
 import { interpolateTemplate } from './template';
 
-/**
- * Apply the answers to a resolved field: interpolate label/placeholder, assess
- * `visible_when` into `visible`, normalize validators + `required`, and
- * concretize options.
- */
 export function compileFormField(
   field: IResolvedFormField,
   data: Record<string, unknown>,

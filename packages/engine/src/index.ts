@@ -14,13 +14,11 @@ export { render } from './render';
 export type { RenderOptions } from './render';
 export { findPreviousSectionId } from './render';
 
-// Standalone utilities (used across the pipeline; exposed for consumers).
 export { resolveLocalizedText } from './resolve/localize';
 export { interpolateTemplate } from './compile/template';
 export { evaluateExpression } from './compile/expression';
-export { validateField } from './validate/validate-field';
+export { validateField } from './validate';
 
-// The published JSON Schema for the authored YAML (https://frms.dev/schema.json).
 export { FORM_JSON_SCHEMA, assertJsonSchemaCoverage } from './json-schema';
 
 export type ToRenderableFormOptions = {
@@ -29,10 +27,6 @@ export type ToRenderableFormOptions = {
   sectionId?: string;
 };
 
-/**
- * The full pipeline in one call: raw YAML → renderable current-section view.
- * `parse → resolve(locale) → compile(data) → render(data, section)`.
- */
 export function toRenderableForm(
   yaml: string,
   options: ToRenderableFormOptions,

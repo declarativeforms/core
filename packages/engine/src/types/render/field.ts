@@ -14,11 +14,6 @@ import type { IRenderableSignatureField } from './signature-field';
 import type { IRenderableSingleSelectField } from './single-select-field';
 import type { IRenderableTextField } from './text-field';
 
-/**
- * The discriminated union of every renderable field, regrouped by render
- * behavior so each member carries exactly the props its UI component needs.
- * Narrow on `type` to render.
- */
 export type IRenderableField =
   | IRenderableTextField
   | IRenderableNumberField

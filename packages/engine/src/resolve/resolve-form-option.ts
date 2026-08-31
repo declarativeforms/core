@@ -1,7 +1,6 @@
 import type { IDeclarativeFormOption, IResolvedFormOption } from '../types';
 import { resolveLocalizedText } from './localize';
 
-/** Localize an option's label; a bare-string option is passed through. */
 export function resolveFormOption(
   option: IDeclarativeFormOption,
   locale: string,
@@ -9,6 +8,7 @@ export function resolveFormOption(
   if (typeof option === 'string') {
     return option;
   }
+
   return {
     ...(option.label !== undefined && {
       label: resolveLocalizedText(option.label, locale),

@@ -6,11 +6,6 @@ import {
   getRatingRange,
 } from './field-metadata';
 
-/**
- * Project a compiled field onto its render-ready form, regrouped by renderer,
- * with the display metadata (bounds, input type, flags) pre-materialized so the
- * UI maps over it directly.
- */
 export function renderFormField(field: ICompiledFormField): IRenderableField {
   const base = {
     id: field.id,
@@ -18,7 +13,9 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
     ...(field.placeholder !== undefined && { placeholder: field.placeholder }),
     required: field.required,
     visible: field.visible,
-    ...(field.visible_when !== undefined && { visibleWhen: field.visible_when }),
+    ...(field.visible_when !== undefined && {
+      visibleWhen: field.visible_when,
+    }),
     validation: field.validation,
   };
 
@@ -29,7 +26,11 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
       const min = getCharLimit(field.validation, 'min_length');
       const max = getCharLimit(field.validation, 'max_length');
       const inputType =
-        field.type === 'url' ? 'url' : field.type === 'mobile_number' ? 'tel' : 'text';
+        field.type === 'url'
+          ? 'url'
+          : field.type === 'mobile_number'
+            ? 'tel'
+            : 'text';
       return {
         ...base,
         type: field.type,
@@ -58,7 +59,11 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
       const minRule = findValidationRule(field.validation, 'min');
       const maxRule = findValidationRule(field.validation, 'max');
       const inputType =
-        field.type === 'date' ? 'date' : field.type === 'date_month' ? 'month' : 'time';
+        field.type === 'date'
+          ? 'date'
+          : field.type === 'date_month'
+            ? 'month'
+            : 'time';
       return {
         ...base,
         type: field.type,
@@ -148,7 +153,11 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
     case 'signature':
       return { ...base, type: 'signature' };
     case 'camera':
-      return { ...base, type: 'camera', facingMode: field.facing_mode ?? 'rear' };
+      return {
+        ...base,
+        type: 'camera',
+        facingMode: field.facing_mode ?? 'rear',
+      };
     case 'geolocation':
       return { ...base, type: 'geolocation' };
     default:

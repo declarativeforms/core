@@ -14,10 +14,6 @@ export type ValidationMessages = {
   selection_max: string;
 };
 
-/**
- * Default (English) validation message templates. Pass a custom catalog to
- * `compile` to localize them. `{{label}}`/`{{min}}`/`{{max}}` are interpolated.
- */
 export const DEFAULT_MESSAGES: ValidationMessages = {
   required: '{{label}} is required.',
   invalid: '{{label}} is invalid.',

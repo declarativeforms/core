@@ -4,11 +4,6 @@ import { resolveLocalizedText } from './localize';
 import { resolveFormOption } from './resolve-form-option';
 import { resolveFormValidator } from './resolve-form-validator';
 
-/**
- * Localize a field: label, placeholder, options, and rating captions. Structure
- * (type, `visible_when`, per-type flags, validator DSL) is preserved. Returns
- * `null` for an unknown field type so the section can drop it.
- */
 export function resolveFormField(
   field: IDeclarativeFormField,
   locale: string,
@@ -28,7 +23,9 @@ export function resolveFormField(
     ...(field.validators !== undefined && {
       validators: field.validators.map((v) => resolveFormValidator(v, locale)),
     }),
-    ...(field.visible_when !== undefined && { visible_when: field.visible_when }),
+    ...(field.visible_when !== undefined && {
+      visible_when: field.visible_when,
+    }),
   };
 
   switch (field.type) {

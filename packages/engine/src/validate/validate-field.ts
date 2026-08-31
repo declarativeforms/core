@@ -10,12 +10,6 @@ function isEmpty(value: unknown): boolean {
   );
 }
 
-/**
- * Whether a single rule passes. Empty values pass every rule except `required`
- * and count-based `min`/`max` on arrays (so an unfilled field is only flagged
- * when required). Bounds dispatch on value/bound shape: array → count, string
- * bound → lexical, otherwise numeric.
- */
 function passes(
   rule: ICompiledValidationRule,
   value: unknown,
@@ -33,28 +27,34 @@ function passes(
     case 'max_length':
       return isEmpty(value) || String(value).length <= rule.value;
     case 'min':
-      if (Array.isArray(value)) return value.length >= Number(rule.value);
-      if (isEmpty(value)) return true;
+      if (Array.isArray(value)) {
+        return value.length >= Number(rule.value);
+      }
+
+      if (isEmpty(value)) {
+        return true;
+      }
+
       return typeof rule.value === 'number'
         ? !Number.isFinite(Number(value)) || Number(value) >= rule.value
         : String(value) >= String(rule.value);
     case 'max':
-      if (Array.isArray(value)) return value.length <= Number(rule.value);
-      if (isEmpty(value)) return true;
+      if (Array.isArray(value)) {
+        return value.length <= Number(rule.value);
+      }
+
+      if (isEmpty(value)) {
+        return true;
+      }
+
       return typeof rule.value === 'number'
         ? !Number.isFinite(Number(value)) || Number(value) <= rule.value
         : String(value) <= String(rule.value);
   }
 }
 
-/**
- * Run a compiled field's validation rules against a value, returning the first
- * failing rule's (already-resolved) message, or `undefined` when valid. Pure
- * and framework-agnostic — the counterpart to `compile` producing the rules.
- * `data` is the full answer set, used by `expression` rules.
- */
 export function validateField(
-  field: { validation: ICompiledValidationRule[] },
+  field: { validation: Array<ICompiledValidationRule> },
   value: unknown,
   data: Record<string, unknown>,
 ): string | undefined {
@@ -63,5 +63,6 @@ export function validateField(
       return rule.message;
     }
   }
+
   return undefined;
 }

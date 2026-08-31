@@ -1,7 +1,3 @@
-/**
- * The canonical set of connection types a form may declare. Single source of
- * truth for `DeclarativeConnectionType` and the runtime guard.
- */
 export const DECLARATIVE_CONNECTION_TYPES = ['email', 'webhook'] as const;
 
 export type DeclarativeConnectionType =
@@ -12,6 +8,6 @@ export function isDeclarativeConnectionType(
 ): value is DeclarativeConnectionType {
   return (
     typeof value === 'string' &&
-    (DECLARATIVE_CONNECTION_TYPES as readonly string[]).includes(value)
+    (DECLARATIVE_CONNECTION_TYPES as ReadonlyArray<string>).includes(value)
   );
 }

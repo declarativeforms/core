@@ -1,12 +1,6 @@
 import type { IResolvedFormSection } from '../types';
 import { evaluateExpression } from './expression';
 
-/**
- * Resolve a section's `next` against the answers to a concrete target: a
- * section id, the sentinel `'done'`, or an external URL. A literal string is
- * used directly; otherwise rules are evaluated in order (`else` is the
- * fallback), defaulting to `'done'` when nothing matches.
- */
 export function resolveNextSectionId(
   section: IResolvedFormSection,
   data: Record<string, unknown>,

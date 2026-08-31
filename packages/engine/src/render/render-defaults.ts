@@ -14,10 +14,6 @@ function emptyValueForFieldType(field: ICompiledFormField): unknown {
   }
 }
 
-/**
- * Seed the section's fields: use the submitted answer where present, otherwise
- * the per-type empty default.
- */
 export function buildDefaultValues(
   section: ICompiledFormSection,
   data: Record<string, unknown>,

@@ -1,10 +1,6 @@
 import type { ICompiledFormOption, IResolvedFormOption } from '../types';
 import { interpolateTemplate } from './template';
 
-/**
- * Normalize a resolved option into a concrete `{ label, value }`, interpolating
- * the label and defaulting the value to the label.
- */
 export function compileFormOption(
   option: IResolvedFormOption,
   data: Record<string, unknown>,
@@ -15,6 +11,7 @@ export function compileFormOption(
 
   const label =
     option.label !== undefined ? interpolateTemplate(option.label, data) : '';
+
   const value = option.value ?? label;
 
   return { label: label || value || '', value: value || '' };

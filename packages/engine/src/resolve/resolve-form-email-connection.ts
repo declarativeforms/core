@@ -4,7 +4,6 @@ import type {
 } from '../types';
 import { resolveLocalizedText } from './localize';
 
-/** Localize an email connection's subject and body templates. */
 export function resolveFormEmailConnection(
   connection: IDeclarativeFormEmailConnection,
   locale: string,

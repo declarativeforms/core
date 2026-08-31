@@ -22,11 +22,6 @@ import type {
   FormWebhookConnection,
 } from './schema/model';
 
-/**
- * A localization-resolved form: the generic model instantiated with plain
- * `string` text. Every `ILocalizedText` from the authored schema is collapsed
- * to the string for the chosen locale; all other shapes match the schema.
- */
 export type IResolvedForm = Form<string>;
 export type IResolvedFormField = FormField<string>;
 export type IResolvedFormFieldBase = FormFieldBase<string>;

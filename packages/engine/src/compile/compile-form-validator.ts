@@ -13,7 +13,7 @@ type BoundValidator = {
 };
 
 function getBoundValidator(
-  validators: IResolvedFormValidator[],
+  validators: Array<IResolvedFormValidator>,
   type: 'min' | 'max',
 ): BoundValidator | undefined {
   return validators.find(
@@ -25,7 +25,7 @@ function getBoundValidator(
 }
 
 function hasValidator(
-  validators: IResolvedFormValidator[],
+  validators: Array<IResolvedFormValidator>,
   type: string,
 ): boolean {
   return validators.some(
@@ -33,7 +33,7 @@ function hasValidator(
   );
 }
 
-function getRatingRange(validators: IResolvedFormValidator[]): {
+function getRatingRange(validators: Array<IResolvedFormValidator>): {
   min: number;
   max: number;
 } {
@@ -50,19 +50,13 @@ function getRatingRange(validators: IResolvedFormValidator[]): {
   return { min, max };
 }
 
-/**
- * Normalize a field's resolved validators into compiled validation rules with
- * fully-resolved messages, adding the implicit per-type rules (rating 1..5,
- * number whole-number, date/number/file/selection bounds). Resolved messages
- * are already localized strings; only default messages are interpolated.
- */
 export function buildValidationRules(
   fieldType: DeclarativeFieldType,
-  validators: IResolvedFormValidator[],
+  validators: Array<IResolvedFormValidator>,
   label: string,
   messages: ValidationMessages = DEFAULT_MESSAGES,
-): ICompiledValidationRule[] {
-  const rules: ICompiledValidationRule[] = [];
+): Array<ICompiledValidationRule> {
+  const rules: Array<ICompiledValidationRule> = [];
 
   for (const validator of validators) {
     if (validator === 'required') {
@@ -83,7 +77,10 @@ export function buildValidationRules(
         });
         break;
       case 'pattern':
-        if (!validator.regex) break;
+        if (!validator.regex) {
+          break;
+        }
+
         rules.push({
           type: 'pattern',
           regex: validator.regex,
@@ -93,7 +90,10 @@ export function buildValidationRules(
         });
         break;
       case 'min_length':
-        if (typeof validator.value !== 'number') break;
+        if (typeof validator.value !== 'number') {
+          break;
+        }
+
         rules.push({
           type: 'min_length',
           value: validator.value,
@@ -107,7 +107,10 @@ export function buildValidationRules(
         });
         break;
       case 'max_length':
-        if (typeof validator.value !== 'number') break;
+        if (typeof validator.value !== 'number') {
+          break;
+        }
+
         rules.push({
           type: 'max_length',
           value: validator.value,
@@ -121,7 +124,10 @@ export function buildValidationRules(
         });
         break;
       case 'expression':
-        if (!validator.expression) break;
+        if (!validator.expression) {
+          break;
+        }
+
         rules.push({
           type: 'expression',
           expression: validator.expression,
@@ -136,7 +142,11 @@ export function buildValidationRules(
   const minVal = getBoundValidator(validators, 'min');
   const maxVal = getBoundValidator(validators, 'max');
 
-  if (fieldType === 'date' || fieldType === 'date_month' || fieldType === 'time') {
+  if (
+    fieldType === 'date' ||
+    fieldType === 'date_month' ||
+    fieldType === 'time'
+  ) {
     if (minVal) {
       rules.push({
         type: 'min',
@@ -226,7 +236,11 @@ export function buildValidationRules(
         value: minVal.value,
         message:
           minVal.message ||
-          interpolateTemplate(messages.file_min, {}, { label, min: minVal.value }),
+          interpolateTemplate(
+            messages.file_min,
+            {},
+            { label, min: minVal.value },
+          ),
       });
     }
     if (maxVal && typeof maxVal.value === 'number') {
@@ -235,7 +249,11 @@ export function buildValidationRules(
         value: maxVal.value,
         message:
           maxVal.message ||
-          interpolateTemplate(messages.file_max, {}, { label, max: maxVal.value }),
+          interpolateTemplate(
+            messages.file_max,
+            {},
+            { label, max: maxVal.value },
+          ),
       });
     }
   }

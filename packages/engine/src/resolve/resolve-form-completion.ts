@@ -24,19 +24,17 @@ function resolveCompletionFields(
   };
 }
 
-/**
- * Localize the completion screen(s). Rule selection (`when`) is data-dependent
- * and left to `compile`; here every rule is localized in place.
- */
 export function resolveFormCompletion(
-  completion: IDeclarativeFormCompletion | IDeclarativeFormCompletionRule[],
+  completion:
+    IDeclarativeFormCompletion | Array<IDeclarativeFormCompletionRule>,
   locale: string,
-): IResolvedFormCompletion | IResolvedFormCompletionRule[] {
+): IResolvedFormCompletion | Array<IResolvedFormCompletionRule> {
   if (Array.isArray(completion)) {
     return completion.map((rule) => ({
       ...resolveCompletionFields(rule, locale),
       ...(rule.when !== undefined && { when: rule.when }),
     }));
   }
+
   return resolveCompletionFields(completion, locale);
 }

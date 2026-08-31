@@ -1,35 +1,8 @@
 import { DECLARATIVE_CONNECTION_TYPES } from './types/schema/connection-type';
 import { DECLARATIVE_FIELD_TYPES } from './types/schema/field-type';
 
-/**
- * The published JSON Schema for a Declarative Forms YAML definition.
- *
- * This module is the single source of truth for the authored schema as seen by
- * the outside world: validators, editors, LLMs, and coding agents all read the
- * emitted `schema.json`. Enums are spread from the canonical tuples in
- * `types/schema/`, so they cannot drift from the engine.
- *
- * `parse()` performs no validation (the YAML is trusted), which makes this file
- * the only place an authoring mistake is ever reported. Descriptions therefore
- * carry the runtime semantics a type signature cannot express: which validators
- * a given field type actually honours, which are silently discarded, and where
- * the engine applies an implicit rule of its own.
- *
- * Draft-07 is deliberate. It is what `yaml-language-server`, ajv, and Monaco
- * support best, and it has everything this schema needs.
- */
-
-/** A JSON Schema node. Loose by design: this module emits data, not types. */
 type JsonSchemaNode = Record<string, unknown>;
 
-/**
- * Field types grouped by the extra properties they accept.
- *
- * Each group becomes one closed branch of `definitions.field.oneOf`. The union
- * of every group must equal `DECLARATIVE_FIELD_TYPES` exactly; that invariant is
- * asserted by `assertFieldTypeCoverage` and enforced at build time, so adding a
- * field type without giving it a branch here fails the build.
- */
 const FIELD_TYPE_GROUPS = {
   generic: [
     'short_text',
@@ -47,18 +20,12 @@ const FIELD_TYPE_GROUPS = {
   dropdown: ['dropdown'],
   select: ['single_select', 'multiple_select'],
   rating: ['rating'],
-  address: [
-    'address',
-    'address_locality',
-    'address_region',
-    'address_country',
-  ],
+  address: ['address', 'address_locality', 'address_region', 'address_country'],
   camera: ['camera'],
   fileUpload: ['file_upload'],
   geolocation: ['geolocation'],
 } as const;
 
-/** `{ allOf: [$ref] }` so the sibling description is honoured under draft-07. */
 function ref(name: string, description: string): JsonSchemaNode {
   return {
     allOf: [{ $ref: `#/definitions/${name}` }],
@@ -66,11 +33,6 @@ function ref(name: string, description: string): JsonSchemaNode {
   };
 }
 
-/**
- * Properties every field shares, mirroring `FormFieldBase` in
- * `types/schema/model.ts`. Spread into each branch because
- * `additionalProperties: false` does not compose through `allOf`.
- */
 const fieldBaseProperties: Record<string, JsonSchemaNode> = {
   id: ref(
     'identifier',
@@ -94,7 +56,7 @@ const fieldBaseProperties: Record<string, JsonSchemaNode> = {
 };
 
 function fieldBranch(
-  types: readonly string[],
+  types: ReadonlyArray<string>,
   description: string,
   extraProperties: Record<string, JsonSchemaNode> = {},
 ): JsonSchemaNode {
@@ -118,7 +80,7 @@ const optionsProperty: JsonSchemaNode = {
   items: { $ref: '#/definitions/option' },
 };
 
-const fieldBranches: JsonSchemaNode[] = [
+const fieldBranches: Array<JsonSchemaNode> = [
   fieldBranch(
     FIELD_TYPE_GROUPS.generic,
     'A field that takes no properties beyond the shared base. `short_text` is a single-line input, `long_text` a textarea, `mobile_number` a tel input, `url` a URL input, `number` a numeric input, `date`/`date_month`/`time` are pickers, `signature` is a draw-to-sign pad, and `hidden` captures a value without rendering anything (typically prefilled from the URL). Note: `number` gets an implicit `^\\d+$` whole-number check unless you supply your own `pattern` validator, so negatives and decimals need one. `date`, `date_month`, `time`, and `number` honour `min`/`max`; the rest honour only `min_length`/`max_length`.',
@@ -127,18 +89,14 @@ const fieldBranches: JsonSchemaNode[] = [
     FIELD_TYPE_GROUPS.email,
     'An email input. There is no implicit format check on either the client or the server: add a `pattern` validator if you need one.',
   ),
-  fieldBranch(
-    FIELD_TYPE_GROUPS.dropdown,
-    'A select menu.',
-    {
-      options: optionsProperty,
-      searchable: {
-        type: 'boolean',
-        default: false,
-        description: 'Adds a search box to the menu. Useful past ~10 options.',
-      },
+  fieldBranch(FIELD_TYPE_GROUPS.dropdown, 'A select menu.', {
+    options: optionsProperty,
+    searchable: {
+      type: 'boolean',
+      default: false,
+      description: 'Adds a search box to the menu. Useful past ~10 options.',
     },
-  ),
+  }),
   fieldBranch(
     FIELD_TYPE_GROUPS.select,
     'A choice field. `single_select` renders radio-style and stores a string; `multiple_select` renders checkbox-style and stores an array. On `multiple_select`, `min`/`max` validators bound the number of selections, not a value.',
@@ -177,17 +135,13 @@ const fieldBranches: JsonSchemaNode[] = [
       },
     },
   ),
-  fieldBranch(
-    FIELD_TYPE_GROUPS.camera,
-    'A live camera capture.',
-    {
-      facing_mode: {
-        enum: ['front', 'rear'],
-        default: 'rear',
-        description: 'Which camera to open by default.',
-      },
+  fieldBranch(FIELD_TYPE_GROUPS.camera, 'A live camera capture.', {
+    facing_mode: {
+      enum: ['front', 'rear'],
+      default: 'rear',
+      description: 'Which camera to open by default.',
     },
-  ),
+  }),
   fieldBranch(
     FIELD_TYPE_GROUPS.fileUpload,
     'A file picker. Files are uploaded to the configured S3-compatible bucket and the answer holds their URLs. `min`/`max` validators bound the number of files, not their size. The per-file size cap is server configuration, not part of this schema.',
@@ -210,7 +164,7 @@ const fieldBranches: JsonSchemaNode[] = [
   ),
 ];
 
-const validatorBranches: JsonSchemaNode[] = [
+const validatorBranches: Array<JsonSchemaNode> = [
   {
     const: 'required',
     description:
@@ -304,7 +258,7 @@ const validatorBranches: JsonSchemaNode[] = [
   },
 ];
 
-const connectionBranches: JsonSchemaNode[] = [
+const connectionBranches: Array<JsonSchemaNode> = [
   {
     type: 'object',
     description:
@@ -577,7 +531,10 @@ export const FORM_JSON_SCHEMA = {
           examples: [
             'done',
             [
-              { when: "data.respondent_type === 'Business'", go: 'organization' },
+              {
+                when: "data.respondent_type === 'Business'",
+                go: 'organization',
+              },
               { else: 'preferences' },
             ],
           ],
@@ -668,7 +625,7 @@ export const FORM_JSON_SCHEMA = {
             token: {
               type: 'string',
               minLength: 1,
-              description: "The provider public project token.",
+              description: 'The provider public project token.',
             },
             api_host: {
               type: 'string',
@@ -691,25 +648,21 @@ export const FORM_JSON_SCHEMA = {
         posthog: { $ref: '#/definitions/analyticsProvider' },
       },
       examples: [
-        { posthog: { token: 'phc_example', api_host: 'https://eu.i.posthog.com' } },
+        {
+          posthog: {
+            token: 'phc_example',
+            api_host: 'https://eu.i.posthog.com',
+          },
+        },
       ],
     },
   },
 };
 
-/**
- * Throw unless every canonical field and connection type has exactly one branch.
- *
- * Runs at build time, so adding a type to `DECLARATIVE_FIELD_TYPES` without
- * giving it a schema branch fails the build rather than shipping a schema that
- * silently rejects valid forms.
- */
 export function assertJsonSchemaCoverage(): void {
-  // Widened to string[] so a newly added field type reaches the checks below
-  // and gets a clear message, rather than failing as an assignability error.
-  const fields: string[] = Object.values(FIELD_TYPE_GROUPS).flatMap((group) => [
-    ...group,
-  ]);
+  const fields: Array<string> = Object.values(FIELD_TYPE_GROUPS).flatMap(
+    (group) => [...group],
+  );
   const connections = connectionBranches.map((branch) => {
     const properties = branch.properties as Record<string, JsonSchemaNode>;
     return (properties.type as { const: string }).const;
@@ -727,7 +680,8 @@ export function assertJsonSchemaCoverage(): void {
     [
       'field types are in the schema but unknown to the engine',
       fields.filter(
-        (type) => !(DECLARATIVE_FIELD_TYPES as readonly string[]).includes(type),
+        (type) =>
+          !(DECLARATIVE_FIELD_TYPES as ReadonlyArray<string>).includes(type),
       ),
     ],
     [

@@ -2,16 +2,6 @@ import type { IDeclarativeFormGenericFieldType } from './schema/form-generic-fie
 import type { IDeclarativeFormMeasurements } from './schema/form-measurements';
 import type { IDeclarativeFormTheme } from './schema/form-theme';
 
-/**
- * The compiled form family: a resolved form with the answers applied.
- *
- * Unlike `resolved`, this is not a plain text swap. Templates are interpolated,
- * `visible_when` is assessed into a `visible` boolean (the source is kept so the
- * app can re-evaluate it live), the validator DSL is flattened into `validation`
- * rules with resolved messages, options are normalized to `{ label, value }`,
- * the completion rule is selected, and connection gates are assessed away.
- */
-
 export type ICompiledValidationRule =
   | { type: 'required'; message: string }
   | { type: 'pattern'; regex: string; message: string }
@@ -33,7 +23,7 @@ export type ICompiledFormFieldBase = {
   required: boolean;
   visible: boolean;
   visible_when?: string;
-  validation: ICompiledValidationRule[];
+  validation: Array<ICompiledValidationRule>;
 };
 
 export type ICompiledFormGenericField = ICompiledFormFieldBase & {
@@ -45,11 +35,11 @@ export type ICompiledFormEmailField = ICompiledFormFieldBase & {
 export type ICompiledFormDropdownField = ICompiledFormFieldBase & {
   type: 'dropdown';
   searchable?: boolean;
-  options: ICompiledFormOption[];
+  options: Array<ICompiledFormOption>;
 };
 export type ICompiledFormSelectField = ICompiledFormFieldBase & {
   type: 'single_select' | 'multiple_select';
-  options: ICompiledFormOption[];
+  options: Array<ICompiledFormOption>;
   allow_other?: boolean;
 };
 export type ICompiledFormRatingField = ICompiledFormFieldBase & {
@@ -67,7 +57,7 @@ export type ICompiledFormCameraField = ICompiledFormFieldBase & {
 };
 export type ICompiledFormFileUploadField = ICompiledFormFieldBase & {
   type: 'file_upload';
-  accepted_mime_types?: string[];
+  accepted_mime_types?: Array<string>;
 };
 export type ICompiledFormGeolocationField = ICompiledFormFieldBase & {
   type: 'geolocation';
@@ -107,15 +97,14 @@ export type ICompiledFormEmailConnection = {
   include_responses?: boolean;
 };
 export type ICompiledConnection =
-  | ICompiledFormWebhookConnection
-  | ICompiledFormEmailConnection;
+  ICompiledFormWebhookConnection | ICompiledFormEmailConnection;
 export type ICompiledEmailConnection = ICompiledFormEmailConnection;
 export type ICompiledWebhookConnection = ICompiledFormWebhookConnection;
 
 export type ICompiledFormSection = {
   id: string;
   title: string;
-  fields: ICompiledFormField[];
+  fields: Array<ICompiledFormField>;
   next?: string;
 };
 
@@ -124,9 +113,9 @@ export type ICompiledForm = {
   version: number;
   title: string;
   description?: string;
-  sections: ICompiledFormSection[];
+  sections: Array<ICompiledFormSection>;
   completion?: ICompiledFormCompletion;
-  connections: ICompiledConnection[];
+  connections: Array<ICompiledConnection>;
   locale: string;
   measurements?: IDeclarativeFormMeasurements;
   start_date?: string;

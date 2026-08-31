@@ -5,13 +5,6 @@ import { compileFormSection } from './compile-form-section';
 import { DEFAULT_MESSAGES, type ValidationMessages } from './messages';
 import { interpolateTemplate } from './template';
 
-/**
- * Step 3 — compile a resolved form against a set of answers.
- *
- * Interpolates every template, assesses conditions (`visible_when`, `next`,
- * completion/connection `when`), normalizes validators + options, and derives
- * `required`. Produces the whole form; picking a section is `render`'s job.
- */
 export function compile(
   resolved: IResolvedForm,
   data: Record<string, unknown>,
@@ -41,7 +34,9 @@ export function compile(
     ...(resolved.measurements !== undefined && {
       measurements: resolved.measurements,
     }),
-    ...(resolved.start_date !== undefined && { start_date: resolved.start_date }),
+    ...(resolved.start_date !== undefined && {
+      start_date: resolved.start_date,
+    }),
     ...(resolved.end_date !== undefined && { end_date: resolved.end_date }),
     ...(resolved.theme !== undefined && { theme: resolved.theme }),
   };

@@ -1,8 +1,7 @@
 import type { ICompiledValidationRule } from '../types';
 
-/** Find the first validation rule of a given type. */
 export function findValidationRule<T extends ICompiledValidationRule['type']>(
-  rules: ICompiledValidationRule[],
+  rules: Array<ICompiledValidationRule>,
   type: T,
 ): Extract<ICompiledValidationRule, { type: T }> | undefined {
   return rules.find(
@@ -11,25 +10,22 @@ export function findValidationRule<T extends ICompiledValidationRule['type']>(
   );
 }
 
-/** The numeric value of a `min_length`/`max_length` rule (character limits). */
 export function getCharLimit(
-  rules: ICompiledValidationRule[],
+  rules: Array<ICompiledValidationRule>,
   type: 'min_length' | 'max_length',
 ): number | undefined {
   return findValidationRule(rules, type)?.value;
 }
 
-/** The numeric value of a `min`/`max` rule (returns undefined for string bounds). */
 export function getNumericBound(
-  rules: ICompiledValidationRule[],
+  rules: Array<ICompiledValidationRule>,
   type: 'min' | 'max',
 ): number | undefined {
   const rule = findValidationRule(rules, type);
   return rule && typeof rule.value === 'number' ? rule.value : undefined;
 }
 
-/** The rating scale, truncated and defaulting to 1..5. */
-export function getRatingRange(rules: ICompiledValidationRule[]): {
+export function getRatingRange(rules: Array<ICompiledValidationRule>): {
   min: number;
   max: number;
 } {

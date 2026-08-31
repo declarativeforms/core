@@ -2,10 +2,6 @@ import type { IDeclarativeFormSection, IResolvedFormSection } from '../types';
 import { resolveFormField } from './resolve-form-field';
 import { resolveLocalizedText } from './localize';
 
-/**
- * Localize a section's title and its fields. `next` routing rules are preserved
- * (evaluated later, in `compile`, against the answers).
- */
 export function resolveFormSection(
   section: IDeclarativeFormSection,
   locale: string,
