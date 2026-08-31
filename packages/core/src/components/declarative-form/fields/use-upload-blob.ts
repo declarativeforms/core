@@ -3,20 +3,25 @@
 import { useCallback, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
-import type { TranslationKey } from '@/i18n/messages/en';
 import { uploadFile } from '@/lib/file-upload';
-import { useI18n } from '@/i18n';
 
 /**
- * Upload a captured blob (camera photo, signature image) and expose its URL via
- * `onChange`, with upload/error state for the field to render. Shared by the
- * two media-capture fields that live alongside it.
+ * Read a canvas as a PNG blob. Shared by the two fields that capture a drawing
+ * (camera, signature); `toBlob` is callback-based, so it needs wrapping.
  */
-export function useUploadBlob(
-  onChange: (value: string | null) => void,
-  fallbackErrorKey: TranslationKey,
-) {
-  const { t } = useI18n();
+export function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+}
+
+/**
+ * Upload a captured blob and expose its URL via `onChange`, with upload/error
+ * state for the field to render. Shared by the two media-capture fields that
+ * live alongside it.
+ *
+ * `error` is returned raw rather than as a message: the fallback wording is the
+ * field's own, so the hook stays free of translation keys.
+ */
+export function useUploadBlob(onChange: (value: string | null) => void) {
   const [manualError, setManualError] = useState<string | null>(null);
 
   const { mutateAsync, reset, isPending, error } = useMutation({
@@ -45,14 +50,11 @@ export function useUploadBlob(
     [reset],
   );
 
-  const errorMessage =
-    manualError ??
-    (error ? (error instanceof Error ? error.message : t(fallbackErrorKey)) : null);
-
   return {
     upload,
     isUploading: isPending,
-    errorMessage,
+    manualError,
+    uploadError: error,
     setErrorMessage,
   };
 }

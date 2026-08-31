@@ -1,12 +1,7 @@
 'use client';
 
 import { forwardRef } from "react";
-import {
-  FormProvider,
-  useForm,
-  useWatch,
-  type FieldValues,
-} from "react-hook-form";
+import { useForm, useWatch, type FieldValues } from "react-hook-form";
 
 import {
   evaluateExpression,
@@ -39,47 +34,45 @@ export const DeclarativeFormSection = forwardRef<
   );
 
   return (
-    <FormProvider {...form}>
-      <form
-        ref={ref}
-        tabIndex={-1}
-        aria-label={props.section.title || undefined}
-        onSubmit={form.handleSubmit(
-          (data: FieldValues) => props.onSubmit(data),
-          (errors) => {
-            const firstErrorField = Object.keys(errors)[0];
-            if (firstErrorField) {
-              form.setFocus(firstErrorField);
-            }
-          },
-        )}
-        noValidate
-        className="outline-none"
-      >
-        <div className="space-y-6">
-          {fields.map((field) => (
-            <DeclarativeFormField key={field.id} field={field} form={form} />
-          ))}
-        </div>
+    <form
+      ref={ref}
+      tabIndex={-1}
+      aria-label={props.section.title || undefined}
+      onSubmit={form.handleSubmit(
+        (data: FieldValues) => props.onSubmit(data),
+        (errors) => {
+          const firstErrorField = Object.keys(errors)[0];
+          if (firstErrorField) {
+            form.setFocus(firstErrorField);
+          }
+        },
+      )}
+      noValidate
+      className="outline-none"
+    >
+      <div className="space-y-6">
+        {fields.map((field) => (
+          <DeclarativeFormField key={field.id} field={field} form={form} />
+        ))}
+      </div>
 
-        <div className="mt-8 flex justify-between items-center">
-          {props.section.canGoBack ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={form.formState.isSubmitting}
-              onClick={props.onBack}
-            >
-              {t("section.back")}
-            </Button>
-          ) : (
-            <div />
-          )}
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {t("section.next")}
+      <div className="mt-8 flex justify-between items-center">
+        {props.section.canGoBack ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={form.formState.isSubmitting}
+            onClick={props.onBack}
+          >
+            {t("section.back")}
           </Button>
-        </div>
-      </form>
-    </FormProvider>
+        ) : (
+          <div />
+        )}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {t("section.next")}
+        </Button>
+      </div>
+    </form>
   );
 });

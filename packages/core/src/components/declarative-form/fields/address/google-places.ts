@@ -2,7 +2,17 @@
 
 'use client';
 
-import type { IStructuredAddress, PlacePrediction } from './google-places.types';
+import type { IStructuredAddress } from '@declarativeforms/engine';
+
+/** One autocomplete suggestion, flattened for rendering. */
+export type PlacePrediction = {
+  place_id: string;
+  description: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
+};
 
 type TextValue = {
   toString(): string;
@@ -40,6 +50,10 @@ type GooglePlacesLibrary = {
   };
 };
 
+function placesLibrary(): GooglePlacesLibrary {
+  return window.google.maps.places as unknown as GooglePlacesLibrary;
+}
+
 export async function getPlacePredictions(
   input: string,
   types: string[],
@@ -67,10 +81,8 @@ export async function getPlacePredictions(
       }
     }
 
-    const placesLibrary = window.google.maps
-      .places as unknown as GooglePlacesLibrary;
     const { suggestions } =
-      await placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(
+      await placesLibrary().AutocompleteSuggestion.fetchAutocompleteSuggestions(
         predictionRequest,
       );
 
@@ -78,22 +90,18 @@ export async function getPlacePredictions(
       return [];
     }
 
-    return suggestions.map((suggestion) => {
-      const placePrediction = suggestion.placePrediction;
-
-      return {
-        place_id: placePrediction.placeId,
-        description: placePrediction.text?.toString() || '',
-        structured_formatting: {
-          main_text:
-            placePrediction.structuredFormat?.mainText?.toString() ||
-            placePrediction.text?.toString() ||
-            '',
-          secondary_text:
-            placePrediction.structuredFormat?.secondaryText?.toString() || '',
-        },
-      };
-    });
+    return suggestions.map(({ placePrediction }) => ({
+      place_id: placePrediction.placeId,
+      description: placePrediction.text?.toString() || '',
+      structured_formatting: {
+        main_text:
+          placePrediction.structuredFormat?.mainText?.toString() ||
+          placePrediction.text?.toString() ||
+          '',
+        secondary_text:
+          placePrediction.structuredFormat?.secondaryText?.toString() || '',
+      },
+    }));
   } catch (error) {
     console.error('Error fetching autocomplete suggestions:', error);
     return [];
@@ -104,9 +112,7 @@ export async function getPlaceDetails(
   placeId: string,
 ): Promise<google.maps.places.PlaceResult> {
   try {
-    const placesLibrary = window.google.maps
-      .places as unknown as GooglePlacesLibrary;
-    const { Place } = placesLibrary;
+    const { Place } = placesLibrary();
 
     const place = new Place({
       id: placeId,

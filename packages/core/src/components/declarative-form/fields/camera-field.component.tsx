@@ -4,36 +4,47 @@ import { Camera, Loader2, RefreshCw, VideoOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IRenderableCameraField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
-import { Button } from '@/components/ui/button';
+
+import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { useUploadBlob } from './use-upload-blob';
+import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
+import type { FieldProps } from '../supporting/field.types';
+import { mediaFrame } from '../supporting/media-frame';
+import { canvasToPngBlob, useUploadBlob } from './use-upload-blob';
 
 type CameraStatus = 'idle' | 'previewing' | 'uploading' | 'captured' | 'error';
-type CameraState = { status: CameraStatus; url: string | null; error: string | null };
+type CameraState = {
+  status: CameraStatus;
+  url: string | null;
+  error: string | null;
+};
 
 export function CameraField({
   field,
-  controllerField,
-}: DeclarativeFieldComponentProps<IRenderableCameraField>) {
+  control,
+}: FieldProps<IRenderableCameraField, string | null>) {
   const { t } = useI18n();
+  const label = stripHtml(field.label);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   const [camera, setCamera] = useState<CameraState>(() => ({
-    status: controllerField.value ? 'captured' : 'idle',
-    url: (controllerField.value as string) || null,
+    status: control.value ? 'captured' : 'idle',
+    url: typeof control.value === 'string' ? control.value : null,
     error: null,
   }));
-  const { upload, errorMessage: uploadErrorMessage } = useUploadBlob(
-    controllerField.onChange,
-    'camera.upload_failed',
-  );
+  const { upload, uploadError } = useUploadBlob(control.onChange);
+
   const errorMessage =
-    camera.status === 'error' ? (camera.error ?? uploadErrorMessage) : null;
+    camera.status === 'error'
+      ? (camera.error ??
+        (uploadError instanceof Error
+          ? uploadError.message
+          : t('camera.upload_failed')))
+      : null;
 
   const stopStream = useCallback(() => {
     if (streamRef.current) {
@@ -57,13 +68,18 @@ export function CameraField({
           video: { facingMode: { exact: facingMode } },
         });
       } catch (err) {
-        if (err instanceof OverconstrainedError) {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: facingMode } },
-          });
-        } else {
+        // Not every browser exposes `OverconstrainedError` as a global, so the
+        // check has to survive it being absent.
+        const isOverconstrained =
+          typeof OverconstrainedError !== 'undefined' &&
+          err instanceof OverconstrainedError;
+
+        if (!isOverconstrained) {
           throw err;
         }
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode } },
+        });
       }
 
       streamRef.current = stream;
@@ -75,9 +91,15 @@ export function CameraField({
 
       let message = t('camera.access_failed');
       if (err instanceof DOMException) {
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        if (
+          err.name === 'NotAllowedError' ||
+          err.name === 'PermissionDeniedError'
+        ) {
           message = t('camera.permission_denied');
-        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        } else if (
+          err.name === 'NotFoundError' ||
+          err.name === 'DevicesNotFoundError'
+        ) {
           message = t('camera.not_found');
         }
       }
@@ -99,11 +121,13 @@ export function CameraField({
     stopStream();
     setCamera((c) => ({ ...c, status: 'uploading' }));
 
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob((b) => resolve(b), 'image/png'),
-    );
+    const blob = await canvasToPngBlob(canvas);
     if (!blob) {
-      setCamera((c) => ({ ...c, status: 'error', error: t('camera.upload_failed') }));
+      setCamera((c) => ({
+        ...c,
+        status: 'error',
+        error: t('camera.upload_failed'),
+      }));
       return;
     }
 
@@ -114,7 +138,7 @@ export function CameraField({
   };
 
   const retake = () => {
-    controllerField.onChange(null);
+    control.onChange(null);
     setCamera((c) => ({ ...c, url: null, error: null }));
     startCamera();
   };
@@ -128,9 +152,8 @@ export function CameraField({
           type="button"
           onClick={startCamera}
           className={cn(
-            'w-full border border-dashed rounded-md min-h-[160px] cursor-pointer transition-colors',
-            'flex flex-col items-center justify-center gap-2 p-6',
-            'border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50',
+            'w-full',
+            mediaFrame({ height: 'md', interactive: true }),
             'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
           )}
           aria-label={t('camera.open_camera')}
@@ -144,19 +167,14 @@ export function CameraField({
 
       {camera.status === 'previewing' && (
         <div className="space-y-2">
-          <div
-            className={cn(
-              'border border-dashed rounded-md overflow-hidden transition-colors',
-              'bg-muted/40 border-border',
-            )}
-          >
+          <div className={mediaFrame({ layout: 'clip' })}>
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
               className="w-full rounded-md"
-              aria-label={field.label}
+              aria-label={label}
             />
           </div>
           <Button type="button" onClick={capturePhoto} className="w-full">
@@ -167,13 +185,7 @@ export function CameraField({
       )}
 
       {camera.status === 'uploading' && (
-        <div
-          className={cn(
-            'border border-dashed rounded-md min-h-[160px] transition-colors',
-            'flex flex-col items-center justify-center gap-2 p-6',
-            'border-border bg-muted/40',
-          )}
-        >
+        <div className={mediaFrame({ height: 'md' })}>
           <Loader2
             className="w-8 h-8 text-muted-foreground animate-spin"
             aria-hidden="true"
@@ -186,15 +198,15 @@ export function CameraField({
 
       {camera.status === 'captured' && camera.url && (
         <div className="space-y-2">
-          <div
-            className={cn(
-              'border border-dashed rounded-md overflow-hidden transition-colors',
-              'bg-muted/40 border-border',
-            )}
-          >
-            <img src={camera.url} alt={field.label} className="w-full rounded-md" />
+          <div className={mediaFrame({ layout: 'clip' })}>
+            <img src={camera.url} alt={label} className="w-full rounded-md" />
           </div>
-          <Button type="button" variant="outline" onClick={retake} className="w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={retake}
+            className="w-full"
+          >
             <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
             {t('camera.retake')}
           </Button>
@@ -203,15 +215,12 @@ export function CameraField({
 
       {camera.status === 'error' && (
         <div className="space-y-2">
-          <div
-            className={cn(
-              'border border-dashed rounded-md min-h-[160px] transition-colors',
-              'flex flex-col items-center justify-center gap-2 p-6',
-              'border-destructive/60 bg-destructive/10',
-            )}
-          >
+          <div className={mediaFrame({ height: 'md', tone: 'error' })}>
             <VideoOff className="w-8 h-8 text-destructive" aria-hidden="true" />
-            <p className="text-sm text-destructive text-center" aria-live="polite">
+            <p
+              className="text-sm text-destructive text-center"
+              aria-live="polite"
+            >
               {errorMessage}
             </p>
           </div>

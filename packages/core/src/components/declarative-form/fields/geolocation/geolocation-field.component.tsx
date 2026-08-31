@@ -1,19 +1,20 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { AlertCircle, Loader2, MapPin, X } from 'lucide-react';
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { AlertCircle, Loader2, MapPin } from 'lucide-react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import type { TranslationKey } from '@/i18n/messages/en';
-import type { DeclarativeFieldComponentProps } from '../../supporting/field-support.types';
+import type {
+  IRenderableGeolocationField,
+  IRenderableGeolocationValue,
+} from '@declarativeforms/engine';
+
 import { useI18n } from '@/i18n';
+import type { TranslationKey } from '@/i18n';
+import { cn } from '@/lib/utils';
+import { ClearButton } from '../../supporting/clear-button.component';
+import type { FieldProps } from '../../supporting/field.types';
+import { mediaFrame } from '../../supporting/media-frame';
 
 // `ssr: false` rather than `lazy`: React 19 awaits a lazy import during SSR,
 // and leaflet touches `window` at module scope.
@@ -21,13 +22,6 @@ const GeolocationMapPreview = dynamic(
   () => import('./geolocation-map-preview'),
   { ssr: false },
 );
-
-type GeolocationValue = {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-  timestamp: number;
-};
 
 type ErrorCode =
   | 'PERMISSION_DENIED'
@@ -38,11 +32,14 @@ type ErrorCode =
 type GeolocationState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'refining'; value: GeolocationValue }
-  | { status: 'success'; value: GeolocationValue }
+  | { status: 'refining'; value: IRenderableGeolocationValue }
+  | { status: 'success'; value: IRenderableGeolocationValue }
   | { status: 'error'; code: ErrorCode };
 
-function isGeolocationValue(v: unknown): v is GeolocationValue {
+/** How long to keep listening for a more accurate fix before settling. */
+const SETTLE_MS = 3000;
+
+function isGeolocationValue(v: unknown): v is IRenderableGeolocationValue {
   return (
     typeof v === 'object' &&
     v !== null &&
@@ -61,37 +58,40 @@ const ERROR_MESSAGE_KEYS: Record<ErrorCode, TranslationKey> = {
 };
 
 export function GeolocationField({
-  controllerField,
-}: DeclarativeFieldComponentProps) {
+  control,
+}: FieldProps<
+  IRenderableGeolocationField,
+  IRenderableGeolocationValue | null
+>) {
   const { t } = useI18n();
 
   const [state, setState] = useState<GeolocationState>(() => {
-    if (isGeolocationValue(controllerField.value)) {
-      return { status: 'success', value: controllerField.value };
+    if (isGeolocationValue(control.value)) {
+      return { status: 'success', value: control.value };
     }
     return { status: 'idle' };
   });
   const visibleState: GeolocationState =
-    state.status === 'idle' && isGeolocationValue(controllerField.value)
-      ? { status: 'success', value: controllerField.value }
+    state.status === 'idle' && isGeolocationValue(control.value)
+      ? { status: 'success', value: control.value }
       : state;
 
   const watchIdRef = useRef<number | null>(null);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bestAccuracyRef = useRef<number>(Infinity);
 
-  useEffect(() => {
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
-      if (settleTimerRef.current !== null) {
-        clearTimeout(settleTimerRef.current);
-        settleTimerRef.current = null;
-      }
-    };
+  const stopWatching = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    if (settleTimerRef.current !== null) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
   }, []);
+
+  useEffect(() => stopWatching, [stopWatching]);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -110,47 +110,38 @@ export function GeolocationField({
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
-        const locationValue: GeolocationValue = {
+        if (position.coords.accuracy >= bestAccuracyRef.current) {
+          return;
+        }
+        bestAccuracyRef.current = position.coords.accuracy;
+
+        const locationValue: IRenderableGeolocationValue = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
           timestamp: position.timestamp,
         };
 
-        if (position.coords.accuracy < bestAccuracyRef.current) {
-          bestAccuracyRef.current = position.coords.accuracy;
+        setState((prev) => {
+          // The first fix starts a timer: keep refining until it expires, then
+          // settle on the most accurate reading seen.
+          if (prev.status === 'loading') {
+            settleTimerRef.current = setTimeout(() => {
+              stopWatching();
+              setState((s) =>
+                s.status === 'refining'
+                  ? { status: 'success', value: s.value }
+                  : s,
+              );
+            }, SETTLE_MS);
+          }
+          return { status: 'refining', value: locationValue };
+        });
 
-          setState((prev) => {
-            if (prev.status === 'loading') {
-              settleTimerRef.current = setTimeout(() => {
-                if (watchIdRef.current !== null) {
-                  navigator.geolocation.clearWatch(watchIdRef.current);
-                  watchIdRef.current = null;
-                }
-                setState((s) =>
-                  s.status === 'refining'
-                    ? { status: 'success', value: s.value }
-                    : s,
-                );
-              }, 3000);
-
-              return { status: 'refining', value: locationValue };
-            }
-            return { status: 'refining', value: locationValue };
-          });
-
-          controllerField.onChange(locationValue);
-        }
+        control.onChange(locationValue);
       },
       (error) => {
-        if (watchIdRef.current !== null) {
-          navigator.geolocation.clearWatch(watchIdRef.current);
-          watchIdRef.current = null;
-        }
-        if (settleTimerRef.current !== null) {
-          clearTimeout(settleTimerRef.current);
-          settleTimerRef.current = null;
-        }
+        stopWatching();
         setState({
           status: 'error',
           code: codeMap[error.code] || 'POSITION_UNAVAILABLE',
@@ -158,20 +149,13 @@ export function GeolocationField({
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
-  }, [controllerField]);
+  }, [control, stopWatching]);
 
   const clearLocation = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    if (settleTimerRef.current !== null) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
-    }
+    stopWatching();
     setState({ status: 'idle' });
-    controllerField.onChange(null);
-  }, [controllerField]);
+    control.onChange(null);
+  }, [control, stopWatching]);
 
   const hasCoords =
     visibleState.status === 'refining' || visibleState.status === 'success';
@@ -190,16 +174,11 @@ export function GeolocationField({
             }
           }}
           className={cn(
-            'border border-dashed rounded-md min-h-[120px] cursor-pointer transition-colors',
-            'flex flex-col items-center justify-center gap-2 p-6',
-            'border-border bg-muted/40 hover:border-ring/60 hover:bg-muted/50',
+            mediaFrame({ height: 'sm', interactive: true }),
             'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
           )}
         >
-          <MapPin
-            className="h-6 w-6 text-muted-foreground"
-            aria-hidden="true"
-          />
+          <MapPin className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
           <span className="text-sm text-muted-foreground">
             {t('geolocation.use_my_location')}
           </span>
@@ -207,13 +186,7 @@ export function GeolocationField({
       )}
 
       {visibleState.status === 'loading' && (
-        <div
-          className={cn(
-            'border border-dashed rounded-md min-h-[120px] cursor-wait transition-colors',
-            'flex flex-col items-center justify-center gap-2 p-6',
-            'border-border bg-muted/40',
-          )}
-        >
+        <div className={cn(mediaFrame({ height: 'sm' }), 'cursor-wait')}>
           <Loader2
             className="h-6 w-6 text-muted-foreground animate-spin"
             aria-hidden="true"
@@ -240,18 +213,10 @@ export function GeolocationField({
           </Suspense>
 
           <div className="flex items-center justify-between">
-            <button
-              type="button"
+            <ClearButton
+              label={t('geolocation.clear')}
               onClick={clearLocation}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
-                'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted',
-                'transition-colors',
-              )}
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-              {t('geolocation.clear')}
-            </button>
+            />
           </div>
 
           <p className="sr-only" aria-live="polite">
@@ -261,13 +226,7 @@ export function GeolocationField({
       )}
 
       {visibleState.status === 'error' && (
-        <div
-          className={cn(
-            'border border-dashed rounded-md min-h-[120px] transition-colors',
-            'flex flex-col items-center justify-center gap-3 p-6',
-            'border-border bg-muted/40',
-          )}
-        >
+        <div className={cn(mediaFrame({ height: 'sm' }), 'gap-3')}>
           <p className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {t(ERROR_MESSAGE_KEYS[visibleState.code])}

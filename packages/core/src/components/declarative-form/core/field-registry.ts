@@ -2,48 +2,74 @@
 
 import type { ComponentType } from 'react';
 
-import type { IRenderableField } from '@declarativeforms/engine';
+import type {
+  DeclarativeFieldType,
+  IRenderableField,
+} from '@declarativeforms/engine';
 
 import {
   AddressField,
   CameraField,
+  DateField,
   DropdownField,
   EmailField,
   FileUploadField,
   GeolocationField,
   HiddenField,
-  InputField,
   LongTextField,
   MultipleSelectField,
+  NumberField,
   RatingField,
   SignatureField,
   SingleSelectField,
+  TextField,
 } from '../fields';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import type { FieldProps } from '../supporting/field.types';
 
-type DeclarativeFieldRenderer = ComponentType<DeclarativeFieldComponentProps>;
+type DeclarativeFieldRenderer = ComponentType<FieldProps>;
 
-export const fieldRegistry = {
-  address: AddressField,
-  address_country: AddressField,
-  address_locality: AddressField,
-  address_region: AddressField,
-  camera: CameraField,
-  date: InputField,
-  date_month: InputField,
-  dropdown: DropdownField,
-  email: EmailField,
-  geolocation: GeolocationField,
-  file_upload: FileUploadField,
-  hidden: HiddenField,
-  long_text: LongTextField,
-  mobile_number: InputField,
-  multiple_select: MultipleSelectField,
-  number: InputField,
-  rating: RatingField,
-  short_text: InputField,
-  signature: SignatureField,
-  single_select: SingleSelectField,
-  time: InputField,
-  url: InputField,
-} as Record<IRenderableField['type'], DeclarativeFieldRenderer>;
+/**
+ * Erase a field's narrow prop types so it can sit in the registry.
+ *
+ * Props are contravariant, so a component declared for one field type is not
+ * assignable to the union-typed slot. The key it is registered under is what
+ * guarantees the runtime match, and this keeps the cast to a single place
+ * instead of one per entry.
+ */
+function renderer<TField extends IRenderableField, TValue>(
+  component: ComponentType<FieldProps<TField, TValue>>,
+): DeclarativeFieldRenderer {
+  return component as DeclarativeFieldRenderer;
+}
+
+/**
+ * Annotated rather than asserted (`as Record<...>`), so a field type added to
+ * the engine fails the build here until it has a renderer.
+ */
+export const fieldRegistry: Record<
+  DeclarativeFieldType,
+  DeclarativeFieldRenderer
+> = {
+  address: renderer(AddressField),
+  address_country: renderer(AddressField),
+  address_locality: renderer(AddressField),
+  address_region: renderer(AddressField),
+  camera: renderer(CameraField),
+  date: renderer(DateField),
+  date_month: renderer(DateField),
+  dropdown: renderer(DropdownField),
+  email: renderer(EmailField),
+  file_upload: renderer(FileUploadField),
+  geolocation: renderer(GeolocationField),
+  hidden: renderer(HiddenField),
+  long_text: renderer(LongTextField),
+  mobile_number: renderer(TextField),
+  multiple_select: renderer(MultipleSelectField),
+  number: renderer(NumberField),
+  rating: renderer(RatingField),
+  short_text: renderer(TextField),
+  signature: renderer(SignatureField),
+  single_select: renderer(SingleSelectField),
+  time: renderer(DateField),
+  url: renderer(TextField),
+};

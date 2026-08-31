@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import type { IRenderableSingleSelectField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import type { FieldProps } from '../supporting/field.types';
 import { HtmlText } from '../supporting/html-text';
 import {
   Field,
@@ -19,36 +19,36 @@ const OTHER_VALUE = '__other__';
 
 export function SingleSelectField({
   field,
-  controllerField,
-}: DeclarativeFieldComponentProps<IRenderableSingleSelectField>) {
+  control,
+}: FieldProps<IRenderableSingleSelectField, string>) {
   const { t } = useI18n();
   const { options, allowOther } = field;
 
   const [other, setOther] = useState(() => {
     const active =
       !!allowOther &&
-      !!controllerField.value &&
-      !options?.some((o) => o.value === controllerField.value);
-    return { active, text: active ? String(controllerField.value) : '' };
+      !!control.value &&
+      !options?.some((o) => o.value === control.value);
+    return { active, text: active ? String(control.value) : '' };
   });
 
   const handleValueChange = (value: string) => {
     if (value === OTHER_VALUE) {
       setOther((o) => ({ ...o, active: true }));
-      controllerField.onChange(other.text || '');
+      control.onChange(other.text || '');
     } else {
       setOther((o) => ({ ...o, active: false }));
-      controllerField.onChange(value);
+      control.onChange(value);
     }
   };
 
   const handleOtherTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
     setOther((o) => ({ ...o, text }));
-    controllerField.onChange(text);
+    control.onChange(text);
   };
 
-  const radioValue = other.active ? OTHER_VALUE : controllerField.value;
+  const radioValue = other.active ? OTHER_VALUE : control.value;
 
   return (
     <RadioGroup
@@ -58,7 +58,7 @@ export function SingleSelectField({
       aria-required={field.required}
     >
       {options?.map((option) => {
-        const isSelected = controllerField.value === option.value;
+        const isSelected = control.value === option.value;
 
         return (
           <Field key={option.value}>

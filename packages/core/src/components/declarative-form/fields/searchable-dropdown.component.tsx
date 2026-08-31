@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 
 import type { IRenderableDropdownField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import type { FieldProps } from '../supporting/field.types';
 import { HtmlText } from '../supporting/html-text';
 import {
   Button,
@@ -23,13 +23,13 @@ import { cn } from '@/lib/utils';
 
 export function SearchableDropdown({
   field,
-  controllerField,
-}: DeclarativeFieldComponentProps<IRenderableDropdownField>) {
+  control,
+}: FieldProps<IRenderableDropdownField, string>) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const { options } = field;
   const selectedOption = options?.find(
-    (option) => option.value === controllerField.value,
+    (option) => option.value === control.value,
   );
 
   return (
@@ -42,7 +42,7 @@ export function SearchableDropdown({
           aria-required={field.required}
           className={cn(
             'w-full justify-between text-sm/4 font-normal',
-            !controllerField.value && 'text-muted-foreground',
+            !control.value && 'text-muted-foreground',
           )}
         >
           {selectedOption ? (
@@ -67,7 +67,7 @@ export function SearchableDropdown({
                   key={option.value}
                   value={option.label}
                   onSelect={() => {
-                    controllerField.onChange(option.value);
+                    control.onChange(option.value);
                     setOpen(false);
                   }}
                 >
@@ -75,7 +75,7 @@ export function SearchableDropdown({
                   <Check
                     className={cn(
                       'ml-auto size-4',
-                      controllerField.value === option.value
+                      control.value === option.value
                         ? 'opacity-100'
                         : 'opacity-0',
                     )}

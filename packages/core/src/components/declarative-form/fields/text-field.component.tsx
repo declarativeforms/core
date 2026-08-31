@@ -1,23 +1,25 @@
 'use client';
 
-import type { IRenderableLongTextField } from '@declarativeforms/engine';
+import type { IRenderableTextField } from '@declarativeforms/engine';
 
-import { Textarea } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { bindTextInput } from '../supporting/bind-text-input';
 import type { FieldProps } from '../supporting/field.types';
 
-export function LongTextField({
+/** Single-line free text: `short_text`, `url`, `mobile_number`. */
+export function TextField({
   field,
   control,
-}: FieldProps<IRenderableLongTextField, string>) {
+}: FieldProps<IRenderableTextField, string>) {
   const { t } = useI18n();
 
   return (
-    <Textarea
+    <Input
       {...bindTextInput(control)}
-      className="h-32 md:h-50 text-sm/4"
-      placeholder={field.placeholder || t('long_text.placeholder')}
+      className="text-sm/4"
+      placeholder={field.placeholder || t('input.placeholder')}
+      type={field.inputType}
       required={field.required}
       aria-required={field.required}
       minLength={field.min}

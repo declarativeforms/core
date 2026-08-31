@@ -1,24 +1,25 @@
 'use client';
 
 import type { IRenderableRatingField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import type { FieldProps } from '../supporting/field.types';
 import { HtmlText } from '../supporting/html-text';
 import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '@/components/ui';
+import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
 
 export function RatingField({
   field,
-  controllerField,
-}: DeclarativeFieldComponentProps<IRenderableRatingField>) {
+  control,
+}: FieldProps<IRenderableRatingField, string>) {
   const min = field.min ?? 1;
   const max = field.max ?? 5;
   const values = Array.from({ length: max - min + 1 }, (_, index) =>
     String(min + index),
   );
   const selectedValue =
-    controllerField.value === undefined || controllerField.value === null
+    control.value === undefined || control.value === null
       ? ''
-      : String(controllerField.value);
+      : String(control.value);
 
   const minLabel = field.minLabel;
   const maxLabel = field.maxLabel;
@@ -28,13 +29,13 @@ export function RatingField({
   return (
     <div className="space-y-2">
       <RadioGroup
-        onValueChange={controllerField.onChange}
+        onValueChange={control.onChange}
         value={selectedValue}
         className="grid gap-2"
         style={{
           gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))`,
         }}
-        aria-label={field.label}
+        aria-label={stripHtml(field.label)}
         aria-required={field.required}
         aria-describedby={hasLabels ? labelsId : undefined}
       >

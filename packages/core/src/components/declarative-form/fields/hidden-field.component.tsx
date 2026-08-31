@@ -1,10 +1,13 @@
 'use client';
 
+import type { IRenderableHiddenField } from '@declarativeforms/engine';
+
 import { Input } from '@/components/ui';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
+import { bindTextInput } from '../supporting/bind-text-input';
+import type { FieldProps } from '../supporting/field.types';
 
 export function HiddenField({
-  controllerField,
-}: DeclarativeFieldComponentProps) {
-  return <Input {...controllerField} type="hidden" />;
+  control,
+}: FieldProps<IRenderableHiddenField, string>) {
+  return <Input {...bindTextInput(control)} type="hidden" />;
 }

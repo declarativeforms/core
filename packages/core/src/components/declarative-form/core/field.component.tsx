@@ -45,20 +45,14 @@ export function DeclarativeFormField(props: {
       name={props.field.id}
       rules={rules}
       render={({ field, fieldState }) =>
+        // `ControllerRenderProps` satisfies `FieldControl` structurally, so it
+        // is handed to the renderer as-is.
         props.field.type === 'hidden' ? (
-          <Renderer
-            controllerField={field}
-            field={props.field}
-            form={props.form}
-          />
+          <Renderer control={field} field={props.field} />
         ) : (
           <Field>
             <FieldLabel field={props.field} />
-            <Renderer
-              controllerField={field}
-              field={props.field}
-              form={props.form}
-            />
+            <Renderer control={field} field={props.field} />
             <FieldError errors={[fieldState.error]} />
           </Field>
         )

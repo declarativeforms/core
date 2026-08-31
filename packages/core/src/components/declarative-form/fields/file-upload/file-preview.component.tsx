@@ -11,64 +11,62 @@ import {
   FileArchiveIcon,
 } from 'lucide-react';
 
-import type { TranslationKey, TranslationValues } from '@/i18n';
+import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
+import type { UploadedFile } from './use-file-uploads';
 
-export interface FileMetadata {
-  url: string;
-  name: string;
-  // Unknown for files restored from a submission (only the URL was stored).
-  size?: number;
+function FileTypeIcon({
+  type,
+  className,
+}: {
   type: string;
-  status: 'uploading' | 'uploaded' | 'error';
-  error?: string;
-  progress?: number;
+  className?: string;
+}) {
+  if (type.startsWith('image/')) {
+    return <ImageIcon className={className} aria-hidden="true" />;
+  }
+  if (type.startsWith('video/')) {
+    return <FilmIcon className={className} aria-hidden="true" />;
+  }
+  if (type.startsWith('audio/')) {
+    return <MusicIcon className={className} aria-hidden="true" />;
+  }
+  if (
+    type === 'application/pdf' ||
+    type.includes('document') ||
+    type.includes('text')
+  ) {
+    return <FileTextIcon className={className} aria-hidden="true" />;
+  }
+  if (type.includes('zip') || type.includes('archive')) {
+    return <FileArchiveIcon className={className} aria-hidden="true" />;
+  }
+  return <FileIcon className={className} aria-hidden="true" />;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 export function FilePreview({
-  metadata,
+  file,
   onRemove,
-  t,
 }: {
-  metadata: FileMetadata;
+  file: UploadedFile;
   onRemove: () => void;
-  t: (key: TranslationKey, values?: TranslationValues) => string;
 }) {
-  const Icon = (() => {
-    if (metadata.type.startsWith('image/')) {
-      return ImageIcon;
-    }
-    if (metadata.type.startsWith('video/')) {
-      return FilmIcon;
-    }
-    if (metadata.type.startsWith('audio/')) {
-      return MusicIcon;
-    }
-    if (
-      metadata.type === 'application/pdf' ||
-      metadata.type.includes('document') ||
-      metadata.type.includes('text')
-    ) {
-      return FileTextIcon;
-    }
-    if (metadata.type.includes('zip') || metadata.type.includes('archive')) {
-      return FileArchiveIcon;
-    }
-    return FileIcon;
-  })();
+  const { t } = useI18n();
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const isError = metadata.status === 'error';
-  const isUploading = metadata.status === 'uploading';
-  const isImage =
-    metadata.type.startsWith('image/') && metadata.status === 'uploaded';
+  const isError = file.status === 'error';
+  const isUploading = file.status === 'uploading';
+  const thumbnail =
+    file.status === 'uploaded' && file.url && file.type.startsWith('image/')
+      ? file.url
+      : null;
 
   return (
     <div
@@ -80,12 +78,12 @@ export function FilePreview({
           : 'bg-muted/40 border border-border',
       )}
     >
-      {isImage && metadata.url && !metadata.url.startsWith('temp-') ? (
+      {thumbnail ? (
         <div
           className="w-10 h-10 rounded flex-shrink-0 bg-muted bg-cover bg-center"
-          style={{ backgroundImage: `url(${metadata.url})` }}
+          style={{ backgroundImage: `url("${encodeURI(thumbnail)}")` }}
           role="img"
-          aria-label={metadata.name}
+          aria-label={file.name}
         />
       ) : (
         <div
@@ -94,12 +92,12 @@ export function FilePreview({
             isError ? 'bg-destructive/15' : 'bg-muted',
           )}
         >
-          <Icon
+          <FileTypeIcon
+            type={file.type}
             className={cn(
               'w-5 h-5',
               isError ? 'text-destructive' : 'text-muted-foreground',
             )}
-            aria-hidden="true"
           />
         </div>
       )}
@@ -111,31 +109,17 @@ export function FilePreview({
             isError ? 'text-destructive' : 'text-foreground',
           )}
         >
-          {metadata.name}
+          {file.name}
         </p>
-        {isError && metadata.error ? (
+        {isError && file.error ? (
           <p className="text-sm text-destructive" aria-live="polite">
-            {metadata.error}
+            {file.error}
           </p>
-        ) : metadata.size !== undefined ? (
+        ) : file.size !== undefined ? (
           <p className="text-sm text-muted-foreground">
-            {formatFileSize(metadata.size)}
+            {formatFileSize(file.size)}
           </p>
         ) : null}
-        {isUploading && (
-          <div className="mt-1">
-            <div className="w-full bg-muted rounded-full h-1">
-              <div
-                className="bg-foreground h-1 rounded-full transition-all duration-300"
-                style={{ width: `${metadata.progress || 0}%` }}
-                role="progressbar"
-                aria-valuenow={metadata.progress || 0}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       {isUploading ? (
@@ -152,7 +136,7 @@ export function FilePreview({
             'hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2',
             'transition-colors',
           )}
-          aria-label={t('file_upload.remove_file', { name: metadata.name })}
+          aria-label={t('file_upload.remove_file', { name: file.name })}
         >
           <X className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         </button>

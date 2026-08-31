@@ -1,8 +1,7 @@
 'use client';
 
 import type { IRenderableDropdownField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
-import { HtmlText } from '../supporting/html-text';
+
 import {
   Select,
   SelectContent,
@@ -11,36 +10,23 @@ import {
   SelectValue,
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
+import { HtmlText } from '../supporting/html-text';
+import type { FieldProps } from '../supporting/field.types';
 import { SearchableDropdown } from './searchable-dropdown.component';
 
 export function DropdownField({
   field,
-  controllerField,
-  form,
-}: DeclarativeFieldComponentProps<IRenderableDropdownField>) {
+  control,
+}: FieldProps<IRenderableDropdownField, string>) {
   const { t } = useI18n();
 
-  const { options } = field;
-
   if (field.searchable) {
-    return (
-      <SearchableDropdown
-        field={field}
-        controllerField={controllerField}
-        form={form}
-      />
-    );
+    return <SearchableDropdown field={field} control={control} />;
   }
 
   return (
-    <Select
-      onValueChange={controllerField.onChange}
-      value={controllerField.value}
-    >
-      <SelectTrigger
-        className="w-full text-sm/4"
-        aria-required={field.required}
-      >
+    <Select onValueChange={control.onChange} value={control.value}>
+      <SelectTrigger className="w-full text-sm/4" aria-required={field.required}>
         <SelectValue
           placeholder={
             field.placeholder || t('dropdown.select_a', { label: field.label })
@@ -48,7 +34,7 @@ export function DropdownField({
         />
       </SelectTrigger>
       <SelectContent>
-        {options?.map((option) => (
+        {field.options?.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             <HtmlText html={option.label} />
           </SelectItem>

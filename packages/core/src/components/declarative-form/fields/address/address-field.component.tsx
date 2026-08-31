@@ -1,32 +1,35 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import type {
+  IRenderableAddressField,
+  IStructuredAddress,
+} from '@declarativeforms/engine';
 
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
-} from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
-import {
+  Input,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { useDebounce } from '@/hooks/useDebounce';
+} from '@/components/ui';
+import { useI18n } from '@/i18n';
+import { bindElement } from '../../supporting/bind-text-input';
+import type { FieldProps } from '../../supporting/field.types';
 import {
   formatAddressString,
   formatStructuredAddress,
   getPlaceDetails,
   getPlacePredictions,
-} from '@/lib/google-places';
-import type { PlacePrediction } from '@/lib/google-places.types';
-import type { IRenderableAddressField } from '@declarativeforms/engine';
-import type { DeclarativeFieldComponentProps } from '../supporting/field-support.types';
-import { useI18n } from '@/i18n';
-import { useWaitForGlobal } from '@/hooks/use-wait-for-global';
+  type PlacePrediction,
+} from './google-places';
+import { useDebounce } from './use-debounce';
+import { useGooglePlacesReady } from './use-google-places-ready';
 
 const AUTOCOMPLETE_TYPE = {
   address: 'address',
@@ -34,6 +37,10 @@ const AUTOCOMPLETE_TYPE = {
   address_region: 'region',
   address_country: 'country',
 } as const;
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+type AddressValue = string | IStructuredAddress;
 
 type AddressSearch = {
   open: boolean;
@@ -59,25 +66,20 @@ function toAddressDisplay(value: unknown): string {
 
 export function AddressField({
   field,
-  controllerField,
-}: DeclarativeFieldComponentProps<IRenderableAddressField>) {
+  control,
+}: FieldProps<IRenderableAddressField, AddressValue>) {
   const { t } = useI18n();
   const autocompleteType = AUTOCOMPLETE_TYPE[field.type];
-
-  const checkGooglePlaces = useCallback(
-    () => typeof window !== 'undefined' && !!window.google?.maps?.places,
-    [],
-  );
-  const isApiLoaded = useWaitForGlobal(checkGooglePlaces, { timeout: 10_000 });
+  const isApiLoaded = useGooglePlacesReady();
 
   const [search, setSearch] = useState<AddressSearch>(() => ({
     open: false,
-    input: toAddressDisplay(controllerField.value),
+    input: toAddressDisplay(control.value),
     suggestions: [],
     loading: false,
   }));
 
-  const debouncedInput = useDebounce(search.input, 300);
+  const debouncedInput = useDebounce(search.input, SEARCH_DEBOUNCE_MS);
   const visibleSuggestions =
     debouncedInput && isApiLoaded ? search.suggestions : [];
 
@@ -113,23 +115,29 @@ export function AddressField({
   const handleSelect = async (placeId: string) => {
     try {
       const place = await getPlaceDetails(placeId);
-      controllerField.onChange(
+      control.onChange(
         field.outputFormat === 'structured'
           ? formatStructuredAddress(place)
           : formatAddressString(place),
       );
-      setSearch((s) => ({ ...s, input: place.formatted_address || '', open: false }));
+      setSearch((s) => ({
+        ...s,
+        input: place.formatted_address || '',
+        open: false,
+      }));
     } catch (err) {
       console.error('Error fetching place details:', err);
     }
   };
 
+  // No Places SDK (no API key, or it has not landed yet): plain text entry, so
+  // a self-hosted instance without a Google account still works.
   if (!isApiLoaded) {
     return (
       <Input
-        {...controllerField}
-        value={toAddressDisplay(controllerField.value)}
-        onChange={(event) => controllerField.onChange(event.target.value)}
+        {...bindElement(control)}
+        value={toAddressDisplay(control.value)}
+        onChange={(event) => control.onChange(event.target.value)}
         className="text-sm/4"
         placeholder={field.placeholder || t('address.placeholder')}
         required={field.required}
@@ -141,10 +149,14 @@ export function AddressField({
   const isOpen = search.open && visibleSuggestions.length > 0;
 
   return (
-    <Popover open={isOpen} onOpenChange={(open) => setSearch((s) => ({ ...s, open }))}>
+    <Popover
+      open={isOpen}
+      onOpenChange={(open) => setSearch((s) => ({ ...s, open }))}
+    >
       <PopoverTrigger asChild>
         <div className="relative w-full" aria-busy={search.loading}>
           <Input
+            {...bindElement(control)}
             value={search.input}
             className="text-sm/4"
             onChange={(e) =>
@@ -154,7 +166,6 @@ export function AddressField({
                 open: e.target.value.trim() ? true : s.open,
               }))
             }
-            onBlur={controllerField.onBlur}
             placeholder={field.placeholder || t('address.placeholder')}
             required={field.required}
             aria-required={field.required}
