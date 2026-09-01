@@ -1,15 +1,15 @@
 'use client';
 
-import { forwardRef } from "react";
-import { useForm, useWatch, type FieldValues } from "react-hook-form";
+import { forwardRef } from 'react';
+import { useForm, useWatch, type FieldValues } from 'react-hook-form';
 
 import {
   evaluateExpression,
   type IRenderableSection,
-} from "@declarativeforms/engine";
-import { Button } from "../../ui";
-import { useI18n } from "@/i18n";
-import { DeclarativeFormField } from "./field.component";
+} from '@declarativeforms/engine';
+import { Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
+import { DeclarativeFormField } from './field.component';
 
 export const DeclarativeFormSection = forwardRef<
   HTMLFormElement,
@@ -20,7 +20,7 @@ export const DeclarativeFormSection = forwardRef<
     onSubmit: (sectionData: FieldValues) => void | Promise<void>;
   }
 >(function DeclarativeFormSection(props, ref) {
-  const { t } = useI18n();
+  const i18n = useI18n();
   const form = useForm({ defaultValues: props.section.defaultValues });
 
   const values = useWatch({ control: form.control });
@@ -64,13 +64,13 @@ export const DeclarativeFormSection = forwardRef<
             disabled={form.formState.isSubmitting}
             onClick={props.onBack}
           >
-            {t("section.back")}
+            {i18n.t('section.back')}
           </Button>
         ) : (
           <div />
         )}
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {t("section.next")}
+          {i18n.t('section.next')}
         </Button>
       </div>
     </form>

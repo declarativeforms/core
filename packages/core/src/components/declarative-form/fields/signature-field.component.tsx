@@ -12,58 +12,60 @@ import { mediaFrame } from '../supporting/media-frame';
 import { canvasToPngBlob, useUploadBlob } from './use-upload-blob';
 
 type Point = { x: number; y: number };
-/** One pen-down to pen-up run. Kept separate so a redraw does not join strokes. */
-type Stroke = Point[];
+type Stroke = Array<Point>;
 
 const CANVAS_HEIGHT = 160;
 const UPLOAD_DEBOUNCE_MS = 500;
 const INK = '#111827';
 
-function applyPenStyle(ctx: CanvasRenderingContext2D) {
+function applyPenStyle(ctx: CanvasRenderingContext2D): void {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.strokeStyle = INK;
   ctx.lineWidth = 2;
 }
 
-export function SignatureField({
-  field,
-  control,
-}: FieldProps<IRenderableSignatureField, string | null>) {
-  const { t } = useI18n();
-  const label = stripHtml(field.label);
+export function SignatureField(
+  props: FieldProps<IRenderableSignatureField, string | null>,
+) {
+  const i18n = useI18n();
+  const label = stripHtml(props.field.label);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const strokesRef = useRef<Stroke[]>([]);
+  const strokesRef = useRef<Array<Stroke>>([]);
   const isDrawingRef = useRef(false);
   const uploadTimeoutRef = useRef<number | null>(null);
 
   const [hasSignature, setHasSignature] = useState(false);
-  const { upload, isUploading, manualError, uploadError, setErrorMessage } =
-    useUploadBlob(control.onChange);
+  const blobUpload = useUploadBlob(props.control.onChange);
 
   const errorMessage =
-    manualError ??
-    (uploadError
-      ? uploadError instanceof Error
-        ? uploadError.message
-        : t('signature.upload_failed')
+    blobUpload.manualError ??
+    (blobUpload.uploadError
+      ? blobUpload.uploadError instanceof Error
+        ? blobUpload.uploadError.message
+        : i18n.t('signature.upload_failed')
       : null);
 
-  // Show the saved signature image on reload, until the user draws a new one.
-  const savedUrl = typeof control.value === 'string' ? control.value : null;
+  const savedUrl =
+    typeof props.control.value === 'string' ? props.control.value : null;
   const showSavedPreview = !!savedUrl && !hasSignature;
 
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
+    if (!canvas || !ctx) {
+      return;
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     applyPenStyle(ctx);
 
     for (const stroke of strokesRef.current) {
-      if (stroke.length < 2) continue;
+      if (stroke.length < 2) {
+        continue;
+      }
+
       ctx.beginPath();
       ctx.moveTo(stroke[0].x, stroke[0].y);
       for (let i = 1; i < stroke.length; i += 1) {
@@ -75,17 +77,21 @@ export function SignatureField({
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     const ratio = window.devicePixelRatio || 1;
-    const { width } = canvas.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
 
-    canvas.width = Math.max(1, Math.floor(width * ratio));
+    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
     canvas.height = Math.max(1, Math.floor(CANVAS_HEIGHT * ratio));
     canvas.style.height = `${CANVAS_HEIGHT}px`;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(ratio, ratio);
@@ -95,12 +101,11 @@ export function SignatureField({
 
   useEffect(() => {
     resizeCanvas();
-    const onResize = () => resizeCanvas();
+    const onResize = (): void => resizeCanvas();
     window.addEventListener('resize', onResize);
 
     return () => {
       window.removeEventListener('resize', onResize);
-      // A pending upload would otherwise fire against an unmounted component.
       if (uploadTimeoutRef.current !== null) {
         window.clearTimeout(uploadTimeoutRef.current);
         uploadTimeoutRef.current = null;
@@ -108,9 +113,14 @@ export function SignatureField({
     };
   }, [resizeCanvas]);
 
-  const canvasPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
+  const canvasPoint = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ): Point | null => {
     const canvas = canvasRef.current;
-    if (!canvas) return null;
+    if (!canvas) {
+      return null;
+    }
+
     const rect = canvas.getBoundingClientRect();
     return {
       x: event.clientX - rect.left,
@@ -118,29 +128,35 @@ export function SignatureField({
     };
   };
 
-  const uploadSignature = async () => {
+  const uploadSignature = async (): Promise<void> => {
     const canvas = canvasRef.current;
-    if (!canvas || isUploading || !hasSignature) return;
-
-    const blob = await canvasToPngBlob(canvas);
-    if (!blob) {
-      setErrorMessage(t('signature.capture_failed'));
+    if (!canvas || blobUpload.isUploading || !hasSignature) {
       return;
     }
 
-    await upload(blob, 'signature.png');
+    const blob = await canvasToPngBlob(canvas);
+    if (!blob) {
+      blobUpload.setErrorMessage(i18n.t('signature.capture_failed'));
+      return;
+    }
+
+    await blobUpload.upload(blob, 'signature.png');
   };
 
-  const cancelPendingUpload = () => {
+  const cancelPendingUpload = (): void => {
     if (uploadTimeoutRef.current !== null) {
       window.clearTimeout(uploadTimeoutRef.current);
       uploadTimeoutRef.current = null;
     }
   };
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ): void => {
     const point = canvasPoint(event);
-    if (!point) return;
+    if (!point) {
+      return;
+    }
 
     cancelPendingUpload();
 
@@ -149,16 +165,24 @@ export function SignatureField({
     setHasSignature(true);
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current) return;
+  const handlePointerMove = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ): void => {
+    if (!isDrawingRef.current) {
+      return;
+    }
 
     const point = canvasPoint(event);
     const stroke = strokesRef.current.at(-1);
     const lastPoint = stroke?.at(-1);
-    if (!point || !stroke || !lastPoint) return;
+    if (!point || !stroke || !lastPoint) {
+      return;
+    }
 
     const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     ctx.beginPath();
     ctx.moveTo(lastPoint.x, lastPoint.y);
@@ -168,8 +192,11 @@ export function SignatureField({
     stroke.push(point);
   };
 
-  const handlePointerUp = () => {
-    if (!isDrawingRef.current) return;
+  const handlePointerUp = (): void => {
+    if (!isDrawingRef.current) {
+      return;
+    }
+
     isDrawingRef.current = false;
 
     if (hasSignature) {
@@ -181,13 +208,13 @@ export function SignatureField({
     }
   };
 
-  const clearSignature = () => {
+  const clearSignature = (): void => {
     cancelPendingUpload();
 
     strokesRef.current = [];
     setHasSignature(false);
-    setErrorMessage(null);
-    control.onChange(null);
+    blobUpload.setErrorMessage(null);
+    props.control.onChange(null);
     redraw();
   };
 
@@ -221,17 +248,17 @@ export function SignatureField({
               />
             </div>
           )}
-          {!hasSignature && !isUploading && !showSavedPreview && (
+          {!hasSignature && !blobUpload.isUploading && !showSavedPreview && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-sm text-muted-foreground">
-                {t('signature.draw')}
+                {i18n.t('signature.draw')}
               </span>
             </div>
           )}
           <div className="absolute bottom-2 right-3" aria-live="polite">
-            {isUploading && (
+            {blobUpload.isUploading && (
               <span className="text-sm text-muted-foreground">
-                {t('signature.uploading')}
+                {i18n.t('signature.uploading')}
               </span>
             )}
           </div>
@@ -240,9 +267,9 @@ export function SignatureField({
 
       <div className="flex items-center justify-between">
         <ClearButton
-          label={t('signature.clear')}
+          label={i18n.t('signature.clear')}
           onClick={clearSignature}
-          disabled={(!hasSignature && !savedUrl) || isUploading}
+          disabled={(!hasSignature && !savedUrl) || blobUpload.isUploading}
         />
       </div>
 

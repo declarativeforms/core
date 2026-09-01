@@ -7,21 +7,20 @@ import { useI18n } from '@/i18n';
 import { bindTextInput } from '../supporting/bind-text-input';
 import type { FieldProps } from '../supporting/field.types';
 
-export function LongTextField({
-  field,
-  control,
-}: FieldProps<IRenderableLongTextField, string>) {
-  const { t } = useI18n();
+export function LongTextField(
+  props: FieldProps<IRenderableLongTextField, string>,
+) {
+  const i18n = useI18n();
 
   return (
     <Textarea
-      {...bindTextInput(control)}
+      {...bindTextInput(props.control)}
       className="h-32 md:h-50 text-sm/4"
-      placeholder={field.placeholder || t('long_text.placeholder')}
-      required={field.required}
-      aria-required={field.required}
-      minLength={field.min}
-      maxLength={field.max}
+      placeholder={props.field.placeholder || i18n.t('long_text.placeholder')}
+      required={props.field.required}
+      aria-required={props.field.required}
+      minLength={props.field.min}
+      maxLength={props.field.max}
     />
   );
 }

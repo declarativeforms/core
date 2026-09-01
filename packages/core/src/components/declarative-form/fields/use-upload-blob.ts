@@ -5,56 +5,59 @@ import { useMutation } from '@tanstack/react-query';
 
 import { uploadFile } from '@/lib/file-upload';
 
-/**
- * Read a canvas as a PNG blob. Shared by the two fields that capture a drawing
- * (camera, signature); `toBlob` is callback-based, so it needs wrapping.
- */
-export function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+export function canvasToPngBlob(
+  canvas: HTMLCanvasElement,
+): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
 }
 
-/**
- * Upload a captured blob and expose its URL via `onChange`, with upload/error
- * state for the field to render. Shared by the two media-capture fields that
- * live alongside it.
- *
- * `error` is returned raw rather than as a message: the fallback wording is the
- * field's own, so the hook stays free of translation keys.
- */
-export function useUploadBlob(onChange: (value: string | null) => void) {
+export type UploadBlob = {
+  upload: (blob: Blob, filename: string) => Promise<string | null>;
+  isUploading: boolean;
+  manualError: string | null;
+  uploadError: Error | null;
+  setErrorMessage: (message: string | null) => void;
+};
+
+export function useUploadBlob(
+  onChange: (value: string | null) => void,
+): UploadBlob {
   const [manualError, setManualError] = useState<string | null>(null);
 
-  const { mutateAsync, reset, isPending, error } = useMutation({
-    mutationFn: ({ blob, filename }: { blob: Blob; filename: string }) =>
-      uploadFile(blob, filename),
+  const mutation = useMutation({
+    mutationFn: (variables: { blob: Blob; filename: string }) =>
+      uploadFile(variables.blob, variables.filename),
     onSuccess: (url) => onChange(url),
   });
+
+  const uploadBlob = mutation.mutateAsync;
+  const resetUpload = mutation.reset;
 
   const upload = useCallback(
     async (blob: Blob, filename: string): Promise<string | null> => {
       setManualError(null);
       try {
-        return await mutateAsync({ blob, filename });
+        return await uploadBlob({ blob, filename });
       } catch {
         return null;
       }
     },
-    [mutateAsync],
+    [uploadBlob],
   );
 
   const setErrorMessage = useCallback(
     (message: string | null) => {
-      reset();
+      resetUpload();
       setManualError(message);
     },
-    [reset],
+    [resetUpload],
   );
 
   return {
     upload,
-    isUploading: isPending,
+    isUploading: mutation.isPending,
     manualError,
-    uploadError: error,
+    uploadError: mutation.error,
     setErrorMessage,
   };
 }

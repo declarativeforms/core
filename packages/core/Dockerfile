@@ -7,8 +7,6 @@ COPY packages/engine/package.json ./packages/engine/
 COPY packages/api/package.json ./packages/api/
 COPY packages/core/package.json ./packages/core/
 
-# The engine workspace is included so its devDependencies (TypeScript) are
-# available: the web app consumes the engine's built `dist`, not its source.
 RUN npm ci \
       --workspace=@declarativeforms/core \
       --workspace=@declarativeforms/engine \
@@ -17,8 +15,6 @@ RUN npm ci \
 COPY packages/engine ./packages/engine
 COPY packages/core ./packages/core
 
-# Validated at build time while prerendering /schema.json. Without them the
-# build fails, so they must land before the build step.
 COPY contact.yaml kitchen-sink.yaml ./
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -33,13 +29,8 @@ WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=8080 \
-    # Without this the standalone server binds to localhost and Traefik cannot
-    # reach it.
     HOSTNAME=0.0.0.0
 
-# `output: standalone` traces from the workspace root, so the server lands at
-# packages/core/server.js. Neither `public/` nor `.next/static` is included in
-# the traced output; both have to be copied in.
 COPY --from=build /app/packages/core/.next/standalone ./
 COPY --from=build /app/packages/core/.next/static ./packages/core/.next/static
 COPY --from=build /app/packages/core/public ./packages/core/public

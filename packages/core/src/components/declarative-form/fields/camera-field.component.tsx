@@ -20,30 +20,29 @@ type CameraState = {
   error: string | null;
 };
 
-export function CameraField({
-  field,
-  control,
-}: FieldProps<IRenderableCameraField, string | null>) {
-  const { t } = useI18n();
-  const label = stripHtml(field.label);
+export function CameraField(
+  props: FieldProps<IRenderableCameraField, string | null>,
+) {
+  const i18n = useI18n();
+  const label = stripHtml(props.field.label);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   const [camera, setCamera] = useState<CameraState>(() => ({
-    status: control.value ? 'captured' : 'idle',
-    url: typeof control.value === 'string' ? control.value : null,
+    status: props.control.value ? 'captured' : 'idle',
+    url: typeof props.control.value === 'string' ? props.control.value : null,
     error: null,
   }));
-  const { upload, uploadError } = useUploadBlob(control.onChange);
+  const blobUpload = useUploadBlob(props.control.onChange);
 
   const errorMessage =
     camera.status === 'error'
       ? (camera.error ??
-        (uploadError instanceof Error
-          ? uploadError.message
-          : t('camera.upload_failed')))
+        (blobUpload.uploadError instanceof Error
+          ? blobUpload.uploadError.message
+          : i18n.t('camera.upload_failed')))
       : null;
 
   const stopStream = useCallback(() => {
@@ -57,19 +56,18 @@ export function CameraField({
     return () => stopStream();
   }, [stopStream]);
 
-  const startCamera = async () => {
+  const startCamera = async (): Promise<void> => {
     setCamera((c) => ({ ...c, status: 'previewing', error: null }));
 
     try {
-      const facingMode = field.facingMode === 'front' ? 'user' : 'environment';
+      const facingMode =
+        props.field.facingMode === 'front' ? 'user' : 'environment';
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { exact: facingMode } },
         });
       } catch (err) {
-        // Not every browser exposes `OverconstrainedError` as a global, so the
-        // check has to survive it being absent.
         const isOverconstrained =
           typeof OverconstrainedError !== 'undefined' &&
           err instanceof OverconstrainedError;
@@ -89,33 +87,38 @@ export function CameraField({
     } catch (err) {
       stopStream();
 
-      let message = t('camera.access_failed');
+      let message = i18n.t('camera.access_failed');
       if (err instanceof DOMException) {
         if (
           err.name === 'NotAllowedError' ||
           err.name === 'PermissionDeniedError'
         ) {
-          message = t('camera.permission_denied');
+          message = i18n.t('camera.permission_denied');
         } else if (
           err.name === 'NotFoundError' ||
           err.name === 'DevicesNotFoundError'
         ) {
-          message = t('camera.not_found');
+          message = i18n.t('camera.not_found');
         }
       }
       setCamera((c) => ({ ...c, status: 'error', error: message }));
     }
   };
 
-  const capturePhoto = async () => {
+  const capturePhoto = async (): Promise<void> => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas) {
+      return;
+    }
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
+
     ctx.drawImage(video, 0, 0);
 
     stopStream();
@@ -126,19 +129,19 @@ export function CameraField({
       setCamera((c) => ({
         ...c,
         status: 'error',
-        error: t('camera.upload_failed'),
+        error: i18n.t('camera.upload_failed'),
       }));
       return;
     }
 
-    const url = await upload(blob, 'camera-capture.png');
+    const url = await blobUpload.upload(blob, 'camera-capture.png');
     setCamera((c) =>
       url ? { ...c, status: 'captured', url } : { ...c, status: 'error' },
     );
   };
 
-  const retake = () => {
-    control.onChange(null);
+  const retake = (): void => {
+    props.control.onChange(null);
     setCamera((c) => ({ ...c, url: null, error: null }));
     startCamera();
   };
@@ -156,11 +159,14 @@ export function CameraField({
             mediaFrame({ height: 'md', interactive: true }),
             'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
           )}
-          aria-label={t('camera.open_camera')}
+          aria-label={i18n.t('camera.open_camera')}
         >
-          <Camera className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
+          <Camera
+            className="w-8 h-8 text-muted-foreground"
+            aria-hidden="true"
+          />
           <span className="text-sm text-foreground">
-            {t('camera.open_camera')}
+            {i18n.t('camera.open_camera')}
           </span>
         </button>
       )}
@@ -179,7 +185,7 @@ export function CameraField({
           </div>
           <Button type="button" onClick={capturePhoto} className="w-full">
             <Camera className="w-4 h-4 mr-2" aria-hidden="true" />
-            {t('camera.capture')}
+            {i18n.t('camera.capture')}
           </Button>
         </div>
       )}
@@ -191,7 +197,7 @@ export function CameraField({
             aria-hidden="true"
           />
           <span className="text-sm text-muted-foreground">
-            {t('camera.uploading')}
+            {i18n.t('camera.uploading')}
           </span>
         </div>
       )}
@@ -208,7 +214,7 @@ export function CameraField({
             className="w-full"
           >
             <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-            {t('camera.retake')}
+            {i18n.t('camera.retake')}
           </Button>
         </div>
       )}
@@ -231,7 +237,7 @@ export function CameraField({
             className="w-full"
           >
             <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-            {t('camera.try_again')}
+            {i18n.t('camera.try_again')}
           </Button>
         </div>
       )}

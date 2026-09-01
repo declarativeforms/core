@@ -1,10 +1,7 @@
 'use client';
-
 import { X } from 'lucide-react';
-
 import { cn } from '@/lib/utils';
 
-/** The "discard what I captured" button shared by signature and geolocation. */
 export function ClearButton(props: {
   label: string;
   onClick: () => void;

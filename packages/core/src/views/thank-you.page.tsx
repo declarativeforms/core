@@ -5,7 +5,11 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { HeroSection } from '@/components';
-import { compile, resolve, type IDeclarativeForm } from '@declarativeforms/engine';
+import {
+  compile,
+  resolve,
+  type IDeclarativeForm,
+} from '@declarativeforms/engine';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { getBackendUrl } from '@/lib/api';
 
@@ -14,11 +18,11 @@ type SubmissionPayload = {
 };
 
 export function ThankYouPage(props: { id: string }) {
-  const { locale, t } = useI18n();
+  const i18n = useI18n();
   const searchParams = useSearchParams();
   const submissionId = searchParams.get('submission_id');
 
-  const { data: form, isLoading: isFormLoading } = useQuery({
+  const formQuery = useQuery({
     queryKey: ['form', props.id],
     queryFn: async () => {
       const url = getBackendUrl(`forms/${props.id}`);
@@ -33,9 +37,9 @@ export function ThankYouPage(props: { id: string }) {
     enabled: !!props.id,
   });
 
-  const formId = form?.id ?? props.id;
+  const formId = formQuery.data?.id ?? props.id;
 
-  const { data: submission } = useQuery({
+  const submissionQuery = useQuery({
     queryKey: ['submission', formId, submissionId],
     queryFn: async () => {
       if (!formId) {
@@ -45,43 +49,53 @@ export function ThankYouPage(props: { id: string }) {
       const response = await fetch(
         getBackendUrl(`forms/${formId}/submissions/${submissionId}`),
       );
-      if (!response.ok) return null;
+      if (!response.ok) {
+        return null;
+      }
+
       return response.json() as Promise<SubmissionPayload>;
     },
     enabled: !!formId && !!submissionId,
   });
 
-  useSyncLangParam(form?.locale);
+  useSyncLangParam(formQuery.data?.locale);
+
+  const translate = i18n.t;
 
   useEffect(() => {
-    document.title = t('thank_you.page_title');
-  }, [t]);
+    document.title = translate('thank_you.page_title');
+  }, [translate]);
 
-  if (isFormLoading) {
+  if (formQuery.isLoading) {
     return null;
   }
 
-  const completion = form
-    ? compile(resolve(form, locale), submission?.data ?? {}).completion
+  const completion = formQuery.data
+    ? compile(
+        resolve(formQuery.data, i18n.locale),
+        submissionQuery.data?.data ?? {},
+      ).completion
     : undefined;
 
   if (completion) {
     return (
       <HeroSection
-        title={completion.title ?? t('thank_you.default_title')}
-        description={completion.message ?? t('thank_you.default_description')}
+        title={completion.title ?? i18n.t('thank_you.default_title')}
+        description={
+          completion.message ?? i18n.t('thank_you.default_description')
+        }
         buttonLabel={completion.button?.label}
         buttonHref={completion.button?.url}
-        theme={form?.theme}
+        theme={formQuery.data?.theme}
       />
     );
   }
 
   return (
     <HeroSection
-      title={t('thank_you.default_title')}
-      description={t('thank_you.default_description')}
-      theme={form?.theme}
+      title={i18n.t('thank_you.default_title')}
+      description={i18n.t('thank_you.default_description')}
+      theme={formQuery.data?.theme}
     />
   );
 }

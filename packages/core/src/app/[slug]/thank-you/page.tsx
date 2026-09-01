@@ -1,20 +1,17 @@
+import type { SearchParams } from '@/app/search-params.types';
 import { ThankYouPage } from '@/views/thank-you.page';
+import { PageShell } from '@/app/page-shell';
 
-import { PageShell } from '../../page-shell';
-
-export default async function Page({
-  params,
-  searchParams,
-}: {
+export default async function Page(props: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: Promise<SearchParams>;
 }) {
-  const { slug } = await params;
-  const query = await searchParams;
+  const params = await props.params;
+  const query = await props.searchParams;
 
   return (
     <PageShell embed={query.embed === 'true'}>
-      <ThankYouPage id={slug} />
+      <ThankYouPage id={params.slug} />
     </PageShell>
   );
 }

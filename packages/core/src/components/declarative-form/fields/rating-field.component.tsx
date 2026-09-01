@@ -7,36 +7,33 @@ import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '@/components/ui';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
 
-export function RatingField({
-  field,
-  control,
-}: FieldProps<IRenderableRatingField, string>) {
-  const min = field.min ?? 1;
-  const max = field.max ?? 5;
+export function RatingField(props: FieldProps<IRenderableRatingField, string>) {
+  const min = props.field.min ?? 1;
+  const max = props.field.max ?? 5;
   const values = Array.from({ length: max - min + 1 }, (_, index) =>
     String(min + index),
   );
   const selectedValue =
-    control.value === undefined || control.value === null
+    props.control.value === undefined || props.control.value === null
       ? ''
-      : String(control.value);
+      : String(props.control.value);
 
-  const minLabel = field.minLabel;
-  const maxLabel = field.maxLabel;
+  const minLabel = props.field.minLabel;
+  const maxLabel = props.field.maxLabel;
   const hasLabels = !!(minLabel || maxLabel);
-  const labelsId = `rating-labels-${field.id}`;
+  const labelsId = `rating-labels-${props.field.id}`;
 
   return (
     <div className="space-y-2">
       <RadioGroup
-        onValueChange={control.onChange}
+        onValueChange={props.control.onChange}
         value={selectedValue}
         className="grid gap-2"
         style={{
           gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))`,
         }}
-        aria-label={stripHtml(field.label)}
-        aria-required={field.required}
+        aria-label={stripHtml(props.field.label)}
+        aria-required={props.field.required}
         aria-describedby={hasLabels ? labelsId : undefined}
       >
         {values.map((value) => {

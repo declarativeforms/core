@@ -7,22 +7,21 @@ import { useI18n } from '@/i18n';
 import { bindTextInput } from '../supporting/bind-text-input';
 import type { FieldProps } from '../supporting/field.types';
 
-export function EmailField({
-  field,
-  control,
-}: FieldProps<IRenderableEmailField, string>) {
-  const { t } = useI18n();
+export function EmailField(props: FieldProps<IRenderableEmailField, string>) {
+  const i18n = useI18n();
 
   return (
     <Input
-      {...bindTextInput(control)}
+      {...bindTextInput(props.control)}
       className="text-sm/4"
-      placeholder={field.placeholder || t('email.placeholder_default')}
+      placeholder={
+        props.field.placeholder || i18n.t('email.placeholder_default')
+      }
       type="email"
-      required={field.required}
-      aria-required={field.required}
-      minLength={field.min}
-      maxLength={field.max}
+      required={props.field.required}
+      aria-required={props.field.required}
+      minLength={props.field.min}
+      maxLength={props.field.max}
     />
   );
 }

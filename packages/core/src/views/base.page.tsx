@@ -21,7 +21,7 @@ export function BasePage(props: {
   embed?: boolean;
   children: ReactNode;
 }) {
-  const { t, withLang } = useI18n();
+  const i18n = useI18n();
 
   useEffect(() => {
     document.title = `${stripHtml(props.title)} — Declarative Forms`;
@@ -69,7 +69,7 @@ export function BasePage(props: {
 
       <div className="text-center text-gray-500 text-xs tracking-wide space-x-2">
         <span>
-          {t('base.powered_by')}{' '}
+          {i18n.t('base.powered_by')}{' '}
           <a
             href="https://docs.declarativeforms.com"
             className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
@@ -79,10 +79,10 @@ export function BasePage(props: {
         </span>
         <span>•</span>
         <a
-          href={withLang('/privacy-policy')}
+          href={i18n.withLang('/privacy-policy')}
           className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
         >
-          {t('base.privacy_policy')}
+          {i18n.t('base.privacy_policy')}
         </a>
       </div>
     </div>

@@ -16,7 +16,7 @@ export function HeroSection(props: {
   buttonHref?: string;
   theme?: { primary?: string };
 }) {
-  const { t } = useI18n();
+  const i18n = useI18n();
 
   useEffect(() => {
     document.title = `${stripHtml(props.title)} — Declarative Forms`;
@@ -48,7 +48,7 @@ export function HeroSection(props: {
             {props.buttonLabel ? (
               <HtmlText html={props.buttonLabel} />
             ) : (
-              t('hero.continue')
+              i18n.t('hero.continue')
             )}
           </a>
         ) : props.onAction ? (
@@ -56,14 +56,14 @@ export function HeroSection(props: {
             className="w-full h-10 px-6 text-sm font-medium"
             onClick={() => props.onAction?.()}
           >
-            {t('hero.continue')}
+            {i18n.t('hero.continue')}
           </Button>
         ) : null}
       </div>
 
       <div className="absolute bottom-8 text-center w-full px-4">
         <p className="text-xs text-gray-500">
-          {t('base.powered_by')}{' '}
+          {i18n.t('base.powered_by')}{' '}
           <a
             href="https://docs.declarativeforms.com"
             className="font-medium text-gray-900 hover:underline underline-offset-4"

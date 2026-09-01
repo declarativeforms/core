@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-#
-# Deploy Declarative Forms on an Ubuntu DigitalOcean Droplet.
-#
-# Installs Docker if it is missing, fetches compose.yaml, and starts the stack
-# from the images published to GHCR. Nothing is built on the Droplet.
-#
-# Bring your own .env: see .env.example for the variables the stack needs.
 
 set -Eeuo pipefail
 

@@ -6,11 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { interpolateTemplate } from '@declarativeforms/engine';
 
 import { replaceSearchParams } from '@/lib/url-state';
-import {
-  DEFAULT_LOCALE,
-  toSupportedLocale,
-  type Locale,
-} from './locale';
+import { DEFAULT_LOCALE, toSupportedLocale, type Locale } from './locale';
 import {
   enMessages,
   type TranslationKey,
@@ -36,9 +32,7 @@ function translate(
 ): string {
   const template =
     TRANSLATIONS[locale][key] ?? TRANSLATIONS[DEFAULT_LOCALE][key];
-  // UI messages use top-level placeholders (e.g. {{min}}, {{label}}, {{count}}).
-  // The engine resolves those from the interpolation context (its third
-  // argument); the second argument is reserved for `{{data.*}}` form values.
+
   return interpolateTemplate(template ?? key, {}, values ?? {});
 }
 
@@ -47,11 +41,11 @@ function resolveLocale(
   fallbackLocale: Locale,
 ): { locale: Locale; queryLocale: Locale | null } {
   const queryLocale = toSupportedLocale(queryLang);
+
   if (queryLocale) {
     return { locale: queryLocale, queryLocale };
   }
-  // The fallback is resolved server-side from `Accept-Language`, so this
-  // returns the same value during SSR and on the client.
+
   return { locale: fallbackLocale, queryLocale: null };
 }
 
@@ -65,9 +59,11 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function useI18n(): I18nContextValue {
   const context = useContext(I18nContext);
+
   if (!context) {
     throw new Error('useI18n must be used within I18nProvider');
   }
+
   return context;
 }
 
@@ -76,23 +72,24 @@ export function I18nProvider(props: {
   fallbackLocale: Locale;
 }) {
   const searchParams = useSearchParams();
-  const { locale, queryLocale } = resolveLocale(
+  const resolved = resolveLocale(
     searchParams.get('lang'),
     props.fallbackLocale,
   );
 
   const value: I18nContextValue = {
-    locale,
-    t: (key, values) => translate(locale, key, values),
+    locale: resolved.locale,
+    t: (key, values) => translate(resolved.locale, key, values),
     withLang: (path) => {
-      if (!queryLocale) {
+      if (!resolved.queryLocale) {
         return path;
       }
-      // Built by hand rather than via `new URL`: this runs during render, and
-      // there is no `window.location.origin` on the server.
+
       const [pathname, query = ''] = path.split('?');
+
       const params = new URLSearchParams(query);
-      params.set('lang', queryLocale);
+      params.set('lang', resolved.queryLocale);
+
       return `${pathname}?${params.toString()}`;
     },
   };
@@ -102,20 +99,17 @@ export function I18nProvider(props: {
   );
 }
 
-/**
- * Keep the URL's `?lang` in step with the form's declared locale, so a shared
- * link carries the language the form was authored in. No-op until the form has
- * loaded or when the param already matches.
- */
-export function useSyncLangParam(formLocale: string | undefined) {
+export function useSyncLangParam(formLocale: string | undefined): void {
   const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!formLocale || searchParams.get('lang') === formLocale) {
       return;
     }
+
     const next = new URLSearchParams(searchParams);
     next.set('lang', formLocale);
+
     replaceSearchParams(next);
   }, [formLocale, searchParams]);
 }

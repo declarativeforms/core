@@ -7,23 +7,19 @@ import { useI18n } from '@/i18n';
 import { bindTextInput } from '../supporting/bind-text-input';
 import type { FieldProps } from '../supporting/field.types';
 
-/** Single-line free text: `short_text`, `url`, `mobile_number`. */
-export function TextField({
-  field,
-  control,
-}: FieldProps<IRenderableTextField, string>) {
-  const { t } = useI18n();
+export function TextField(props: FieldProps<IRenderableTextField, string>) {
+  const i18n = useI18n();
 
   return (
     <Input
-      {...bindTextInput(control)}
+      {...bindTextInput(props.control)}
       className="text-sm/4"
-      placeholder={field.placeholder || t('input.placeholder')}
-      type={field.inputType}
-      required={field.required}
-      aria-required={field.required}
-      minLength={field.min}
-      maxLength={field.max}
+      placeholder={props.field.placeholder || i18n.t('input.placeholder')}
+      type={props.field.inputType}
+      required={props.field.required}
+      aria-required={props.field.required}
+      minLength={props.field.min}
+      maxLength={props.field.max}
     />
   );
 }

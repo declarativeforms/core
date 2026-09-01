@@ -1,8 +1,6 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 
-/** Trail `value` by `delay`, so typing does not fire a request per keystroke. */
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 

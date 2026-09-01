@@ -21,15 +21,13 @@ import {
 import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 
-export function SearchableDropdown({
-  field,
-  control,
-}: FieldProps<IRenderableDropdownField, string>) {
-  const { t } = useI18n();
+export function SearchableDropdown(
+  props: FieldProps<IRenderableDropdownField, string>,
+) {
+  const i18n = useI18n();
   const [open, setOpen] = useState(false);
-  const { options } = field;
-  const selectedOption = options?.find(
-    (option) => option.value === control.value,
+  const selectedOption = props.field.options?.find(
+    (option) => option.value === props.control.value,
   );
 
   return (
@@ -39,16 +37,17 @@ export function SearchableDropdown({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          aria-required={field.required}
+          aria-required={props.field.required}
           className={cn(
             'w-full justify-between text-sm/4 font-normal',
-            !control.value && 'text-muted-foreground',
+            !props.control.value && 'text-muted-foreground',
           )}
         >
           {selectedOption ? (
             <HtmlText html={selectedOption.label} />
           ) : (
-            field.placeholder || t('dropdown.select_a', { label: field.label })
+            props.field.placeholder ||
+            i18n.t('dropdown.select_a', { label: props.field.label })
           )}
           <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
         </Button>
@@ -58,16 +57,16 @@ export function SearchableDropdown({
         align="start"
       >
         <Command>
-          <CommandInput placeholder={t('dropdown.search')} />
+          <CommandInput placeholder={i18n.t('dropdown.search')} />
           <CommandList>
-            <CommandEmpty>{t('dropdown.no_results')}</CommandEmpty>
+            <CommandEmpty>{i18n.t('dropdown.no_results')}</CommandEmpty>
             <CommandGroup>
-              {options?.map((option) => (
+              {props.field.options?.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}
                   onSelect={() => {
-                    control.onChange(option.value);
+                    props.control.onChange(option.value);
                     setOpen(false);
                   }}
                 >
@@ -75,7 +74,7 @@ export function SearchableDropdown({
                   <Check
                     className={cn(
                       'ml-auto size-4',
-                      control.value === option.value
+                      props.control.value === option.value
                         ? 'opacity-100'
                         : 'opacity-0',
                     )}

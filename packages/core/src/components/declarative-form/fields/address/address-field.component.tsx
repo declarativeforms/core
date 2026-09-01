@@ -19,8 +19,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { bindElement } from '../../supporting/bind-text-input';
-import type { FieldProps } from '../../supporting/field.types';
+import { bindElement } from '@/components/declarative-form/supporting/bind-text-input';
+import type { FieldProps } from '@/components/declarative-form/supporting/field.types';
 import {
   formatAddressString,
   formatStructuredAddress,
@@ -45,36 +45,35 @@ type AddressValue = string | IStructuredAddress;
 type AddressSearch = {
   open: boolean;
   input: string;
-  suggestions: PlacePrediction[];
+  suggestions: Array<PlacePrediction>;
   loading: boolean;
 };
 
-// The visible input holds the user's search query. Seed it from the committed
-// field value so a restored or prefilled address shows on mount. The value is a
-// plain string for string output and a structured object otherwise.
 function toAddressDisplay(value: unknown): string {
   if (typeof value === 'string') {
     return value;
   }
+
   if (value && typeof value === 'object' && 'formatted_address' in value) {
     const formatted = (value as { formatted_address?: unknown })
       .formatted_address;
+
     return typeof formatted === 'string' ? formatted : '';
   }
+
   return '';
 }
 
-export function AddressField({
-  field,
-  control,
-}: FieldProps<IRenderableAddressField, AddressValue>) {
-  const { t } = useI18n();
-  const autocompleteType = AUTOCOMPLETE_TYPE[field.type];
+export function AddressField(
+  props: FieldProps<IRenderableAddressField, AddressValue>,
+) {
+  const i18n = useI18n();
+  const autocompleteType = AUTOCOMPLETE_TYPE[props.field.type];
   const isApiLoaded = useGooglePlacesReady();
 
   const [search, setSearch] = useState<AddressSearch>(() => ({
     open: false,
-    input: toAddressDisplay(control.value),
+    input: toAddressDisplay(props.control.value),
     suggestions: [],
     loading: false,
   }));
@@ -97,14 +96,20 @@ export function AddressField({
     setSearch((s) => ({ ...s, loading: true }));
     getPlacePredictions(debouncedInput, types)
       .then((predictions) => {
-        if (!isCancelled) setSearch((s) => ({ ...s, suggestions: predictions }));
+        if (!isCancelled) {
+          setSearch((s) => ({ ...s, suggestions: predictions }));
+        }
       })
       .catch((err) => {
         console.error('Error fetching place predictions:', err);
-        if (!isCancelled) setSearch((s) => ({ ...s, suggestions: [] }));
+        if (!isCancelled) {
+          setSearch((s) => ({ ...s, suggestions: [] }));
+        }
       })
       .finally(() => {
-        if (!isCancelled) setSearch((s) => ({ ...s, loading: false }));
+        if (!isCancelled) {
+          setSearch((s) => ({ ...s, loading: false }));
+        }
       });
 
     return () => {
@@ -112,11 +117,11 @@ export function AddressField({
     };
   }, [debouncedInput, isApiLoaded, autocompleteType]);
 
-  const handleSelect = async (placeId: string) => {
+  const handleSelect = async (placeId: string): Promise<void> => {
     try {
       const place = await getPlaceDetails(placeId);
-      control.onChange(
-        field.outputFormat === 'structured'
+      props.control.onChange(
+        props.field.outputFormat === 'structured'
           ? formatStructuredAddress(place)
           : formatAddressString(place),
       );
@@ -130,18 +135,16 @@ export function AddressField({
     }
   };
 
-  // No Places SDK (no API key, or it has not landed yet): plain text entry, so
-  // a self-hosted instance without a Google account still works.
   if (!isApiLoaded) {
     return (
       <Input
-        {...bindElement(control)}
-        value={toAddressDisplay(control.value)}
-        onChange={(event) => control.onChange(event.target.value)}
+        {...bindElement(props.control)}
+        value={toAddressDisplay(props.control.value)}
+        onChange={(event) => props.control.onChange(event.target.value)}
         className="text-sm/4"
-        placeholder={field.placeholder || t('address.placeholder')}
-        required={field.required}
-        aria-required={field.required}
+        placeholder={props.field.placeholder || i18n.t('address.placeholder')}
+        required={props.field.required}
+        aria-required={props.field.required}
       />
     );
   }
@@ -156,7 +159,7 @@ export function AddressField({
       <PopoverTrigger asChild>
         <div className="relative w-full" aria-busy={search.loading}>
           <Input
-            {...bindElement(control)}
+            {...bindElement(props.control)}
             value={search.input}
             className="text-sm/4"
             onChange={(e) =>
@@ -166,13 +169,15 @@ export function AddressField({
                 open: e.target.value.trim() ? true : s.open,
               }))
             }
-            placeholder={field.placeholder || t('address.placeholder')}
-            required={field.required}
-            aria-required={field.required}
+            placeholder={
+              props.field.placeholder || i18n.t('address.placeholder')
+            }
+            required={props.field.required}
+            aria-required={props.field.required}
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={isOpen}
-            aria-controls={`address-suggestions-${field.id}`}
+            aria-controls={`address-suggestions-${props.field.id}`}
           />
           {search.loading && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -180,7 +185,7 @@ export function AddressField({
             </div>
           )}
           <span className="sr-only" aria-live="polite">
-            {search.loading ? t('address.loading_suggestions') : ''}
+            {search.loading ? i18n.t('address.loading_suggestions') : ''}
           </span>
         </div>
       </PopoverTrigger>
@@ -191,8 +196,11 @@ export function AddressField({
         side="bottom"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <Command className="w-full" id={`address-suggestions-${field.id}`}>
-          <CommandEmpty>{t('address.no_results')}</CommandEmpty>
+        <Command
+          className="w-full"
+          id={`address-suggestions-${props.field.id}`}
+        >
+          <CommandEmpty>{i18n.t('address.no_results')}</CommandEmpty>
           <CommandGroup>
             {visibleSuggestions.map((suggestion) => (
               <CommandItem

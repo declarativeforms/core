@@ -1,8 +1,6 @@
 'use client';
-
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
-
 import type { IDeclarativeForm } from '@declarativeforms/engine';
 import { DeclarativeFormSection } from './section.component';
 import { useDeclarativeForm } from './use-declarative-form';

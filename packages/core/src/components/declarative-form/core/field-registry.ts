@@ -28,24 +28,12 @@ import type { FieldProps } from '../supporting/field.types';
 
 type DeclarativeFieldRenderer = ComponentType<FieldProps>;
 
-/**
- * Erase a field's narrow prop types so it can sit in the registry.
- *
- * Props are contravariant, so a component declared for one field type is not
- * assignable to the union-typed slot. The key it is registered under is what
- * guarantees the runtime match, and this keeps the cast to a single place
- * instead of one per entry.
- */
 function renderer<TField extends IRenderableField, TValue>(
   component: ComponentType<FieldProps<TField, TValue>>,
 ): DeclarativeFieldRenderer {
   return component as DeclarativeFieldRenderer;
 }
 
-/**
- * Annotated rather than asserted (`as Record<...>`), so a field type added to
- * the engine fails the build here until it has a renderer.
- */
 export const fieldRegistry: Record<
   DeclarativeFieldType,
   DeclarativeFieldRenderer

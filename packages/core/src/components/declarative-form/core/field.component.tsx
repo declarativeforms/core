@@ -8,7 +8,7 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
-import { Field, FieldError } from '../../ui';
+import { Field, FieldError } from '@/components/ui';
 import { validateField, type IRenderableField } from '@declarativeforms/engine';
 import { FieldLabel } from './field-label.component';
 import { fieldRegistry } from './field-registry';
@@ -44,16 +44,14 @@ export function DeclarativeFormField(props: {
       control={props.form.control}
       name={props.field.id}
       rules={rules}
-      render={({ field, fieldState }) =>
-        // `ControllerRenderProps` satisfies `FieldControl` structurally, so it
-        // is handed to the renderer as-is.
+      render={(renderProps) =>
         props.field.type === 'hidden' ? (
-          <Renderer control={field} field={props.field} />
+          <Renderer control={renderProps.field} field={props.field} />
         ) : (
           <Field>
             <FieldLabel field={props.field} />
-            <Renderer control={field} field={props.field} />
-            <FieldError errors={[fieldState.error]} />
+            <Renderer control={renderProps.field} field={props.field} />
+            <FieldError errors={[renderProps.fieldState.error]} />
           </Field>
         )
       }

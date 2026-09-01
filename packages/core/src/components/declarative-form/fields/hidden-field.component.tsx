@@ -6,8 +6,6 @@ import { Input } from '@/components/ui';
 import { bindTextInput } from '../supporting/bind-text-input';
 import type { FieldProps } from '../supporting/field.types';
 
-export function HiddenField({
-  control,
-}: FieldProps<IRenderableHiddenField, string>) {
-  return <Input {...bindTextInput(control)} type="hidden" />;
+export function HiddenField(props: FieldProps<IRenderableHiddenField, string>) {
+  return <Input {...bindTextInput(props.control)} type="hidden" />;
 }

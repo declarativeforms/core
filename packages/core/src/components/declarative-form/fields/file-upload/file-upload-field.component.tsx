@@ -8,58 +8,58 @@ import type { IRenderableFileUploadField } from '@declarativeforms/engine';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
-import type { FieldProps } from '../../supporting/field.types';
-import { mediaFrame } from '../../supporting/media-frame';
+import type { FieldProps } from '@/components/declarative-form/supporting/field.types';
+import { mediaFrame } from '@/components/declarative-form/supporting/media-frame';
 import { FilePreview } from './file-preview.component';
 import { useFileUploads } from './use-file-uploads';
 
-type FileUploadValue = string | string[] | null;
+type FileUploadValue = string | Array<string> | null;
 
-export function FileUploadField({
-  field,
-  control,
-}: FieldProps<IRenderableFileUploadField, FileUploadValue>) {
-  const { t } = useI18n();
+export function FileUploadField(
+  props: FieldProps<IRenderableFileUploadField, FileUploadValue>,
+) {
+  const i18n = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const acceptedMimeTypesLabel = field.acceptedMimeTypes.join(', ');
-  const minFiles = field.min ?? 0;
-  const maxFiles = field.max ?? 1;
+  const acceptedMimeTypesLabel = props.field.acceptedMimeTypes.join(', ');
+  const minFiles = props.field.min ?? 0;
+  const maxFiles = props.field.max ?? 1;
 
   const uploads = useFileUploads({
-    value: control.value,
-    onChange: control.onChange,
-    acceptedMimeTypes: field.acceptedMimeTypes,
+    value: props.control.value,
+    onChange: props.control.onChange,
+    acceptedMimeTypes: props.field.acceptedMimeTypes,
     maxFiles,
-    storesScalar: field.storesScalar,
+    storesScalar: props.field.storesScalar,
     messages: {
-      maxReached: (max) => t('file_upload.max_reached', { max: String(max) }),
+      maxReached: (max) =>
+        i18n.t('file_upload.max_reached', { max: String(max) }),
       invalidType: () =>
-        t('file_upload.invalid_type', { types: acceptedMimeTypesLabel }),
-      uploadFailed: () => t('file_upload.upload_failed'),
+        i18n.t('file_upload.invalid_type', { types: acceptedMimeTypesLabel }),
+      uploadFailed: () => i18n.t('file_upload.upload_failed'),
     },
   });
 
   const requirements = [
     minFiles > 0 && maxFiles > minFiles
-      ? t('file_upload.range_files', {
+      ? i18n.t('file_upload.range_files', {
           min: String(minFiles),
           max: String(maxFiles),
         })
       : minFiles > 0
-        ? t('file_upload.at_least_files', { min: String(minFiles) })
+        ? i18n.t('file_upload.at_least_files', { min: String(minFiles) })
         : maxFiles > 1
-          ? t('file_upload.up_to_files', { max: String(maxFiles) })
+          ? i18n.t('file_upload.up_to_files', { max: String(maxFiles) })
           : '',
-    field.acceptedMimeTypes.length > 0
-      ? t('file_upload.accepted_types', { types: acceptedMimeTypesLabel })
+    props.field.acceptedMimeTypes.length > 0
+      ? i18n.t('file_upload.accepted_types', { types: acceptedMimeTypesLabel })
       : '',
   ]
     .filter(Boolean)
     .join(' • ');
 
-  const openPicker = () => fileInputRef.current?.click();
+  const openPicker = (): void => fileInputRef.current?.click();
 
   return (
     <div className="space-y-2">
@@ -75,10 +75,10 @@ export function FileUploadField({
           }
         }}
         className="sr-only"
-        id={control.name}
-        aria-label={stripHtml(field.label)}
-        required={field.required}
-        aria-required={field.required}
+        id={props.control.name}
+        aria-label={stripHtml(props.field.label)}
+        required={props.field.required}
+        aria-required={props.field.required}
       />
 
       {uploads.canAddMore && (
@@ -105,7 +105,7 @@ export function FileUploadField({
           }}
           tabIndex={0}
           role="button"
-          aria-label={t('file_upload.upload_files')}
+          aria-label={i18n.t('file_upload.upload_files')}
           className={cn(
             mediaFrame({
               height: 'sm',
@@ -115,17 +115,22 @@ export function FileUploadField({
             'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
           )}
         >
-          <Upload className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
+          <Upload
+            className="w-8 h-8 text-muted-foreground"
+            aria-hidden="true"
+          />
           <div className="text-center">
             <p className="text-sm text-foreground">
-              {t('file_upload.click_to_upload')}
+              {i18n.t('file_upload.click_to_upload')}
             </p>
             {requirements && (
-              <p className="mt-1 text-sm text-muted-foreground">{requirements}</p>
-            )}
-            {field.placeholder && (
               <p className="mt-1 text-sm text-muted-foreground">
-                {field.placeholder}
+                {requirements}
+              </p>
+            )}
+            {props.field.placeholder && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {props.field.placeholder}
               </p>
             )}
           </div>
@@ -136,7 +141,7 @@ export function FileUploadField({
         <div
           className="space-y-2"
           role="list"
-          aria-label={t('file_upload.uploaded_files')}
+          aria-label={i18n.t('file_upload.uploaded_files')}
           aria-live="polite"
           aria-busy={uploads.isUploading}
         >

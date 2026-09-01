@@ -1,10 +1,8 @@
 import { buildFormJsonSchema } from '@/lib/form-schema';
 
-// Prerendered at build time: the schema assertions become build failures, and
-// no filesystem read happens at runtime.
 export const dynamic = 'force-static';
 
-export function GET() {
+export function GET(): Response {
   return new Response(buildFormJsonSchema(), {
     headers: {
       'Content-Type': 'application/json',

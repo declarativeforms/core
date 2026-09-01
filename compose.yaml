@@ -42,8 +42,6 @@ services:
     environment:
       NODE_ENV: production
       PORT: "8080"
-      # Read at request time by the Next.js server, so rotating the key needs a
-      # restart, not a rebuild.
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
     networks:
       - edge

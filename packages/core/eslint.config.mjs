@@ -7,6 +7,10 @@ const eslintConfig = defineConfig([
   ...nextTs,
 
   {
+    // Scoped to the files eslint-config-next registers `react-hooks` for. Left
+    // unscoped, this object also applies to `prettier.config.cjs`, where the
+    // plugin is out of scope and referencing its rule is a config error.
+    files: ['**/*.{ts,tsx}'],
     rules: {
       // Pre-existing pattern in the address autocomplete effect, carried over
       // unchanged from the Vite app. Kept visible as a warning rather than

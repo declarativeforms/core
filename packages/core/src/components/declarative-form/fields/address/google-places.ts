@@ -4,7 +4,6 @@
 
 import type { IStructuredAddress } from '@declarativeforms/engine';
 
-/** One autocomplete suggestion, flattened for rendering. */
 export type PlacePrediction = {
   place_id: string;
   description: string;
@@ -20,7 +19,7 @@ type TextValue = {
 
 type AutocompleteSuggestionRequest = {
   input: string;
-  includedPrimaryTypes?: string[];
+  includedPrimaryTypes?: Array<string>;
 };
 
 type GooglePlacePrediction = {
@@ -40,13 +39,13 @@ type GooglePlacesLibrary = {
   AutocompleteSuggestion: {
     fetchAutocompleteSuggestions(
       request: AutocompleteSuggestionRequest,
-    ): Promise<{ suggestions?: GoogleAutocompleteSuggestion[] }>;
+    ): Promise<{ suggestions?: Array<GoogleAutocompleteSuggestion> }>;
   };
   Place: new (options: { id: string }) => {
-    addressComponents?: google.maps.GeocoderAddressComponent[];
+    addressComponents?: Array<google.maps.GeocoderAddressComponent>;
     formattedAddress?: string;
     id?: string;
-    fetchFields(options: { fields: string[] }): Promise<void>;
+    fetchFields(options: { fields: Array<string> }): Promise<void>;
   };
 };
 
@@ -56,8 +55,8 @@ function placesLibrary(): GooglePlacesLibrary {
 
 export async function getPlacePredictions(
   input: string,
-  types: string[],
-): Promise<PlacePrediction[]> {
+  types: Array<string>,
+): Promise<Array<PlacePrediction>> {
   if (!input.trim()) {
     return [];
   }
@@ -81,25 +80,26 @@ export async function getPlacePredictions(
       }
     }
 
-    const { suggestions } =
+    const response =
       await placesLibrary().AutocompleteSuggestion.fetchAutocompleteSuggestions(
         predictionRequest,
       );
 
-    if (!suggestions || suggestions.length === 0) {
+    if (!response.suggestions || response.suggestions.length === 0) {
       return [];
     }
 
-    return suggestions.map(({ placePrediction }) => ({
-      place_id: placePrediction.placeId,
-      description: placePrediction.text?.toString() || '',
+    return response.suggestions.map((suggestion) => ({
+      place_id: suggestion.placePrediction.placeId,
+      description: suggestion.placePrediction.text?.toString() || '',
       structured_formatting: {
         main_text:
-          placePrediction.structuredFormat?.mainText?.toString() ||
-          placePrediction.text?.toString() ||
+          suggestion.placePrediction.structuredFormat?.mainText?.toString() ||
+          suggestion.placePrediction.text?.toString() ||
           '',
         secondary_text:
-          placePrediction.structuredFormat?.secondaryText?.toString() || '',
+          suggestion.placePrediction.structuredFormat?.secondaryText?.toString() ||
+          '',
       },
     }));
   } catch (error) {
@@ -112,9 +112,9 @@ export async function getPlaceDetails(
   placeId: string,
 ): Promise<google.maps.places.PlaceResult> {
   try {
-    const { Place } = placesLibrary();
+    const places = placesLibrary();
 
-    const place = new Place({
+    const place = new places.Place({
       id: placeId,
     });
 

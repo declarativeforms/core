@@ -48,7 +48,7 @@ let mixpanelInstanceId = 0;
 function normalizeProvider(
   provider: IDeclarativeFormAnalyticsProvider,
   defaultApiHost: string,
-) {
+): { token: string; apiHost: string } {
   return typeof provider === 'string'
     ? { token: provider, apiHost: defaultApiHost }
     : { token: provider.token, apiHost: provider.api_host || defaultApiHost };
@@ -57,21 +57,18 @@ function normalizeProvider(
 async function createMixpanelProvider(
   configuration: IDeclarativeFormAnalyticsProvider,
 ): Promise<AnalyticsProvider | null> {
-  const { token, apiHost } = normalizeProvider(
-    configuration,
-    MIXPANEL_API_HOST,
-  );
+  const provider = normalizeProvider(configuration, MIXPANEL_API_HOST);
 
-  if (!token) {
+  if (!provider.token) {
     return null;
   }
 
-  const { default: mixpanel } = await import('mixpanel-browser');
+  const mixpanelModule = await import('mixpanel-browser');
   const instanceName = `declarative_forms_${mixpanelInstanceId++}`;
-  const instance: Mixpanel = mixpanel.init(
-    token,
+  const instance: Mixpanel = mixpanelModule.default.init(
+    provider.token,
     {
-      api_host: apiHost,
+      api_host: provider.apiHost,
       autocapture: false,
       record_sessions_percent: 0,
       track_pageview: false,
@@ -88,18 +85,15 @@ async function createMixpanelProvider(
 async function createPostHogProvider(
   configuration: IDeclarativeFormAnalyticsProvider,
 ): Promise<AnalyticsProvider | null> {
-  const { token, apiHost } = normalizeProvider(
-    configuration,
-    POSTHOG_API_HOST,
-  );
+  const provider = normalizeProvider(configuration, POSTHOG_API_HOST);
 
-  if (!token) {
+  if (!provider.token) {
     return null;
   }
 
-  const { PostHog } = await import('posthog-js/dist/module.no-external');
-  const instance = new PostHog().init(token, {
-    api_host: apiHost,
+  const posthogModule = await import('posthog-js/dist/module.no-external');
+  const instance = new posthogModule.PostHog().init(provider.token, {
+    api_host: provider.apiHost,
     advanced_disable_flags: true,
     autocapture: false,
     capture_dead_clicks: false,
@@ -144,7 +138,7 @@ function createDeferredProvider(
 ): AnalyticsProvider {
   let provider: AnalyticsProvider | null = null;
   let isShutDown = false;
-  const queuedEvents: QueuedEvent[] = [];
+  const queuedEvents: Array<QueuedEvent> = [];
 
   void initializeProvider(name, initialize).then((initializedProvider) => {
     if (!initializedProvider) {
@@ -199,7 +193,7 @@ function createDeferredProvider(
 export function createAnalytics(
   measurements?: IDeclarativeFormMeasurements,
 ): Analytics {
-  const providers: AnalyticsProvider[] = [];
+  const providers: Array<AnalyticsProvider> = [];
 
   if (measurements?.mixpanel) {
     const configuration = measurements.mixpanel;

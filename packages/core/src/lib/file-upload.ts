@@ -2,13 +2,6 @@
 
 import { getBackendUrl } from './api';
 
-/**
- * Upload one file or blob and return the URL it is served from.
- *
- * The single shared piece of the three fields that upload (file upload, camera,
- * signature). Everything about how a field behaves while an upload is in
- * flight lives with the field.
- */
 export async function uploadFile(
   file: File | Blob,
   filename?: string,
@@ -26,5 +19,6 @@ export async function uploadFile(
   }
 
   const uploadResponse = await response.json();
+
   return uploadResponse.url as string;
 }

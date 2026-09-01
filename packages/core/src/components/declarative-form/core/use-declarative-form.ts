@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   compile,
@@ -9,12 +9,12 @@ import {
   resolve,
   type IDeclarativeForm,
   type IRenderableForm,
-} from "@declarativeforms/engine";
+} from '@declarativeforms/engine';
 
 import type {
   SubmitResult,
   UseDeclarativeForm,
-} from "./use-declarative-form.types";
+} from './use-declarative-form.types';
 
 export function useDeclarativeForm(
   schema: IDeclarativeForm,
@@ -24,7 +24,7 @@ export function useDeclarativeForm(
 ): UseDeclarativeForm {
   const [formState, setFormState] = useState(() => ({
     data: initialData,
-    activeSectionId: initialSectionId ?? schema.sections?.[0]?.id ?? "",
+    activeSectionId: initialSectionId ?? schema.sections?.[0]?.id ?? '',
   }));
 
   const resolved = useMemo(() => resolve(schema, locale), [schema, locale]);
@@ -50,27 +50,28 @@ export function useDeclarativeForm(
 
       const next = renderableFormFn(data)?.section.next;
 
-      if (next?.type === "redirect") {
+      if (next?.type === 'redirect') {
         setFormState((state) => ({ ...state, data }));
         return {
-          type: "redirect",
+          type: 'redirect',
           url: next.url,
           activeSectionId: formState.activeSectionId,
           data,
         };
       }
-      if (!next || next.type === "complete") {
+      if (!next || next.type === 'complete') {
         setFormState((state) => ({ ...state, data }));
         return {
-          type: "complete",
+          type: 'complete',
           data,
           activeSectionId: formState.activeSectionId,
         };
       }
+
       setFormState({ data, activeSectionId: next.sectionId });
 
       return {
-        type: "submit",
+        type: 'submit',
         data,
         isPartial: true,
         activeSectionId: next.sectionId,

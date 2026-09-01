@@ -12,22 +12,17 @@ import type {
 import { useI18n } from '@/i18n';
 import type { TranslationKey } from '@/i18n';
 import { cn } from '@/lib/utils';
-import { ClearButton } from '../../supporting/clear-button.component';
-import type { FieldProps } from '../../supporting/field.types';
-import { mediaFrame } from '../../supporting/media-frame';
+import { ClearButton } from '@/components/declarative-form/supporting/clear-button.component';
+import type { FieldProps } from '@/components/declarative-form/supporting/field.types';
+import { mediaFrame } from '@/components/declarative-form/supporting/media-frame';
 
-// `ssr: false` rather than `lazy`: React 19 awaits a lazy import during SSR,
-// and leaflet touches `window` at module scope.
 const GeolocationMapPreview = dynamic(
   () => import('./geolocation-map-preview'),
   { ssr: false },
 );
 
 type ErrorCode =
-  | 'PERMISSION_DENIED'
-  | 'POSITION_UNAVAILABLE'
-  | 'TIMEOUT'
-  | 'NOT_SUPPORTED';
+  'PERMISSION_DENIED' | 'POSITION_UNAVAILABLE' | 'TIMEOUT' | 'NOT_SUPPORTED';
 
 type GeolocationState =
   | { status: 'idle' }
@@ -36,7 +31,6 @@ type GeolocationState =
   | { status: 'success'; value: IRenderableGeolocationValue }
   | { status: 'error'; code: ErrorCode };
 
-/** How long to keep listening for a more accurate fix before settling. */
 const SETTLE_MS = 3000;
 
 function isGeolocationValue(v: unknown): v is IRenderableGeolocationValue {
@@ -57,23 +51,23 @@ const ERROR_MESSAGE_KEYS: Record<ErrorCode, TranslationKey> = {
   NOT_SUPPORTED: 'geolocation.error_not_supported',
 };
 
-export function GeolocationField({
-  control,
-}: FieldProps<
-  IRenderableGeolocationField,
-  IRenderableGeolocationValue | null
->) {
-  const { t } = useI18n();
+export function GeolocationField(
+  props: FieldProps<
+    IRenderableGeolocationField,
+    IRenderableGeolocationValue | null
+  >,
+) {
+  const i18n = useI18n();
 
   const [state, setState] = useState<GeolocationState>(() => {
-    if (isGeolocationValue(control.value)) {
-      return { status: 'success', value: control.value };
+    if (isGeolocationValue(props.control.value)) {
+      return { status: 'success', value: props.control.value };
     }
     return { status: 'idle' };
   });
   const visibleState: GeolocationState =
-    state.status === 'idle' && isGeolocationValue(control.value)
-      ? { status: 'success', value: control.value }
+    state.status === 'idle' && isGeolocationValue(props.control.value)
+      ? { status: 'success', value: props.control.value }
       : state;
 
   const watchIdRef = useRef<number | null>(null);
@@ -123,8 +117,6 @@ export function GeolocationField({
         };
 
         setState((prev) => {
-          // The first fix starts a timer: keep refining until it expires, then
-          // settle on the most accurate reading seen.
           if (prev.status === 'loading') {
             settleTimerRef.current = setTimeout(() => {
               stopWatching();
@@ -138,7 +130,7 @@ export function GeolocationField({
           return { status: 'refining', value: locationValue };
         });
 
-        control.onChange(locationValue);
+        props.control.onChange(locationValue);
       },
       (error) => {
         stopWatching();
@@ -149,13 +141,13 @@ export function GeolocationField({
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
-  }, [control, stopWatching]);
+  }, [props.control, stopWatching]);
 
   const clearLocation = useCallback(() => {
     stopWatching();
     setState({ status: 'idle' });
-    control.onChange(null);
-  }, [control, stopWatching]);
+    props.control.onChange(null);
+  }, [props.control, stopWatching]);
 
   const hasCoords =
     visibleState.status === 'refining' || visibleState.status === 'success';
@@ -178,9 +170,12 @@ export function GeolocationField({
             'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
           )}
         >
-          <MapPin className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+          <MapPin
+            className="h-6 w-6 text-muted-foreground"
+            aria-hidden="true"
+          />
           <span className="text-sm text-muted-foreground">
-            {t('geolocation.use_my_location')}
+            {i18n.t('geolocation.use_my_location')}
           </span>
         </div>
       )}
@@ -192,7 +187,7 @@ export function GeolocationField({
             aria-hidden="true"
           />
           <span className="text-sm text-muted-foreground" aria-live="polite">
-            {t('geolocation.loading')}
+            {i18n.t('geolocation.loading')}
           </span>
         </div>
       )}
@@ -208,19 +203,19 @@ export function GeolocationField({
               latitude={visibleState.value.latitude}
               longitude={visibleState.value.longitude}
               accuracy={visibleState.value.accuracy}
-              label={t('geolocation.map_label')}
+              label={i18n.t('geolocation.map_label')}
             />
           </Suspense>
 
           <div className="flex items-center justify-between">
             <ClearButton
-              label={t('geolocation.clear')}
+              label={i18n.t('geolocation.clear')}
               onClick={clearLocation}
             />
           </div>
 
           <p className="sr-only" aria-live="polite">
-            {t('geolocation.location_captured')}
+            {i18n.t('geolocation.location_captured')}
           </p>
         </div>
       )}
@@ -229,14 +224,14 @@ export function GeolocationField({
         <div className={cn(mediaFrame({ height: 'sm' }), 'gap-3')}>
           <p className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
-            {t(ERROR_MESSAGE_KEYS[visibleState.code])}
+            {i18n.t(ERROR_MESSAGE_KEYS[visibleState.code])}
           </p>
           <button
             type="button"
             onClick={requestLocation}
             className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
           >
-            {t('geolocation.try_again')}
+            {i18n.t('geolocation.try_again')}
           </button>
         </div>
       )}

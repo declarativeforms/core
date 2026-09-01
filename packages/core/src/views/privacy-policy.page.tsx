@@ -3,12 +3,12 @@
 import { useI18n } from '@/i18n';
 
 export function PrivacyPolicyPage() {
-  const { t, withLang } = useI18n();
+  const i18n = useI18n();
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
       <h1 className="text-2xl font-bold mb-6 text-gray-900">
-        {t('privacy_policy.title')}
+        {i18n.t('privacy_policy.title')}
       </h1>
 
       <div className="space-y-6 text-gray-600 leading-relaxed">
@@ -65,10 +65,10 @@ export function PrivacyPolicyPage() {
 
         <div className="pt-8 border-t border-gray-100">
           <a
-            href={withLang('/')}
+            href={i18n.withLang('/')}
             className="text-sm font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
           >
-            ← {t('privacy_policy.back_home')}
+            ← {i18n.t('privacy_policy.back_home')}
           </a>
         </div>
       </div>
