@@ -655,10 +655,12 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   audit and should be ignored.
 - **`app/healthz/route.ts` returns the literal `'OK!\n'`.** The Compose
   healthcheck polls it. Do not change the body.
-- **`next.config.ts` bakes the API rewrite destination into
-  `routes-manifest.json` at build time**, so `API_INTERNAL_ORIGIN` is a
-  build-time value, not a runtime-configurable one. `GOOGLE_MAPS_API_KEY` is the
-  opposite: read per request, so a restart is enough.
+- **`API_INTERNAL_ORIGIN` is read twice, and the two reads differ.**
+  `next.config.ts` bakes it into the API rewrite destination in
+  `routes-manifest.json` at build time, so changing that half needs a rebuild.
+  `lib/form-metadata.ts` reads it per request, so that half needs only a
+  restart. Set it in both places. `GOOGLE_MAPS_API_KEY` is request-time only, so
+  a restart is always enough.
 - **`supporting/html-text.tsx` is the only file with a rest element.** See
   [Destructuring](#destructuring).
 - **`lib/form-schema.ts` reads two files from the repository root**
