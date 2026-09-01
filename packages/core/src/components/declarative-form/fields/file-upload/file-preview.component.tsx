@@ -1,5 +1,4 @@
 'use client';
-
 import {
   X,
   FileIcon,
@@ -10,7 +9,6 @@ import {
   MusicIcon,
   FileArchiveIcon,
 } from 'lucide-react';
-
 import { useI18n } from '@/i18n';
 import { cn } from '@/lib/utils';
 import type { UploadedFile } from './use-file-uploads';

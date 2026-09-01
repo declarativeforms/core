@@ -1,8 +1,6 @@
 'use client';
-
 import { useCallback, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-
 import { uploadFile } from '@/lib/file-upload';
 
 export function canvasToPngBlob(

@@ -1,5 +1,4 @@
 'use client';
-
 import type {
   IDeclarativeFormAnalyticsProvider,
   IDeclarativeFormMeasurements,
@@ -128,6 +127,7 @@ async function initializeProvider(
     return await initialize();
   } catch (error) {
     console.warn(`Unable to initialize ${name} analytics.`, error);
+
     return null;
   }
 }
@@ -143,6 +143,7 @@ function createDeferredProvider(
   void initializeProvider(name, initialize).then((initializedProvider) => {
     if (!initializedProvider) {
       queuedEvents.length = 0;
+
       return;
     }
 
@@ -164,6 +165,7 @@ function createDeferredProvider(
       } catch (error) {
         console.warn(`Unable to shut down ${name} analytics.`, error);
       }
+
       return;
     }
 
@@ -178,6 +180,7 @@ function createDeferredProvider(
 
       if (!provider) {
         queuedEvents.push({ event, properties });
+
         return;
       }
 

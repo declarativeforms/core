@@ -1,8 +1,6 @@
 'use client';
-
 import { forwardRef } from 'react';
 import { useForm, useWatch, type FieldValues } from 'react-hook-form';
-
 import {
   evaluateExpression,
   type IRenderableSection,

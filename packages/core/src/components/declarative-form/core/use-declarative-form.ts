@@ -1,7 +1,5 @@
 'use client';
-
 import { useCallback, useMemo, useState } from 'react';
-
 import {
   compile,
   findPreviousSectionId,
@@ -10,7 +8,6 @@ import {
   type IDeclarativeForm,
   type IRenderableForm,
 } from '@declarativeforms/engine';
-
 import type {
   SubmitResult,
   UseDeclarativeForm,
@@ -32,6 +29,7 @@ export function useDeclarativeForm(
   const renderableFormFn = useCallback(
     (answers: Record<string, unknown>): IRenderableForm | null => {
       const compiled = compile(resolved, answers);
+
       return compiled.sections.length
         ? render(compiled, answers, { sectionId: formState.activeSectionId })
         : null;
@@ -52,6 +50,7 @@ export function useDeclarativeForm(
 
       if (next?.type === 'redirect') {
         setFormState((state) => ({ ...state, data }));
+
         return {
           type: 'redirect',
           url: next.url,
@@ -61,6 +60,7 @@ export function useDeclarativeForm(
       }
       if (!next || next.type === 'complete') {
         setFormState((state) => ({ ...state, data }));
+
         return {
           type: 'complete',
           data,

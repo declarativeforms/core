@@ -1,10 +1,7 @@
 'use client';
-
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
-
 import { interpolateTemplate } from '@declarativeforms/engine';
-
 import { replaceSearchParams } from '@/lib/url-state';
 import { DEFAULT_LOCALE, toSupportedLocale, type Locale } from './locale';
 import {
@@ -72,6 +69,7 @@ export function I18nProvider(props: {
   fallbackLocale: Locale;
 }) {
   const searchParams = useSearchParams();
+
   const resolved = resolveLocale(
     searchParams.get('lang'),
     props.fallbackLocale,

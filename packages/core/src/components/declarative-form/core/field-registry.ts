@@ -1,12 +1,9 @@
 'use client';
-
 import type { ComponentType } from 'react';
-
 import type {
   DeclarativeFieldType,
   IRenderableField,
 } from '@declarativeforms/engine';
-
 import {
   AddressField,
   CameraField,
@@ -23,8 +20,8 @@ import {
   SignatureField,
   SingleSelectField,
   TextField,
-} from '../fields';
-import type { FieldProps } from '../supporting/field.types';
+} from '@/components/declarative-form/fields';
+import { type FieldProps } from '@/components/declarative-form/supporting';
 
 type DeclarativeFieldRenderer = ComponentType<FieldProps>;
 

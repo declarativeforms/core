@@ -1,5 +1,4 @@
 'use client';
-
 import { getBackendUrl } from './api';
 
 export async function uploadFile(

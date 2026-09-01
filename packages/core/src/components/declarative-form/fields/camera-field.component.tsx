@@ -1,16 +1,15 @@
 'use client';
-
 import { Camera, Loader2, RefreshCw, VideoOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
 import type { IRenderableCameraField } from '@declarativeforms/engine';
-
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
-import type { FieldProps } from '../supporting/field.types';
-import { mediaFrame } from '../supporting/media-frame';
+import {
+  mediaFrame,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import { canvasToPngBlob, useUploadBlob } from './use-upload-blob';
 
 type CameraStatus = 'idle' | 'previewing' | 'uploading' | 'captured' | 'error';
@@ -75,6 +74,7 @@ export function CameraField(
         if (!isOverconstrained) {
           throw err;
         }
+
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: facingMode } },
         });
@@ -131,6 +131,7 @@ export function CameraField(
         status: 'error',
         error: i18n.t('camera.upload_failed'),
       }));
+
       return;
     }
 

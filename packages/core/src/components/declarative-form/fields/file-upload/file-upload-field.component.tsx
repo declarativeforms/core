@@ -1,15 +1,14 @@
 'use client';
-
 import { Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
-
 import type { IRenderableFileUploadField } from '@declarativeforms/engine';
-
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
-import type { FieldProps } from '@/components/declarative-form/supporting/field.types';
-import { mediaFrame } from '@/components/declarative-form/supporting/media-frame';
+import {
+  mediaFrame,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import { FilePreview } from './file-preview.component';
 import { useFileUploads } from './use-file-uploads';
 

@@ -1,16 +1,13 @@
 import 'server-only';
-
 import { cache } from 'react';
 import { headers } from 'next/headers';
 import type { Metadata } from 'next';
-
 import {
   interpolateTemplate,
   resolveLocalizedText,
   type IDeclarativeForm,
   type ILocalizedText,
 } from '@declarativeforms/engine';
-
 import { resolveRequestLocale } from '@/i18n/server';
 import { stripHtml } from './strip-html';
 
@@ -81,10 +78,12 @@ function decodeEntities(text: string): string {
         entity.slice(isHex ? 2 : 1),
         isHex ? 16 : 10,
       );
+
       return codePoint >= 0 && codePoint <= 0x10ffff
         ? String.fromCodePoint(codePoint)
         : match;
     }
+
     return HTML_ENTITIES[entity.toLowerCase()] ?? match;
   });
 }

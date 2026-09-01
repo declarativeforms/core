@@ -1,5 +1,4 @@
 'use client';
-
 import { runtimeConfig } from './runtime-config';
 
 export function loadGoogleMaps(): void {

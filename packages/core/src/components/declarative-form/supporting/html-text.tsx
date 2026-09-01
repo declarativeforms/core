@@ -1,5 +1,4 @@
 'use client';
-
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 
 type HtmlTextProps<T extends ElementType = 'span'> = {
@@ -13,5 +12,6 @@ export function HtmlText<T extends ElementType = 'span'>({
   ...rest
 }: HtmlTextProps<T>) {
   const Tag = as || 'span';
+
   return <Tag dangerouslySetInnerHTML={{ __html: html }} {...rest} />;
 }

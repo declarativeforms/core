@@ -1,13 +1,10 @@
 'use client';
-
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
 import type {
   IRenderableAddressField,
   IStructuredAddress,
 } from '@declarativeforms/engine';
-
 import {
   Command,
   CommandEmpty,
@@ -19,8 +16,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { bindElement } from '@/components/declarative-form/supporting/bind-text-input';
-import type { FieldProps } from '@/components/declarative-form/supporting/field.types';
+import {
+  bindElement,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import {
   formatAddressString,
   formatStructuredAddress,

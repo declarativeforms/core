@@ -1,7 +1,5 @@
 'use client';
-
 import type { IRenderableDropdownField } from '@declarativeforms/engine';
-
 import {
   Select,
   SelectContent,
@@ -10,8 +8,10 @@ import {
   SelectValue,
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { HtmlText } from '../supporting/html-text';
-import type { FieldProps } from '../supporting/field.types';
+import {
+  HtmlText,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import { SearchableDropdown } from './searchable-dropdown.component';
 
 export function DropdownField(

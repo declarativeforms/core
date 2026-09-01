@@ -1,9 +1,7 @@
 'use client';
-
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-
 import { HeroSection } from '@/components';
 import {
   compile,

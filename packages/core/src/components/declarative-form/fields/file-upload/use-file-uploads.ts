@@ -1,7 +1,5 @@
 'use client';
-
 import { useRef, useState } from 'react';
-
 import { uploadFile } from '@/lib/file-upload';
 
 export type UploadedFile = {
@@ -37,6 +35,7 @@ function acceptsMimeType(
 
     if (normalized.endsWith('/*')) {
       const prefix = normalized.slice(0, normalized.length - 1);
+
       return file.type.toLowerCase().startsWith(prefix);
     }
 
@@ -50,6 +49,7 @@ function toUrls(value: unknown): Array<string> {
       (entry): entry is string => typeof entry === 'string' && entry.length > 0,
     );
   }
+
   return typeof value === 'string' && value ? [value] : [];
 }
 
@@ -110,6 +110,7 @@ export function useFileUploads(options: {
 
   function nextId(prefix: string): string {
     nextIdRef.current += 1;
+
     return `${prefix}-${nextIdRef.current}`;
   }
 
@@ -127,6 +128,7 @@ export function useFileUploads(options: {
     if (unchanged) {
       return;
     }
+
     options.onChange(options.storesScalar ? (after[0] ?? null) : after);
   }
 
@@ -178,11 +180,14 @@ export function useFileUploads(options: {
 
     write([...filesRef.current, ...entries]);
 
-    for (const { file, id } of queued) {
+    for (const entry of queued) {
       try {
-        settle(id, { url: await uploadFile(file), status: 'uploaded' });
+        settle(entry.id, {
+          url: await uploadFile(entry.file),
+          status: 'uploaded',
+        });
       } catch (error) {
-        settle(id, {
+        settle(entry.id, {
           status: 'error',
           error:
             error instanceof Error

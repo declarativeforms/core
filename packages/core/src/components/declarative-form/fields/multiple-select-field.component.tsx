@@ -1,15 +1,14 @@
 'use client';
-
 import { useState } from 'react';
-
 import type { IRenderableMultipleSelectField } from '@declarativeforms/engine';
-
 import { Checkbox, Field, FieldLabel, Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
-import type { FieldProps } from '../supporting/field.types';
-import { HtmlText } from '../supporting/html-text';
+import {
+  HtmlText,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 
 const OPTION_ROW_CLASS =
   'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors';
@@ -42,12 +41,15 @@ export function MultipleSelectField(
         max: String(maxSelections),
       });
     }
+
     if (minSelections > 0) {
       return i18n.t('multiple_select.at_least', { min: String(minSelections) });
     }
+
     if (maxSelections) {
       return i18n.t('multiple_select.up_to', { max: String(maxSelections) });
     }
+
     return '';
   })();
 
@@ -57,6 +59,7 @@ export function MultipleSelectField(
     if (maxSelections && next.length > maxSelections) {
       return;
     }
+
     props.control.onChange(next);
   }
 
@@ -110,6 +113,7 @@ export function MultipleSelectField(
               onCheckedChange={(checked: boolean) => {
                 if (checked) {
                   commit([...chosenOptions, otherText]);
+
                   return;
                 }
                 setOtherText('');

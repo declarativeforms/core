@@ -1,7 +1,7 @@
 'use client';
 import type { IRenderableField } from '@declarativeforms/engine';
 import { FieldLabel as BaseFieldLabel } from '@/components/ui';
-import { HtmlText } from '../supporting/html-text';
+import { HtmlText } from '@/components/declarative-form/supporting';
 
 export function FieldLabel(props: { field: IRenderableField }) {
   return (

@@ -1,7 +1,6 @@
 /// <reference types="google.maps" />
 
 'use client';
-
 import type { IStructuredAddress } from '@declarativeforms/engine';
 
 export type PlacePrediction = {
@@ -104,6 +103,7 @@ export async function getPlacePredictions(
     }));
   } catch (error) {
     console.error('Error fetching autocomplete suggestions:', error);
+
     return [];
   }
 }

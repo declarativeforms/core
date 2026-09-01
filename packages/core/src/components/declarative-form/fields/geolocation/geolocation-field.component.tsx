@@ -1,20 +1,19 @@
 'use client';
-
 import dynamic from 'next/dynamic';
 import { AlertCircle, Loader2, MapPin } from 'lucide-react';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-
 import type {
   IRenderableGeolocationField,
   IRenderableGeolocationValue,
 } from '@declarativeforms/engine';
-
 import { useI18n } from '@/i18n';
 import type { TranslationKey } from '@/i18n';
 import { cn } from '@/lib/utils';
-import { ClearButton } from '@/components/declarative-form/supporting/clear-button.component';
-import type { FieldProps } from '@/components/declarative-form/supporting/field.types';
-import { mediaFrame } from '@/components/declarative-form/supporting/media-frame';
+import {
+  ClearButton,
+  mediaFrame,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 
 const GeolocationMapPreview = dynamic(
   () => import('./geolocation-map-preview'),
@@ -63,6 +62,7 @@ export function GeolocationField(
     if (isGeolocationValue(props.control.value)) {
       return { status: 'success', value: props.control.value };
     }
+
     return { status: 'idle' };
   });
   const visibleState: GeolocationState =
@@ -90,6 +90,7 @@ export function GeolocationField(
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setState({ status: 'error', code: 'NOT_SUPPORTED' });
+
       return;
     }
 
@@ -107,6 +108,7 @@ export function GeolocationField(
         if (position.coords.accuracy >= bestAccuracyRef.current) {
           return;
         }
+
         bestAccuracyRef.current = position.coords.accuracy;
 
         const locationValue: IRenderableGeolocationValue = {
@@ -127,6 +129,7 @@ export function GeolocationField(
               );
             }, SETTLE_MS);
           }
+
           return { status: 'refining', value: locationValue };
         });
 

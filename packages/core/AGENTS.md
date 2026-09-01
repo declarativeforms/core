@@ -51,7 +51,10 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 5. **No `any`.** The package contains zero occurrences. Keep it that way.
 6. **Explicit return type on every function except a JSX component.**
 7. **Braces on every block.** No single-line `if (x) return y;`.
-8. **Single quotes.** Run `npm run format`.
+8. **Imports are one unbroken block.** No blank line between them, and none
+   after the leading directive.
+9. **A blank line before every `return`, and after every guard block.**
+10. **Single quotes.** Run `npm run format`.
 
 ## Layout
 
@@ -76,7 +79,14 @@ app  ->  views  ->  components  ->  lib, i18n
   awaits data and renders a view. `app/[slug]/page.tsx` is the model.
 - **Nothing imports upward.** A component never imports from `views/` or `app/`.
 - **`components/declarative-form/fields/*` depend on `supporting/`, never on each
-  other.** The shared contract is `supporting/field.types.ts`.
+  other.** The shared contract is `supporting/field.types.ts`, reached through
+  the `supporting/` barrel like everything else in that folder.
+- **Every component folder has an `index.ts` and is imported through it.**
+  `components/`, `components/ui/`, `declarative-form/`, `declarative-form/core/`,
+  `declarative-form/fields/` and `declarative-form/supporting/` all have one. A
+  new module in one of those folders is added to its barrel, or it is
+  unreachable by the rule in [Imports](#imports). `lib/`, `app/`, `i18n/messages/`
+  and `scaffolding/` have no barrel and need none.
 - **Only `core/field-registry.ts` knows the full set of field components.** It is
   annotated `Record<DeclarativeFieldType, DeclarativeFieldRenderer>` rather than
   asserted, so a field type added to the engine fails this package's build until
@@ -385,22 +395,77 @@ one module supplies both:
 import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 ```
 
-**Use the `@/` alias for anything outside the current folder.** This replaces the
-"never deeper than one `../`" rule the other two packages state; core has a path
-alias and should use it. There are zero `../../` imports in the package.
+**The import section is one unbroken block.** No blank line between two import
+statements, and no blank line after a leading `'use client';` or
+`import 'server-only';`. The older style grouped imports by origin with blank
+lines between the groups; that grouping is gone.
 
 ```ts
-import { PageShell } from '@/app/page-shell';                       // correct
-import { mediaFrame } from '@/components/declarative-form/supporting/media-frame';
-import { PageShell } from '../../page-shell';                       // wrong
+'use client';
+import { useEffect, useState } from 'react';
+import type { IRenderableAddressField } from '@declarativeforms/engine';
+import { useI18n } from '@/i18n';
+import { bindElement } from '@/components/declarative-form/supporting';
 ```
 
-**Same-folder imports go direct to the file**: `'./use-declarative-form'`,
-`'./field-registry'`. A single `../` to an immediate sibling folder is acceptable
-where it reads better than the alias, as in `'../supporting/field.types'`.
+```ts
+'use client';
+                                       // wrong: blank after the directive
+import { useEffect } from 'react';
+                                       // wrong: blank between imports
+import { useI18n } from '@/i18n';
+```
 
-**Order is not enforced by any tool here.** Write it in this order and keep a
-file internally consistent:
+**Prettier will not do this for you.** It preserves author blank lines inside an
+import section, so this is a review rule.
+
+**Use the `@/` alias for anything outside the current folder.** Not "prefer": the
+package has **zero** `'../'` imports, and that is the checkable state. Only
+same-folder `'./x'` imports are relative.
+
+```ts
+import { PageShell } from '@/app/page-shell';                    // correct
+import type { SearchParams } from '@/app/search-params.types';   // correct
+import { bindTextInput } from '../supporting/bind-text-input';   // wrong
+import { PageShell } from '../page-shell';                       // wrong
+```
+
+**Import a component folder through its barrel, never past it.** This applies to
+`@/components`, `@/components/ui`, `@/components/declarative-form/supporting` and
+`@/components/declarative-form/fields`, and to `@/i18n`.
+
+```ts
+import {
+  bindTextInput,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';               // correct
+
+import type { FieldProps }
+  from '@/components/declarative-form/supporting/field.types';   // wrong
+```
+
+Four cases are not violations of that rule, and all four are deliberate:
+
+- **A file inside a barrelled folder imports its siblings directly.** The rule is
+  for consumers. `components/ui/field.tsx` importing `@/components/ui/label` is
+  correct, and is upstream's own code besides.
+- **`@/lib` has no barrel**, so `@/lib/utils` and `@/lib/analytics` are the
+  correct form. Same for `@/app/page-shell` and
+  `@/components/declarative-form/scaffolding/hero-section.component`.
+- **`@/i18n/server` and `@/i18n/locale` bypass the `@/i18n` barrel on purpose.**
+  That barrel is a client module; these two must stay reachable from server code
+  without dragging it in.
+- **A route file imports the one view it renders**, as
+  `@/views/form-route`, not through `@/views`. A route should pull only the view
+  it renders into its bundle. `views/index.ts` exists but is currently imported
+  by nothing.
+
+**One statement per module.** Merge, rather than importing twice from the same
+specifier. `address-field.component.tsx` shows the shape, values first and inline
+`type` members last.
+
+**Order is not enforced by any tool here.** Write it in this order, inside the
+single block, and keep a file internally consistent:
 
 1. React and Next
 2. Other external packages
@@ -453,18 +518,34 @@ if (!ctx) {              // correct
 if (!ctx) return;        // wrong
 ```
 
-**Blank lines mark topic boundaries.** Put one after a `const` whose value is
-then consumed by a statement with a different concern, and before a guard `if`
-that is not the first statement in its block. Do not put one immediately after an
-opening `{`.
+**Blank lines are mechanical here, not a matter of taste.** Two rules, both
+checkable, and neither enforced by Prettier or ESLint:
+
+**1. A blank line before every `return` that is not the first statement in its
+block.** A `return` that is the only statement in a block, or the first, gets
+nothing, so one-line arrow bodies and guard blocks are untouched.
 
 ```ts
-const resolved = resolveLocalizedText(text, locale);
+const rect = canvas.getBoundingClientRect();
 
-if (!resolved) {
-  return '';
-}
+return rect.width;
 ```
+
+**2. A blank line after every guard block.** A guard is an `if` with no `else`
+whose body is a single `return`, `continue`, `break` or `throw`. Nothing is added
+if the next line is already blank or closes an enclosing block.
+
+```ts
+if (!normalized) {
+  return null;
+}
+
+const base = normalized.split('-')[0];
+```
+
+Beyond those two, a blank line separates statements with different concerns, as
+after a `const` whose value the next statement does not consume. **Never put one
+immediately after an opening `{`.**
 
 **`??` for nullish defaults, `||` for falsy defaults and boolean logic.** Both
 appear deliberately: `control.value ?? ''` keeps an empty string, while
@@ -584,6 +665,15 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   (`contact.yaml`, `kitchen-sink.yaml`) during the build. The Dockerfile must
   copy them in before `next build`, and the `turbopackIgnore` directives must
   stay.
+- **`views/index.ts` is imported by nothing.** Route files pull the one view they
+  render, which is the right call for per-route bundling. The barrel is harmless
+  but currently dead.
+- **The two blank-line rules and the one-block import rule are core-local.**
+  `packages/api` already satisfies all three, which is why it reads as the
+  reference. `packages/engine` does **not**: it has one blank between imports in
+  `parse/index.ts` and 22 returns with no preceding blank line, and it was
+  deliberately left alone. Do not "align" engine on the strength of this file;
+  `packages/engine/AGENTS.md` is the authority there.
 
 ## Before you hand work back
 
@@ -611,10 +701,10 @@ Then check the diff by hand:
 C=packages/core/src
 grep -rnE '^[[:space:]]*(//|/\*)' $C --include='*.ts' --include='*.tsx'
 grep -rnE '[A-Za-z_>][[:space:]]*\[\]' $C
-grep -rnE 'const \{|function [A-Za-z]+\(\{' $C | grep -v components/ui
+grep -rnE 'const \{|function [A-Za-z]+(<[^>]*>)?\(\{|for \(const \{' $C | grep -v components/ui
 grep -rnE 'if \(.*\) (return|continue|break|throw)' $C
 grep -rnE ': any|as any|<any>' $C
-grep -rn "from '\.\./\.\." $C
+grep -rn "from '\.\./" $C
 ```
 
 Expected results, and nothing else:
@@ -624,8 +714,20 @@ Expected results, and nothing else:
   types.
 - **Destructuring: 1.** The rest element in `supporting/html-text.tsx`. **Pipe
   through `grep -v components/ui`**, or the 68 destructured parameters in the
-  generated primitives drown the signal.
+  generated primitives drown the signal. Note the `for (const {` arm: a
+  `for...of` binding is destructuring too, and a grep that only looks for `} =`
+  will miss it.
+- **Relative imports: nothing.** The check is `'../'`, not `'../../'`: a single
+  level up is a violation now.
 - **Everything else: nothing.**
+
+**The three whitespace rules have no linter.** Prettier does not add or remove
+blank lines around statements, and it preserves them inside an import section, so
+these are checked by reading the diff:
+
+- imports form one unbroken block, with nothing after the directive,
+- a blank line precedes every `return` that is not first in its block,
+- a blank line follows every guard block.
 
 And confirm by inspection:
 

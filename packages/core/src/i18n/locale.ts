@@ -8,6 +8,7 @@ export function toSupportedLocale(value?: string | null): Locale | null {
   if (!normalized) {
     return null;
   }
+
   const base = normalized.split('-')[0];
 
   return (

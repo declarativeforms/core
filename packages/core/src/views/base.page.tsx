@@ -1,7 +1,5 @@
 'use client';
-
 import { useEffect, type ReactNode } from 'react';
-
 import {
   Card,
   CardContent,
@@ -9,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components';
-import { HtmlText } from '@/components/declarative-form/supporting/html-text';
+import { HtmlText } from '@/components/declarative-form/supporting';
 import { stripHtml } from '@/lib/strip-html';
 import { useI18n } from '@/i18n';
 import { buildThemeStyle } from '@/lib/theme';

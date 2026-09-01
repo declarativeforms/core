@@ -1,11 +1,11 @@
 'use client';
-
 import { useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
-
 import type { IRenderableDropdownField } from '@declarativeforms/engine';
-import type { FieldProps } from '../supporting/field.types';
-import { HtmlText } from '../supporting/html-text';
+import {
+  HtmlText,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import {
   Button,
   Command,

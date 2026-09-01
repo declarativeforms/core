@@ -1,8 +1,9 @@
 'use client';
-
 import type { IRenderableRatingField } from '@declarativeforms/engine';
-import type { FieldProps } from '../supporting/field.types';
-import { HtmlText } from '../supporting/html-text';
+import {
+  HtmlText,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '@/components/ui';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';

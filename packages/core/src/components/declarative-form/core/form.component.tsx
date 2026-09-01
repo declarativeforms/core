@@ -32,6 +32,7 @@ export function DeclarativeForm(props: {
   useEffect(() => {
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
+
       return;
     }
     window.scrollTo(0, 0);

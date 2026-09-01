@@ -1,8 +1,8 @@
-import type { SearchParams } from '../search-params.types';
+import type { SearchParams } from '@/app/search-params.types';
 import type { Metadata } from 'next';
 import { formMetadata } from '@/lib/form-metadata';
 import { FormRoute } from '@/views/form-route';
-import { PageShell } from '../page-shell';
+import { PageShell } from '@/app/page-shell';
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;

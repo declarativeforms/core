@@ -1,5 +1,4 @@
 import type { ChangeEvent } from 'react';
-
 import type { FieldControl } from './field.types';
 
 export type ElementBinding = Pick<FieldControl, 'name' | 'ref' | 'onBlur'>;

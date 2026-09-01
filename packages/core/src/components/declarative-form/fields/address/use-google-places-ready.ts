@@ -1,7 +1,5 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-
 import { runtimeConfig } from '@/lib/runtime-config';
 
 const POLL_INTERVAL_MS = 100;

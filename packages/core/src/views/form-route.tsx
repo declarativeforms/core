@@ -1,5 +1,4 @@
 'use client';
-
 import {
   resolveLocalizedText,
   type IDeclarativeForm,
@@ -8,13 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
-
 import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { createAnalytics, type Analytics } from '@/lib/analytics';
 import { getBackendUrl } from '@/lib/api';
 import { replacePath, replaceSearchParams } from '@/lib/url-state';
-
 import { BasePage } from './base.page';
 
 const RESERVED_QUERY_KEYS = new Set([
@@ -227,6 +224,7 @@ export function FormRoute(props: FormRouteProps) {
           submissionId: submissionId ?? searchParams.get('submission_id'),
           step: runtimeState.activeSectionId,
         });
+
         return;
       }
 
@@ -254,6 +252,7 @@ export function FormRoute(props: FormRouteProps) {
                 : thankYouPath,
             ),
           );
+
           return;
         } catch (error) {
           isCompletingRef.current = false;
@@ -276,6 +275,7 @@ export function FormRoute(props: FormRouteProps) {
             step: 'done',
           });
           window.location.href = effect.url;
+
           return;
         } catch (error) {
           isCompletingRef.current = false;

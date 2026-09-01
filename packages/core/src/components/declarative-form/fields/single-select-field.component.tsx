@@ -1,10 +1,10 @@
 'use client';
-
 import { useState } from 'react';
-
 import type { IRenderableSingleSelectField } from '@declarativeforms/engine';
-import type { FieldProps } from '../supporting/field.types';
-import { HtmlText } from '../supporting/html-text';
+import {
+  HtmlText,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import {
   Field,
   FieldLabel,
@@ -27,6 +27,7 @@ export function SingleSelectField(
       !!props.field.allowOther &&
       !!props.control.value &&
       !props.field.options?.some((o) => o.value === props.control.value);
+
     return { active, text: active ? String(props.control.value) : '' };
   });
 

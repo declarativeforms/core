@@ -1,6 +1,6 @@
-import type { SearchParams } from '../search-params.types';
+import type { SearchParams } from '@/app/search-params.types';
 import { PrivacyPolicyPage } from '@/views/privacy-policy.page';
-import { PageShell } from '../page-shell';
+import { PageShell } from '@/app/page-shell';
 
 export default async function Page(props: {
   searchParams: Promise<SearchParams>;

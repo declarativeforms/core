@@ -9,6 +9,7 @@ export async function resolveRequestLocale(): Promise<Locale> {
     .split(',')
     .map((part) => {
       const [tag, quality] = part.trim().split(';q=');
+
       return { tag, quality: quality ? Number(quality) : 1 };
     })
     .sort((a, b) => b.quality - a.quality)

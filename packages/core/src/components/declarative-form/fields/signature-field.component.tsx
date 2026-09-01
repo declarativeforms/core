@@ -1,14 +1,13 @@
 'use client';
-
 import { useCallback, useEffect, useRef, useState } from 'react';
-
 import type { IRenderableSignatureField } from '@declarativeforms/engine';
-
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
-import { ClearButton } from '../supporting/clear-button.component';
-import type { FieldProps } from '../supporting/field.types';
-import { mediaFrame } from '../supporting/media-frame';
+import {
+  ClearButton,
+  mediaFrame,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import { canvasToPngBlob, useUploadBlob } from './use-upload-blob';
 
 type Point = { x: number; y: number };
@@ -122,6 +121,7 @@ export function SignatureField(
     }
 
     const rect = canvas.getBoundingClientRect();
+
     return {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top,
@@ -137,6 +137,7 @@ export function SignatureField(
     const blob = await canvasToPngBlob(canvas);
     if (!blob) {
       blobUpload.setErrorMessage(i18n.t('signature.capture_failed'));
+
       return;
     }
 

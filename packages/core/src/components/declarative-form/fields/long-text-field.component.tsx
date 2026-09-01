@@ -1,11 +1,11 @@
 'use client';
-
 import type { IRenderableLongTextField } from '@declarativeforms/engine';
-
 import { Textarea } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { bindTextInput } from '../supporting/bind-text-input';
-import type { FieldProps } from '../supporting/field.types';
+import {
+  bindTextInput,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 
 export function LongTextField(
   props: FieldProps<IRenderableLongTextField, string>,

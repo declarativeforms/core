@@ -1,11 +1,9 @@
 'use client';
-
 import { useEffect } from 'react';
-
 import { Button } from '@/components';
 import { useI18n } from '@/i18n';
 import { buildThemeStyle } from '@/lib/theme';
-import { HtmlText } from '../supporting/html-text';
+import { HtmlText } from '@/components/declarative-form/supporting';
 import { stripHtml } from '@/lib/strip-html';
 
 export function HeroSection(props: {
