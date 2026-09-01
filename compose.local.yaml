@@ -3,6 +3,12 @@ services:
     profiles:
       - production
 
+  # Local development builds from source, so nothing should be pulled or
+  # recreated from the registry underneath it.
+  updater:
+    profiles:
+      - production
+
   web:
     build:
       context: .

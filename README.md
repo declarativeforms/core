@@ -49,6 +49,7 @@ is the whole workflow.
 - [Defining a form](#defining-a-form)
 - [Where your data lives](#where-your-data-lives)
 - [Architecture](#architecture)
+- [Self-hosting](#self-hosting)
 - [Local development](#local-development)
 - [Contributing](#contributing)
 - [License](#license)
@@ -326,6 +327,86 @@ job for each matching connection, and the scheduler delivers it at the
 configured time. Connections default to completed submissions; see the
 [connection schema](./SCHEMA.md#connections) for partial triggers and delayed
 delivery.
+
+## Self-hosting
+
+Everything runs from one `compose.yaml`: Traefik terminates TLS, the web app and
+API serve the forms, the scheduler delivers connections, and MongoDB and MinIO
+hold your data. On a fresh Ubuntu host:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/declarativeforms/core/main/.env.example
+cp .env.example .env   # fill in DOMAIN, LETSENCRYPT_EMAIL and the passwords
+curl -fsSLO https://raw.githubusercontent.com/declarativeforms/core/main/scripts/setup-digitalocean.sh
+sudo bash setup-digitalocean.sh --env-file ./.env
+```
+
+Point `DOMAIN` at the host first, because Traefik gets its certificate over an
+HTTP-01 challenge on first boot.
+
+### Updates apply themselves
+
+After that first run you do not redeploy to ship. When a new image is published
+for the tag you deployed, the `updater` service pulls it and recreates `web`,
+`api` and `scheduler`, waiting for each to report healthy before moving to the
+next. It checks every `UPDATE_INTERVAL` seconds, 300 by default.
+
+```bash
+cd /opt/frms
+docker compose logs -f updater        # watch it
+docker compose stop updater           # pause it, until the next `up`
+```
+
+Set `UPDATE_INTERVAL=0` in `/opt/frms/.env` to park it durably. Both the
+interval and `IMAGE_TAG` are re-read from that file on every pass, so neither
+needs a restart to take effect.
+
+`traefik`, `mongodb` and `minio` are **never** updated automatically. Their
+versions are pinned in `compose.yaml` and move only when you re-run the setup
+script.
+
+### Pinning and rolling back
+
+`IMAGE_TAG=latest` tracks the default branch. Every published commit also gets
+an immutable `sha-` tag, and pinning one stops auto-update dead, because the
+digest behind it never changes:
+
+```bash
+sudo ./scripts/setup-digitalocean.sh --tag sha-2e6a4c9
+```
+
+That is the way back from a bad release, and it holds until you deploy `latest`
+again. Use the script rather than editing `.env` by hand, so the file and the
+running containers agree.
+
+### What auto-update does not cover
+
+Only images. A change to `compose.yaml` itself, a new service or a new
+environment variable, does not reach a running host: re-run the setup script to
+adopt it. This is deliberate, because a stack definition that deployed itself
+could change your pinned infrastructure or take the stack down against an `.env`
+that has never heard of a newly required variable.
+
+There is also no automatic rollback. If a published image fails to start,
+`restart: unless-stopped` keeps retrying it and the updater logs that the
+recreate never reported healthy; recovery is pinning a known-good `sha-` tag.
+
+Expect roughly 30 to 50 seconds of disruption per update. The dominant cost is
+that `packages/api/src/main.ts` installs no `SIGTERM` handler, so Node runs as
+PID 1 without one and Docker waits the full 10 second grace period before
+`SIGKILL` on each of `api` and `web`. Single-container Compose cannot do better
+without a second replica.
+
+If containers restart when no image was published, compare the config hashes the
+host and the updater compute; they must be identical for `web`, `api` and
+`scheduler`:
+
+```bash
+cd /opt/frms
+docker compose config --hash '*'
+docker compose exec updater \
+  docker compose --project-directory /stack --env-file /stack/.env config --hash '*'
+```
 
 ## Local development
 

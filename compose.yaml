@@ -131,6 +131,87 @@ services:
       mongodb:
         condition: service_healthy
 
+  # Keeps web, api and scheduler on the newest published image without a manual
+  # redeploy, by running the same two commands an operator would: `compose pull`
+  # then `compose up -d`. Traefik, MongoDB and MinIO are deliberately absent:
+  # their versions are pinned above and move only when an operator says so.
+  updater:
+    image: docker:28-cli
+    restart: unless-stopped
+    environment:
+      # Seconds between checks. Set to 0 to park the updater without removing it.
+      UPDATE_INTERVAL: ${UPDATE_INTERVAL:-300}
+      UPDATE_SERVICES: ${UPDATE_SERVICES:-web api scheduler}
+    volumes:
+      # Root-equivalent access to the host. Required to recreate containers.
+      - /var/run/docker.sock:/var/run/docker.sock
+      # A relative source resolves against the Compose project directory, so
+      # this mounts whichever directory holds compose.yaml and .env.
+      - .:/stack:ro
+    # The daemon performs the image transfer, so this container needs no network.
+    network_mode: none
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    entrypoint: ["/bin/sh", "-eu", "-c"]
+    command:
+      - |
+        COMPOSE="docker compose --project-directory /stack --env-file /stack/.env"
+
+        # A managed container is stale when the tag it was created from now
+        # resolves to a different image than the one it is running.
+        stale() {
+          for service in $$UPDATE_SERVICES; do
+            id=$$($$COMPOSE ps -q "$$service" 2>/dev/null) || return 0
+            [ -n "$$id" ] || return 0
+            running=$$(docker inspect -f '{{.Image}}' "$$id" 2>/dev/null) || return 0
+            tag=$$(docker inspect -f '{{.Config.Image}}' "$$id" 2>/dev/null) || return 0
+            published=$$(docker image inspect -f '{{.Id}}' "$$tag" 2>/dev/null) || return 0
+            [ "$$running" = "$$published" ] || return 0
+          done
+          return 1
+        }
+
+        case "$$UPDATE_INTERVAL" in
+          ''|*[!0-9]*)
+            echo "updater: UPDATE_INTERVAL must be a whole number of seconds" >&2
+            while :; do sleep 86400; done
+            ;;
+        esac
+
+        if [ "$$UPDATE_INTERVAL" -eq 0 ]; then
+          echo "updater: UPDATE_INTERVAL=0, auto-update is off"
+          while :; do sleep 86400; done
+        fi
+
+        echo "updater: checking $$UPDATE_SERVICES every $${UPDATE_INTERVAL}s"
+
+        # Sleep first: on a fresh deploy the outer `up -d --wait` is still
+        # running, and two Compose processes must not write the project at once.
+        while :; do
+          sleep "$$UPDATE_INTERVAL"
+
+          if ! timeout 600 $$COMPOSE pull --quiet $$UPDATE_SERVICES; then
+            echo "updater: pull failed, stack left untouched" >&2
+            continue
+          fi
+
+          stale || continue
+
+          echo "updater: new image published, recreating $$UPDATE_SERVICES"
+          if timeout 300 $$COMPOSE up -d --no-deps --wait --wait-timeout 180 $$UPDATE_SERVICES; then
+            echo "updater: done"
+            # Dangling images only, so the pinned images above are never touched.
+            docker image prune -f >/dev/null 2>&1 || true
+          else
+            echo "updater: recreate did not report healthy, check 'docker compose logs api web'" >&2
+          fi
+        done
+
   mongodb:
     image: mongo:8.0
     restart: unless-stopped

@@ -27,6 +27,11 @@ Options:
 Images are pulled from ghcr.io/$REPOSITORY-{web,api}; nothing is compiled on the
 Droplet. Re-run to move to a newer tag.
 
+Once the stack is running, the web, api and scheduler containers keep themselves
+on the newest image published for the deployed tag; the updater service checks
+every UPDATE_INTERVAL seconds. Traefik, MongoDB and MinIO never update on their
+own. Re-run this script only to change compose.yaml, .env, or the image tag.
+
 Example:
   sudo ./$SCRIPT_NAME --env-file /root/.env
 EOF
@@ -46,9 +51,26 @@ require_value() {
 }
 
 compose() {
-  IMAGE_TAG="$IMAGE_TAG" docker compose \
+  docker compose \
     --project-directory "$INSTALL_DIR" \
     --env-file "$INSTALL_DIR/.env" "$@"
+}
+
+# Write KEY=VALUE into the installed env file, replacing any existing line.
+# The updater reads that file on every pass, so it has to agree with what this
+# script deployed. Passing IMAGE_TAG through the process environment instead
+# would win over --env-file here but not there, and the updater would quietly
+# move a pinned deployment back onto the tag recorded in .env.
+set_env_var() {
+  local key="$1" value="$2" file="$INSTALL_DIR/.env"
+
+  if grep -q "^$key=" "$file"; then
+    sed -i "s|^$key=.*|$key=$value|" "$file"
+  else
+    printf '%s=%s\n' "$key" "$value" >>"$file"
+  fi
+
+  chmod 0600 "$file"
 }
 
 install_docker() {
@@ -109,6 +131,9 @@ install_env() {
 }
 
 deploy() {
+  log "Recording IMAGE_TAG=$IMAGE_TAG in $INSTALL_DIR/.env"
+  set_env_var IMAGE_TAG "$IMAGE_TAG"
+
   log "Pulling images at tag $IMAGE_TAG"
   compose pull
 
