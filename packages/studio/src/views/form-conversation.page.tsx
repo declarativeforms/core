@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ApiFormSummary, ApiMessage } from '@/lib/api.types';
+import type { ApiForm, ApiMessage } from '@/lib/api.types';
 import {
   GenerationProgress,
   MessageList,
@@ -18,7 +18,7 @@ function buildKey(): string {
 
 export function FormConversation(props: {
   organizationId: string;
-  form: ApiFormSummary;
+  form: ApiForm;
   branch: string;
   isSchemaOpen: boolean;
 }) {

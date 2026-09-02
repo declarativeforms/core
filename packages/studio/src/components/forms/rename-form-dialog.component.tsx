@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   Button,
   Dialog,
@@ -18,7 +18,7 @@ import { describeError } from '@/lib/error-messages';
 
 export function RenameFormDialog(props: {
   organizationId: string;
-  form: ApiFormSummary;
+  form: ApiForm;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }) {

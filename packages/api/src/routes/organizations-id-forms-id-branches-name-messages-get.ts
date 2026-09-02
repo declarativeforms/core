@@ -40,7 +40,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET: RouteOptions<
 
     const { formMessageService } = await getContainer();
     const page = await formMessageService.list(
-      request.organization!,
+      request.organization!.id,
       request.params.id,
       request.params.branch,
       limit,

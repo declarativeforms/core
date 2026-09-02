@@ -8,6 +8,7 @@ import type {
 } from '../types';
 
 const ORGANIZATION_ID_PREFIX = 'o';
+const PERSONAL_TAG = 'personal';
 const PERSONAL_WORKSPACE_NAME = 'Personal workspace';
 const SLUG_ATTEMPTS = 5;
 
@@ -29,20 +30,19 @@ export class OrganizationService {
   public async create(
     name: string,
     email: string,
-    personalFor: string | null,
+    tags: Array<string>,
   ): Promise<IOrganization> {
     const now = new Date();
 
     for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt += 1) {
       const organization: IOrganization = {
-        can_use_email_connection: false,
         created_at: now,
         created_by: email,
         id: `${ORGANIZATION_ID_PREFIX}${randomBytes(6).toString('hex')}`,
         members: [{ email, role: 'admin' }],
         name,
-        personal_for: personalFor,
         slug: this.buildSlug(name, attempt),
+        tags,
         updated_at: now,
       };
 
@@ -53,7 +53,7 @@ export class OrganizationService {
       } catch (error: any) {
         if (
           error?.code !== 11000 ||
-          error?.keyPattern?.personal_for ||
+          error?.keyPattern?.created_by ||
           attempt === SLUG_ATTEMPTS - 1
         ) {
           throw error;
@@ -74,9 +74,9 @@ export class OrganizationService {
     }
 
     try {
-      return await this.create(PERSONAL_WORKSPACE_NAME, email, email);
+      return await this.create(PERSONAL_WORKSPACE_NAME, email, [PERSONAL_TAG]);
     } catch (error: any) {
-      if (error?.code !== 11000 || !error?.keyPattern?.personal_for) {
+      if (error?.code !== 11000 || !error?.keyPattern?.created_by) {
         throw error;
       }
 

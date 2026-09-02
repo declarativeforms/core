@@ -10,6 +10,13 @@ export function formsQueryKey(organizationId: string): Array<string> {
   return ['forms', organizationId];
 }
 
+export function branchesQueryKey(
+  organizationId: string,
+  formId: string,
+): Array<string> {
+  return ['branches', organizationId, formId];
+}
+
 export function branchYamlQueryKey(
   organizationId: string,
   formId: string,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   Button,
   Dialog,
@@ -25,8 +25,9 @@ import { describeError } from '@/lib/error-messages';
 
 export function CreateBranchDialog(props: {
   organizationId: string;
-  form: ApiFormSummary;
+  form: ApiForm;
   branch: string;
+  branches: Array<string>;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onCreated: (branch: string) => void;
@@ -92,7 +93,7 @@ export function CreateBranchDialog(props: {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {props.form.branches.map((entry) => (
+              {props.branches.map((entry) => (
                 <SelectItem key={entry} value={entry}>
                   {entry}
                 </SelectItem>

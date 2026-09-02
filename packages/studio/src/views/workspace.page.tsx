@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import type { ApiFormSummary, ApiOrganization } from '@/lib/api.types';
+import type { ApiForm, ApiOrganization } from '@/lib/api.types';
 import {
   AppSidebar,
   CreateBranchDialog,
@@ -14,6 +14,7 @@ import {
   SheetContent,
   SheetTitle,
 } from '@/components';
+import { useBranches } from '@/hooks/use-branches';
 import { useForms } from '@/hooks/use-forms';
 import { useRole } from '@/hooks/use-role';
 import { useRuntimeConfig } from '@/hooks/use-runtime-config';
@@ -35,8 +36,8 @@ export function Workspace(props: {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSchemaOpen, setIsSchemaOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [renameTarget, setRenameTarget] = useState<ApiFormSummary | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ApiFormSummary | null>(null);
+  const [renameTarget, setRenameTarget] = useState<ApiForm | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ApiForm | null>(null);
   const [isBranchOpen, setIsBranchOpen] = useState(false);
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isDeleteBranchOpen, setIsDeleteBranchOpen] = useState(false);
@@ -56,6 +57,8 @@ export function Workspace(props: {
     forms.find((entry) => entry.form_id === selection.formId) ?? null;
   const formId = selection.formId;
   const branch = selection.branch;
+  const branchesQuery = useBranches(organizationId, formId);
+  const branches = branchesQuery.data ?? [];
 
   useEffect(() => {
     const loaded = formsQuery.data;
@@ -72,14 +75,16 @@ export function Workspace(props: {
   }, [formId, formsQuery.data, navigate]);
 
   useEffect(() => {
-    if (!form || form.branches.includes(branch)) {
+    const loaded = branchesQuery.data;
+
+    if (!form || !loaded || loaded.includes(branch)) {
       return;
     }
 
     void navigate(`/forms/${encodeURIComponent(form.form_id)}`, {
       replace: true,
     });
-  }, [branch, form, navigate]);
+  }, [branch, branchesQuery.data, form, navigate]);
 
   if (!organization || organizationId === null) {
     return (
@@ -148,6 +153,7 @@ export function Workspace(props: {
           <>
             <FormHeader
               branch={selection.branch}
+              branches={branches}
               form={form}
               formUrl={
                 formBaseUrl
@@ -243,6 +249,7 @@ export function Workspace(props: {
       {form && isBranchOpen ? (
         <CreateBranchDialog
           branch={selection.branch}
+          branches={branches}
           form={form}
           isOpen
           onCreated={(branch: string) => {

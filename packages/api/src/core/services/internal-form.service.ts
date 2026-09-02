@@ -11,8 +11,6 @@ import {
   INTERNAL_FORM_METADATA_KEYS,
   type IFormMessage,
   type IInternalForm,
-  type IInternalFormSummary,
-  type IOrganization,
 } from '../types';
 
 const INTERNAL_FORM_PREFIX = process.env.INTERNAL_FORM_PREFIX || 'i';
@@ -31,7 +29,6 @@ export class InternalFormService {
 
   public async ensureIndexes(): Promise<void> {
     await this.formRepository.ensureIndexes();
-    await this.formRepository.backfillNames();
   }
 
   public isInternalId(id: string): boolean {
@@ -52,29 +49,30 @@ export class InternalFormService {
   }
 
   public async list(
-    organization: IOrganization,
-  ): Promise<Array<IInternalFormSummary>> {
+    organizationId: string,
+  ): Promise<
+    Array<
+      Pick<
+        IInternalForm,
+        'form_id' | 'name' | 'organization_id' | 'revision' | 'updated_at'
+      >
+    >
+  > {
     const forms = await this.formRepository.listByOrganization(
-      organization.id,
+      organizationId,
       DEFAULT_BRANCH,
     );
 
-    const summaries: Array<IInternalFormSummary> = [];
-
-    for (const form of forms) {
-      summaries.push(await this.toSummary(form));
-    }
-
-    return summaries;
+    return forms.map((form) => this.toListing(form));
   }
 
   public async create(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     body: unknown,
     name: string | null,
   ): Promise<IInternalForm> {
-    const definition = this.readDefinition(body, organization);
+    const definition = this.readDefinition(body);
     const now = new Date();
 
     const form: IInternalForm = {
@@ -85,7 +83,7 @@ export class InternalFormService {
       deleted_at: null,
       form_id: `${INTERNAL_FORM_PREFIX}${randomBytes(6).toString('hex')}`,
       name,
-      organization_id: organization.id,
+      organization_id: organizationId,
       revision: 1,
       updated_at: now,
       updated_by: email,
@@ -97,20 +95,20 @@ export class InternalFormService {
   }
 
   public async update(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     id: string,
     branch: string | undefined,
     expectedRevision: number | null,
     body: unknown,
   ): Promise<IInternalForm | null> {
-    const existing = await this.findOwnedBranch(organization, id, branch);
+    const existing = await this.findOwnedBranch(organizationId, id, branch);
 
     if (!existing) {
       return null;
     }
 
-    const definition = this.readDefinition(body, organization);
+    const definition = this.readDefinition(body);
 
     if (expectedRevision !== null && expectedRevision !== existing.revision) {
       throw this.revisionConflict(existing.revision);
@@ -129,33 +127,36 @@ export class InternalFormService {
   }
 
   public async remove(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
   ): Promise<IInternalForm | null> {
     const existing = await this.formRepository.findAnyBranch(id);
 
-    if (!existing || existing.organization_id !== organization.id) {
+    if (!existing || existing.organization_id !== organizationId) {
       return null;
     }
 
-    await this.formRepository.softDelete(id, new Date());
+    await this.formRepository.softDelete(id);
 
     return existing;
   }
 
   public async rename(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     id: string,
     name: string,
-  ): Promise<IInternalFormSummary | null> {
+  ): Promise<Pick<
+    IInternalForm,
+    'form_id' | 'name' | 'organization_id' | 'revision' | 'updated_at'
+  > | null> {
     const existing = await this.formRepository.findAnyBranch(id);
 
-    if (!existing || existing.organization_id !== organization.id) {
+    if (!existing || existing.organization_id !== organizationId) {
       return null;
     }
 
-    await this.formRepository.rename(id, name, email, new Date());
+    await this.formRepository.rename(id, name, email);
 
     const renamed = await this.formRepository.findBranch(id, DEFAULT_BRANCH);
 
@@ -163,16 +164,16 @@ export class InternalFormService {
       return null;
     }
 
-    return this.toSummary(renamed);
+    return this.toListing(renamed);
   }
 
   public async findBranchNames(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
   ): Promise<Array<string> | null> {
     const existing = await this.formRepository.findAnyBranch(id);
 
-    if (!existing || existing.organization_id !== organization.id) {
+    if (!existing || existing.organization_id !== organizationId) {
       return null;
     }
 
@@ -180,15 +181,15 @@ export class InternalFormService {
   }
 
   public async findBranch(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     branch: string,
   ): Promise<IInternalForm | null> {
-    return this.findOwnedBranch(organization, id, branch);
+    return this.findOwnedBranch(organizationId, id, branch);
   }
 
   public async createBranch(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     id: string,
     name: string,
@@ -202,7 +203,7 @@ export class InternalFormService {
       throw HttpError.conflict('branch_protected');
     }
 
-    const source = await this.findOwnedBranch(organization, id, from);
+    const source = await this.findOwnedBranch(organizationId, id, from);
 
     if (!source) {
       return null;
@@ -233,13 +234,13 @@ export class InternalFormService {
       throw error;
     }
 
-    await this.copyConversation(organization, id, from, name);
+    await this.copyConversation(organizationId, id, from, name);
 
     return form;
   }
 
   public async deleteBranch(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     name: string,
   ): Promise<IInternalForm | null> {
@@ -247,7 +248,7 @@ export class InternalFormService {
       throw HttpError.conflict('branch_protected');
     }
 
-    const existing = await this.findOwnedBranch(organization, id, name);
+    const existing = await this.findOwnedBranch(organizationId, id, name);
 
     if (!existing) {
       return null;
@@ -260,7 +261,7 @@ export class InternalFormService {
   }
 
   public async publish(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     id: string,
     source: string,
@@ -271,8 +272,8 @@ export class InternalFormService {
       throw HttpError.conflict('branch_protected');
     }
 
-    const from = await this.findOwnedBranch(organization, id, source);
-    const to = await this.findOwnedBranch(organization, id, target);
+    const from = await this.findOwnedBranch(organizationId, id, source);
+    const to = await this.findOwnedBranch(organizationId, id, target);
 
     if (!from || !to) {
       return null;
@@ -291,7 +292,7 @@ export class InternalFormService {
     }
 
     await this.importConversation(
-      organization,
+      organizationId,
       id,
       source,
       target,
@@ -308,14 +309,14 @@ export class InternalFormService {
   }
 
   public async applyGenerated(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     id: string,
     branch: string,
     definition: IDeclarativeForm,
     name: string | null,
   ): Promise<IInternalForm | null> {
-    const fresh = await this.findOwnedBranch(organization, id, branch);
+    const fresh = await this.findOwnedBranch(organizationId, id, branch);
 
     if (!fresh) {
       return null;
@@ -336,18 +337,6 @@ export class InternalFormService {
     return form;
   }
 
-  public async toSummary(form: IInternalForm): Promise<IInternalFormSummary> {
-    return {
-      branches: await this.formRepository.findBranchNames(form.form_id),
-      form_id: form.form_id,
-      name: this.resolveName(form),
-      organization_id: form.organization_id,
-      revision: form.revision,
-      title: form.title,
-      updated_at: form.updated_at,
-    };
-  }
-
   public toDefinition(form: IInternalForm): IDeclarativeForm {
     const copy: Record<string, unknown> = { ...form };
 
@@ -358,19 +347,16 @@ export class InternalFormService {
     return copy as IDeclarativeForm;
   }
 
-  public readDefinition(
-    body: unknown,
-    organization: IOrganization,
-  ): IDeclarativeForm {
+  public readDefinition(body: unknown): IDeclarativeForm {
     const definition = this.validate(this.parseBody(body));
 
-    this.assertConnectionPolicy(definition, organization);
+    this.assertConnectionPolicy(definition);
 
     return definition;
   }
 
   private async copyConversation(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     from: string,
     to: string,
@@ -379,7 +365,7 @@ export class InternalFormService {
 
     const source = await this.formMessageRepository.listByBranch(
       id,
-      organization.id,
+      organizationId,
       from,
       null,
       FORK_COPY_LIMIT,
@@ -397,24 +383,20 @@ export class InternalFormService {
       source.length,
     );
 
-    const copies: Array<IFormMessage> = [];
-
-    for (const [index, message] of source.entries()) {
-      copies.push({
+    await this.formMessageRepository.insertMany(
+      source.map((message, index) => ({
         ...message,
         branch: to,
         id: this.buildMessageId(),
         origin_branch: from,
         origin_message_id: message.id,
         sequence: first + index,
-      });
-    }
-
-    await this.formMessageRepository.insertMany(copies);
+      })),
+    );
   }
 
   private async importConversation(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     source: string,
     target: string,
@@ -445,7 +427,7 @@ export class InternalFormService {
       form_id: id,
       generation_id: null,
       id: this.buildMessageId(),
-      organization_id: organization.id,
+      organization_id: organizationId,
       origin_branch: source,
       origin_message_id: null,
       role: 'system',
@@ -454,20 +436,17 @@ export class InternalFormService {
       status: 'complete',
     };
 
-    const messages: Array<IFormMessage> = [marker];
-
-    for (const [index, message] of pending.entries()) {
-      messages.push({
+    await this.formMessageRepository.insertMany([
+      marker,
+      ...pending.map((message, index) => ({
         ...message,
         branch: target,
         id: this.buildMessageId(),
         origin_branch: source,
         origin_message_id: message.id,
         sequence: first + 1 + index,
-      });
-    }
-
-    await this.formMessageRepository.insertMany(messages);
+      })),
+    ]);
   }
 
   private buildMessageId(): string {
@@ -475,7 +454,7 @@ export class InternalFormService {
   }
 
   private async findOwnedBranch(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     branch: string | undefined,
   ): Promise<IInternalForm | null> {
@@ -487,9 +466,24 @@ export class InternalFormService {
 
     const existing = await this.formRepository.findBranch(id, name);
 
-    return existing && existing.organization_id === organization.id
+    return existing && existing.organization_id === organizationId
       ? existing
       : null;
+  }
+
+  private toListing(
+    form: IInternalForm,
+  ): Pick<
+    IInternalForm,
+    'form_id' | 'name' | 'organization_id' | 'revision' | 'updated_at'
+  > {
+    return {
+      form_id: form.form_id,
+      name: this.resolveName(form),
+      organization_id: form.organization_id,
+      revision: form.revision,
+      updated_at: form.updated_at,
+    };
   }
 
   private resolveName(form: IInternalForm): string {
@@ -596,23 +590,10 @@ export class InternalFormService {
     return result;
   }
 
-  private assertConnectionPolicy(
-    definition: IDeclarativeForm,
-    organization: IOrganization,
-  ): void {
+  private assertConnectionPolicy(definition: IDeclarativeForm): void {
     const errors: Record<string, string> = {};
 
     (definition.connections ?? []).forEach((connection, index) => {
-      if (
-        connection.type === 'email' &&
-        !organization.can_use_email_connection
-      ) {
-        errors[`/connections/${index}/type`] =
-          'email connections are not enabled for this organization';
-
-        return;
-      }
-
       if (connection.type === 'webhook') {
         const message = this.checkWebhookUrl((connection as any).url);
 

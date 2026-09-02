@@ -26,7 +26,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_DELETE: RouteOptions<
     organizationService.assertAdmin(request.organization!, request.email!);
 
     const form = await internalFormService.remove(
-      request.organization!,
+      request.organization!.id,
       request.params.id,
     );
 

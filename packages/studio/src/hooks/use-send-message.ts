@@ -4,7 +4,7 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
-import type { ApiMessageTurn } from '@/lib/api.types';
+import type { ApiMessage } from '@/lib/api.types';
 import { messagesPath } from '@/lib/api-paths';
 import { formsQueryKey, messagesQueryKey } from '@/lib/query-keys';
 
@@ -19,12 +19,12 @@ export function useSendMessage(
   organizationId: string,
   formId: string,
   branch: string,
-): UseMutationResult<ApiMessageTurn, Error, SendMessageInput> {
+): UseMutationResult<Array<ApiMessage>, Error, SendMessageInput> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: SendMessageInput) =>
-      apiRequest<ApiMessageTurn>({
+      apiRequest<Array<ApiMessage>>({
         body: { content: input.content, idempotency_key: input.idempotencyKey },
         method: 'POST',
         path: messagesPath(organizationId, formId, branch),

@@ -25,13 +25,3 @@ export type IInternalForm = IDeclarativeForm & {
   updated_at: Date;
   updated_by: string;
 };
-
-export type IInternalFormSummary = {
-  branches: Array<string>;
-  form_id: string;
-  name: string;
-  organization_id: string;
-  revision: number;
-  title: unknown;
-  updated_at: Date;
-};

@@ -23,9 +23,15 @@ export function NewForm(props: {
     }
 
     generate.mutate(prompt, {
-      onSuccess: (turn) => {
+      onSuccess: (messages) => {
+        const created = messages[0];
+
+        if (!created) {
+          return;
+        }
+
         draft.clear();
-        props.onCreated(turn.summary.form_id, turn.branch);
+        props.onCreated(created.form_id, created.branch);
       },
     });
   };

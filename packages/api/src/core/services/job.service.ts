@@ -19,8 +19,8 @@ export class JobService {
     });
   }
 
-  public async processOnce(now = new Date()): Promise<number> {
-    const jobs = await this.jobRepository.findDue(now);
+  public async processOnce(): Promise<number> {
+    const jobs = await this.jobRepository.findDue();
 
     for (const job of jobs) {
       try {
@@ -35,7 +35,7 @@ export class JobService {
         console.error(`Job ${job.id} failed`, error);
         await this.jobRepository.reschedule(
           job.id,
-          new Date(now.getTime() + 60_000),
+          new Date(Date.now() + 60_000),
         );
       }
     }

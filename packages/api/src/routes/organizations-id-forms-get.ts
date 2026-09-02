@@ -15,7 +15,7 @@ export const ORGANIZATIONS_ID_FORMS_GET: RouteOptions<any, any, any, any> = {
 
     reply
       .status(200)
-      .send(await internalFormService.list(request.organization!));
+      .send(await internalFormService.list(request.organization!.id));
   },
   method: 'GET',
   preHandler: [authenticate, authorizeOrganization],

@@ -4,14 +4,18 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
-import type { ApiBranchWrite, ApiFormSummary } from '@/lib/api.types';
+import type { ApiBranchWrite, ApiForm } from '@/lib/api.types';
 import {
   branchPath,
   branchesPath,
   formPath,
   publishPath,
 } from '@/lib/api-paths';
-import { formsQueryKey, messagesQueryKey } from '@/lib/query-keys';
+import {
+  branchesQueryKey,
+  formsQueryKey,
+  messagesQueryKey,
+} from '@/lib/query-keys';
 
 export type CreateBranchInput = {
   name: string;
@@ -21,12 +25,12 @@ export type CreateBranchInput = {
 export function useRenameForm(
   organizationId: string,
   formId: string,
-): UseMutationResult<ApiFormSummary, Error, string> {
+): UseMutationResult<ApiForm, Error, string> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (name: string) =>
-      apiRequest<ApiFormSummary>({
+      apiRequest<ApiForm>({
         body: { name },
         method: 'PATCH',
         path: formPath(organizationId, formId),
@@ -74,6 +78,9 @@ export function useCreateBranch(
       }),
     onSuccess: (write: ApiBranchWrite) => {
       void queryClient.invalidateQueries({
+        queryKey: branchesQueryKey(organizationId, formId),
+      });
+      void queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),
       });
       void queryClient.invalidateQueries({
@@ -97,6 +104,9 @@ export function usePublishBranch(
         path: publishPath(organizationId, formId, branch),
       }),
     onSuccess: (write: ApiBranchWrite, branch: string) => {
+      void queryClient.invalidateQueries({
+        queryKey: branchesQueryKey(organizationId, formId),
+      });
       void queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),
       });
@@ -123,6 +133,9 @@ export function useDeleteBranch(
         path: branchPath(organizationId, formId, branch),
       }),
     onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: branchesQueryKey(organizationId, formId),
+      });
       void queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),
       });

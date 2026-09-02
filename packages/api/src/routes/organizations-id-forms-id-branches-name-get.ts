@@ -23,7 +23,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_GET: RouteOptions<
   ) => {
     const { internalFormService } = await getContainer();
     const form = await internalFormService.findBranch(
-      request.organization!,
+      request.organization!.id,
       request.params.id,
       request.params.branch,
     );

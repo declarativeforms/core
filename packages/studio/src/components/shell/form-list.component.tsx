@@ -1,4 +1,4 @@
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   EmptyState,
   ErrorState,
@@ -8,7 +8,7 @@ import {
 import { FormListRow } from '@/components/shell/form-list-row.component';
 
 export function FormList(props: {
-  forms: Array<ApiFormSummary>;
+  forms: Array<ApiForm>;
   activeFormId: string | null;
   isAdmin: boolean;
   isLoading: boolean;
@@ -16,8 +16,8 @@ export function FormList(props: {
   errorMessage: string | null;
   onRetry: () => void;
   onSelect: (formId: string) => void;
-  onRename: (form: ApiFormSummary) => void;
-  onDelete: (form: ApiFormSummary) => void;
+  onRename: (form: ApiForm) => void;
+  onDelete: (form: ApiForm) => void;
 }) {
   if (props.isLoading) {
     return <SkeletonRows count={5} className="px-1" />;

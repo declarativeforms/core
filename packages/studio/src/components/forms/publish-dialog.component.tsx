@@ -1,4 +1,4 @@
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import { DEFAULT_BRANCH } from '@/lib/preview-url';
 
 export function PublishDialog(props: {
   organizationId: string;
-  form: ApiFormSummary;
+  form: ApiForm;
   branch: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;

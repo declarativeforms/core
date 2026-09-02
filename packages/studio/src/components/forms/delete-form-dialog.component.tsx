@@ -1,4 +1,4 @@
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +15,7 @@ import { describeError } from '@/lib/error-messages';
 
 export function DeleteFormDialog(props: {
   organizationId: string;
-  form: ApiFormSummary;
+  form: ApiForm;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onDeleted: () => void;

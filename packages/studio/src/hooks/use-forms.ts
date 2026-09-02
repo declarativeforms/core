@@ -1,16 +1,16 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import { formsPath } from '@/lib/api-paths';
 import { formsQueryKey } from '@/lib/query-keys';
 
 export function useForms(
   organizationId: string | null,
-): UseQueryResult<Array<ApiFormSummary>, Error> {
+): UseQueryResult<Array<ApiForm>, Error> {
   return useQuery({
     enabled: organizationId !== null,
     queryFn: () =>
-      apiRequest<Array<ApiFormSummary>>({
+      apiRequest<Array<ApiForm>>({
         method: 'GET',
         path: formsPath(organizationId as string),
       }),

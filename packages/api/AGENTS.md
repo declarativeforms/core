@@ -44,13 +44,21 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 6. **Every function and method carries an explicit return type.**
 7. **`null` means absent.** Never return `undefined` to mean "not found".
 8. **No module-level helper functions in a file that exports a class.**
-9. **No discriminated result unions.** A service or repository returns the
-   entity (or a primitive) on success, `null` when the caller can safely carry
-   on without it, and throws when it cannot. See [Return values](#return-values).
+9. **No result objects.** A function returns the entity, a `Pick` of it, or a
+   primitive on success, `null` when the caller can safely carry on without it,
+   and throws when it cannot. A type whose only job is to bundle one function's
+   return values is banned whether or not it carries a discriminant, and whether
+   or not its name ends in `Result`. See [Return values](#return-values).
 10. **Repository methods name the operation, not the entity**, and their
     parameters do not repeat it. See [Repositories](#repositories).
 11. **No service layer with a single consumer.** If only one caller needs the
     logic, it is a private method on that caller.
+12. **No backwards compatibility.** No migration, no backfill, no repair pass,
+    and no keeping an old document shape readable, unless the task asked for it
+    in those words.
+13. **Nothing unrequested.** No flag, policy, limit or restriction that the task
+    did not ask for. A restriction nobody asked for still has to be understood,
+    plumbed and removed later.
 
 ## Layout and dependency direction
 
@@ -169,10 +177,43 @@ may stay in that file: `JobHandler` in `job.service.ts`, `Container` in
 `container.ts`. These are the local exception, not the pattern. **The moment a type describes data that crosses a layer boundary,
 it moves to `core/types/` and takes the `I` prefix.**
 
+Two limits on that last sentence, both of which `core/types/` has been wrong
+about before:
+
+**A type used in one file, and not exported, is written inline at its use site.**
+Hoisting it to module scope for the sake of naming it buys nothing.
+
+```ts
+.collection<{ _id: string; value: number }>('message_sequences')   // correct
+```
+
+```ts
+type MessageSequence = { _id: string; value: number };             // wrong
+```
+
+**A third-party protocol shape never leaves the gateway that speaks it.** Nothing
+describing OpenAI's request body, its response envelope, a prompt turn or a
+repair attempt belongs in `core/types/`, because then every layer can see it and
+the barrel invites them to. A gateway's public method takes entities and
+primitives and returns primitives, with the return type written inline:
+
+```ts
+public async generate(
+  prompt: string,
+  definition: string | null,
+  history: Array<IFormMessage>,
+  repair: { definition: string; errors: Record<string, string> } | null,
+): Promise<{ definition: string; message: string; name: string | null }>
+```
+
+`ResponsesPayload` in `openai.ts` is the shape of what OpenAI sends back. It is
+hoisted because four methods in that file read it, and it stays in that file for
+the same reason `core/types/` never hears about the wire format of a webhook.
+
 **Use `Array<T>`. Never use `T[]`.**
 
 ```ts
-public async findDue(now: Date, limit = 25): Promise<Array<IJob>> {   // correct
+public async findDue(limit = 25): Promise<Array<IJob>> {              // correct
 const connectionStrategies: Array<IConnectionStrategy> = [            // correct
 const rows: Array<string> = [];                                      // correct
 ```
@@ -205,21 +246,59 @@ use one as a return value: see [Return values](#return-values).
 
 ## Return values
 
-**Never return a discriminated union to smuggle a status code out of a service.**
-Shapes like `{ type: 'invalid' | 'conflict' }` are banned. They are permitted
-only in a genuinely exceptional case that justifies the overhead, and nothing in
-this package currently qualifies.
+**Never invent a type to carry a function's return values out of a service.**
+Tagged shapes like `{ type: 'invalid' | 'conflict' }` are banned, and so are
+untagged bundles: `IFormGenerationResult` was a three-field DTO with no
+discriminant and it was still wrong. The name is not the test. If a type exists
+only because one function needed to hand back more than one thing, it should not
+exist.
 
 The contract is three-way:
 
-- **The entity, or a primitive.** `Promise<IInternalForm>`,
+- **The entity, a `Pick` of it, or a primitive.** `Promise<IInternalForm>`,
   `Promise<Array<string>>`, `Promise<string | null>` for an email address.
-  Return the whole entity rather than a bespoke subset of it.
 - **`null` when the caller can safely carry on.** It means "absent, or not
   visible to you". A route turns `null` into 404 and nothing else.
 - **Throw when it cannot.** Anything that is not a safe failure is an
   `HttpError` from `src/core/errors.ts`, carrying a `statusCode` and an optional
   `payload`.
+
+**A caller that needs less than the whole entity gets a `Pick`, written inline
+at the signature.** Never declare a bespoke `*Summary` or `*Dto`. A projection is
+a view of an entity, not a new concept, so it does not earn a name in
+`core/types/`.
+
+```ts
+public async list(
+  organizationId: string,
+): Promise<
+  Array<
+    Pick<
+      IInternalForm,
+      'form_id' | 'name' | 'organization_id' | 'revision' | 'updated_at'
+    >
+  >
+>
+```
+
+**If the projection wants a field the entity does not have, that field belongs on
+its own endpoint.** Do not bolt it on. `IInternalFormSummary` carried `branches`,
+which is not on `IInternalForm`, and paid for it with one extra query per form
+over a list capped at 200. `GET .../forms/:id/branches` already existed.
+
+**Type a return as loosely as the caller actually needs.** Do not name a shape,
+and do not narrow an error, on the strength of a requirement nothing downstream
+has. Two entities are `Array<IFormMessage>`, not a wrapper with a field for each.
+
+**The one shape that is not a result object is a cursor page.**
+`IFormMessagePage` is `{ messages, next_cursor }`, and `next_cursor` has no
+entity to belong to: it describes the query, not the data. A page earns its type
+in `core/types/`. Nothing else in this package does.
+
+This ban governs services, repositories and gateways in this package. It is about
+smuggling a status code out of a layer. `SubmitResult` in `packages/core` is a
+rendering state union consumed by the component that owns it, and it is
+deliberately out of scope.
 
 ```ts
 public async update(...): Promise<IInternalForm | null>  // null -> 404
@@ -244,12 +323,55 @@ name the **operation**, and parameters do not repeat the entity.
 | Parameters drop the entity prefix | `id`, never `formId` |
 
 `FormRepository.delete(id, branch)` removes one branch document;
-`softDelete(id, at)` marks every branch of a form deleted. The prefix survives
+`softDelete(id)` marks every branch of a form deleted. The prefix survives
 only where it names a genuinely different entity, as in
 `SubmissionRepository.find(formId, id)`.
 
+`FormMessageRepository.listByBranch(formId, organizationId, branch, ...)` is
+**correct and must not be "fixed"**. In that repository `id` is the message id,
+so `formId` names a genuinely different entity, exactly as in
+`SubmissionRepository`.
+
 Every read passes `projection: { _id: 0 }`. Mongo's `_id` is never part of an
 entity this package returns.
+
+**A repository reads the clock.** `new Date()` is called inside the method that
+writes the timestamp. `now` and `at` are never parameters: they widen the
+signature, invite two callers to disagree about what time it is, and tell the
+caller about a column it does not own.
+
+```ts
+public async softDelete(id: string): Promise<boolean>          // correct
+public async findDue(limit = 25): Promise<Array<IJob>>         // correct
+public async reschedule(id: string, runAt: Date): Promise<void>  // correct
+```
+
+`reschedule` keeps its parameter because `run_at` is a domain decision, not the
+current time. The test is whether the caller chose the instant or merely
+observed it.
+
+**Classify an entity with `tags: Array<string>`, not a boolean and not a
+foreign-key flag.** A tag costs one field and absorbs the next three
+requirements; `can_use_email_connection` and `personal_for` each cost a field, a
+type change, an index and a migration. A personal workspace is
+`tags: ['personal']`.
+
+Uniqueness that used to live on the flag moves into a unique partial index
+filtered on the tag. Filter on the tag, key on the scalar that has to be unique:
+
+```ts
+await this.db.collection<IOrganization>('organizations').createIndex(
+  { created_by: 1 },
+  {
+    partialFilterExpression: { tags: 'personal' },
+    unique: true,
+  },
+);
+```
+
+Do not put the tag in the index key alongside another array path.
+`{ tags: 1, 'members.email': 1 }` is two array paths and Mongo refuses to index
+parallel arrays.
 
 ## Classes
 
@@ -301,6 +423,20 @@ method on anything, so it stays a function.
 
 **Annotate every return type.** `Promise<void>` on mutating methods,
 `Promise<T | null>` on lookups, `Promise<number>` on counts.
+
+**Take the id, not the entity.** A parameter is typed `IOrganization` only when
+the body reads something other than `id`. Everything else takes
+`organizationId: string`.
+
+```ts
+public async list(organizationId: string): Promise<...>          // reads id only
+public assertAdmin(organization: IOrganization, email: string): void  // reads members
+```
+
+`OrganizationService` is the one class that keeps the whole object, because
+`findMember`, `assertAdmin` and `removeMember` all read `members`. Passing an
+entity where an id would do hides which field the method actually depends on, and
+it forces every caller to have loaded the entity first.
 
 ## Naming
 
@@ -468,8 +604,45 @@ if (!to || !subject) {                 // boolean logic
 **Use the namespaced numeric statics**, never the globals: `Number.parseInt(x,
 10)`, `Number.isInteger(x)`.
 
-**Iterate with `for...of`.** Use `continue` to skip. Array methods appear only
-where a value is produced, such as `.find(...)` and `.map(...)`.
+**Produce an array with `.map`, `.filter` or `.flatMap`. Never a `for...of` that
+pushes into a local.**
+
+```ts
+return documents
+  .map((document) => document.origin_message_id)
+  .filter((id): id is string => id !== null);
+```
+
+```ts
+const ids: Array<string> = [];              // wrong
+
+for (const document of documents) {
+  if (document.origin_message_id) {
+    ids.push(document.origin_message_id);
+  }
+}
+```
+
+Reach for `Promise.all(items.map(...))` only when the calls are safe to run at
+once. A loop that must await in sequence stays a loop.
+
+The rule covers arrays. A loop that builds a `Set` or a `Record` stays a loop:
+`normalizeRedirectUris` in `authentication.service.ts` and `toErrors` in
+`internal-form.service.ts` are both correct as written.
+
+**`for...of` is still correct** in four cases. Use `continue` to skip.
+
+- A side effect: `toDefinition` deletes metadata keys off a copy.
+- `await` in sequence: `processOnce` must finish one job before the next.
+- Assembling a value that is not one entry per input: `buildBody` in `openai.ts`
+  pushes a variable number of prompt turns depending on what context exists, and
+  a `.map` cannot express that.
+- Where the chain would need a cast or a non-null assertion to tell the compiler
+  what the guard already proved. `generateResponsesHtml` in
+  `email-connection.strategy.ts` guards on `field.id` being present and then
+  indexes `data[fieldId]`; as a `.filter().map()` the compiler loses that and
+  wants `field.id as string`. The loop is the honest version. A cast is worse
+  than a loop.
 
 ## Errors
 
@@ -773,6 +946,10 @@ grep -rn "TODO" packages/api/src                       # only TODOs you meant to
 grep -rnE "[A-Za-z_>][[:space:]]*\[\]" packages/api/src  # expect no matches
 grep -rn "//" packages/api/src --include="*.ts" | grep -v "https\?://"  # only TODOs
 git diff --stat -- packages/api                        # expect no *.test.ts
+grep -rnE "\b(Result|Summary|Dto)\b" packages/api/src  # expect no project types
+grep -rnE ": Date\b" packages/api/src/core/repositories  # only domain timestamps
+grep -rn "IOrganization" packages/api/src/core/services   # only organization.service.ts
+grep -rn "for (const" packages/api/src                 # none that only push
 ```
 
 And confirm by inspection:

@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import type { ApiFormSummary, ApiOrganization } from '@/lib/api.types';
+import type { ApiForm, ApiOrganization } from '@/lib/api.types';
 import { Button, Separator } from '@/components/ui';
 import { AccountMenu } from '@/components/shell/account-menu.component';
 import { FormList } from '@/components/shell/form-list.component';
@@ -9,7 +9,7 @@ export function AppSidebar(props: {
   organizations: Array<ApiOrganization>;
   organizationId: string | null;
   email: string;
-  forms: Array<ApiFormSummary>;
+  forms: Array<ApiForm>;
   activeFormId: string | null;
   isAdmin: boolean;
   isLoading: boolean;
@@ -19,8 +19,8 @@ export function AppSidebar(props: {
   onSelectOrganization: (organizationId: string) => void;
   onSelectForm: (formId: string) => void;
   onNewForm: () => void;
-  onRenameForm: (form: ApiFormSummary) => void;
-  onDeleteForm: (form: ApiFormSummary) => void;
+  onRenameForm: (form: ApiForm) => void;
+  onDeleteForm: (form: ApiForm) => void;
   onOpenSettings: () => void;
   onSignOut: () => void;
 }) {

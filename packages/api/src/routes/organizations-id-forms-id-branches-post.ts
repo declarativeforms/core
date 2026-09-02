@@ -39,7 +39,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST: RouteOptions<
 
     const { internalFormService } = await getContainer();
     const form = await internalFormService.createBranch(
-      request.organization!,
+      request.organization!.id,
       request.email!,
       request.params.id,
       name,

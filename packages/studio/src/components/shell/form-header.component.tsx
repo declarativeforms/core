@@ -7,7 +7,7 @@ import {
   Trash2,
   UploadCloud,
 } from 'lucide-react';
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   Badge,
   Button,
@@ -22,8 +22,9 @@ import { ShareAction } from '@/components/forms/share-action.component';
 import { isDraftBranch } from '@/lib/preview-url';
 
 export function FormHeader(props: {
-  form: ApiFormSummary;
+  form: ApiForm;
   branch: string;
+  branches: Array<string>;
   isAdmin: boolean;
   formUrl: string | null;
   isSchemaOpen: boolean;
@@ -69,7 +70,7 @@ export function FormHeader(props: {
       <div className="ml-auto flex items-center gap-2">
         <BranchSelector
           branch={props.branch}
-          branches={props.form.branches}
+          branches={props.branches}
           onSelect={props.onSelectBranch}
         />
         {isDraftBranch(props.branch) ? (

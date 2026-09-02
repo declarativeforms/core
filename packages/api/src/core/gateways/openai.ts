@@ -1,11 +1,12 @@
 import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
 import { HttpError } from '../errors';
-import type { IFormGenerationRequest, IFormGenerationResult } from '../types';
+import type { IFormMessage } from '../types';
 
 const RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const DEFAULT_MODEL = 'gpt-5.6-terra';
 const DEFAULT_TIMEOUT_MS = 90000;
 const DEFAULT_MAX_OUTPUT_TOKENS = 16000;
+const HISTORY_CONTENT_CHARS = 2000;
 
 const FORM_AUTHORING_RULES = `Rules the JSON Schema cannot express. Follow every one.
 
@@ -115,13 +116,18 @@ export class OpenAiGateway {
   }
 
   public async generate(
-    request: IFormGenerationRequest,
-  ): Promise<IFormGenerationResult> {
+    prompt: string,
+    definition: string | null,
+    history: Array<IFormMessage>,
+    repair: { definition: string; errors: Record<string, string> } | null,
+  ): Promise<{ definition: string; message: string; name: string | null }> {
     if (!this.isConfigured()) {
       throw this.failure(503, 'ai_unconfigured');
     }
 
-    const response = await this.post(this.buildBody(request));
+    const response = await this.post(
+      this.buildBody(prompt, definition, history, repair),
+    );
     const payload = (await response
       .json()
       .catch(() => null)) as ResponsesPayload | null;
@@ -134,7 +140,7 @@ export class OpenAiGateway {
       throw this.failure(503, 'generation_unavailable');
     }
 
-    return this.readResult(payload);
+    return this.readGenerated(payload);
   }
 
   private async post(body: unknown): Promise<Response> {
@@ -159,42 +165,45 @@ export class OpenAiGateway {
     }
   }
 
-  private buildBody(request: IFormGenerationRequest): unknown {
+  private buildBody(
+    prompt: string,
+    definition: string | null,
+    history: Array<IFormMessage>,
+    repair: { definition: string; errors: Record<string, string> } | null,
+  ): unknown {
     const input: Array<{ content: string; role: string }> = [
       { content: STABLE_INSTRUCTIONS, role: 'developer' },
     ];
 
-    input.push({
-      content: request.email_connections_enabled
-        ? 'Email connections are enabled for this organization.'
-        : 'Email connections are NOT enabled for this organization. Do not add one.',
-      role: 'developer',
-    });
-
-    if (request.definition) {
+    if (definition) {
       input.push({
-        content: `The current definition of the selected branch:\n\n${request.definition}`,
+        content: `The current definition of the selected branch:\n\n${definition}`,
         role: 'developer',
       });
     }
 
-    for (const turn of request.history) {
-      input.push({ content: turn.content, role: turn.role });
-    }
+    input.push(
+      ...history
+        .filter((message) => message.role !== 'system')
+        .map((message) => ({
+          content: message.content.slice(0, HISTORY_CONTENT_CHARS),
+          role: message.role,
+        })),
+    );
 
-    input.push({ content: request.prompt, role: 'user' });
+    input.push({ content: prompt, role: 'user' });
 
-    if (request.invalid_definition && request.validation_errors) {
+    if (repair) {
       input.push({
         content: [
           'Your previous definition failed validation. Fix exactly these errors and',
           'return the complete corrected definition.',
           '',
-          JSON.stringify(request.validation_errors),
+          JSON.stringify(repair.errors),
           '',
           'The definition that failed:',
           '',
-          request.invalid_definition,
+          repair.definition,
         ].join('\n'),
         role: 'developer',
       });
@@ -220,7 +229,11 @@ export class OpenAiGateway {
     };
   }
 
-  private readResult(payload: ResponsesPayload): IFormGenerationResult {
+  private readGenerated(payload: ResponsesPayload): {
+    definition: string;
+    message: string;
+    name: string | null;
+  } {
     for (const item of payload.output ?? []) {
       for (const part of item.content ?? []) {
         if (part.refusal) {
@@ -247,10 +260,11 @@ export class OpenAiGateway {
       throw this.failure(503, 'generation_unavailable');
     }
 
-    const result = parsed as Record<string, unknown>;
+    const generated = parsed as Record<string, unknown>;
     const definition =
-      typeof result.definition === 'string' ? result.definition : '';
-    const message = typeof result.message === 'string' ? result.message : '';
+      typeof generated.definition === 'string' ? generated.definition : '';
+    const message =
+      typeof generated.message === 'string' ? generated.message : '';
 
     if (!definition.trim() || !message.trim()) {
       throw this.failure(503, 'generation_unavailable');
@@ -260,8 +274,8 @@ export class OpenAiGateway {
       definition: this.stripCodeFence(definition),
       message: message.trim(),
       name:
-        typeof result.name === 'string' && result.name.trim()
-          ? result.name.trim()
+        typeof generated.name === 'string' && generated.name.trim()
+          ? generated.name.trim()
           : null,
     };
   }

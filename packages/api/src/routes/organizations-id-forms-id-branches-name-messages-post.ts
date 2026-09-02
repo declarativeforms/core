@@ -41,8 +41,8 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
         : null;
 
     const { formMessageService } = await getContainer();
-    const turn = await formMessageService.send(
-      request.organization!,
+    const messages = await formMessageService.send(
+      request.organization!.id,
       request.email!,
       request.params.id,
       request.params.branch,
@@ -50,13 +50,13 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
       idempotencyKey,
     );
 
-    if (!turn) {
+    if (!messages) {
       reply.status(404).send();
 
       return;
     }
 
-    reply.status(200).send(turn);
+    reply.status(200).send(messages);
   },
   method: 'POST',
   preHandler: [authenticate, authorizeOrganization],

@@ -1,5 +1,5 @@
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import type { ApiFormSummary } from '@/lib/api.types';
+import type { ApiForm } from '@/lib/api.types';
 import {
   Button,
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 import { formatAbsolute } from '@/lib/time';
 
 export function FormListRow(props: {
-  form: ApiFormSummary;
+  form: ApiForm;
   isActive: boolean;
   isAdmin: boolean;
   onSelect: () => void;

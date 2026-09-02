@@ -40,7 +40,7 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
       .status(200)
       .send(
         await formMessageService.generate(
-          request.organization!,
+          request.organization!.id,
           request.email!,
           prompt,
         ),

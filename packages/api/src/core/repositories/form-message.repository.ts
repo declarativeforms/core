@@ -1,11 +1,6 @@
 import type { Db } from 'mongodb';
 import type { IFormMessage } from '../types';
 
-type MessageSequence = {
-  _id: string;
-  value: number;
-};
-
 export class FormMessageRepository {
   constructor(private db: Db) {}
 
@@ -86,15 +81,9 @@ export class FormMessageRepository {
       )
       .toArray();
 
-    const ids: Array<string> = [];
-
-    for (const document of documents) {
-      if (document.origin_message_id) {
-        ids.push(document.origin_message_id);
-      }
-    }
-
-    return ids;
+    return documents
+      .map((document) => document.origin_message_id)
+      .filter((id): id is string => id !== null);
   }
 
   public async allocateSequences(
@@ -103,7 +92,7 @@ export class FormMessageRepository {
     count: number,
   ): Promise<number> {
     const document = await this.db
-      .collection<MessageSequence>('message_sequences')
+      .collection<{ _id: string; value: number }>('message_sequences')
       .findOneAndUpdate(
         { _id: `${formId}:${branch}` },
         { $inc: { value: count } },

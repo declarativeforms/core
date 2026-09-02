@@ -10,7 +10,7 @@ export type ApiOrganization = {
   name: string;
   slug: string;
   members: Array<ApiOrganizationMember>;
-  can_use_email_connection: boolean;
+  tags: Array<string>;
   created_at: string;
   created_by: string;
   updated_at: string;
@@ -32,13 +32,11 @@ export type ApiRuntimeConfig = {
   form_base_url: string;
 };
 
-export type ApiFormSummary = {
-  branches: Array<string>;
+export type ApiForm = {
   form_id: string;
   name: string;
   organization_id: string;
   revision: number;
-  title: unknown;
   updated_at: string;
 };
 
@@ -77,13 +75,4 @@ export type ApiMessage = {
 export type ApiMessagePage = {
   messages: Array<ApiMessage>;
   next_cursor: string | null;
-};
-
-export type ApiMessageTurn = {
-  assistant_message: ApiMessage;
-  branch: string;
-  definition: Record<string, unknown>;
-  revision: number;
-  summary: ApiFormSummary;
-  user_message: ApiMessage;
 };

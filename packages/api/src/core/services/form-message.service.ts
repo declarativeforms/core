@@ -3,23 +3,13 @@ import { randomBytes } from 'node:crypto';
 import { HttpError } from '../errors';
 import type { OpenAiGateway } from '../gateways';
 import type { FormMessageRepository } from '../repositories';
-import type {
-  IFormGenerationRequest,
-  IFormGenerationResult,
-  IFormGenerationTurn,
-  IFormMessage,
-  IFormMessagePage,
-  IFormMessageTurn,
-  IInternalForm,
-  IOrganization,
-} from '../types';
+import type { IFormMessage, IFormMessagePage, IInternalForm } from '../types';
 import type { InternalFormService } from './internal-form.service';
 
 const MESSAGE_PAGE_DEFAULT = 50;
 const MESSAGE_PAGE_MAX = 100;
 const MAX_PROMPT_CHARS = 4000;
 const HISTORY_MESSAGES = 10;
-const HISTORY_CONTENT_CHARS = 2000;
 const MAX_CONTEXT_DEFINITION_BYTES = 65536;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 const FAILURE_MESSAGES: Record<string, string> = {
@@ -49,14 +39,14 @@ export class FormMessageService {
   }
 
   public async list(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     branch: string,
     limit: number | null,
     cursor: string | null,
   ): Promise<IFormMessagePage | null> {
     const form = await this.internalFormService.findBranch(
-      organization,
+      organizationId,
       id,
       branch,
     );
@@ -69,7 +59,7 @@ export class FormMessageService {
     const size = this.clampLimit(limit);
     const messages = await this.formMessageRepository.listByBranch(
       id,
-      organization.id,
+      organizationId,
       branch,
       before,
       size + 1,
@@ -87,36 +77,24 @@ export class FormMessageService {
   }
 
   public async generate(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     prompt: string,
-  ): Promise<IFormMessageTurn> {
+  ): Promise<Array<IFormMessage>> {
     this.assertPrompt(prompt);
 
     if (!this.openAiGateway.isConfigured()) {
-      throw this.turnFailure('ai_unconfigured', 503, null, null);
+      throw this.generationFailure('ai_unconfigured', 503, null, null);
     }
 
     const generationId = this.buildId();
-    const result = await this.produce(
-      organization,
-      {
-        definition: null,
-        email_connections_enabled: organization.can_use_email_connection,
-        history: [],
-        invalid_definition: null,
-        prompt,
-        validation_errors: null,
-      },
-      generationId,
-      null,
-    );
+    const generated = await this.produce(prompt, null, [], generationId, null);
 
     const form = await this.internalFormService.create(
-      organization,
+      organizationId,
       email,
-      result.definition,
-      this.readName(result, null),
+      generated.definition,
+      this.readName(generated.name, null),
     );
 
     const first = await this.formMessageRepository.allocateSequences(
@@ -126,7 +104,7 @@ export class FormMessageService {
     );
 
     const userMessage = this.buildMessage(
-      organization,
+      organizationId,
       form,
       first,
       'user',
@@ -137,11 +115,11 @@ export class FormMessageService {
       null,
     );
     const assistantMessage = this.buildMessage(
-      organization,
+      organizationId,
       form,
       first + 1,
       'assistant',
-      result.message,
+      generated.message,
       'complete',
       email,
       generationId,
@@ -153,26 +131,19 @@ export class FormMessageService {
       assistantMessage,
     ]);
 
-    return {
-      assistant_message: assistantMessage,
-      branch: form.branch,
-      definition: this.internalFormService.toDefinition(form),
-      revision: form.revision,
-      summary: await this.internalFormService.toSummary(form),
-      user_message: userMessage,
-    };
+    return [userMessage, assistantMessage];
   }
 
   public async send(
-    organization: IOrganization,
+    organizationId: string,
     email: string,
     id: string,
     branch: string,
     content: string,
     idempotencyKey: string | null,
-  ): Promise<IFormMessageTurn | null> {
+  ): Promise<Array<IFormMessage> | null> {
     const form = await this.internalFormService.findBranch(
-      organization,
+      organizationId,
       id,
       branch,
     );
@@ -190,21 +161,21 @@ export class FormMessageService {
     const generationId = idempotencyKey ?? this.buildId();
 
     if (idempotencyKey) {
-      const replay = await this.replay(organization, form, generationId);
+      const replay = await this.replay(form, generationId);
 
       if (replay) {
         return replay;
       }
     }
 
-    const history = await this.readHistory(organization, id, branch);
+    const history = await this.readHistory(organizationId, id, branch);
     const first = await this.formMessageRepository.allocateSequences(
       id,
       branch,
       2,
     );
     const userMessage = this.buildMessage(
-      organization,
+      organizationId,
       form,
       first,
       'user',
@@ -215,7 +186,7 @@ export class FormMessageService {
       null,
     );
     const assistantMessage = this.buildMessage(
-      organization,
+      organizationId,
       form,
       first + 1,
       'assistant',
@@ -240,26 +211,20 @@ export class FormMessageService {
       });
     }
 
-    const result = await this.produce(
-      organization,
-      {
-        definition: this.readContextDefinition(form),
-        email_connections_enabled: organization.can_use_email_connection,
-        history,
-        invalid_definition: null,
-        prompt: content,
-        validation_errors: null,
-      },
+    const generated = await this.produce(
+      content,
+      this.readContextDefinition(form),
+      history,
       generationId,
       assistantMessage.id,
     );
 
     const applied = await this.internalFormService.applyGenerated(
-      organization,
+      organizationId,
       email,
       id,
       branch,
-      result.definition,
+      generated.definition,
       null,
     );
 
@@ -274,28 +239,25 @@ export class FormMessageService {
 
     await this.formMessageRepository.complete(
       assistantMessage.id,
-      result.message,
+      generated.message,
       applied.revision,
     );
 
-    return {
-      assistant_message: {
+    return [
+      userMessage,
+      {
         ...assistantMessage,
-        content: result.message,
+        content: generated.message,
         schema_revision: applied.revision,
         status: 'complete',
       },
-      branch: applied.branch,
-      definition: this.internalFormService.toDefinition(applied),
-      revision: applied.revision,
-      summary: await this.internalFormService.toSummary(applied),
-      user_message: userMessage,
-    };
+    ];
   }
 
   private async produce(
-    organization: IOrganization,
-    request: IFormGenerationRequest,
+    prompt: string,
+    definition: string | null,
+    history: Array<IFormMessage>,
     generationId: string,
     messageId: string | null,
   ): Promise<{
@@ -303,79 +265,108 @@ export class FormMessageService {
     message: string;
     name: string | null;
   }> {
-    let candidate: IFormGenerationResult;
+    const candidate = await this.callGateway(
+      prompt,
+      definition,
+      history,
+      null,
+      generationId,
+      messageId,
+    );
 
     try {
-      candidate = await this.openAiGateway.generate(request);
-    } catch (error: unknown) {
-      throw await this.recordFailure(error, generationId, messageId);
-    }
-
-    const first = this.tryReadDefinition(organization, candidate.definition);
-
-    if (first.definition) {
       return {
-        definition: first.definition,
+        definition: this.internalFormService.readDefinition(
+          candidate.definition,
+        ),
         message: candidate.message,
         name: candidate.name,
       };
+    } catch (error: unknown) {
+      return this.repair(
+        prompt,
+        definition,
+        history,
+        candidate.definition,
+        this.readValidationErrors(error),
+        generationId,
+        messageId,
+      );
     }
+  }
 
-    let repaired: IFormGenerationResult;
+  private async repair(
+    prompt: string,
+    definition: string | null,
+    history: Array<IFormMessage>,
+    invalid: string,
+    errors: Record<string, string>,
+    generationId: string,
+    messageId: string | null,
+  ): Promise<{
+    definition: IDeclarativeForm;
+    message: string;
+    name: string | null;
+  }> {
+    const repaired = await this.callGateway(
+      prompt,
+      definition,
+      history,
+      { definition: invalid, errors },
+      generationId,
+      messageId,
+    );
 
     try {
-      repaired = await this.openAiGateway.generate({
-        ...request,
-        invalid_definition: candidate.definition,
-        validation_errors: first.errors,
-      });
+      return {
+        definition: this.internalFormService.readDefinition(
+          repaired.definition,
+        ),
+        message: repaired.message,
+        name: repaired.name,
+      };
     } catch (error: unknown) {
-      throw await this.recordFailure(error, generationId, messageId);
-    }
-
-    const second = this.tryReadDefinition(organization, repaired.definition);
-
-    if (!second.definition) {
       throw await this.recordFailure(
         new HttpError(422, 'generation_invalid', {
           error: 'generation_invalid',
-          errors: second.errors,
+          errors: this.readValidationErrors(error),
         }),
         generationId,
         messageId,
       );
     }
-
-    return {
-      definition: second.definition,
-      message: repaired.message,
-      name: repaired.name,
-    };
   }
 
-  private tryReadDefinition(
-    organization: IOrganization,
-    candidate: string,
-  ): { definition: IDeclarativeForm | null; errors: Record<string, string> } {
+  private async callGateway(
+    prompt: string,
+    definition: string | null,
+    history: Array<IFormMessage>,
+    repair: { definition: string; errors: Record<string, string> } | null,
+    generationId: string,
+    messageId: string | null,
+  ): Promise<{ definition: string; message: string; name: string | null }> {
     try {
-      return {
-        definition: this.internalFormService.readDefinition(
-          candidate,
-          organization,
-        ),
-        errors: {},
-      };
+      return await this.openAiGateway.generate(
+        prompt,
+        definition,
+        history,
+        repair,
+      );
     } catch (error: unknown) {
-      if (!(error instanceof HttpError) || error.statusCode !== 422) {
-        throw error;
-      }
-
-      const payload = error.payload as {
-        errors?: Record<string, string>;
-      } | null;
-
-      return { definition: null, errors: payload?.errors ?? {} };
+      throw await this.recordFailure(error, generationId, messageId);
     }
+  }
+
+  private readValidationErrors(error: unknown): Record<string, string> {
+    if (!(error instanceof HttpError) || error.statusCode !== 422) {
+      throw error;
+    }
+
+    const payload = error.payload as {
+      errors?: Record<string, string>;
+    } | null;
+
+    return payload?.errors ?? {};
   }
 
   private async recordFailure(
@@ -407,10 +398,9 @@ export class FormMessageService {
   }
 
   private async replay(
-    organization: IOrganization,
     form: IInternalForm,
     generationId: string,
-  ): Promise<IFormMessageTurn | null> {
+  ): Promise<Array<IFormMessage> | null> {
     const existing = await this.formMessageRepository.listByGeneration(
       form.form_id,
       form.branch,
@@ -446,45 +436,23 @@ export class FormMessageService {
       });
     }
 
-    return {
-      assistant_message: assistantMessage,
-      branch: form.branch,
-      definition: this.internalFormService.toDefinition(form),
-      revision: form.revision,
-      summary: await this.internalFormService.toSummary(form),
-      user_message: userMessage,
-    };
+    return [userMessage, assistantMessage];
   }
 
   private async readHistory(
-    organization: IOrganization,
+    organizationId: string,
     id: string,
     branch: string,
-  ): Promise<Array<IFormGenerationTurn>> {
+  ): Promise<Array<IFormMessage>> {
     const recent = await this.formMessageRepository.listByBranch(
       id,
-      organization.id,
+      organizationId,
       branch,
       null,
       HISTORY_MESSAGES,
     );
 
-    const turns: Array<IFormGenerationTurn> = [];
-
-    for (const message of recent) {
-      if (message.status !== 'complete' || message.role === 'system') {
-        continue;
-      }
-
-      turns.push({
-        content: message.content.slice(0, HISTORY_CONTENT_CHARS),
-        role: message.role,
-      });
-    }
-
-    turns.reverse();
-
-    return turns;
+    return recent.filter((message) => message.status === 'complete').reverse();
   }
 
   private readContextDefinition(form: IInternalForm): string {
@@ -500,7 +468,7 @@ export class FormMessageService {
   }
 
   private buildMessage(
-    organization: IOrganization,
+    organizationId: string,
     form: IInternalForm,
     sequence: number,
     role: 'assistant' | 'user',
@@ -518,7 +486,7 @@ export class FormMessageService {
       form_id: form.form_id,
       generation_id: generationId,
       id: this.buildId(),
-      organization_id: organization.id,
+      organization_id: organizationId,
       origin_branch: null,
       origin_message_id: null,
       role,
@@ -529,14 +497,14 @@ export class FormMessageService {
   }
 
   private readName(
-    result: { name: string | null },
+    name: string | null,
     fallback: string | null,
   ): string | null {
-    if (!result.name) {
+    if (!name) {
       return fallback;
     }
 
-    return result.name.slice(0, 120);
+    return name.slice(0, 120);
   }
 
   private assertPrompt(prompt: string): void {
@@ -549,7 +517,7 @@ export class FormMessageService {
     return randomBytes(16).toString('hex');
   }
 
-  private turnFailure(
+  private generationFailure(
     slug: string,
     status: number,
     generationId: string | null,

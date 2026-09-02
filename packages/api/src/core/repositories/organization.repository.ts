@@ -19,9 +19,9 @@ export class OrganizationRepository {
       .collection<IOrganization>('organizations')
       .createIndex({ 'members.email': 1 });
     await this.db.collection<IOrganization>('organizations').createIndex(
-      { personal_for: 1 },
+      { created_by: 1 },
       {
-        partialFilterExpression: { personal_for: { $type: 'string' } },
+        partialFilterExpression: { tags: 'personal' },
         unique: true,
       },
     );
@@ -36,7 +36,9 @@ export class OrganizationRepository {
   public async findPersonal(email: string): Promise<IOrganization | null> {
     return this.db
       .collection<IOrganization>('organizations')
-      .findOne({ personal_for: email }, { projection: { _id: 0 } });
+      .findOne({ created_by: email, tags: 'personal' } as any, {
+        projection: { _id: 0 },
+      });
   }
 
   public async listByMember(email: string): Promise<Array<IOrganization>> {

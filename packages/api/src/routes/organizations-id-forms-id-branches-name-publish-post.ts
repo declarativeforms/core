@@ -28,7 +28,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST: RouteOptions<
 
     const { internalFormService } = await getContainer();
     const form = await internalFormService.publish(
-      request.organization!,
+      request.organization!.id,
       request.email!,
       request.params.id,
       request.params.branch,

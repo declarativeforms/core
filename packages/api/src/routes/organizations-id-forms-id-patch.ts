@@ -31,7 +31,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_PATCH: RouteOptions<any, any, any, any> =
 
       const { internalFormService } = await getContainer();
       const summary = await internalFormService.rename(
-        request.organization!,
+        request.organization!.id,
         request.email!,
         request.params.id,
         name,

@@ -35,7 +35,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
 
     const { internalFormService } = await getContainer();
     const form = await internalFormService.update(
-      request.organization!,
+      request.organization!.id,
       request.email!,
       request.params.id,
       branch,

@@ -13,7 +13,7 @@ export const ORGANIZATIONS_ID_FORMS_POST: RouteOptions<any, any, any, any> = {
   handler: async (request: FastifyRequest, reply: FastifyReply) => {
     const { internalFormService } = await getContainer();
     const form = await internalFormService.create(
-      request.organization!,
+      request.organization!.id,
       request.email!,
       request.body,
       null,

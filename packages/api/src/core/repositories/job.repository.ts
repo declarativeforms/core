@@ -12,10 +12,10 @@ export class JobRepository {
     await this.db.collection<IJob<T>>('jobs').insertOne(job);
   }
 
-  public async findDue(now: Date, limit = 25): Promise<Array<IJob>> {
+  public async findDue(limit = 25): Promise<Array<IJob>> {
     return this.db
       .collection<IJob>('jobs')
-      .find({ run_at: { $lte: now } })
+      .find({ run_at: { $lte: new Date() } })
       .sort({ run_at: 1 })
       .limit(limit)
       .toArray();
