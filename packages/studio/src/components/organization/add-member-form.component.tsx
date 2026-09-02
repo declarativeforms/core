@@ -67,7 +67,7 @@ export function AddMemberForm(props: { organizationId: string }) {
             <SelectTrigger aria-label="Role" className="w-36 shrink-0">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="start" position="popper">
               <SelectItem value="member">Member</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>

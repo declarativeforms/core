@@ -46,7 +46,7 @@ export function MemberRow(props: {
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="start" position="popper">
             <SelectItem value="admin">Admin</SelectItem>
             <SelectItem value="member">Member</SelectItem>
           </SelectContent>

@@ -22,7 +22,7 @@ export function BranchSelector(props: {
         <GitBranch className="size-4 shrink-0 opacity-70" />
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent align="start" position="popper">
         {props.branches.map((branch) => (
           <SelectItem key={branch} value={branch}>
             {branch}

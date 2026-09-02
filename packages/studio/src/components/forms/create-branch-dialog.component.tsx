@@ -92,7 +92,7 @@ export function CreateBranchDialog(props: {
             <SelectTrigger id="branch-from">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="start" position="popper">
               {props.branches.map((entry) => (
                 <SelectItem key={entry} value={entry}>
                   {entry}
