@@ -25,7 +25,8 @@ COPY --chown=nginx:nginx --chmod=0644 packages/studio/docker/default.conf.templa
 COPY --chown=nginx:nginx --from=build /app/packages/studio/dist /usr/share/nginx/html
 
 USER root
-RUN chown nginx:nginx /usr/share/nginx/html
+RUN chmod 0755 /etc/nginx/templates \
+    && chown nginx:nginx /usr/share/nginx/html
 USER nginx
 
 EXPOSE 8080
