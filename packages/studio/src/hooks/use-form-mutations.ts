@@ -78,13 +78,14 @@ export function useCreateBranch(
       }),
     onSuccess: (write: ApiBranchWrite) => {
       void queryClient.invalidateQueries({
-        queryKey: branchesQueryKey(organizationId, formId),
-      });
-      void queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),
       });
       void queryClient.invalidateQueries({
         queryKey: messagesQueryKey(organizationId, formId, write.branch),
+      });
+
+      return queryClient.invalidateQueries({
+        queryKey: branchesQueryKey(organizationId, formId),
       });
     },
   });

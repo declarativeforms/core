@@ -14,7 +14,11 @@ export function BranchSelector(props: {
 }) {
   return (
     <Select onValueChange={props.onSelect} value={props.branch}>
-      <SelectTrigger aria-label="Branch" className="w-[11rem]" size="sm">
+      <SelectTrigger
+        aria-label="Branch"
+        className="w-[11rem] shrink-0"
+        size="sm"
+      >
         <GitBranch className="size-4 shrink-0 opacity-70" />
         <SelectValue />
       </SelectTrigger>

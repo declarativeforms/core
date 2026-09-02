@@ -18,11 +18,7 @@ export function ShareAction(props: { branch: string; formUrl: string | null }) {
         size="sm"
         variant="outline"
       >
-        {clipboard.isCopied ? (
-          <Check className="size-4" />
-        ) : (
-          <Share2 className="size-4" />
-        )}
+        {clipboard.isCopied ? <Check /> : <Share2 />}
         {clipboard.isCopied ? 'Link copied' : 'Share'}
       </Button>
       <span aria-live="polite" className="sr-only">

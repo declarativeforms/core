@@ -31,11 +31,11 @@ export function PromptComposer(props: {
   };
 
   return (
-    <div className="flex items-end gap-2">
+    <div className="relative rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
       <Textarea
         aria-busy={props.isBusy}
         aria-disabled={props.isBusy}
-        className="max-h-56 min-h-[3rem] field-sizing-content resize-none"
+        className="max-h-56 min-h-[4.5rem] resize-none border-0 pb-11 focus-visible:ring-0 dark:bg-transparent"
         maxLength={MAX_PROMPT_CHARS}
         onChange={(event) => {
           props.onValueChange(event.target.value);
@@ -48,14 +48,15 @@ export function PromptComposer(props: {
       />
       <Button
         aria-label={props.submitLabel}
+        className="absolute right-2 bottom-2"
         disabled={props.isBusy || !props.value.trim()}
         onClick={props.onSubmit}
         size="icon"
       >
         {props.isBusy ? (
-          <Loader2 className="size-4 animate-spin" />
+          <Loader2 className="animate-spin" />
         ) : (
-          <SendHorizontal className="size-4" />
+          <SendHorizontal />
         )}
       </Button>
     </div>

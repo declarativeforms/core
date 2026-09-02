@@ -39,11 +39,7 @@ export function SchemaPanel(props: {
             size="sm"
             variant="ghost"
           >
-            {clipboard.isCopied ? (
-              <Check className="size-4" />
-            ) : (
-              <Copy className="size-4" />
-            )}
+            {clipboard.isCopied ? <Check /> : <Copy />}
             {clipboard.isCopied ? 'Copied' : 'Copy'}
           </Button>
         </div>

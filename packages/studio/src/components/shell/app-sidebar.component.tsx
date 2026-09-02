@@ -33,7 +33,7 @@ export function AppSidebar(props: {
         organizations={props.organizations}
       />
       <Button onClick={props.onNewForm} size="sm">
-        <Plus className="size-4" />
+        <Plus />
         New form
       </Button>
       <Separator />

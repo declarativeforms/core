@@ -24,15 +24,15 @@ export function OrganizationSwitcher(props: {
       <DropdownMenuTrigger asChild>
         <Button className="w-full justify-between" size="sm" variant="outline">
           <span className="flex min-w-0 items-center gap-2">
-            <Building2 className="size-4 shrink-0" />
+            <Building2 className="shrink-0" />
             <span className="truncate">
               {active ? active.name : 'Workspace'}
             </span>
           </span>
-          <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
+          <ChevronsUpDown className="shrink-0 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-60">
+      <DropdownMenuContent align="start">
         {props.organizations.map((organization) => (
           <DropdownMenuItem
             key={organization.id}

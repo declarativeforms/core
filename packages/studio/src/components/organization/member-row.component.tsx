@@ -41,7 +41,7 @@ export function MemberRow(props: {
         >
           <SelectTrigger
             aria-label={`Role for ${props.member.email}`}
-            className="w-[7.5rem]"
+            className="w-36 shrink-0"
             size="sm"
           >
             <SelectValue />

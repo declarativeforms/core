@@ -61,30 +61,43 @@ export function Workspace(props: {
   const branches = branchesQuery.data ?? [];
 
   useEffect(() => {
-    const loaded = formsQuery.data;
-
-    if (!loaded || formId === null) {
+    if (formId === null || !formsQuery.isSuccess || formsQuery.isFetching) {
       return;
     }
 
-    if (loaded.some((entry) => entry.form_id === formId)) {
+    if (formsQuery.data.some((entry) => entry.form_id === formId)) {
       return;
     }
 
     void navigate('/', { replace: true });
-  }, [formId, formsQuery.data, navigate]);
+  }, [
+    formId,
+    formsQuery.data,
+    formsQuery.isFetching,
+    formsQuery.isSuccess,
+    navigate,
+  ]);
 
   useEffect(() => {
-    const loaded = branchesQuery.data;
+    if (!form || !branchesQuery.isSuccess || branchesQuery.isFetching) {
+      return;
+    }
 
-    if (!form || !loaded || loaded.includes(branch)) {
+    if (branchesQuery.data.includes(branch)) {
       return;
     }
 
     void navigate(`/forms/${encodeURIComponent(form.form_id)}`, {
       replace: true,
     });
-  }, [branch, branchesQuery.data, form, navigate]);
+  }, [
+    branch,
+    branchesQuery.data,
+    branchesQuery.isFetching,
+    branchesQuery.isSuccess,
+    form,
+    navigate,
+  ]);
 
   if (!organization || organizationId === null) {
     return (
@@ -143,7 +156,7 @@ export function Workspace(props: {
         {sidebar}
       </aside>
       <Sheet onOpenChange={setIsSidebarOpen} open={isSidebarOpen}>
-        <SheetContent className="w-72 p-0" side="left">
+        <SheetContent className="w-72 p-0 pt-12" side="left">
           <SheetTitle className="sr-only">Workspace navigation</SheetTitle>
           {sidebar}
         </SheetContent>

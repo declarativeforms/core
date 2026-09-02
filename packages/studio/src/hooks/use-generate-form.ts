@@ -38,7 +38,8 @@ export function useGenerateForm(
         messagesQueryKey(organizationId, created.form_id, created.branch),
         { pageParams: [null], pages: [page] },
       );
-      void queryClient.invalidateQueries({
+
+      return queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),
       });
     },

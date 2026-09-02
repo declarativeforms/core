@@ -124,4 +124,7 @@
   html {
     @apply font-sans;
     }
+  svg {
+    @apply shrink-0;
+    }
 }

@@ -17,11 +17,11 @@ export function AccountMenu(props: {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className="w-full justify-start" size="sm" variant="ghost">
-          <User className="size-4 shrink-0" />
+          <User className="shrink-0" />
           <span className="truncate">{props.email}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-60">
+      <DropdownMenuContent align="start">
         <DropdownMenuItem onSelect={props.onOpenSettings}>
           <Settings className="size-4" />
           Organization settings

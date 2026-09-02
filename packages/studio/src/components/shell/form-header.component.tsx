@@ -78,12 +78,12 @@ export function FormHeader(props: {
         ) : null}
         <div className="hidden items-center gap-2 lg:flex">
           <Button onClick={props.onNewBranch} size="sm" variant="outline">
-            <GitBranchPlus className="size-4" />
+            <GitBranchPlus />
             New branch
           </Button>
           {isDraftBranch(props.branch) ? (
             <Button onClick={props.onPublish} size="sm">
-              <UploadCloud className="size-4" />
+              <UploadCloud />
               Publish
             </Button>
           ) : null}
@@ -93,7 +93,7 @@ export function FormHeader(props: {
             size="sm"
             variant="outline"
           >
-            <ExternalLink className="size-4" />
+            <ExternalLink />
             Preview
           </Button>
           <ShareAction branch={props.branch} formUrl={props.formUrl} />
@@ -102,7 +102,7 @@ export function FormHeader(props: {
             size="sm"
             variant={props.isSchemaOpen ? 'secondary' : 'outline'}
           >
-            <Code2 className="size-4" />
+            <Code2 />
             Schema
           </Button>
         </div>
