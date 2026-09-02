@@ -16,6 +16,13 @@ services:
     ports:
       - "${CORE_PORT:-8080}:8080"
 
+  studio:
+    build:
+      context: .
+      dockerfile: packages/studio/Dockerfile
+    ports:
+      - "${STUDIO_PORT:-8081}:8080"
+
   api:
     build:
       context: .

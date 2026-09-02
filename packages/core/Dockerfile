@@ -6,6 +6,7 @@ COPY package.json package-lock.json ./
 COPY packages/engine/package.json ./packages/engine/
 COPY packages/api/package.json ./packages/api/
 COPY packages/core/package.json ./packages/core/
+COPY packages/studio/package.json ./packages/studio/
 
 RUN npm ci \
       --workspace=@declarativeforms/core \

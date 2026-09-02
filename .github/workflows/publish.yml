@@ -23,6 +23,8 @@ jobs:
             image: core-api
           - dockerfile: packages/core/Dockerfile
             image: core-web
+          - dockerfile: packages/studio/Dockerfile
+            image: core-studio
 
     steps:
       - uses: actions/checkout@v4

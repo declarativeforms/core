@@ -5,11 +5,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build:engine && npm run build:core && npm run build:api",
+    "build": "npm run build:engine && npm run build:core && npm run build:studio && npm run build:api",
     "build:engine": "npm run build -w @declarativeforms/engine",
     "build:core": "npm run build -w @declarativeforms/core",
+    "build:studio": "npm run build -w @declarativeforms/studio",
     "build:api": "npm run build -w @declarativeforms/api",
     "dev:core": "npm run dev -w @declarativeforms/core",
+    "dev:studio": "npm run dev -w @declarativeforms/studio",
     "dev:api": "npm run dev -w @declarativeforms/api",
     "dev:scheduler": "npm run dev:scheduler -w @declarativeforms/api",
     "test": "npm test -w @declarativeforms/api"

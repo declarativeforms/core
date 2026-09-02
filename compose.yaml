@@ -71,6 +71,34 @@ services:
       - traefik.http.routers.declarativeforms.tls.certresolver=letsencrypt
       - traefik.http.services.declarativeforms.loadbalancer.server.port=8080
 
+  studio:
+    image: ghcr.io/declarativeforms/core-studio:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    networks:
+      - edge
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:8080/healthz",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=declarativeforms_edge
+      - "traefik.http.routers.studio.rule=Host(`${STUDIO_DOMAIN:-studio.${DOMAIN:-forms.example.com}}`)"
+      - traefik.http.routers.studio.entrypoints=websecure
+      - traefik.http.routers.studio.tls=true
+      - traefik.http.routers.studio.tls.certresolver=letsencrypt
+      - traefik.http.services.studio.loadbalancer.server.port=8080
+
   api:
     image: ghcr.io/declarativeforms/core-api:${IMAGE_TAG:-latest}
     restart: unless-stopped
@@ -145,17 +173,18 @@ services:
       mongodb:
         condition: service_healthy
 
-  # Keeps web, api and scheduler on the newest published image without a manual
-  # redeploy, by running the same two commands an operator would: `compose pull`
-  # then `compose up -d`. Traefik, MongoDB and MinIO are deliberately absent:
-  # their versions are pinned above and move only when an operator says so.
+  # Keeps web, studio, api and scheduler on the newest published image without a
+  # manual redeploy, by running the same two commands an operator would:
+  # `compose pull` then `compose up -d`. Traefik, MongoDB and MinIO are
+  # deliberately absent: their versions are pinned above and move only when an
+  # operator says so.
   updater:
     image: docker:28-cli
     restart: unless-stopped
     environment:
       # Seconds between checks. Set to 0 to park the updater without removing it.
       UPDATE_INTERVAL: ${UPDATE_INTERVAL:-300}
-      UPDATE_SERVICES: ${UPDATE_SERVICES:-web api scheduler}
+      UPDATE_SERVICES: ${UPDATE_SERVICES:-web studio api scheduler}
     volumes:
       # Root-equivalent access to the host. Required to recreate containers.
       - /var/run/docker.sock:/var/run/docker.sock

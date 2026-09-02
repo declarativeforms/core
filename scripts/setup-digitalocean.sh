@@ -24,11 +24,11 @@ Options:
                     Default: $IMAGE_TAG
   -h, --help        Show this help.
 
-Images are pulled from ghcr.io/$REPOSITORY-{web,api}; nothing is compiled on the
+Images are pulled from ghcr.io/$REPOSITORY-{web,studio,api}; nothing is compiled on the
 Droplet. Re-run to move to a newer tag.
 
-Once the stack is running, the web, api and scheduler containers keep themselves
-on the newest image published for the deployed tag; the updater service checks
+Once the stack is running, the web, studio, api and scheduler containers keep
+themselves on the newest image published for the deployed tag; the updater checks
 every UPDATE_INTERVAL seconds. Traefik, MongoDB and MinIO never update on their
 own. Re-run this script only to change compose.yaml, .env, or the image tag.
 
