@@ -18,6 +18,8 @@ external agents to author YAML forms.
 - [Comments](#comments)
 - [Tests](#tests)
 - [Types](#types)
+- [Return values](#return-values)
+- [Repositories](#repositories)
 - [Classes](#classes)
 - [Naming](#naming)
 - [Imports](#imports)
@@ -42,6 +44,13 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 6. **Every function and method carries an explicit return type.**
 7. **`null` means absent.** Never return `undefined` to mean "not found".
 8. **No module-level helper functions in a file that exports a class.**
+9. **No discriminated result unions.** A service or repository returns the
+   entity (or a primitive) on success, `null` when the caller can safely carry
+   on without it, and throws when it cannot. See [Return values](#return-values).
+10. **Repository methods name the operation, not the entity**, and their
+    parameters do not repeat it. See [Repositories](#repositories).
+11. **No service layer with a single consumer.** If only one caller needs the
+    logic, it is a private method on that caller.
 
 ## Layout and dependency direction
 
@@ -156,9 +165,8 @@ export * from './job';
 ```
 
 A type that belongs to a single implementation file and is exported alongside it
-may stay in that file: `SubmissionResult` in `submission.service.ts`, `JobHandler`
-in `job.service.ts`, `Container` in `container.ts`. These are the local exception,
-not the pattern. **The moment a type describes data that crosses a layer boundary,
+may stay in that file: `JobHandler` in `job.service.ts`, `Container` in
+`container.ts`. These are the local exception, not the pattern. **The moment a type describes data that crosses a layer boundary,
 it moves to `core/types/` and takes the `I` prefix.**
 
 **Use `Array<T>`. Never use `T[]`.**
@@ -191,13 +199,57 @@ else:
 **Give a generic parameter a default when callers usually do not supply it:**
 `IJob<T = unknown>`.
 
-**Tag a discriminated union on `type`.**
+**Tag a discriminated union on `type`**, on the rare occasion one is warranted.
+`IOAuthProviderStrategy` and `IConnectionStrategy` discriminate this way. Never
+use one as a return value: see [Return values](#return-values).
+
+## Return values
+
+**Never return a discriminated union to smuggle a status code out of a service.**
+Shapes like `{ type: 'invalid' | 'conflict' }` are banned. They are permitted
+only in a genuinely exceptional case that justifies the overhead, and nothing in
+this package currently qualifies.
+
+The contract is three-way:
+
+- **The entity, or a primitive.** `Promise<IInternalForm>`,
+  `Promise<Array<string>>`, `Promise<string | null>` for an email address.
+  Return the whole entity rather than a bespoke subset of it.
+- **`null` when the caller can safely carry on.** It means "absent, or not
+  visible to you". A route turns `null` into 404 and nothing else.
+- **Throw when it cannot.** Anything that is not a safe failure is an
+  `HttpError` from `src/core/errors.ts`, carrying a `statusCode` and an optional
+  `payload`.
 
 ```ts
-export type SubmissionResult =
-  | { type: 'created'; submission: ISubmission }
-  | { type: 'invalid'; errors: Record<string, string> };
+public async update(...): Promise<IInternalForm | null>  // null -> 404
+public async addMember(...): Promise<IOrganization>      // throws HttpError.forbidden()
 ```
+
+`HttpError.forbidden()`, `HttpError.conflict(slug)` and
+`HttpError.invalid(errors)` cover every case in the package today. They are
+static factories on the class, not module-level helpers, because the file
+exports a class.
+
+## Repositories
+
+A repository already names its entity in the class name. Method names therefore
+name the **operation**, and parameters do not repeat the entity.
+
+| Rule | Example |
+| --- | --- |
+| `find*` returns one entity, or a derived list of primitives | `findBranchNames(id)` |
+| `listBy<Field>` returns many entities filtered by that field | `listByOrganization(organizationId, branch)` |
+| `insert` / `replace` / `delete` name the operation | `delete(id, branch)` |
+| Parameters drop the entity prefix | `id`, never `formId` |
+
+`FormRepository.delete(id, branch)` removes one branch document;
+`softDelete(id, at)` marks every branch of a form deleted. The prefix survives
+only where it names a genuinely different entity, as in
+`SubmissionRepository.find(formId, id)`.
+
+Every read passes `projection: { _id: 0 }`. Mongo's `_id` is never part of an
+entity this package returns.
 
 ## Classes
 
@@ -233,13 +285,19 @@ multi-parameter constructor expands one parameter per line with a trailing comma
 **Public methods come first, private helpers last.** `SubmissionService` reads
 `createOrUpdate`, `findById`, then `validate`, then `scheduleConnections`.
 
-**No `static` members.** There are none.
+**No `static` members, with one exception.** `HttpError` in `src/core/errors.ts`
+carries `forbidden()`, `conflict()` and `invalid()` as static factories,
+precisely because module-level helpers are banned in a file that exports a
+class. Do not add statics anywhere else.
 
 **No module-level helper functions in a class file.** A helper belongs on the
 class as a `private` method. `EmailConnectionStrategy.generateResponsesHtml` is
 private for this reason, and `WebhookConnectionStrategy` has no helpers at all.
 Plain `function` declarations are reserved for entry-point scripts, such as
-`startServer()` in `server.ts` and `main()` in `scheduler.ts`.
+`startServer()` in `server.ts` and `main()` in `scheduler.ts`, and for route
+preHandlers in `src/routes/`, such as `authenticate` and
+`authorizeOrganization`. A preHandler is shared across route files and is not a
+method on anything, so it stays a function.
 
 **Annotate every return type.** `Promise<void>` on mutating methods,
 `Promise<T | null>` on lookups, `Promise<number>` on counts.
@@ -415,8 +473,18 @@ where a value is produced, such as `.find(...)` and `.map(...)`.
 
 ## Errors
 
-**Throw a plain `Error`.** There are no custom error classes and you should not
-add one.
+**There is exactly one custom error class, `HttpError` in `src/core/errors.ts`,
+and you should not add a second.** Throw it when a request cannot proceed and
+the caller deserves a status other than 404:
+
+```ts
+throw HttpError.forbidden();
+throw HttpError.conflict('branch_exists');
+throw HttpError.invalid({ '/connections/0/url': 'must use https' });
+```
+
+**Throw a plain `Error` for a programmer error**, something no request should
+ever be able to trigger. It becomes a bare 500.
 
 ```ts
 throw new Error(`No handler registered for event: ${job.event}`);
@@ -488,9 +556,16 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
 - **`handler` is an arrow function.**
 - **Resolve the container inside the handler body**, never at module scope:
   `const { formService } = await getContainer();`.
-- **There is no schema validation library.** No zod, no TypeBox, no Fastify
-  `schema` key. Type the request with `FastifyRequest<{ Body, Params,
-  Querystring }>` generics and hand-roll the runtime guards.
+- **There is no schema validation library for the HTTP envelope.** No zod, no
+  TypeBox, no Fastify `schema` key. Type the request with `FastifyRequest<{
+  Body, Params, Querystring }>` generics and hand-roll the runtime guards. Ajv
+  exists in this package, but only inside `InternalFormService`, whose private
+  `readDefinition` validates an authored form definition against the engine's
+  `FORM_JSON_SCHEMA`. The validator is compiled once at module scope in
+  `container.ts`. Do not reach for it to validate a request envelope.
+- **Guard every `request.query` read with `typeof value === 'string'`.**
+  `server.ts` parses query strings with `qs`, so `?branch[$ne]=main` arrives as
+  an object. Several of these values reach a Mongo filter.
 - **Send, blank line, `return`.** After `reply.status(...).send()` in a guard,
   leave a blank line before the bare `return;`.
 
@@ -500,15 +575,56 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
 | ---- | ------------------------------------------------------------------- |
 | 200  | Success, including a successful write                               |
 | 400  | A required request part is absent before any lookup happens         |
-| 404  | The addressed resource does not exist                               |
-| 422  | The submission failed validation, or the service returned `null`    |
+| 401  | No bearer token, or the token no longer resolves to a caller        |
+| 403  | The caller belongs to the organization but lacks the role           |
+| 404  | The addressed resource does not exist, or the caller may not see it |
+| 409  | The write lost a race, or it targets a protected resource           |
+| 422  | The submission or definition failed validation                      |
+| 429  | A rate-limited route was exceeded                                   |
+| 503  | An authenticated route was called while auth is unconfigured        |
 
-There is no 500 path. An unhandled throw becomes Fastify's own 500.
+**404 and 403 are not interchangeable.** Return 404 when the caller has no
+relationship to the resource, so that ids cannot be probed for existence.
+Return 403 only once the caller is known to be a member and is merely missing a
+role.
+
+`server.ts` registers a `setErrorHandler`. A thrown error with a `statusCode`
+below 500 keeps its status and its message; anything else is logged with
+`console.error` and answered with a bare 500 carrying no detail.
 
 **Success sends the raw resource with no envelope:** `reply.status(200).send(form)`.
-Only two responses are wrapped, and both are deliberate: `{ url }` from the
-upload route, and `{ errors }` on a validation failure. Do not introduce a
+Three responses are wrapped, and all three are deliberate: `{ url }` from the
+upload route, `{ errors }` on a validation failure, and `{ error, ... }` on a
+409 conflict, where `error` is a machine-readable slug such as
+`revision_conflict`, `branch_exists` or `branch_protected`. Do not introduce a
 general response envelope.
+
+**Authenticated routes opt in per route**, never globally, by setting
+`preHandler` in the `RouteOptions` literal (keys stay alphabetical: `config`,
+`handler`, `method`, `preHandler`, `url`). The public form, submission and file
+routes must stay anonymous, so an allowlist-by-omission is exactly how a
+management route ends up open.
+
+Two preHandlers compose, and neither throws:
+
+```ts
+preHandler: authenticate,                          // sets request.email
+preHandler: [authenticate, authorizeOrganization], // also sets request.organization
+```
+
+`authorizeOrganization` resolves `:organizationId` and answers 404 when the
+caller's email is not in its member list, so a handler that runs has already
+had membership proven. Only the admin check remains, via
+`organizationService.assertAdmin`.
+
+**Routes do not catch.** A thrown `HttpError` propagates to the
+`setErrorHandler` in `server.ts`, which sends its `payload` when it has one and
+`{ errors: { '/': message } }` otherwise. Use `try`/`catch` in a route only when
+the error drives logic in that route, which nothing does today. A handler is
+therefore the happy path plus a single `null` check.
+
+**Rate limits opt in per route too**, via `config.rateLimit`. The plugin is
+registered with `global: false`.
 
 ## The container
 
@@ -602,14 +718,15 @@ when you are already editing that line for another reason.
   times in `job.repository.ts`, and `'submissions'` and `'github_files'` likewise
   in their repositories. There is no shared constant.
 - **Id generation is not centralised.** `randomBytes(8)` for job ids and upload
-  keys, `randomBytes(4)` for submission ids, with no shared helper.
+  keys, `randomBytes(16)` for submission ids, `randomBytes(6)` behind a prefix
+  for form, organization and auth-code ids, with no shared helper.
 - **`GitHubGateway` has two near-duplicate fetch blocks**, one authenticated and
   one anonymous, with no extracted helper.
 - **An absent wildcard segment is not handled uniformly.** `forms-slug-get.ts:17`
   answers 400, while the same condition in `files-key-get.ts:14` answers 404.
-- **`server.ts` defines four small routes inline** (`/`, `/api/v1/health`,
-  `/api/v1/headers`, `/api/v1/ping`) rather than in `routes/`. New routes of any
-  substance go in `routes/`.
+- **`server.ts` defines three small routes inline** (`/`, `/api/v1/health`,
+  `/api/v1/ping`) rather than in `routes/`. New routes of any substance go in
+  `routes/`.
 
 ## Before you hand work back
 

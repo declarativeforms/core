@@ -7,13 +7,10 @@ import {
 } from '@declarativeforms/engine';
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
+import { HttpError } from '../errors';
 import type { SubmissionRepository } from '../repositories';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
-
-export type SubmissionResult =
-  | { type: 'created'; submission: ISubmission }
-  | { type: 'invalid'; errors: Record<string, string> };
 
 export class SubmissionService {
   constructor(
@@ -21,6 +18,10 @@ export class SubmissionService {
     private submissionRepository: SubmissionRepository,
     private jobService: JobService,
   ) {}
+
+  public async ensureIndexes(): Promise<void> {
+    await this.submissionRepository.ensureIndexes();
+  }
 
   public async createOrUpdate(
     formId: string,
@@ -31,7 +32,7 @@ export class SubmissionService {
       userAgent: string;
     },
     submissionId?: string,
-  ): Promise<SubmissionResult | null> {
+  ): Promise<ISubmission | null> {
     const form = await this.formService.findById(formId);
 
     if (!form) {
@@ -42,7 +43,7 @@ export class SubmissionService {
       const errors = this.validate(form, data);
 
       if (Object.keys(errors).length > 0) {
-        return { type: 'invalid', errors };
+        throw HttpError.invalid(errors);
       }
     }
 
@@ -64,7 +65,7 @@ export class SubmissionService {
       }
 
       if (existingSubmission.status === 'completed' && !isPartial) {
-        return { type: 'created', submission: existingSubmission };
+        return existingSubmission;
       }
 
       submission = {
@@ -77,13 +78,13 @@ export class SubmissionService {
         updated_at: timestamp,
       };
 
-      await this.submissionRepository.update(persistedFormId, submission);
+      await this.submissionRepository.replace(persistedFormId, submission);
     } else {
       submission = {
         created_at: timestamp,
         data,
         form_id: persistedFormId,
-        id: randomBytes(4).toString('hex'),
+        id: randomBytes(16).toString('hex'),
         metadata: {
           ip_address: metadata.ipAddress,
           user_agent: metadata.userAgent,
@@ -97,7 +98,7 @@ export class SubmissionService {
 
     await this.scheduleConnections(form, submission, now);
 
-    return { type: 'created', submission };
+    return submission;
   }
 
   public async findById(

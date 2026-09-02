@@ -2,6 +2,12 @@ import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { getContainer } from '../core';
 
 export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
+  config: {
+    rateLimit: {
+      max: 30,
+      timeWindow: '1 minute',
+    },
+  },
   handler: async (
     request: FastifyRequest<{
       Params: { id: string; submissionId: string };

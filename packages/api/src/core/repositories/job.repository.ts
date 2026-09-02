@@ -21,7 +21,7 @@ export class JobRepository {
       .toArray();
   }
 
-  public async remove(id: string): Promise<void> {
+  public async delete(id: string): Promise<void> {
     await this.db.collection<IJob>('jobs').deleteOne({ id });
   }
 

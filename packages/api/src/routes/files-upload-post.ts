@@ -2,6 +2,12 @@ import type { FastifyReply, FastifyRequest, RouteOptions } from 'fastify';
 import { getContainer } from '../core';
 
 export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
+  config: {
+    rateLimit: {
+      max: 20,
+      timeWindow: '1 hour',
+    },
+  },
   handler: async (request: FastifyRequest, reply: FastifyReply) => {
     const file = await request.file();
 

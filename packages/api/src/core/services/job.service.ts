@@ -30,7 +30,7 @@ export class JobService {
         }
 
         await handler(job.data);
-        await this.jobRepository.remove(job.id);
+        await this.jobRepository.delete(job.id);
       } catch (error) {
         console.error(`Job ${job.id} failed`, error);
         await this.jobRepository.reschedule(

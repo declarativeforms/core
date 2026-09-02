@@ -1,35 +1,60 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
+import Ajv from 'ajv';
 import { Db, MongoClient } from 'mongodb';
-import { GitHubGateway } from './gateways';
+import { GitHubGateway, GitHubOAuthGateway } from './gateways';
 import {
+  AuthCodeRepository,
+  FormRepository,
   GitHubFileRepository,
   JobRepository,
+  OrganizationRepository,
   SubmissionRepository,
 } from './repositories';
 import {
+  AuthenticationService,
   FileService,
   FormService,
+  InternalFormService,
   JobService,
+  OrganizationService,
   SubmissionService,
+  TokenService,
 } from './services';
 import {
   EmailConnectionStrategy,
+  GitHubOAuthStrategy,
   WebhookConnectionStrategy,
   type IConnectionStrategy,
+  type IOAuthProviderStrategy,
 } from './strategies';
 
 export type Container = {
   db: Db;
   mongoClient: MongoClient;
   gitHubGateway: GitHubGateway;
+  gitHubOAuthGateway: GitHubOAuthGateway;
+  authCodeRepository: AuthCodeRepository;
+  formRepository: FormRepository;
   gitHubFileRepository: GitHubFileRepository;
+  organizationRepository: OrganizationRepository;
   submissionRepository: SubmissionRepository;
   jobRepository: JobRepository;
+  tokenService: TokenService;
   fileService: FileService;
+  organizationService: OrganizationService;
+  internalFormService: InternalFormService;
   formService: FormService;
+  authenticationService: AuthenticationService;
   submissionService: SubmissionService;
   jobService: JobService;
 };
+
+const formDefinitionValidator = new Ajv({
+  allErrors: true,
+  logger: false,
+  strict: false,
+}).compile(FORM_JSON_SCHEMA);
 
 const s3Client = new S3Client({
   endpoint: process.env.AWS_S3_ENDPOINT,
@@ -53,15 +78,37 @@ export async function getContainer(): Promise<Container> {
   );
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
+  const gitHubOAuthGateway = new GitHubOAuthGateway();
+  const authCodeRepository = new AuthCodeRepository(db);
+  const formRepository = new FormRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
+  const organizationRepository = new OrganizationRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const jobRepository = new JobRepository(db);
+  const tokenService = new TokenService(process.env.AUTH_STATE_SECRET || '');
   const fileService = new FileService(s3Client);
-  const formService = new FormService(gitHubFileRepository, gitHubGateway);
+  const organizationService = new OrganizationService(organizationRepository);
+  const internalFormService = new InternalFormService(
+    formRepository,
+    formDefinitionValidator,
+  );
+  const formService = new FormService(
+    gitHubFileRepository,
+    gitHubGateway,
+    internalFormService,
+  );
   const connectionStrategies: Array<IConnectionStrategy> = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
   ];
+  const oauthProviderStrategies: Array<IOAuthProviderStrategy> = [
+    new GitHubOAuthStrategy(gitHubOAuthGateway),
+  ];
+  const authenticationService = new AuthenticationService(
+    authCodeRepository,
+    tokenService,
+    oauthProviderStrategies,
+  );
   const jobService = new JobService(jobRepository, {
     submission: async (data) => {
       const { connection, form, submission } = data as any;
@@ -83,16 +130,24 @@ export async function getContainer(): Promise<Container> {
   );
 
   container = {
+    authCodeRepository,
+    authenticationService,
     db,
     fileService,
+    formRepository,
     formService,
     gitHubFileRepository,
     gitHubGateway,
+    gitHubOAuthGateway,
+    internalFormService,
     jobRepository,
     jobService,
     mongoClient,
+    organizationRepository,
+    organizationService,
     submissionRepository,
     submissionService,
+    tokenService,
   };
 
   return container;

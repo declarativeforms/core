@@ -12,7 +12,10 @@ export async function generateMetadata(props: {
   const query = await props.searchParams;
 
   return formMetadata(
-    { id: params.slug },
+    {
+      id: params.slug,
+      branch: typeof query.branch === 'string' ? query.branch : undefined,
+    },
     typeof query.lang === 'string' ? query.lang : undefined,
   );
 }

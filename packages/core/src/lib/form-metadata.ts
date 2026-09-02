@@ -20,12 +20,21 @@ function apiOrigin(): string {
 }
 
 export type FormRouteTarget =
-  | { id: string }
+  | { id: string; branch?: string }
   | { owner: string; repository: string; path: string; branch?: string };
 
 function formUrl(target: FormRouteTarget): string {
   if ('id' in target) {
-    return `${apiOrigin()}/api/v1/forms/${encodeURIComponent(target.id)}`;
+    const idUrl = new URL(
+      `/api/v1/forms/${encodeURIComponent(target.id)}`,
+      apiOrigin(),
+    );
+
+    if (target.branch) {
+      idUrl.searchParams.set('branch', target.branch);
+    }
+
+    return idUrl.toString();
   }
 
   const path = target.path.split('/').map(encodeURIComponent).join('/');

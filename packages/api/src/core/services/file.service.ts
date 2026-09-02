@@ -6,6 +6,8 @@ import {
 import { randomBytes } from 'node:crypto';
 import type { IDownloadedFile } from '../types';
 
+const UPLOAD_KEY_PREFIX = 'uploads/';
+
 export class FileService {
   constructor(private s3Client: S3Client) {}
 
@@ -32,6 +34,10 @@ export class FileService {
   }
 
   public async download(key: string): Promise<IDownloadedFile | null> {
+    if (!key.startsWith(UPLOAD_KEY_PREFIX) || key.includes('..')) {
+      return null;
+    }
+
     try {
       const result = await this.s3Client.send(
         new GetObjectCommand({

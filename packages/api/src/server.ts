@@ -1,15 +1,41 @@
 import fastifyCors from '@fastify/cors';
+import fastifyJwt from '@fastify/jwt';
 import fastifyMultipart from '@fastify/multipart';
-import fastify from 'fastify';
+import fastifyRateLimit from '@fastify/rate-limit';
+import fastify, { type FastifyError } from 'fastify';
+import { randomBytes } from 'node:crypto';
 import * as qs from 'qs';
+import { getContainer, HttpError } from './core';
 import {
+  AUTH_ME_GET,
+  AUTH_PROVIDER_AUTHORIZE_GET,
+  AUTH_PROVIDER_CALLBACK_GET,
+  AUTH_TOKEN_POST,
   FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
+  ORGANIZATIONS_GET,
+  ORGANIZATIONS_ID_FORMS_GET,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_GET,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST,
+  ORGANIZATIONS_ID_FORMS_ID_DELETE,
+  ORGANIZATIONS_ID_FORMS_ID_PUT,
+  ORGANIZATIONS_ID_FORMS_POST,
+  ORGANIZATIONS_ID_GET,
+  ORGANIZATIONS_ID_MEMBERS_EMAIL_DELETE,
+  ORGANIZATIONS_ID_MEMBERS_POST,
+  ORGANIZATIONS_POST,
 } from './routes';
+
+const JWT_AUDIENCE = 'declarativeforms-api';
+const JWT_ISSUER = 'declarativeforms';
+const STRICT_CORS_PREFIXES = ['/api/v1/auth/', '/api/v1/organizations'];
 
 export async function startServer() {
   const server = fastify({
@@ -21,12 +47,70 @@ export async function startServer() {
       ignoreTrailingSlash: true,
       querystringParser: (str) => qs.parse(str),
     },
+    trustProxy: (_address: string, hop: number) => hop === 0,
   });
 
-  await server.register(fastifyCors, {
-    allowedHeaders: '*',
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    origin: '*',
+  server.setErrorHandler((error: FastifyError, _request, reply) => {
+    const statusCode = error.statusCode ?? 500;
+
+    if (statusCode < 500) {
+      const payload = (error as unknown as HttpError).payload;
+
+      reply
+        .status(statusCode)
+        .send(payload ?? { errors: { '/': error.message } });
+
+      return;
+    }
+
+    console.error(error);
+
+    reply.status(500).send();
+  });
+
+  const allowedOrigins = (process.env.AUTH_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+  await server.register(fastifyCors, () => (request: any, callback: any) => {
+    const path = String(request.url || '').split('?')[0];
+    const isStrict = STRICT_CORS_PREFIXES.some((prefix) =>
+      path.startsWith(prefix),
+    );
+
+    callback(null, {
+      allowedHeaders: ['authorization', 'content-type'],
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      origin: isStrict ? allowedOrigins : '*',
+    });
+  });
+
+  await server.register(fastifyJwt, {
+    secret: process.env.AUTH_JWT_SECRET || randomBytes(32).toString('hex'),
+    sign: {
+      algorithm: 'HS256',
+      aud: JWT_AUDIENCE,
+      iss: JWT_ISSUER,
+    },
+    verify: {
+      algorithms: ['HS256'],
+      allowedAud: JWT_AUDIENCE,
+      allowedIss: JWT_ISSUER,
+    },
+  });
+
+  await server.register(fastifyRateLimit, {
+    addHeadersOnExceeding: {
+      'x-ratelimit-limit': false,
+      'x-ratelimit-remaining': false,
+      'x-ratelimit-reset': false,
+    },
+    errorResponseBuilder: (_request, context) =>
+      Object.assign(new Error('too many requests'), {
+        statusCode: context.statusCode,
+      }),
+    global: false,
   });
 
   await server.register(fastifyMultipart, {
@@ -47,12 +131,45 @@ export async function startServer() {
     },
   );
 
+  server.decorateRequest('email', null);
+  server.decorateRequest('organization', null);
+
+  const {
+    authenticationService,
+    formService,
+    organizationService,
+    submissionService,
+  } = await getContainer();
+
+  await authenticationService.ensureIndexes();
+  await formService.ensureIndexes();
+  await organizationService.ensureIndexes();
+  await submissionService.ensureIndexes();
+
+  server.route(AUTH_ME_GET);
+  server.route(AUTH_PROVIDER_AUTHORIZE_GET);
+  server.route(AUTH_PROVIDER_CALLBACK_GET);
+  server.route(AUTH_TOKEN_POST);
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
+  server.route(ORGANIZATIONS_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_DELETE);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_PUT);
+  server.route(ORGANIZATIONS_ID_FORMS_POST);
+  server.route(ORGANIZATIONS_ID_GET);
+  server.route(ORGANIZATIONS_ID_MEMBERS_EMAIL_DELETE);
+  server.route(ORGANIZATIONS_ID_MEMBERS_POST);
+  server.route(ORGANIZATIONS_POST);
 
   server.route({
     handler: async (_request, reply) => {
@@ -75,15 +192,7 @@ export async function startServer() {
   });
 
   server.route({
-    handler: async (request, reply) => {
-      reply.status(200).send(request.headers);
-    },
-    method: 'GET',
-    url: '/api/v1/headers',
-  });
-
-  server.route({
-    handler: async (request, reply) => {
+    handler: async (_request, reply) => {
       reply.status(200).send();
     },
     method: 'GET',
