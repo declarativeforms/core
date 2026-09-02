@@ -112,6 +112,33 @@ export class FormRepository {
     return result.deletedCount > 0;
   }
 
+  public async rename(
+    id: string,
+    name: string,
+    email: string,
+    at: Date,
+  ): Promise<boolean> {
+    const result = await this.db.collection<IInternalForm>('forms').updateMany(
+      { deleted_at: null, form_id: id } as any,
+      {
+        $set: { name, updated_at: at, updated_by: email },
+      } as any,
+    );
+
+    return result.modifiedCount > 0;
+  }
+
+  public async backfillNames(): Promise<number> {
+    const result = await this.db.collection<IInternalForm>('forms').updateMany(
+      { name: { $exists: false } } as any,
+      {
+        $set: { name: null },
+      } as any,
+    );
+
+    return result.modifiedCount;
+  }
+
   public async softDelete(id: string, at: Date): Promise<boolean> {
     const result = await this.db.collection<IInternalForm>('forms').updateMany(
       { deleted_at: null, form_id: id } as any,

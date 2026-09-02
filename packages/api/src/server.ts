@@ -11,6 +11,7 @@ import {
   AUTH_PROVIDER_AUTHORIZE_GET,
   AUTH_PROVIDER_CALLBACK_GET,
   AUTH_TOKEN_POST,
+  CONFIG_GET,
   FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_GET,
@@ -18,13 +19,18 @@ import {
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_SLUG_GET,
   ORGANIZATIONS_GET,
+  ORGANIZATIONS_ID_FORMS_GENERATE_POST,
   ORGANIZATIONS_ID_FORMS_GET,
   ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET,
   ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE,
   ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_GET,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST,
   ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST,
+  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_YAML_GET,
   ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST,
   ORGANIZATIONS_ID_FORMS_ID_DELETE,
+  ORGANIZATIONS_ID_FORMS_ID_PATCH,
   ORGANIZATIONS_ID_FORMS_ID_PUT,
   ORGANIZATIONS_ID_FORMS_POST,
   ORGANIZATIONS_ID_GET,
@@ -52,10 +58,9 @@ export async function startServer() {
 
   server.setErrorHandler((error: FastifyError, _request, reply) => {
     const statusCode = error.statusCode ?? 500;
+    const payload = (error as unknown as HttpError).payload;
 
-    if (statusCode < 500) {
-      const payload = (error as unknown as HttpError).payload;
-
+    if (statusCode < 500 || payload) {
       reply
         .status(statusCode)
         .send(payload ?? { errors: { '/': error.message } });
@@ -136,12 +141,14 @@ export async function startServer() {
 
   const {
     authenticationService,
+    formMessageService,
     formService,
     organizationService,
     submissionService,
   } = await getContainer();
 
   await authenticationService.ensureIndexes();
+  await formMessageService.ensureIndexes();
   await formService.ensureIndexes();
   await organizationService.ensureIndexes();
   await submissionService.ensureIndexes();
@@ -150,6 +157,7 @@ export async function startServer() {
   server.route(AUTH_PROVIDER_AUTHORIZE_GET);
   server.route(AUTH_PROVIDER_CALLBACK_GET);
   server.route(AUTH_TOKEN_POST);
+  server.route(CONFIG_GET);
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_GET);
@@ -157,13 +165,18 @@ export async function startServer() {
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_SLUG_GET);
   server.route(ORGANIZATIONS_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_GENERATE_POST);
   server.route(ORGANIZATIONS_ID_FORMS_GET);
   server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET);
   server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE);
   server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST);
   server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_YAML_GET);
   server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST);
   server.route(ORGANIZATIONS_ID_FORMS_ID_DELETE);
+  server.route(ORGANIZATIONS_ID_FORMS_ID_PATCH);
   server.route(ORGANIZATIONS_ID_FORMS_ID_PUT);
   server.route(ORGANIZATIONS_ID_FORMS_POST);
   server.route(ORGANIZATIONS_ID_GET);

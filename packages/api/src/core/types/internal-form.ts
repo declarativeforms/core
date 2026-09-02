@@ -6,6 +6,7 @@ export const INTERNAL_FORM_METADATA_KEYS = [
   'created_by',
   'deleted_at',
   'form_id',
+  'name',
   'organization_id',
   'revision',
   'updated_at',
@@ -18,6 +19,7 @@ export type IInternalForm = IDeclarativeForm & {
   created_by: string;
   deleted_at: Date | null;
   form_id: string;
+  name: string | null;
   organization_id: string;
   revision: number;
   updated_at: Date;
@@ -27,6 +29,7 @@ export type IInternalForm = IDeclarativeForm & {
 export type IInternalFormSummary = {
   branches: Array<string>;
   form_id: string;
+  name: string;
   organization_id: string;
   revision: number;
   title: unknown;

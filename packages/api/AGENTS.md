@@ -626,6 +626,15 @@ therefore the happy path plus a single `null` check.
 **Rate limits opt in per route too**, via `config.rateLimit`. The plugin is
 registered with `global: false`.
 
+**A route that spends money keys its limit on the caller, not the IP.** The two
+generation routes set
+`keyGenerator: (request) => request.headers.authorization || request.ip`, because
+`trustProxy` trusts one hop and Studio adds a second, so `request.ip` collapses
+every user into one bucket. Rate limiting runs at `onRequest`, before
+`preHandler`, so `request.email` is still `null` and the bearer is the only
+per-caller value available. Copy this for any future externally billed route;
+every other route keeps the plugin's IP default.
+
 ## The container
 
 `src/core/container.ts` is a hand-written service locator. No DI framework.
@@ -727,6 +736,25 @@ when you are already editing that line for another reason.
 - **`server.ts` defines three small routes inline** (`/`, `/api/v1/health`,
   `/api/v1/ping`) rather than in `routes/`. New routes of any substance go in
   `routes/`.
+- **`FormMessageRepository`'s pagination index leads with `form_id`, not
+  `organization_id`.** `form_id` already determines the organization, so an
+  `organization_id` prefix adds no selectivity and only widens every key. The
+  organization is enforced in the query filter instead, and both partial unique
+  indexes are scoped to `{form_id, branch}` because fork copies keep their
+  source's `generation_id`.
+- **`FORM_AUTHORING_RULES` in `gateways/openai.ts` restates guidance that also
+  lives in `packages/core/public/AGENTS.md`.** It cannot import it: the api image
+  copies only `packages/engine` and `packages/api`, and `rootDir` is `src`. The
+  constant deliberately carries only the rules the JSON Schema cannot express,
+  because `FORM_JSON_SCHEMA` is sent alongside it and its descriptions cover the
+  rest. Update the constant when the published authoring guidance changes.
+- **`schema_revision` on a message is advisory.** Generation applies with the
+  revision filter disabled, so two overlapping turns can both write the same
+  revision number, and a message's `schema_revision` may name a revision a later
+  turn overwrote. That is the deliberate last-write-wins tradeoff, not a bug.
+- **Conversation order is `sequence`, never `created_at`.** Publishing imports
+  messages with their original timestamps after appending a marker, so a
+  timestamp sort interleaves them wrongly.
 
 ## Before you hand work back
 

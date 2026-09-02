@@ -2,9 +2,10 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
 import Ajv from 'ajv';
 import { Db, MongoClient } from 'mongodb';
-import { GitHubGateway, GitHubOAuthGateway } from './gateways';
+import { GitHubGateway, GitHubOAuthGateway, OpenAiGateway } from './gateways';
 import {
   AuthCodeRepository,
+  FormMessageRepository,
   FormRepository,
   GitHubFileRepository,
   JobRepository,
@@ -14,6 +15,7 @@ import {
 import {
   AuthenticationService,
   FileService,
+  FormMessageService,
   FormService,
   InternalFormService,
   JobService,
@@ -34,7 +36,9 @@ export type Container = {
   mongoClient: MongoClient;
   gitHubGateway: GitHubGateway;
   gitHubOAuthGateway: GitHubOAuthGateway;
+  openAiGateway: OpenAiGateway;
   authCodeRepository: AuthCodeRepository;
+  formMessageRepository: FormMessageRepository;
   formRepository: FormRepository;
   gitHubFileRepository: GitHubFileRepository;
   organizationRepository: OrganizationRepository;
@@ -45,6 +49,7 @@ export type Container = {
   organizationService: OrganizationService;
   internalFormService: InternalFormService;
   formService: FormService;
+  formMessageService: FormMessageService;
   authenticationService: AuthenticationService;
   submissionService: SubmissionService;
   jobService: JobService;
@@ -79,7 +84,9 @@ export async function getContainer(): Promise<Container> {
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
   const gitHubOAuthGateway = new GitHubOAuthGateway();
+  const openAiGateway = new OpenAiGateway();
   const authCodeRepository = new AuthCodeRepository(db);
+  const formMessageRepository = new FormMessageRepository(db);
   const formRepository = new FormRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
   const organizationRepository = new OrganizationRepository(db);
@@ -90,12 +97,18 @@ export async function getContainer(): Promise<Container> {
   const organizationService = new OrganizationService(organizationRepository);
   const internalFormService = new InternalFormService(
     formRepository,
+    formMessageRepository,
     formDefinitionValidator,
   );
   const formService = new FormService(
     gitHubFileRepository,
     gitHubGateway,
     internalFormService,
+  );
+  const formMessageService = new FormMessageService(
+    formMessageRepository,
+    internalFormService,
+    openAiGateway,
   );
   const connectionStrategies: Array<IConnectionStrategy> = [
     new EmailConnectionStrategy(),
@@ -134,6 +147,8 @@ export async function getContainer(): Promise<Container> {
     authenticationService,
     db,
     fileService,
+    formMessageRepository,
+    formMessageService,
     formRepository,
     formService,
     gitHubFileRepository,
@@ -143,6 +158,7 @@ export async function getContainer(): Promise<Container> {
     jobRepository,
     jobService,
     mongoClient,
+    openAiGateway,
     organizationRepository,
     organizationService,
     submissionRepository,

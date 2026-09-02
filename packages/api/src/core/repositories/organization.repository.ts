@@ -18,12 +18,25 @@ export class OrganizationRepository {
     await this.db
       .collection<IOrganization>('organizations')
       .createIndex({ 'members.email': 1 });
+    await this.db.collection<IOrganization>('organizations').createIndex(
+      { personal_for: 1 },
+      {
+        partialFilterExpression: { personal_for: { $type: 'string' } },
+        unique: true,
+      },
+    );
   }
 
   public async find(id: string): Promise<IOrganization | null> {
     return this.db
       .collection<IOrganization>('organizations')
       .findOne({ id }, { projection: { _id: 0 } });
+  }
+
+  public async findPersonal(email: string): Promise<IOrganization | null> {
+    return this.db
+      .collection<IOrganization>('organizations')
+      .findOne({ personal_for: email }, { projection: { _id: 0 } });
   }
 
   public async listByMember(email: string): Promise<Array<IOrganization>> {

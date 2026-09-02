@@ -25,7 +25,7 @@ export const AUTH_TOKEN_POST: RouteOptions<any, any, any, any> = {
       return;
     }
 
-    const { authenticationService } = await getContainer();
+    const { authenticationService, organizationService } = await getContainer();
 
     if (!authenticationService.isConfigured()) {
       reply.status(503).send();
@@ -40,6 +40,8 @@ export const AUTH_TOKEN_POST: RouteOptions<any, any, any, any> = {
 
       return;
     }
+
+    await organizationService.ensurePersonalWorkspace(email);
 
     const expiresIn = authenticationService.accessTokenTtlSeconds();
     const accessToken = await reply.jwtSign(

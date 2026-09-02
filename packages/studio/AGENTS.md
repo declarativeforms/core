@@ -8,9 +8,9 @@ If this file and the code disagree, the code is wrong. Fix the code, then keep
 this file accurate.
 
 Studio is the form management interface: React 19 on Vite 8, a client-rendered
-SPA. It is the newest package in the repo and currently the smallest, with four
-hand-written modules, one type-declaration file and one generated shadcn
-primitive.
+SPA. It holds 68 hand-written modules, one type-declaration file and 15
+generated shadcn primitives: five views, 14 hooks, 13 `lib/` modules and six
+`components/` subtrees.
 
 Its standards are `packages/core`'s, because both are React and because the two
 will share idioms as studio grows. Read
@@ -63,22 +63,24 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-Four hand-written modules, one declaration file, one generated primitive.
+68 hand-written modules, one declaration file, 15 generated primitives.
 
 | Path | Holds |
 | ---- | ----- |
 | `src/main.tsx` | The Vite entry. Mounts `<App>` and imports the stylesheet. Nothing else |
 | `src/app.component.tsx` | Composition root. The studio analogue of core's `app/layout.tsx` |
-| `src/views/` | Page-level views, `*.page.tsx`. Does not exist yet; create it with the first view |
+| `src/views/` | Page-level views, `*.page.tsx`. No barrel; a consumer imports the one view it renders |
+| `src/components/<subtree>/` | Hand-written components, one `index.ts` barrel each: `conversation/`, `feedback/`, `forms/`, `organization/`, `shell/` |
 | `src/components/ui/` | Generated shadcn primitives. See [Generated code](#generated-code) |
-| `src/lib/` | Framework-agnostic helpers. Currently `utils.ts` alone |
+| `src/hooks/` | Hooks shared across views and components, `use-*.ts`. No barrel, so `@/hooks/use-session` is the correct form |
+| `src/lib/` | Framework-agnostic helpers: the api client and paths, wire types, the auth/selection/draft stores, query keys, error copy, preview URLs, time |
 | `src/styles/globals.css` | Tailwind 4 entry and the shadcn design tokens |
 | `src/vite-env.d.ts` | The `vite/client` type reference. One line, no exports |
 
 **Dependency direction, one way only:**
 
 ```
-main  ->  app  ->  views  ->  components  ->  lib
+main  ->  app  ->  views  ->  components  ->  hooks  ->  lib
 ```
 
 - **`main.tsx` bootstraps, it does not implement.** It creates the root, wraps in
@@ -86,16 +88,22 @@ main  ->  app  ->  views  ->  components  ->  lib
   or below.
 - **Nothing imports upward.** A component never imports from `views/` or from
   `app.component.tsx`.
+- **A hook may import `lib/` and other hooks, and nothing else.** It never
+  imports a component, a view or `app.component.tsx`. A hook needed by exactly
+  one component is colocated with that component instead, matching core's
+  `fields/use-upload-blob.ts`.
 - **`src/components/ui/` has an `index.ts` and is imported through it.** A
   primitive added by the shadcn CLI is added to that barrel, or it is unreachable
   by the rule in [Imports](#imports).
 - **`src/lib/` has no barrel and needs none**, matching core. `@/lib/utils` is the
   correct form.
-- **There is no `src/components/index.ts` yet, on purpose.** It would be
-  `export * from './ui';` and nothing else, which is indirection with no payload.
-  Add it when a second `components/` subtree exists.
-- **There is no `src/hooks/` yet.** The `@/hooks` alias in `components.json` is a
-  declaration of intent, not a promise that the directory exists.
+- **`src/components/index.ts` re-exports the six subtree barrels** and nothing
+  else. Consumers import `@/components`; a file inside a subtree imports its
+  siblings directly. Because six barrels are star-exported into one namespace,
+  component names must be globally unique, which is why the sidebar footer is
+  `WorkspaceFooter`-style naming rather than `SheetFooter`'s neighbourhood.
+- **`src/hooks/` has no barrel and needs none**, matching `lib/`. A barrel would
+  make every view pull every hook into its graph.
 
 ## Generated code
 
@@ -272,6 +280,7 @@ props.
 | `*.page.tsx` | A page-level view under `views/` |
 | `use-*.ts` | A hook, named for its export |
 | `*.types.ts` | A shared type-only module |
+| `*-store.ts` | A module-level external store in `lib/`, read through `useSyncExternalStore` |
 | `main.tsx`, `vite-env.d.ts` | Vite conventions. The names are fixed |
 
 **Components are PascalCase and match their filename**: `app.component.tsx`
@@ -296,10 +305,10 @@ a props bag, an options bag or a scalar union, which those two documents exempt
 anyway, so the exemption would swallow the rule.
 
 **Types imported from the engine keep their names**, prefix included:
-`IRenderableField`, `IDeclarativeForm`. Never re-alias them locally. Studio does
-not depend on `@declarativeforms/engine` yet; add the workspace dependency in the
-commit that first imports from it, and remember the engine must be built before
-studio can typecheck against it.
+`IRenderableField`, `IDeclarativeForm`. Never re-alias them locally. **Studio
+deliberately does not depend on `@declarativeforms/engine`**, and should not
+start: see [Known inconsistencies](#known-inconsistencies). Wire shapes are
+mirrored as `Api*` types in `src/lib/api.types.ts` instead.
 
 **Types live beside the code that uses them.** Colocate in the component file when
 only that file needs it. Promote to a `*.types.ts` module when several files share
@@ -457,6 +466,15 @@ trailing period, a colon before an interpolated value:
 throw new Error(`Form not found: ${response.status}`);
 ```
 
+**`api-client.ts` decorates a plain `Error` rather than subclassing it.** A
+failed request needs a status, an error slug and a field-error map so the UI can
+choose copy and offer Retry, and `ApiFailure` is `Error & {...}` built with
+`Object.assign`, narrowed by the `isApiFailure` type predicate. That keeps "no
+custom error classes" literally true and copies the idiom
+`packages/api/src/server.ts` already uses for its rate-limit error. A
+`status` of `0` means the request never got an answer, which is the checkable
+"we do not know whether the server committed anything" case.
+
 **`console.error` and `console.warn` are permitted inside a `catch` that
 recovers**, matching core and api. Do not add a logging library, and do not log
 outside a `catch`.
@@ -555,8 +573,57 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
 - **`src/vite-env.d.ts` is committed, unlike core's `next-env.d.ts`**, which the
   root `.gitignore` excludes because Next regenerates it. Nothing regenerates
   studio's.
-- **`src/views/`, `src/hooks/` and `src/components/index.ts` do not exist.** See
-  [Layout](#layout). Their absence is deliberate, not an omission.
+- **`src/views/` has no `index.ts`.** Core records its own views barrel as
+  "imported by nothing", so repeating that indirection here would be a knowing
+  mistake. `app.component.tsx` imports the views it renders.
+- **`@tanstack/react-query` is pinned to core's `^5.102.2` on purpose.** Two
+  majors of it in one lockfile would be the same anti-parity this document
+  already records for ESLint. Move both packages together.
+- **`react-router` covers two routes and nothing more**: `/` and
+  `/forms/:formId`, with the branch in `?branch=`. `main` is never written to
+  the query string, so a main-branch URL stays clean.
+- **Shared client state lives in `lib/*-store.ts` modules read through
+  `useSyncExternalStore`, not React context.** The only provider in the tree is
+  `QueryClientProvider`. The reason is load-bearing: `api-client.ts` must read
+  and clear the bearer token as a plain function call with no React tree above
+  it, which is what makes one central `401` path possible.
+- **Studio does not depend on `@declarativeforms/engine`, and the read-only YAML
+  comes from the API.** The engine's barrel reaches `handlebars`, whose Node
+  entry registers `require.extensions`; that is why `packages/core` sets
+  `serverExternalPackages: ['handlebars']`, and a browser bundle has no
+  equivalent escape hatch. `GET .../branches/:branch/yaml` returns the text the
+  server already persists, which also removes the Dockerfile and build-order
+  changes a workspace dependency would need.
+- **`shadcn add sidebar` and `shadcn add sonner` are both deliberately
+  rejected.** `sidebar` writes a generated `src/hooks/use-mobile.ts`, putting
+  CLI-owned code into a hand-written directory and breaking the
+  `components/ui/` boundary this document rests on; the mobile drawer is `sheet`
+  plus Tailwind breakpoints. `sonner` imports `useTheme` from `next-themes`,
+  which cannot be removed without hand-editing generated output, so it would
+  cost a second npm dependency in a non-Next SPA for one copy confirmation.
+  Confirmations are inline instead, where a Retry can actually live.
+- **No markdown renderer and no `dangerouslySetInnerHTML` anywhere.** Assistant
+  prose is an escaped text node with `whitespace-pre-wrap`. Model and API text
+  is untrusted, and this is the only reading of that rule which cannot go wrong.
+- **Responsive layout is Tailwind breakpoints only.** There is no
+  `useMediaQuery`, so both the desktop rail and the mobile `Sheet` render and CSS
+  picks, and there is no first-paint jump.
+- **`docker/nginx.conf` is now `docker/default.conf.template`**, expanded by
+  envsubst at container start from `/etc/nginx/templates/`. Two consequences:
+  `API_INTERNAL_ORIGIN` must always be set or `proxy_pass` expands empty and
+  nginx refuses to start (the `Dockerfile` sets a default and `compose.yaml`
+  passes one), and no studio environment variable may ever be named `uri`,
+  `host`, `scheme` or `request_uri`, because envsubst would eat the nginx
+  variables of the same name.
+- **The `/api/` block uses a variable upstream plus `resolver 127.0.0.11`.** A
+  literal host in `proxy_pass` is resolved once at startup and cached forever,
+  so the `updater` service recreating the api container would leave studio
+  holding a dead address. The cost is that `127.0.0.11` only answers on a
+  user-defined Docker network: under Compose that is always true, but a bare
+  `docker run` on the default bridge will `502`. A variable upstream also stops
+  nginx forwarding the URI implicitly, hence the explicit `$request_uri`, which
+  is the raw client URI and therefore keeps opaque cursors and encoded branch
+  names byte-for-byte.
 - **Studio is absent from the root `test` script**, which runs api only. See
   [Tests](#tests).
 
@@ -579,6 +646,19 @@ it. The Vite build succeeding on macOS proves nothing about Alpine:
 
 ```bash
 docker build -f packages/studio/Dockerfile -t studio-check .
+```
+
+**The `Dockerfile` uses `COPY --chmod`, so it needs BuildKit** (`buildx`). CI has
+it; a local daemon without buildx cannot build this image.
+
+**If you changed `docker/default.conf.template`, prove envsubst still produces a
+valid config**, because a template error surfaces only at container start:
+
+```bash
+docker run --rm -e API_INTERNAL_ORIGIN=http://api:8080 \
+  -v "$PWD/packages/studio/docker/default.conf.template:/etc/nginx/templates/default.conf.template:ro" \
+  --entrypoint sh nginxinc/nginx-unprivileged:1.27-alpine \
+  -c '/docker-entrypoint.sh nginx -t'
 ```
 
 Then check the diff by hand:

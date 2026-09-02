@@ -49,12 +49,13 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-Six folders under `src`, plus two root files. Treat this as a naming and import
+Seven folders under `src`, plus two root files. Treat this as a naming and import
 map:
 
 | Path            | Holds                                                    |
 | --------------- | -------------------------------------------------------- |
 | `parse/`        | YAML text to the authored form shape                     |
+| `serialize/`    | the authored form shape back to YAML text                |
 | `resolve/`      | localization of authored text                            |
 | `compile/`      | applying answers, plus the expression and template DSLs  |
 | `render/`       | projecting a compiled form into a view                   |
@@ -64,11 +65,13 @@ map:
 | `json-schema.ts` | the published JSON Schema, at the root and unfoldered   |
 
 **Barrels.** `compile/`, `resolve/`, `render/`, `validate/`, `types/`,
-`types/schema/` and `types/render/` each have an `index.ts`. Two deliberate
-exceptions, neither of which is an oversight to correct:
+`types/schema/` and `types/render/` each have an `index.ts`. Three deliberate
+exceptions, none of which is an oversight to correct:
 
 - **`parse/index.ts` is the implementation of `parse()`**, not a barrel. It is
   the only file in its folder.
+- **`serialize/index.ts` is the implementation of `serialize()`**, for the same
+  reason and in the same shape as `parse/`.
 - **`json-schema.ts` sits at the root** rather than in a folder of its own.
 
 `index.ts` is the only file that may name the whole public surface. Everything a

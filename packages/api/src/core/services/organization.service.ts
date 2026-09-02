@@ -8,6 +8,7 @@ import type {
 } from '../types';
 
 const ORGANIZATION_ID_PREFIX = 'o';
+const PERSONAL_WORKSPACE_NAME = 'Personal workspace';
 const SLUG_ATTEMPTS = 5;
 
 export class OrganizationService {
@@ -25,7 +26,11 @@ export class OrganizationService {
     return this.organizationRepository.listByMember(email);
   }
 
-  public async create(name: string, email: string): Promise<IOrganization> {
+  public async create(
+    name: string,
+    email: string,
+    personalFor: string | null,
+  ): Promise<IOrganization> {
     const now = new Date();
 
     for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt += 1) {
@@ -36,6 +41,7 @@ export class OrganizationService {
         id: `${ORGANIZATION_ID_PREFIX}${randomBytes(6).toString('hex')}`,
         members: [{ email, role: 'admin' }],
         name,
+        personal_for: personalFor,
         slug: this.buildSlug(name, attempt),
         updated_at: now,
       };
@@ -45,13 +51,37 @@ export class OrganizationService {
 
         return organization;
       } catch (error: any) {
-        if (error?.code !== 11000 || attempt === SLUG_ATTEMPTS - 1) {
+        if (
+          error?.code !== 11000 ||
+          error?.keyPattern?.personal_for ||
+          attempt === SLUG_ATTEMPTS - 1
+        ) {
           throw error;
         }
       }
     }
 
     throw new Error('Could not allocate an organization slug');
+  }
+
+  public async ensurePersonalWorkspace(
+    email: string,
+  ): Promise<IOrganization | null> {
+    const existing = await this.organizationRepository.listByMember(email);
+
+    if (existing.length > 0) {
+      return null;
+    }
+
+    try {
+      return await this.create(PERSONAL_WORKSPACE_NAME, email, email);
+    } catch (error: any) {
+      if (error?.code !== 11000 || !error?.keyPattern?.personal_for) {
+        throw error;
+      }
+
+      return this.organizationRepository.findPersonal(email);
+    }
   }
 
   public async addMember(

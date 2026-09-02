@@ -1,10 +1,15 @@
-import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
+import {
+  parse,
+  resolveLocalizedText,
+  type IDeclarativeForm,
+} from '@declarativeforms/engine';
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import { randomBytes } from 'node:crypto';
 import { HttpError } from '../errors';
-import type { FormRepository } from '../repositories';
+import type { FormMessageRepository, FormRepository } from '../repositories';
 import {
   INTERNAL_FORM_METADATA_KEYS,
+  type IFormMessage,
   type IInternalForm,
   type IInternalFormSummary,
   type IOrganization,
@@ -14,15 +19,19 @@ const INTERNAL_FORM_PREFIX = process.env.INTERNAL_FORM_PREFIX || 'i';
 const DEFAULT_BRANCH = 'main';
 const BRANCH_PATTERN = /^[a-z0-9][a-z0-9_-]{0,62}$/;
 const DEFAULT_MAX_DEFINITION_BYTES = 262144;
+const UNTITLED_FORM_NAME = 'Untitled form';
+const FORK_COPY_LIMIT = 2000;
 
 export class InternalFormService {
   constructor(
     private formRepository: FormRepository,
+    private formMessageRepository: FormMessageRepository,
     private validator: ValidateFunction,
   ) {}
 
   public async ensureIndexes(): Promise<void> {
     await this.formRepository.ensureIndexes();
+    await this.formRepository.backfillNames();
   }
 
   public isInternalId(id: string): boolean {
@@ -53,14 +62,7 @@ export class InternalFormService {
     const summaries: Array<IInternalFormSummary> = [];
 
     for (const form of forms) {
-      summaries.push({
-        branches: await this.formRepository.findBranchNames(form.form_id),
-        form_id: form.form_id,
-        organization_id: form.organization_id,
-        revision: form.revision,
-        title: form.title,
-        updated_at: form.updated_at,
-      });
+      summaries.push(await this.toSummary(form));
     }
 
     return summaries;
@@ -70,6 +72,7 @@ export class InternalFormService {
     organization: IOrganization,
     email: string,
     body: unknown,
+    name: string | null,
   ): Promise<IInternalForm> {
     const definition = this.readDefinition(body, organization);
     const now = new Date();
@@ -81,6 +84,7 @@ export class InternalFormService {
       created_by: email,
       deleted_at: null,
       form_id: `${INTERNAL_FORM_PREFIX}${randomBytes(6).toString('hex')}`,
+      name,
       organization_id: organization.id,
       revision: 1,
       updated_at: now,
@@ -112,7 +116,7 @@ export class InternalFormService {
       throw this.revisionConflict(existing.revision);
     }
 
-    const form = this.carryMetadata(existing, definition, email);
+    const form = this.carryMetadata(existing, definition, email, existing.name);
     const replaced = await this.formRepository.replace(form, existing.revision);
 
     if (!replaced) {
@@ -137,6 +141,29 @@ export class InternalFormService {
     await this.formRepository.softDelete(id, new Date());
 
     return existing;
+  }
+
+  public async rename(
+    organization: IOrganization,
+    email: string,
+    id: string,
+    name: string,
+  ): Promise<IInternalFormSummary | null> {
+    const existing = await this.formRepository.findAnyBranch(id);
+
+    if (!existing || existing.organization_id !== organization.id) {
+      return null;
+    }
+
+    await this.formRepository.rename(id, name, email, new Date());
+
+    const renamed = await this.formRepository.findBranch(id, DEFAULT_BRANCH);
+
+    if (!renamed) {
+      return null;
+    }
+
+    return this.toSummary(renamed);
   }
 
   public async findBranchNames(
@@ -189,6 +216,7 @@ export class InternalFormService {
       created_by: email,
       deleted_at: null,
       form_id: source.form_id,
+      name: source.name,
       organization_id: source.organization_id,
       revision: 1,
       updated_at: now,
@@ -204,6 +232,8 @@ export class InternalFormService {
 
       throw error;
     }
+
+    await this.copyConversation(organization, id, from, name);
 
     return form;
   }
@@ -224,6 +254,7 @@ export class InternalFormService {
     }
 
     await this.formRepository.delete(id, name);
+    await this.formMessageRepository.delete(id, name);
 
     return existing;
   }
@@ -247,18 +278,200 @@ export class InternalFormService {
       return null;
     }
 
-    const form = this.carryMetadata(to, this.toDefinition(from), email);
+    const form = this.carryMetadata(
+      to,
+      this.toDefinition(from),
+      email,
+      to.name,
+    );
     const replaced = await this.formRepository.replace(form, to.revision);
 
     if (!replaced) {
       throw this.revisionConflict(to.revision);
     }
 
+    await this.importConversation(
+      organization,
+      id,
+      source,
+      target,
+      email,
+      form.revision,
+    );
+
     if (deleteSource) {
       await this.formRepository.delete(id, source);
+      await this.formMessageRepository.delete(id, source);
     }
 
     return form;
+  }
+
+  public async applyGenerated(
+    organization: IOrganization,
+    email: string,
+    id: string,
+    branch: string,
+    definition: IDeclarativeForm,
+    name: string | null,
+  ): Promise<IInternalForm | null> {
+    const fresh = await this.findOwnedBranch(organization, id, branch);
+
+    if (!fresh) {
+      return null;
+    }
+
+    const form = this.carryMetadata(
+      fresh,
+      definition,
+      email,
+      name ?? fresh.name,
+    );
+    const replaced = await this.formRepository.replace(form, null);
+
+    if (!replaced) {
+      return null;
+    }
+
+    return form;
+  }
+
+  public async toSummary(form: IInternalForm): Promise<IInternalFormSummary> {
+    return {
+      branches: await this.formRepository.findBranchNames(form.form_id),
+      form_id: form.form_id,
+      name: this.resolveName(form),
+      organization_id: form.organization_id,
+      revision: form.revision,
+      title: form.title,
+      updated_at: form.updated_at,
+    };
+  }
+
+  public toDefinition(form: IInternalForm): IDeclarativeForm {
+    const copy: Record<string, unknown> = { ...form };
+
+    for (const key of INTERNAL_FORM_METADATA_KEYS) {
+      delete copy[key];
+    }
+
+    return copy as IDeclarativeForm;
+  }
+
+  public readDefinition(
+    body: unknown,
+    organization: IOrganization,
+  ): IDeclarativeForm {
+    const definition = this.validate(this.parseBody(body));
+
+    this.assertConnectionPolicy(definition, organization);
+
+    return definition;
+  }
+
+  private async copyConversation(
+    organization: IOrganization,
+    id: string,
+    from: string,
+    to: string,
+  ): Promise<void> {
+    await this.formMessageRepository.delete(id, to);
+
+    const source = await this.formMessageRepository.listByBranch(
+      id,
+      organization.id,
+      from,
+      null,
+      FORK_COPY_LIMIT,
+    );
+
+    if (source.length === 0) {
+      return;
+    }
+
+    source.reverse();
+
+    const first = await this.formMessageRepository.allocateSequences(
+      id,
+      to,
+      source.length,
+    );
+
+    const copies: Array<IFormMessage> = [];
+
+    for (const [index, message] of source.entries()) {
+      copies.push({
+        ...message,
+        branch: to,
+        id: this.buildMessageId(),
+        origin_branch: from,
+        origin_message_id: message.id,
+        sequence: first + index,
+      });
+    }
+
+    await this.formMessageRepository.insertMany(copies);
+  }
+
+  private async importConversation(
+    organization: IOrganization,
+    id: string,
+    source: string,
+    target: string,
+    email: string,
+    revision: number,
+  ): Promise<void> {
+    const imported = await this.formMessageRepository.findOriginIds(id, target);
+    const candidates = await this.formMessageRepository.listAuthoredByBranch(
+      id,
+      source,
+      FORK_COPY_LIMIT,
+    );
+    const pending = candidates.filter(
+      (message) => !imported.includes(message.id),
+    );
+
+    const first = await this.formMessageRepository.allocateSequences(
+      id,
+      target,
+      1 + pending.length,
+    );
+    const now = new Date();
+    const marker: IFormMessage = {
+      branch: target,
+      content: `Published ${source} into ${target}`,
+      created_at: now,
+      created_by: email,
+      form_id: id,
+      generation_id: null,
+      id: this.buildMessageId(),
+      organization_id: organization.id,
+      origin_branch: source,
+      origin_message_id: null,
+      role: 'system',
+      schema_revision: revision,
+      sequence: first,
+      status: 'complete',
+    };
+
+    const messages: Array<IFormMessage> = [marker];
+
+    for (const [index, message] of pending.entries()) {
+      messages.push({
+        ...message,
+        branch: target,
+        id: this.buildMessageId(),
+        origin_branch: source,
+        origin_message_id: message.id,
+        sequence: first + 1 + index,
+      });
+    }
+
+    await this.formMessageRepository.insertMany(messages);
+  }
+
+  private buildMessageId(): string {
+    return randomBytes(16).toString('hex');
   }
 
   private async findOwnedBranch(
@@ -279,6 +492,10 @@ export class InternalFormService {
       : null;
   }
 
+  private resolveName(form: IInternalForm): string {
+    return form.name || resolveLocalizedText(form.title) || UNTITLED_FORM_NAME;
+  }
+
   private revisionConflict(revision: number): HttpError {
     return new HttpError(409, 'revision_conflict', {
       error: 'revision_conflict',
@@ -290,6 +507,7 @@ export class InternalFormService {
     existing: IInternalForm,
     definition: IDeclarativeForm,
     email: string,
+    name: string | null,
   ): IInternalForm {
     return {
       ...definition,
@@ -298,32 +516,12 @@ export class InternalFormService {
       created_by: existing.created_by,
       deleted_at: null,
       form_id: existing.form_id,
+      name,
       organization_id: existing.organization_id,
       revision: existing.revision + 1,
       updated_at: new Date(),
       updated_by: email,
     };
-  }
-
-  private toDefinition(form: IInternalForm): IDeclarativeForm {
-    const copy: Record<string, unknown> = { ...form };
-
-    for (const key of INTERNAL_FORM_METADATA_KEYS) {
-      delete copy[key];
-    }
-
-    return copy as IDeclarativeForm;
-  }
-
-  private readDefinition(
-    body: unknown,
-    organization: IOrganization,
-  ): IDeclarativeForm {
-    const definition = this.validate(this.parseBody(body));
-
-    this.assertConnectionPolicy(definition, organization);
-
-    return definition;
   }
 
   private parseBody(body: unknown): Record<string, unknown> {

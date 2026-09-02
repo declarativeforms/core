@@ -36,7 +36,7 @@ export const ORGANIZATIONS_POST: RouteOptions<any, any, any, any> = {
 
     const { organizationService } = await getContainer();
 
-    reply.status(200).send(await organizationService.create(name, email));
+    reply.status(200).send(await organizationService.create(name, email, null));
   },
   method: 'POST',
   preHandler: authenticate,

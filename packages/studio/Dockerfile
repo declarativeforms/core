@@ -18,7 +18,10 @@ RUN npm run build --workspace=@declarativeforms/studio
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS studio
 
-COPY --chown=nginx:nginx --chmod=0644 packages/studio/docker/nginx.conf /etc/nginx/conf.d/default.conf
+ENV API_INTERNAL_ORIGIN=http://api:8080
+
+COPY --chown=nginx:nginx --chmod=0644 packages/studio/docker/default.conf.template \
+     /etc/nginx/templates/default.conf.template
 COPY --chown=nginx:nginx --from=build /app/packages/studio/dist /usr/share/nginx/html
 
 USER root

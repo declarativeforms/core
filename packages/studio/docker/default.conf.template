@@ -1,0 +1,55 @@
+server {
+    listen 8080;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Docker's embedded DNS, re-resolved every 10s. A literal host in
+    # `proxy_pass` is resolved once at startup and cached forever, so
+    # recreating the api container would leave a stale address behind.
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    set $api_origin "${API_INTERNAL_ORIGIN}";
+
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 "OK!\n";
+    }
+
+    location /api/ {
+        # A variable upstream stops nginx passing the URI implicitly, so
+        # $request_uri is appended by hand. That is also the raw client URI,
+        # which keeps opaque cursors and encoded branch names byte-for-byte.
+        proxy_pass $api_origin$request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 180s;
+        # Form generation blocks for up to OPENAI_TIMEOUT_MS (90s by default).
+        # The 60s default here would sever it at the moment it succeeds.
+        proxy_read_timeout 180s;
+        proxy_buffering off;
+        client_max_body_size 1m;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # try_files below performs an internal redirect that re-enters location
+    # matching, so this covers the SPA fallback too. Without it a deploy
+    # leaves cached HTML pointing at asset hashes that no longer exist.
+    location = /index.html {
+        add_header Cache-Control "no-store";
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
