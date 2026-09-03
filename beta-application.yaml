@@ -4,18 +4,18 @@ locale: "en"
 
 title: "Apply for the Declarative Forms pilot"
 description: >-
-  We are building a new way to create and manage online forms. Tell us how you
-  work today and what you are trying to accomplish. The full application takes
-  about 6–8 minutes. We will review it within one week. Selected applicants will
-  be invited to a limited paid pilot for low-risk, real-world projects; scope and
-  pricing will be discussed before you decide whether to participate.
+  We are building a new way to create and manage online forms. Tell us briefly
+  how you work today and what you need next. This application takes about three
+  minutes. We review every response within one week. Selected applicants will
+  be invited to a limited paid pilot, with scope and pricing discussed before
+  they decide whether to participate.
 
 theme:
   primary: "#542EBC"
 
 sections:
   - id: contact
-    title: "First, how can we reach you?"
+    title: "How can we reach you?"
     fields:
       - id: utm_source
         type: hidden
@@ -32,10 +32,6 @@ sections:
         placeholder: "Jane Smith"
         validators:
           - required
-          - type: min_length
-            value: 2
-          - type: max_length
-            value: 100
 
       - id: email
         type: email
@@ -47,39 +43,30 @@ sections:
             regex: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
             message: "Enter a valid email address."
 
-      - id: organization_name
+      - id: organization_or_profile
         type: short_text
-        label: "Organization or project name"
+        label: "Organization, product, or profile link"
         placeholder: "Optional"
         validators:
           - type: max_length
-            value: 120
+            value: 200
 
-      - id: profile_url
-        type: url
-        label: "LinkedIn profile, company site, or portfolio"
-        placeholder: "https://example.com (optional)"
+    next: experience
 
-    next: screening
-
-  - id: screening
-    title: "Your recent experience"
+  - id: experience
+    title: "How do forms fit into your work?"
     fields:
       - id: recent_form_involvement
         type: single_select
         label: >-
           In the past three months, which best describes your closest
-          involvement with an online form used to collect information?
+          involvement with an online form?
         options:
-          - label: >-
-              I was responsible for its outcome and helped create, publish, or
-              maintain it
+          - label: "I created, published, or maintained one"
             value: "owner"
-          - label: >-
-              I contributed requirements, reviewed it, or analyzed its results,
-              but someone else was responsible for it
+          - label: "I helped plan, review, or analyze one"
             value: "contributor"
-          - label: "I completed forms as a respondent"
+          - label: "I only completed forms as a respondent"
             value: "respondent"
           - label: "I researched form tools but did not work on a form"
             value: "explorer"
@@ -88,252 +75,48 @@ sections:
         validators:
           - required
 
-    next:
-      - when: "data.recent_form_involvement === 'owner'"
-        go: profile
-      - else: waitlist
-
-  - id: waitlist
-    title: "What brought you here?"
-    fields:
-      - id: interest_trigger
-        type: long_text
-        label: >-
-          What caught your attention about a new form product, or what would you
-          hope it could help you do?
-        placeholder: "A short, specific answer is helpful."
-        validators:
-          - required
-          - type: min_length
-            value: 20
-            message: "Please tell us a little more."
-          - type: max_length
-            value: 500
-
-      - id: future_form_timing
-        type: single_select
-        label: "When might you next be responsible for an online form?"
-        options:
-          - label: "Within the next 30 days"
-            value: "within_30_days"
-          - label: "In 1–3 months"
-            value: "one_to_three_months"
-          - label: "In 4–12 months"
-            value: "four_to_twelve_months"
-          - label: "I do not have a current plan"
-            value: "no_current_plan"
-        validators:
-          - required
-
-    next: done
-
-  - id: profile
-    title: "Your role and context"
-    fields:
-      - id: primary_role
-        type: single_select
-        label: "Which area best describes your primary role?"
-        allow_other: true
-        options:
-          - label: "Founder or business owner"
-            value: "founder_owner"
-          - label: "Product, design, or user research"
-            value: "product_design_research"
-          - label: "Engineering or technical operations"
-            value: "engineering_technical"
-          - label: "Marketing, growth, or sales"
-            value: "marketing_growth_sales"
-          - label: "Operations, administration, or customer support"
-            value: "operations_admin_support"
-          - label: "Education, community, or nonprofit work"
-            value: "education_community_nonprofit"
-        validators:
-          - required
-
-      - id: organization_type
-        type: single_select
-        label: "What kind of setting do you mainly work in?"
-        allow_other: true
-        options:
-          - label: "My own project or independent work"
-            value: "independent"
-          - label: "Startup"
-            value: "startup"
-          - label: "Small or medium-sized business"
-            value: "small_medium_business"
-          - label: "Large company"
-            value: "large_company"
-          - label: "Agency or consultancy"
-            value: "agency_consultancy"
-          - label: "Education, nonprofit, or public sector"
-            value: "education_nonprofit_public"
-        validators:
-          - required
-
-      - id: organization_size
-        type: dropdown
-        label: "Approximately how many people work in that organization?"
-        options:
-          - label: "Just me"
-            value: "one"
-          - label: "2–10"
-            value: "2_to_10"
-          - label: "11–50"
-            value: "11_to_50"
-          - label: "51–200"
-            value: "51_to_200"
-          - label: "201–1,000"
-            value: "201_to_1000"
-          - label: "More than 1,000"
-            value: "more_than_1000"
-
-      - id: form_responsibilities
+      - id: current_workflow
         type: multiple_select
-        label: "What were you personally responsible for?"
+        label: "What do you currently use to create or manage forms?"
         allow_other: true
         options:
-          - label: "Defining the questions or structure"
-            value: "questions_structure"
-          - label: "Building and publishing the form"
-            value: "build_publish"
-          - label: "Branding or user experience"
-            value: "branding_experience"
-          - label: "Reviewing or approving changes"
-            value: "review_approval"
-          - label: "Integrations or automation"
-            value: "integrations_automation"
-          - label: "Analyzing responses"
-            value: "response_analysis"
-          - label: "Data handling, privacy, or security"
-            value: "data_privacy_security"
-          - label: "Choosing or paying for the tool"
-            value: "tool_purchase"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one responsibility."
-
-    next: recent_work
-
-  - id: recent_work
-    title: "Your most recent form"
-    fields:
-      - id: recent_form_count
-        type: single_select
-        label: >-
-          In the past three months, how many forms have you personally created
-          or substantially updated?
-        options:
-          - label: "1"
-            value: "one"
-          - label: "2–3"
-            value: "two_to_three"
-          - label: "4–10"
-            value: "four_to_ten"
-          - label: "More than 10"
-            value: "more_than_ten"
-        validators:
-          - required
-
-      - id: last_form_story
-        type: long_text
-        label: >-
-          Think about the most recent form you were responsible for. What was it
-          for, who used it, and what happened with the responses?
-        placeholder: "Describe the real situation rather than an ideal process."
-        validators:
-          - required
-          - type: min_length
-            value: 40
-            message: "Please share enough detail for us to understand the situation."
-          - type: max_length
-            value: 1000
-
-      - id: current_tools
-        type: multiple_select
-        label: "Which tools were part of that process?"
-        allow_other: true
-        options:
-          - "Google Forms"
-          - "Microsoft Forms"
-          - "Typeform"
-          - "Tally"
-          - "Jotform"
-          - "Youform"
-          - "Airtable"
-          - label: "A custom or internal form"
-            value: "custom_internal"
-          - label: "Documents or spreadsheets"
-            value: "documents_spreadsheets"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one tool."
-
-      - id: build_methods
-        type: multiple_select
-        label: "How was the form created?"
-        allow_other: true
-        options:
-          - label: "Built in a visual form editor"
-            value: "visual_editor"
-          - label: "Copied and adapted from an earlier form"
-            value: "copied_existing"
-          - label: "Created with help from an AI assistant"
-            value: "ai_assistant"
-          - label: "Defined in code or configuration"
+          - label: "Google Forms or Microsoft Forms"
+            value: "google_microsoft"
+          - label: "Typeform, Tally, Jotform, or Youform"
+            value: "form_builder"
+          - label: "Airtable, spreadsheets, or no-code tools"
+            value: "no_code"
+          - label: "AI assistants"
+            value: "ai_assistants"
+          - label: "Code, configuration files, or custom software"
             value: "code_configuration"
-          - label: "Built as part of custom software"
-            value: "custom_software"
-          - label: "Someone else implemented my requirements"
-            value: "handoff"
+          - label: "Git repositories or pull requests"
+            value: "git_workflow"
+          - label: "I do not currently manage forms"
+            value: "no_current_workflow"
         validators:
           - type: min
             value: 1
-            message: "Select at least one method."
+            message: "Select at least one option."
 
-      - id: change_process
-        type: single_select
-        label: "How were changes usually made and reviewed?"
-        allow_other: true
-        options:
-          - label: "I edited and published changes directly"
-            value: "direct_edit"
-          - label: "We discussed changes in comments, messages, or documents"
-            value: "informal_review"
-          - label: "Changes were handed to another person or team"
-            value: "team_handoff"
-          - label: "Changes went through a formal approval process"
-            value: "formal_approval"
-          - label: "Changes were reviewed through version control"
-            value: "version_control"
-          - label: "The form did not change after publication"
-            value: "no_changes"
-        validators:
-          - required
-
-      - id: workflow_friction
+      - id: recent_form_story
         type: long_text
         label: >-
-          What was the hardest or most time-consuming part of that work, and
-          what did you do about it?
-        placeholder: "Tell us what actually happened, including any workaround."
+          Think about the most recent form you worked on. What was it for, and
+          what was the hardest or most time-consuming part?
+        placeholder: "A short, concrete example is enough."
         validators:
-          - required
-          - type: min_length
-            value: 40
-            message: "Please describe the difficulty and how you handled it."
           - type: max_length
-            value: 1000
+            value: 750
 
-    next: upcoming_fit
+    next: fit
 
-  - id: upcoming_fit
-    title: "What comes next?"
+  - id: fit
+    title: "What would make this useful now?"
     fields:
       - id: next_form_timing
         type: single_select
-        label: "When do you expect to next create or substantially update a form?"
+        label: "When might you next create or substantially update a form?"
         options:
           - label: "I am working on one now"
             value: "active_now"
@@ -350,10 +133,8 @@ sections:
 
       - id: next_form_story
         type: long_text
-        label: >-
-          What does that project need to accomplish, who will be involved, and
-          why is it happening now?
-        placeholder: "Describe the real project and its timing."
+        label: "What would you use it for?"
+        placeholder: "Briefly describe the project, audience, or outcome."
         visible_when: >-
           data.next_form_timing === 'active_now' ||
           data.next_form_timing === 'within_30_days' ||
@@ -361,33 +142,14 @@ sections:
         validators:
           - required
           - type: min_length
-            value: 40
-            message: "Please share enough detail for us to understand the project."
+            value: 20
+            message: "Please tell us a little about the project."
           - type: max_length
-            value: 1000
-
-      - id: data_sensitivity
-        type: single_select
-        label: "What kind of information would that form collect?"
-        options:
-          - label: "Test or synthetic information"
-            value: "test_data"
-          - label: "Low-risk business or community information"
-            value: "low_risk"
-          - label: "Names, contact details, or other personal information"
-            value: "personal_information"
-          - label: "Confidential business information"
-            value: "confidential_business"
-          - label: "Regulated or highly sensitive information"
-            value: "regulated_sensitive"
-          - label: "I am not sure yet"
-            value: "unsure"
-        validators:
-          - required
+            value: 750
 
       - id: purchase_role
         type: single_select
-        label: "How is a new tool like this normally approved or purchased?"
+        label: "How would a new tool like this normally be approved?"
         options:
           - label: "I can make and fund the decision"
             value: "decision_and_budget"
@@ -402,62 +164,34 @@ sections:
         validators:
           - required
 
-    next: working_style
-
-  - id: working_style
-    title: "How you work"
-    fields:
-      - id: workflow_habits
-        type: multiple_select
-        label: "Which of these are regular parts of your work?"
-        allow_other: true
-        options:
-          - label: "Visual software or form builders"
-            value: "visual_builders"
-          - label: "Spreadsheets or no-code tools"
-            value: "spreadsheets_no_code"
-          - label: "AI assistants"
-            value: "ai_assistants"
-          - label: "Code editors or command-line tools"
-            value: "code_cli"
-          - label: "Git repositories, branches, or pull requests"
-            value: "git_review"
-          - label: "APIs, webhooks, or workflow automation"
-            value: "apis_automation"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-      - id: feedback_example
-        type: long_text
-        label: >-
-          Tell us about a recent time you noticed a problem in a tool or process.
-          What did you do next?
-        placeholder: "A small, concrete example is enough."
-        validators:
-          - required
-          - type: min_length
-            value: 40
-            message: "Please describe what you noticed and what you did."
-          - type: max_length
-            value: 1000
-
       - id: feedback_formats
         type: multiple_select
-        label: "If we ask for feedback, which formats would be workable for you?"
-        allow_other: true
+        label: "If selected, how could you share feedback?"
         options:
           - label: "Short written feedback"
             value: "written"
-          - label: "A brief video or voice recording"
+          - label: "A brief recording"
             value: "recording"
           - label: "A short call"
             value: "call"
           - label: "Anonymous product-usage analytics"
             value: "usage_analytics"
-          - label: "None of these right now"
+          - label: "I could use it, but not provide feedback right now"
             value: "none"
+
+      - id: product_updates
+        type: single_select
+        label: >-
+          May Declarative Forms email you occasional launch and product updates?
+          This is separate from messages about this application, and you can
+          unsubscribe at any time.
+        options:
+          - label: "Yes, send me product updates"
+            value: "yes"
+          - label: "No, application messages only"
+            value: "no"
+        validators:
+          - required
 
     next: done
 
@@ -465,6 +199,5 @@ completion:
   title: "Thanks, {{data.full_name}}"
   message: >-
     We received your application and will review it within one week. We will
-    contact selected applicants to discuss the scope and pricing of the paid
-    pilot before they decide whether to participate. If this cohort is not the
-    right fit, we will keep your application on the waitlist.
+    contact selected applicants to discuss the paid pilot. If this cohort is not
+    the right fit, we will keep your application on the waitlist.
