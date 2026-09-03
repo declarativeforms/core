@@ -7,6 +7,7 @@ import { randomBytes } from 'node:crypto';
 import * as qs from 'qs';
 import { getContainer, HttpError } from './core';
 import {
+  AUTH_DEMO_POST,
   AUTH_ME_GET,
   AUTH_PROVIDER_AUTHORIZE_GET,
   AUTH_PROVIDER_CALLBACK_GET,
@@ -153,6 +154,7 @@ export async function startServer() {
   await organizationService.ensureIndexes();
   await submissionService.ensureIndexes();
 
+  server.route(AUTH_DEMO_POST);
   server.route(AUTH_ME_GET);
   server.route(AUTH_PROVIDER_AUTHORIZE_GET);
   server.route(AUTH_PROVIDER_CALLBACK_GET);

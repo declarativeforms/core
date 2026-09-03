@@ -5,6 +5,7 @@ import type { ApiAccessToken } from '@/lib/api.types';
 const AUTH_CODE_KEY = 'auth_code';
 
 let pendingExchange: Promise<ApiAccessToken> | null = null;
+let pendingDemoExchange: Promise<ApiAccessToken> | null = null;
 
 export function buildRedirectUri(): string {
   return `${window.location.origin}/`;
@@ -26,6 +27,21 @@ export function stripAuthCode(): void {
 
 export function startGithubAuthorization(): void {
   window.location.assign(`/api/v1/${authorizePath(buildRedirectUri())}`);
+}
+
+export function exchangeDemoSession(): Promise<ApiAccessToken> {
+  if (pendingDemoExchange) {
+    return pendingDemoExchange;
+  }
+
+  pendingDemoExchange = apiPublicRequest<ApiAccessToken>({
+    method: 'POST',
+    path: 'auth/demo',
+  }).finally(() => {
+    pendingDemoExchange = null;
+  });
+
+  return pendingDemoExchange;
 }
 
 export function exchangeAuthCode(authCode: string): Promise<ApiAccessToken> {

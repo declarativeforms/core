@@ -1,3 +1,4 @@
+export * from './auth-demo-post';
 export * from './auth-me-get';
 export * from './auth-provider-authorize-get';
 export * from './auth-provider-callback-get';

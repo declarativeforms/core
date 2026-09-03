@@ -5,6 +5,7 @@ import { watchAuthStorage } from '@/lib/auth-store';
 import { useSession } from '@/hooks/use-session';
 import { restoreSelectionPath } from '@/hooks/use-selection';
 import { Authenticating } from '@/views/authenticating.page';
+import { Demo } from '@/views/demo.page';
 import { SignedOut } from '@/views/signed-out.page';
 import { Workspace } from '@/views/workspace.page';
 
@@ -103,7 +104,10 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <SessionGate />
+        <Routes>
+          <Route element={<Demo />} path="/demo" />
+          <Route element={<SessionGate />} path="*" />
+        </Routes>
       </BrowserRouter>
     </QueryClientProvider>
   );
