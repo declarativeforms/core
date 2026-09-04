@@ -640,7 +640,7 @@ export const FORM_JSON_SCHEMA = {
     measurements: {
       type: 'object',
       description:
-        'Analytics. Each configured provider receives the same two explicit events, `page_view` and `section_completed`. Automatic pageview, click, session-recording, survey, and person-profile collection is switched off.',
+        'Analytics. Mixpanel receives explicit `page_view` and `section_completed` events. PostHog uses native `$pageview` and `$pageleave` web analytics events and receives `section_completed`. Automatic click, session-recording, survey, and person-profile collection is switched off.',
       additionalProperties: false,
       minProperties: 1,
       properties: {

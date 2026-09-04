@@ -98,8 +98,8 @@ async function createPostHogProvider(
     capture_dead_clicks: false,
     capture_exceptions: false,
     capture_heatmaps: false,
-    capture_pageleave: false,
-    capture_pageview: false,
+    capture_pageleave: true,
+    capture_pageview: 'history_change',
     capture_performance: false,
     disable_session_recording: true,
     disable_surveys: true,
@@ -109,6 +109,10 @@ async function createPostHogProvider(
 
   return {
     capture: (event, properties) => {
+      if (event === 'page_view') {
+        return;
+      }
+
       instance.capture(event, properties);
     },
     shutdown: () => {
