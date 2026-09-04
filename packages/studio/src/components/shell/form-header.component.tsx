@@ -59,7 +59,7 @@ export function FormHeader(props: {
       <button
         className="min-w-0 truncate rounded px-1 py-0.5 text-sm font-medium hover:bg-muted"
         onClick={props.onRename}
-        title="Rename this form in Studio"
+        title="Rename form"
         type="button"
       >
         {props.form.name}

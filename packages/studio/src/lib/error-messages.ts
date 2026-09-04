@@ -2,7 +2,7 @@ import { isApiFailure } from '@/lib/api-client';
 
 const BY_CODE: Record<string, string> = {
   ai_unconfigured:
-    'Form generation is not configured on this deployment. Ask an administrator to set it up.',
+    'Form generation is not switched on here. Ask your administrator to enable it.',
   branch_exists: 'A branch with that name already exists.',
   branch_protected: 'main is protected. Choose another name.',
   definition_too_large:
@@ -12,12 +12,11 @@ const BY_CODE: Record<string, string> = {
   generation_in_progress:
     'A change is already running on this branch. Wait for it to finish.',
   generation_invalid:
-    'The generated form did not pass validation, so nothing was changed. Try rewording the request.',
+    'The new form did not pass validation, so nothing was changed. Try rewording the request.',
   generation_rate_limited:
-    'The generation service is busy. Wait a moment and try again.',
+    'Studio is busy right now. Wait a moment and try again.',
   generation_refused: 'That request was refused. Try rewording it.',
-  generation_unavailable:
-    'The generation service did not respond in time. Nothing was changed.',
+  generation_unavailable: 'Studio did not answer in time. Nothing was changed.',
   invalid_cursor: 'Could not load more of this conversation.',
   invalid_idempotency_key: 'Could not send that message. Try again.',
   invalid_prompt: 'Write a little more detail and try again.',
@@ -57,7 +56,7 @@ export function describeError(error: unknown): string {
     }
 
     if (keys.length > 0) {
-      return `${keys[0]} ${error.fieldErrors[keys[0]]}`;
+      return error.fieldErrors[keys[0]];
     }
   }
 
@@ -72,9 +71,7 @@ export function describeFieldErrors(error: unknown): Array<string> {
   const result: Array<string> = [];
 
   for (const key of Object.keys(error.fieldErrors)) {
-    result.push(
-      key === '/' ? error.fieldErrors[key] : `${key} ${error.fieldErrors[key]}`,
-    );
+    result.push(error.fieldErrors[key]);
   }
 
   return result;

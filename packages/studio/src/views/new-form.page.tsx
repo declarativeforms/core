@@ -52,8 +52,8 @@ export function NewForm(props: {
       <div className="flex flex-col gap-2">
         <h1 className="text-xl font-medium">What do you want to collect?</h1>
         <p className="text-sm text-muted-foreground">
-          Describe the form in plain language. Studio writes the schema,
-          validates it and saves it.
+          Describe it in plain language. Studio builds the form and gives you a
+          link to share.
         </p>
       </div>
       {generate.isError ? (

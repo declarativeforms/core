@@ -3,7 +3,6 @@ import type { ApiOrganizationRole } from '@/lib/api.types';
 import {
   Button,
   Field,
-  FieldDescription,
   FieldError,
   FieldLabel,
   Input,
@@ -68,8 +67,8 @@ export function AddMemberForm(props: { organizationId: string }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="start" position="popper">
-              <SelectItem value="member">Member</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="member">Member</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -79,9 +78,6 @@ export function AddMemberForm(props: { organizationId: string }) {
             Add
           </Button>
         </div>
-        <FieldDescription>
-          Access is granted immediately. We do not send an invitation email.
-        </FieldDescription>
         {localError ? <FieldError>{localError}</FieldError> : null}
         {save.isError ? (
           <FieldError>{describeError(save.error)}</FieldError>
@@ -89,8 +85,7 @@ export function AddMemberForm(props: { organizationId: string }) {
       </Field>
       {added ? (
         <p className="text-xs text-muted-foreground" role="status">
-          {added} now has access. They will see this organization the next time
-          they sign in with GitHub.
+          {added} now has access.
         </p>
       ) : null}
     </div>

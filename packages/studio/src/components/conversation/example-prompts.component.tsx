@@ -11,17 +11,20 @@ export function ExamplePrompts(props: { onPick: (prompt: string) => void }) {
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {EXAMPLES.map((example) => (
-        <Card
-          className="cursor-pointer transition-colors hover:bg-muted/60"
+        <button
+          className="rounded-xl text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           key={example}
           onClick={() => {
             props.onPick(example);
           }}
+          type="button"
         >
-          <CardContent className="px-3 py-2">
-            <p className="text-sm text-muted-foreground">{example}</p>
-          </CardContent>
-        </Card>
+          <Card className="h-full cursor-pointer transition-colors hover:bg-muted/60">
+            <CardContent className="px-3 py-2">
+              <p className="text-sm text-muted-foreground">{example}</p>
+            </CardContent>
+          </Card>
+        </button>
       ))}
     </div>
   );

@@ -30,7 +30,7 @@ export function FormList(props: {
   if (props.forms.length === 0) {
     return (
       <EmptyState
-        description="Describe one in the composer to get started."
+        description="Select New form to create your first one."
         title="No forms yet"
       />
     );

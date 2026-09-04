@@ -1,11 +1,15 @@
+import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { ApiForm, ApiOrganization } from '@/lib/api.types';
 import {
   AppSidebar,
+  BrandMark,
+  Button,
   CreateBranchDialog,
   DeleteBranchDialog,
   DeleteFormDialog,
+  EmptyState,
   FormHeader,
   OrganizationSettingsDialog,
   PublishDialog,
@@ -101,10 +105,21 @@ export function Workspace(props: {
 
   if (!organization || organizationId === null) {
     return (
-      <main className="flex min-h-svh items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">
-          No organization yet. Reload to try again.
-        </p>
+      <main className="flex min-h-svh flex-col items-center justify-center gap-4 p-6">
+        <BrandMark showWordmark size="lg" />
+        <EmptyState
+          description="Your account is not part of one yet. Reload, or ask an admin to add you."
+          title="No organization yet"
+        />
+        <Button
+          onClick={() => {
+            window.location.reload();
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Reload
+        </Button>
       </main>
     );
   }
@@ -208,15 +223,17 @@ export function Workspace(props: {
         ) : (
           <>
             <div className="flex items-center gap-2 border-b border-border px-3 py-2 md:hidden">
-              <button
-                className="rounded px-2 py-1 text-sm hover:bg-muted"
+              <Button
+                aria-label="Open menu"
                 onClick={() => {
                   setIsSidebarOpen(true);
                 }}
-                type="button"
+                size="icon-sm"
+                variant="ghost"
               >
-                Menu
-              </button>
+                <Menu className="size-4" />
+              </Button>
+              <BrandMark showWordmark />
             </div>
             <NewForm
               onCreated={selection.selectForm}

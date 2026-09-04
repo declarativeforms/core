@@ -26,7 +26,7 @@ export function OrganizationSwitcher(props: {
           <span className="flex min-w-0 items-center gap-2">
             <Building2 className="shrink-0" />
             <span className="truncate">
-              {active ? active.name : 'Workspace'}
+              {active ? active.name : 'Organization'}
             </span>
           </span>
           <ChevronsUpDown className="shrink-0 opacity-60" />

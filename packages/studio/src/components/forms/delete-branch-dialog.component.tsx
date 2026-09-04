@@ -31,7 +31,7 @@ export function DeleteBranchDialog(props: {
           <AlertDialogTitle>Delete branch {props.branch}?</AlertDialogTitle>
           <AlertDialogDescription>
             This deletes the {props.branch} schema and its conversation.{' '}
-            {DEFAULT_BRANCH} is not affected. This cannot be undone.
+            {DEFAULT_BRANCH} is not affected, and this cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {remove.isError ? (

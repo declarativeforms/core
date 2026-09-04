@@ -27,9 +27,8 @@ export function RemoveMemberDialog(props: {
         <AlertDialogHeader>
           <AlertDialogTitle>Remove {props.email}?</AlertDialogTitle>
           <AlertDialogDescription>
-            They lose access to every form in {props.organizationName}. Forms
-            and conversations they created stay. You can add them again at any
-            time.
+            They lose access to every form in {props.organizationName}. Anything
+            they created stays, and you can add them again at any time.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {remove.isError ? (

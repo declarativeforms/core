@@ -1,5 +1,6 @@
 export * from './account-menu.component';
 export * from './app-sidebar.component';
+export * from './brand-mark.component';
 export * from './branch-selector.component';
 export * from './form-header.component';
 export * from './form-list-row.component';

@@ -40,8 +40,8 @@ export function RenameFormDialog(props: {
         <DialogHeader>
           <DialogTitle>Rename form</DialogTitle>
           <DialogDescription>
-            This is the name in Studio. It does not change the title shown on
-            the form itself.
+            This is the name in Studio. The title on the form itself does not
+            change.
           </DialogDescription>
         </DialogHeader>
         <Field>

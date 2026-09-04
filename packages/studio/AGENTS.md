@@ -8,7 +8,7 @@ If this file and the code disagree, the code is wrong. Fix the code, then keep
 this file accurate.
 
 Studio is the form management interface: React 19 on Vite 8, a client-rendered
-SPA. It holds 68 hand-written modules, one type-declaration file and 15
+SPA. It holds 69 hand-written modules, one type-declaration file and 15
 generated shadcn primitives: five views, 14 hooks, 13 `lib/` modules and six
 `components/` subtrees.
 
@@ -27,6 +27,7 @@ other section of that document does.
 
 - [The non-negotiables](#the-non-negotiables)
 - [Layout](#layout)
+- [Brand assets](#brand-assets)
 - [Generated code](#generated-code)
 - [Comments](#comments)
 - [Tests](#tests)
@@ -76,6 +77,8 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 | `src/lib/` | Framework-agnostic helpers: the api client and paths, wire types, the auth/selection/draft stores, query keys, error copy, preview URLs, time |
 | `src/styles/globals.css` | Tailwind 4 entry and the shadcn design tokens |
 | `src/vite-env.d.ts` | The `vite/client` type reference. One line, no exports |
+| `public/` | Static files Vite copies to `dist/` verbatim and nginx serves at the site root: the favicon set, the apple-touch icon and `og-image.png`. Referenced from `index.html` by absolute path, never imported |
+| `assets/` | Build-time sources for the files in `public/`, currently `og-image.svg`. **Not served and not copied.** See [Brand assets](#brand-assets) |
 
 **Dependency direction, one way only:**
 
@@ -104,6 +107,35 @@ main  ->  app  ->  views  ->  components  ->  hooks  ->  lib
   `WorkspaceFooter`-style naming rather than `SheetFooter`'s neighbourhood.
 - **`src/hooks/` has no barrel and needs none**, matching `lib/`. A barrel would
   make every view pull every hook into its graph.
+
+## Brand assets
+
+**The icon set is core's, copied rather than shared.** `public/favicon.ico`,
+`favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png` and the two
+`android-chrome-*.png` files are byte-identical to `packages/core/public/`. There
+is no import path between two separately-built packages, so a copy is the only
+mechanism. If core's mark changes, copy them again.
+
+**`public/og-image.png` is generated, not drawn.** Its source is
+`assets/og-image.svg`, which embeds `android-chrome-512x512.png` as a base64
+`<image>` so the mark cannot drift from the favicon. Regenerate it after editing
+the SVG:
+
+```bash
+rsvg-convert -w 1200 -h 630 packages/studio/assets/og-image.svg \
+  -o packages/studio/public/og-image.png
+```
+
+Commit the PNG. `rsvg-convert` resolves fonts through fontconfig, so check the
+output before committing: a missing font family fails silently and falls back.
+
+**`og:image` and `og:url` in `index.html` are hardcoded to
+`https://studio.frms.dev`.** Open Graph requires an absolute URL, and
+`index.html` is a static file with no request context. A self-hosted instance
+therefore shows the frms.dev card. If that ever needs fixing, the mechanism is a
+`%VITE_STUDIO_ORIGIN%` placeholder, which Vite substitutes at build time.
+
+`--theme-color` is `#F8D806`, sampled from the mark itself rather than chosen.
 
 ## Generated code
 
@@ -624,6 +656,13 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   nginx forwarding the URI implicitly, hence the explicit `$request_uri`, which
   is the raw client URI and therefore keeps opaque cursors and encoded branch
   names byte-for-byte.
+- **lucide-react 1.x ships no brand icons**, so there is no `Github` export. The
+  GitHub mark on the sign-in button is a hand-written JSX `<svg>` helper inside
+  `src/views/signed-out.page.tsx`. Do not "fix" it to a lucide import, and do not
+  add an icon dependency for one glyph.
+- **`BrandMark` reads `/favicon-32x32.png` through a plain `<img src>`**, not an
+  import. The file lives in `public/`, which Vite does not fingerprint, so the
+  path is stable and the same asset serves the favicon and the UI.
 - **Studio is absent from the root `test` script**, which runs api only. See
   [Tests](#tests).
 

@@ -28,8 +28,8 @@ export function DeleteFormDialog(props: {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete {props.form.name}?</AlertDialogTitle>
           <AlertDialogDescription>
-            This deletes every branch of this form and all of its conversations.
-            Links to the form stop working. This cannot be undone from Studio.
+            Every branch and conversation goes with it, and links to this form
+            stop working. This cannot be undone from Studio.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {remove.isError ? (

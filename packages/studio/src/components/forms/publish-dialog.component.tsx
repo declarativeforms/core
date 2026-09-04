@@ -32,11 +32,9 @@ export function PublishDialog(props: {
             Publish {props.branch} to {DEFAULT_BRANCH}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This replaces the {DEFAULT_BRANCH} schema with the current{' '}
-            {props.branch} schema, and copies the {props.branch} messages
-            created since the branch was made into the {DEFAULT_BRANCH}{' '}
-            conversation. {props.branch} stays available. The published form is
-            live for anyone with the link.
+            {DEFAULT_BRANCH} is replaced by {props.branch}, and messages added
+            since the branch was made are copied across. {props.branch} stays
+            available, and the published form is live for anyone with the link.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {publish.isError ? (

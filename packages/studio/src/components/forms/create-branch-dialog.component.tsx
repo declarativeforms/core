@@ -66,8 +66,8 @@ export function CreateBranchDialog(props: {
         <DialogHeader>
           <DialogTitle>New branch</DialogTitle>
           <DialogDescription>
-            A branch copies the schema and the conversation as they are now. It
-            does not affect main until you publish.
+            A branch is a copy of this form as it is now. main is not affected
+            until you publish.
           </DialogDescription>
         </DialogHeader>
         <Field>

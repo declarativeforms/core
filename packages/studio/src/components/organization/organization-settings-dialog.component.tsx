@@ -32,8 +32,8 @@ export function OrganizationSettingsDialog(props: {
         <DialogHeader>
           <DialogTitle>{props.organization.name}</DialogTitle>
           <DialogDescription>
-            Everyone here can view, create, rename, edit, branch, publish,
-            preview and share every form in this organization.
+            Everyone here can create and edit every form. Admins can also add
+            people and delete forms.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-1">

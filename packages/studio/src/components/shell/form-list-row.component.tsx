@@ -36,7 +36,7 @@ export function FormListRow(props: {
         <DropdownMenuTrigger asChild>
           <Button
             aria-label={`Actions for ${props.form.name}`}
-            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100 data-[state=open]:opacity-100"
             size="icon-sm"
             variant="ghost"
           >

@@ -19,8 +19,10 @@ export function BranchSelector(props: {
         className="w-[11rem] shrink-0"
         size="sm"
       >
-        <GitBranch className="size-4 shrink-0 opacity-70" />
-        <SelectValue />
+        <span className="flex min-w-0 flex-1 items-center gap-1.5">
+          <GitBranch className="size-4 shrink-0 opacity-70" />
+          <SelectValue className="truncate" />
+        </span>
       </SelectTrigger>
       <SelectContent align="start" position="popper">
         {props.branches.map((branch) => (
