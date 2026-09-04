@@ -142,7 +142,7 @@ async function send(
   }
 
   const text = await response.text();
-  let parsed: unknown = null;
+  let parsed: unknown;
 
   try {
     parsed = text ? JSON.parse(text) : null;
