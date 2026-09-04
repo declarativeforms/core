@@ -475,3 +475,11 @@ completion:
     We received your application for the Founding Design Partner Program. We're
     selecting approximately 20 partners and will contact selected applicants
     about the paid pilot.
+
+connections:
+  - type: email
+    to: "hirebarend@gmail.com"
+    subject: "New Founding Design Partner application from {{data.full_name}}"
+    body: "A new application has been submitted."
+    include_responses: true
+    trigger_on: completed
