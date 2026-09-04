@@ -4,17 +4,17 @@ locale: "en"
 
 title: "Declarative Forms — Founding Design Partner Program"
 description: >-
-  We're looking for 20 people and teams to help us shape Declarative Forms, a
-  new way to build forms by describing what you want and creating or modifying
-  it with AI. Every form has a structured, portable definition, giving you more
-  control over how it evolves and integrates into your workflows. You don't
-  need to be technical or know YAML or Git. We're looking for people willing to
-  use Declarative Forms for a real workflow, share candid feedback, and help
-  shape the product. The program is limited to 20 founding design partners and
-  will be run as a paid pilot. Estimated time: 3–4 minutes.
+  Help shape Declarative Forms by using it in one real workflow and sharing
+  candid feedback. We're selecting 20 founding design partners for a paid
+  pilot. No technical experience is required. Estimated time: 3 minutes.
 
 theme:
   primary: "#542EBC"
+
+measurements:
+  posthog:
+    token: "phc_PG5OhDQIzFkoQxel2QjLVC85JPW0hHBB8gJkruofkrS"
+    api_host: "https://eu.i.posthog.com"
 
 sections:
   - id: about_you
@@ -46,170 +46,40 @@ sections:
             regex: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
             message: "Enter a valid email address."
 
-      - id: linkedin_profile
-        type: url
-        label: "3. What's your LinkedIn profile?"
-        placeholder: "https://www.linkedin.com/in/jane-smith (optional)"
-
       - id: primary_role
         type: single_select
-        label: "4. What best describes what you do?"
+        label: "3. What best describes your work?"
         allow_other: true
         options:
           - label: "Founder / business owner"
             value: "founder_business_owner"
-          - label: "Operations"
-            value: "operations"
-          - label: "Customer success / customer operations"
-            value: "customer_success_operations"
-          - label: "Implementation / professional services"
-            value: "implementation_professional_services"
-          - label: "Sales / revenue operations"
-            value: "sales_revenue_operations"
-          - label: "Marketing / growth"
-            value: "marketing_growth"
-          - label: "Product"
-            value: "product"
-          - label: "HR / people"
-            value: "hr_people"
-          - label: "Consultant / freelancer"
-            value: "consultant_freelancer"
-          - label: "Agency"
-            value: "agency"
-          - label: "Engineering / technical"
-            value: "engineering_technical"
+          - label: "Operations / customer success / implementation"
+            value: "operations_customer_success_implementation"
+          - label: "Sales / marketing / growth"
+            value: "sales_marketing_growth"
+          - label: "Product / design"
+            value: "product_design"
+          - label: "Engineering / IT"
+            value: "engineering_it"
+          - label: "Consultant / agency / freelancer"
+            value: "consultant_agency_freelancer"
         validators:
           - required
 
       - id: company_size
         type: single_select
-        label: "5. How large is your company or team?"
+        label: "4. How large is your company or team?"
         options:
           - label: "Just me"
             value: "just_me"
-          - label: "2–10 people"
+          - label: "2–10"
             value: "2_to_10"
-          - label: "11–25"
-            value: "11_to_25"
-          - label: "26–50"
-            value: "26_to_50"
-          - label: "51–100"
-            value: "51_to_100"
-          - label: "101–250"
-            value: "101_to_250"
-          - label: "251–1,000"
-            value: "251_to_1000"
-          - label: "1,000+"
-            value: "1000_plus"
-        validators:
-          - required
-
-    next: forms_today
-
-  - id: forms_today
-    title: "How you use forms today"
-    fields:
-      - id: current_form_tools
-        type: multiple_select
-        label: "6. Which form tools do you currently use?"
-        allow_other: true
-        options:
-          - label: "Google Forms"
-            value: "google_forms"
-          - label: "Microsoft Forms"
-            value: "microsoft_forms"
-          - label: "Tally"
-            value: "tally"
-          - label: "Typeform"
-            value: "typeform"
-          - label: "Jotform"
-            value: "jotform"
-          - label: "Fillout"
-            value: "fillout"
-          - label: "Airtable Forms"
-            value: "airtable_forms"
-          - label: "HubSpot Forms"
-            value: "hubspot_forms"
-          - label: "Forms built into another product"
-            value: "forms_in_another_product"
-          - label: "Custom-built forms"
-            value: "custom_built_forms"
-          - label: "We don't currently use a form tool"
-            value: "no_form_tool"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-      - id: form_change_frequency
-        type: single_select
-        label: >-
-          7. Roughly how often do you create or make meaningful changes to
-          forms?
-        options:
-          - label: "Several times a week"
-            value: "several_times_a_week"
-          - label: "About once a week"
-            value: "about_once_a_week"
-          - label: "A few times a month"
-            value: "a_few_times_a_month"
-          - label: "About once a month"
-            value: "about_once_a_month"
-          - label: "A few times a year"
-            value: "a_few_times_a_year"
-          - label: "Rarely"
-            value: "rarely"
-          - label: "I've never built a form myself"
-            value: "never_built_a_form"
-        validators:
-          - required
-
-      - id: primary_form_uses
-        type: multiple_select
-        label: "8. What do you primarily use forms for?"
-        allow_other: true
-        options:
-          - label: "Customer onboarding"
-            value: "customer_onboarding"
-          - label: "Customer / client intake"
-            value: "customer_client_intake"
-          - label: "Leads or sales qualification"
-            value: "leads_sales_qualification"
-          - label: "Applications"
-            value: "applications"
-          - label: "Internal requests"
-            value: "internal_requests"
-          - label: "Approvals"
-            value: "approvals"
-          - label: "Employee / HR processes"
-            value: "employee_hr_processes"
-          - label: "Surveys or research"
-            value: "surveys_research"
-          - label: "Customer feedback"
-            value: "customer_feedback"
-          - label: "Support requests"
-            value: "support_requests"
-          - label: "Event registrations"
-            value: "event_registrations"
-          - label: "Assessments / questionnaires"
-            value: "assessments_questionnaires"
-          - label: "Project or service briefs"
-            value: "project_service_briefs"
-          - label: "Data collection"
-            value: "data_collection"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-      - id: frustrating_form_process
-        type: long_text
-        label: >-
-          9. Think about the form or form-based process that frustrates you the
-          most today. What is it, and what happens after someone submits it?
-        placeholder: >-
-          For example: where the information goes, who needs it, what you do
-          manually, what other tools are involved, or what happens next.
+          - label: "11–50"
+            value: "11_to_50"
+          - label: "51–250"
+            value: "51_to_250"
+          - label: "251+"
+            value: "251_plus"
         validators:
           - required
 
@@ -218,252 +88,128 @@ sections:
   - id: workflow
     title: "Your workflow"
     fields:
-      - id: submission_outcomes
-        type: multiple_select
-        label: >-
-          10. What normally happens to form submissions in your organization?
-        allow_other: true
-        options:
-          - label: "Someone reads/reviews them manually"
-            value: "manual_review"
-          - label: "They go into a spreadsheet"
-            value: "spreadsheet"
-          - label: "They go into a CRM"
-            value: "crm"
-          - label: "They go into a database"
-            value: "database"
-          - label: "They create a task/ticket/project"
-            value: "create_task_ticket_project"
-          - label: "They trigger an email or notification"
-            value: "trigger_email_notification"
-          - label: "They trigger an automated workflow"
-            value: "trigger_automated_workflow"
-          - label: "Data gets manually copied into another system"
-            value: "manual_copy_to_another_system"
-          - label: "They're accessed programmatically / through an API"
-            value: "programmatic_api_access"
-          - label: "Nothing — we mainly review the responses"
-            value: "review_responses_only"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-      - id: workflow_tools
-        type: multiple_select
-        label: "11. Which of these tools do you use as part of your work?"
-        options:
-          - label: "Zapier"
-            value: "zapier"
-          - label: "Make"
-            value: "make"
-          - label: "n8n"
-            value: "n8n"
-          - label: "Airtable"
-            value: "airtable"
-          - label: "Notion"
-            value: "notion"
-          - label: "HubSpot"
-            value: "hubspot"
-          - label: "Salesforce"
-            value: "salesforce"
-          - label: "Pipedrive"
-            value: "pipedrive"
-          - label: "Slack"
-            value: "slack"
-          - label: "Google Sheets"
-            value: "google_sheets"
-          - label: "APIs / webhooks"
-            value: "apis_webhooks"
-          - label: "GitHub"
-            value: "github"
-          - label: "Other workflow / automation tools"
-            value: "other_workflow_automation_tools"
-          - label: "None of these"
-            value: "none"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-      - id: form_change_owner
+      - id: form_change_frequency
         type: single_select
-        label: >-
-          12. Who would normally be responsible for changing one of your forms
-          or the process around it?
-        allow_other: true
+        label: "5. How often do you create or significantly change forms?"
         options:
-          - label: "Me"
-            value: "me"
-          - label: "Someone else on my team"
-            value: "someone_else_on_team"
-          - label: "Operations / business team"
-            value: "operations_business_team"
-          - label: "Marketing"
-            value: "marketing"
-          - label: "IT"
-            value: "it"
-          - label: "Developers / engineering"
-            value: "developers_engineering"
-          - label: "An external consultant or agency"
-            value: "external_consultant_agency"
-          - label: "It depends"
-            value: "it_depends"
+          - label: "Weekly or more"
+            value: "weekly_or_more"
+          - label: "A few times a month"
+            value: "a_few_times_a_month"
+          - label: "A few times a year"
+            value: "a_few_times_a_year"
+          - label: "Rarely or never"
+            value: "rarely_or_never"
         validators:
           - required
 
+      - id: current_form_tools
+        type: multiple_select
+        label: "6. Which form tools do you currently use?"
+        allow_other: true
+        options:
+          - label: "Google or Microsoft Forms"
+            value: "google_microsoft_forms"
+          - label: "Typeform, Tally, Jotform, or Fillout"
+            value: "dedicated_form_builders"
+          - label: >-
+              Airtable, HubSpot, or forms built into another product
+            value: "forms_in_other_products"
+          - label: "Custom-built forms"
+            value: "custom_built_forms"
+          - label: "No form tool today"
+            value: "no_form_tool"
+        validators:
+          - type: min
+            value: 1
+            message: "Select at least one option."
+
+      - id: proposed_workflow
+        type: long_text
+        label: >-
+          7. What real form or workflow would you build or replace during the
+          pilot?
+        placeholder: >-
+          Tell us what it's for, who uses it, what frustrates you today, and
+          what happens after someone submits it.
+        validators:
+          - required
+
+      - id: workflow_requirements
+        type: multiple_select
+        label: >-
+          8. What would this workflow need to do after someone submits it?
+        allow_other: true
+        options:
+          - label: "Support manual review or approval"
+            value: "manual_review_approval"
+          - label: "Store data in a spreadsheet or database"
+            value: "store_in_spreadsheet_database"
+          - label: "Add or update a CRM / business system"
+            value: "update_crm_business_system"
+          - label: "Create a task, ticket, or project"
+            value: "create_task_ticket_project"
+          - label: "Send an email or notification"
+            value: "send_email_notification"
+          - label: "Trigger an automation, API, or webhook"
+            value: "trigger_automation_api_webhook"
+        validators:
+          - type: min
+            value: 1
+            message: "Select at least one option."
+
+    next: pilot_fit
+
+  - id: pilot_fit
+    title: "The pilot"
+    fields:
       - id: pilot_readiness
         type: single_select
-        label: >-
-          13. How easy would it be for you to try Declarative Forms in one real
-          workflow?
+        label: "9. How soon could you try this in a real workflow?"
         options:
-          - label: "I could start immediately"
+          - label: "Immediately"
             value: "immediately"
-          - label: "I could probably start within a week"
+          - label: "Within a week"
             value: "within_a_week"
-          - label: "I'd need agreement from one or two people"
-            value: "need_limited_agreement"
-          - label: "We'd need a formal IT/security/procurement review"
-            value: "formal_review"
+          - label: "After agreement from one or two people"
+            value: "after_limited_agreement"
+          - label: "After a formal IT / security / procurement review"
+            value: "after_formal_review"
           - label: "I'm not sure yet"
             value: "not_sure"
         validators:
           - required
 
-    next: proposed_use
-
-  - id: proposed_use
-    title: "What would you build?"
-    fields:
-      - id: proposed_workflow
-        type: long_text
-        label: >-
-          14. If you joined the pilot, what's one real form or workflow you'd
-          like to build or replace with Declarative Forms?
-        placeholder: >-
-          It doesn't need to be complicated. We're interested in real use
-          cases, from simple forms through to forms that are part of larger
-          business processes.
-        validators:
-          - required
-
       - id: proposed_workflow_frequency
         type: single_select
-        label: >-
-          15. How often would that form/workflow realistically be used?
+        label: "10. How often would that workflow realistically be used?"
         options:
-          - label: "Daily"
-            value: "daily"
-          - label: "Several times a week"
-            value: "several_times_a_week"
-          - label: "Weekly"
-            value: "weekly"
-          - label: "Several times a month"
-            value: "several_times_a_month"
-          - label: "Monthly"
-            value: "monthly"
-          - label: "Occasionally"
-            value: "occasionally"
-          - label: "One-off"
-            value: "one_off"
-          - label: "I don't know yet"
-            value: "dont_know_yet"
+          - label: "Daily or several times a week"
+            value: "daily_or_several_times_a_week"
+          - label: "Weekly or several times a month"
+            value: "weekly_or_several_times_a_month"
+          - label: "Monthly or occasionally"
+            value: "monthly_or_occasionally"
+          - label: "One-off or not yet known"
+            value: "one_off_or_unknown"
         validators:
           - required
 
-      - id: meaningful_improvement
-        type: long_text
-        label: >-
-          16. What would make Declarative Forms meaningfully better than what
-          you're doing today?
-        validators:
-          - required
-
-    next: working_with_us
-
-  - id: working_with_us
-    title: "Working with us"
-    fields:
-      - id: pilot_commitments
-        type: multiple_select
-        label: "17. During the pilot, would you be willing to:"
-        options:
-          - label: "Put at least one real form/workflow into use"
-            value: "put_real_workflow_into_use"
-          - label: "Have an initial onboarding call with us"
-            value: "initial_onboarding_call"
-          - label: >-
-              Share candid feedback when something is confusing or doesn't work
-            value: "share_candid_feedback"
-          - label: "Join 2–3 short feedback conversations during the pilot"
-            value: "join_feedback_conversations"
-          - label: "Allow us to observe how you use the product"
-            value: "allow_product_observation"
-          - label: "Try meaningful changes/new features during the pilot"
-            value: "try_changes_new_features"
-          - label: "None of the above"
-            value: "none"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-      - id: feedback_program_experience
+      - id: participation_level
         type: single_select
-        label: >-
-          18. Have you ever participated in a product beta/design-partner
-          program or regularly provided feedback to products you use?
+        label: "11. Which best describes how you could participate?"
         options:
-          - label: "Yes, several times"
-            value: "yes_several_times"
-          - label: "Yes, once or twice"
-            value: "yes_once_or_twice"
           - label: >-
-              Not formally, but I frequently give product feedback
-            value: "frequent_informal_feedback"
-          - label: "No"
-            value: "no"
-        validators:
-          - required
-
-      - id: likely_next_steps
-        type: multiple_select
-        label: >-
-          19. If Declarative Forms worked well for your use case after the
-          pilot, what would you most likely do?
-        options:
-          - label: "Continue using it as a paid customer"
-            value: "continue_as_paid_customer"
-          - label: "Introduce it to other people/teams in my company"
-            value: "introduce_to_company"
-          - label: "Use it for additional forms/workflows"
-            value: "use_for_additional_workflows"
-          - label: "Recommend it to people in my network"
-            value: "recommend_to_network"
-          - label: "Use it with clients/customers"
-            value: "use_with_clients_customers"
+              Use a real workflow and join onboarding plus 2–3 feedback calls
+            value: "real_workflow_and_calls"
           - label: >-
-              Contribute to or engage with the open-source project
-            value: "engage_with_open_source"
-          - label: "I'd need to see the product before knowing"
-            value: "need_to_see_product"
-        validators:
-          - type: min
-            value: 1
-            message: "Select at least one option."
-
-    next: final_question
-
-  - id: final_question
-    title: "One last question"
-    fields:
-      - id: interest_reason
-        type: long_text
-        label: "20. Why are you interested in trying Declarative Forms?"
-        placeholder: >-
-          There's no right answer. We're interested in what caught your
-          attention.
+              Use a real workflow and provide written or asynchronous feedback
+            value: "real_workflow_and_async_feedback"
+          - label: >-
+              Test the product but not commit to a live workflow
+            value: "test_without_live_workflow"
+          - label: "I'm not sure yet"
+            value: "not_sure"
         validators:
           - required
 
