@@ -537,10 +537,15 @@ The string shorthand keeps the existing Mixpanel EU host
 (`https://api-eu.mixpanel.com`) and uses PostHog's US host
 (`https://us.i.posthog.com`). Use the object form to choose a different host.
 
-Each configured provider receives the same explicit events; automatic pageview,
-click, session-recording, survey, and person-profile collection is disabled.
+Mixpanel receives an explicit `page_view` once the form loads. PostHog uses its
+native web analytics events: `$pageview` on the initial load and browser-history
+changes, and `$pageleave` when the respondent navigates away. Both providers
+receive `section_completed`. Automatic click, session-recording, survey, and
+person-profile collection remains disabled.
 
-| Event | Properties | When it is sent |
-| --- | --- | --- |
-| `page_view` | `form_id` | Once the form definition and its analytics configuration load. |
-| `section_completed` | `form_id`, `section_id`, `is_final` | After a section passes validation and the respondent continues, completes, or redirects. |
+| Event | Provider | Properties | When it is sent |
+| --- | --- | --- | --- |
+| `page_view` | Mixpanel | `form_id` | Once the form definition and its analytics configuration load. |
+| `$pageview` | PostHog | Standard PostHog pageview properties | On the initial load and browser-history changes. |
+| `$pageleave` | PostHog | Standard PostHog pageleave and scroll properties | When the respondent navigates away. |
+| `section_completed` | Both | `form_id`, `section_id`, `is_final` | After a section passes validation and the respondent continues, completes, or redirects. |
