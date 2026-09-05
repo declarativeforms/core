@@ -258,7 +258,7 @@ and `postal_code`.
 
 Set `otp: true` on an email field when the respondent must prove ownership of
 the address before continuing. The runtime sends a six-digit code and stores
-the successful proof JWT in a generated hidden field named
+the successful proof token in a generated hidden field named
 `<email-id>_token`. Do not author that companion field yourself.
 
 ### Validators
@@ -396,8 +396,8 @@ behaviour that a schema file cannot describe.
 - Filenames may be kebab-case. Ids may not.
 - Field ids must be unique across the whole form, not just within a section.
 - The `_token` suffix is reserved for verification proofs. Every field with
-  that suffix is required and its value is validated as a proof JWT bound to
-  the form, source field id, and source value. An email field with `otp: true`
+  that suffix is required and its value is validated as a proof token bound
+  to the form, source field id, and source value. An email field with `otp: true`
   generates and reserves `<field-id>_token` automatically.
 
 ### Validators behave differently per type

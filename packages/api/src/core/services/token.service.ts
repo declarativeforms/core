@@ -15,9 +15,9 @@ type TokenPayload = {
 export class TokenService {
   private key: Buffer;
 
-  constructor(secret: string) {
+  constructor(secret: string, purpose: string) {
     this.key = createHash('sha256')
-      .update('declarative-forms-oauth\0')
+      .update(`declarative-forms-${purpose}\0`)
       .update(secret)
       .digest();
   }

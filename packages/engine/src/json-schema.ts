@@ -93,7 +93,7 @@ const fieldBranches: Array<JsonSchemaNode> = [
         type: 'boolean',
         default: false,
         description:
-          'Requires a one-time passcode sent to the address. The proof JWT is stored in a generated required hidden `<field-id>_token` field.',
+          'Requires a one-time passcode sent to the address. The proof token is stored in a generated required hidden `<field-id>_token` field.',
       },
     },
   ),

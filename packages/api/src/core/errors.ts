@@ -25,3 +25,13 @@ export class HttpError extends Error {
     return new HttpError(422, 'invalid', { errors });
   }
 }
+
+export class ValidationError extends Error {
+  public errors: Record<string, string>;
+
+  constructor(errors: Record<string, string>) {
+    super('invalid');
+    this.name = 'ValidationError';
+    this.errors = errors;
+  }
+}

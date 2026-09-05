@@ -1,4 +1,5 @@
 export { AuthenticationService } from './authentication.service';
+export { EmailVerificationService } from './email-verification.service';
 export { FileService } from './file.service';
 export { FormMessageService } from './form-message.service';
 export { FormService } from './form.service';

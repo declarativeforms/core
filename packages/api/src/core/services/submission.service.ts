@@ -1,14 +1,16 @@
 import {
   compile,
   evaluateExpression,
+  getTokenFieldId,
   isDeclarativeConnectionType,
   resolve,
   validateField,
 } from '@declarativeforms/engine';
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
-import { HttpError } from '../errors';
+import { ValidationError } from '../errors';
 import type { SubmissionRepository } from '../repositories';
+import type { EmailVerificationService } from './email-verification.service';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
 
@@ -17,6 +19,7 @@ export class SubmissionService {
     private formService: FormService,
     private submissionRepository: SubmissionRepository,
     private jobService: JobService,
+    private emailVerificationService: EmailVerificationService,
   ) {}
 
   public async ensureIndexes(): Promise<void> {
@@ -43,7 +46,7 @@ export class SubmissionService {
       const errors = this.validate(form, data);
 
       if (Object.keys(errors).length > 0) {
-        throw HttpError.invalid(errors);
+        throw new ValidationError(errors);
       }
     }
 
@@ -142,6 +145,21 @@ export class SubmissionService {
 
         if (message) {
           errors[field.id] = message;
+
+          continue;
+        }
+
+        if (
+          field.type === 'email' &&
+          field.otp &&
+          !this.emailVerificationService.verifyProof(
+            form.id || '',
+            field.id,
+            String(data[field.id] ?? ''),
+            data[getTokenFieldId(field.id)],
+          )
+        ) {
+          errors[field.id] = 'Verification is invalid.';
         }
       }
 

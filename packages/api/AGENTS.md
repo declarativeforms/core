@@ -46,9 +46,10 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 8. **No module-level helper functions in a file that exports a class.**
 9. **No result objects.** A function returns the entity, a `Pick` of it, or a
    primitive on success, `null` when the caller can safely carry on without it,
-   and throws when it cannot. A type whose only job is to bundle one function's
-   return values is banned whether or not it carries a discriminant, and whether
-   or not its name ends in `Result`. See [Return values](#return-values).
+   and throws a domain error when it cannot. A type whose only job is to bundle
+   one function's return values is banned whether or not it carries a
+   discriminant, and whether or not its name ends in `Result`. See
+   [Return values](#return-values).
 10. **Repository methods name the operation, not the entity**, and their
     parameters do not repeat it. See [Repositories](#repositories).
 11. **No service layer with a single consumer.** If only one caller needs the
@@ -59,6 +60,16 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 13. **Nothing unrequested.** No flag, policy, limit or restriction that the task
     did not ask for. A restriction nobody asked for still has to be understood,
     plumbed and removed later.
+14. **A service never names an HTTP status.** Domain code throws a domain error
+    from `src/core/errors.ts`. `server.ts` chooses the status. See
+    [Errors](#errors).
+15. **`src/core/services/` holds domain services only.** A domain service owns a
+    rule about a domain entity: a form, a submission, an organization, a job. A
+    class that only transforms bytes is mechanism, not domain. See
+    [Classes](#classes).
+16. **A feature is not a licence to restructure the code path it lands in.** If
+    a hunk in your diff is not required by the feature, revert it. Rule 13 bans
+    unrequested features; this bans unrequested refactors.
 
 ## Layout and dependency direction
 
@@ -81,8 +92,10 @@ routes  ->  core (container)  ->  services  ->  repositories, gateways, strategi
 - **Routes never reach past the container.** Every route imports exactly
   `{ getContainer } from '../core'` and nothing else from `core`. Do not import a
   service class into a route.
-- **Services own the business rules.** Repositories own persistence, gateways own
-  outbound HTTP to third parties, strategies own per-connection-type delivery.
+- **Services own the business rules, and know nothing about HTTP.** No status
+  code, no `reply`, no header, no request envelope. Repositories own
+  persistence, gateways own outbound HTTP to third parties, strategies own
+  per-connection-type delivery.
 - **Repositories and gateways never import a service.** A service may depend on
   another service: `SubmissionService` takes `FormService` and `JobService`.
 
@@ -259,9 +272,9 @@ The contract is three-way:
   `Promise<Array<string>>`, `Promise<string | null>` for an email address.
 - **`null` when the caller can safely carry on.** It means "absent, or not
   visible to you". A route turns `null` into 404 and nothing else.
-- **Throw when it cannot.** Anything that is not a safe failure is an
-  `HttpError` from `src/core/errors.ts`, carrying a `statusCode` and an optional
-  `payload`.
+- **Throw when it cannot.** Anything that is not a safe failure is a domain
+  error from `src/core/errors.ts`, carrying the facts the route needs and no
+  status code.
 
 **A caller that needs less than the whole entity gets a `Pick`, written inline
 at the signature.** Never declare a bespoke `*Summary` or `*Dto`. A projection is
@@ -301,14 +314,17 @@ rendering state union consumed by the component that owns it, and it is
 deliberately out of scope.
 
 ```ts
-public async update(...): Promise<IInternalForm | null>  // null -> 404
-public async addMember(...): Promise<IOrganization>      // throws HttpError.forbidden()
+public async update(...): Promise<IInternalForm | null>   // null -> 404
+public async createOrUpdate(...): Promise<ISubmission | null>  // or throws
 ```
 
-`HttpError.forbidden()`, `HttpError.conflict(slug)` and
-`HttpError.invalid(errors)` cover every case in the package today. They are
-static factories on the class, not module-level helpers, because the file
-exports a class.
+`createOrUpdate` throws `ValidationError` when the submission fails validation,
+and returns `null` when the form or the submission is not there.
+
+Prefer `null` wherever the caller can carry on.
+`EmailVerificationService.request` returns `Promise<string | null>` and lets the
+route decide that an undelivered code is a 502; it does not decide that
+itself.
 
 ## Repositories
 
@@ -424,6 +440,17 @@ method on anything, so it stays a function.
 **Annotate every return type.** `Promise<void>` on mutating methods,
 `Promise<T | null>` on lookups, `Promise<number>` on counts.
 
+**A class in `services/` owns a rule about a domain entity.** A class that only
+transforms bytes, that signs, hashes, encodes or compares, is mechanism. Before
+you write one, check whether something in the package already does the job:
+`TokenService` mints and verifies AAD-scoped, optionally-expiring tokens for any
+purpose, and a second signer was deleted once it turned out to be that class
+with a different cipher. Mechanism that survives that test belongs to the domain
+service that uses it, as a private method or as a public method on the one class
+that owns the concept. `EmailVerificationService.verifyProof` is public because
+`SubmissionService` needs it, and it sits there because email verification owns
+the proof.
+
 **Take the id, not the entity.** A parameter is typed `IOrganization` only when
 the body reads something other than `id`. Everything else takes
 `organizationId: string`.
@@ -449,6 +476,12 @@ it forces every caller to have loaded the entity first.
 | `strategies`   | `*.strategy.ts`      | `email-connection.strategy.ts` |
 | `gateways`     | bare name, no suffix | `github.ts`                    |
 | `types`        | bare name, no suffix | `downloaded-file.ts`           |
+
+**A class in `services/` is named `<DomainEntity>Service`**, after the entity
+whose rules it owns. A name that reads as a verb phrase about bytes, such as
+`ProofService`, `HashService` or `SignerService`, is the signal that rule 15 has
+been broken: the class is mechanism, and it either belongs to an existing class
+or should not exist.
 
 **Route files** are the static path segments in URL order with `/api/v1/`
 dropped, plus a generic placeholder word for each dynamic or wildcard segment,
@@ -646,15 +679,23 @@ The rule covers arrays. A loop that builds a `Set` or a `Record` stays a loop:
 
 ## Errors
 
-**There is exactly one custom error class, `HttpError` in `src/core/errors.ts`,
-and you should not add a second.** Throw it when a request cannot proceed and
-the caller deserves a status other than 404:
+**Domain errors live in `src/core/errors.ts` and carry no status code.** Each
+one names a domain outcome and carries the facts the route needs. `server.ts`
+turns it into a status, in one place, in its `setErrorHandler`.
 
 ```ts
-throw HttpError.forbidden();
-throw HttpError.conflict('branch_exists');
-throw HttpError.invalid({ '/connections/0/url': 'must use https' });
+throw new ValidationError(errors);   // -> 422 { errors }
 ```
+
+`ValidationError` is the only one so far. Add a second only when a service has
+a genuinely new outcome to report, and map it in `setErrorHandler` in the same
+change. The status lives there and nowhere else.
+
+**`HttpError` is the old shape and is not for new code.** It bundles a
+`statusCode` into the domain layer, which is exactly what rule 14 forbids. Four
+services still throw it; they are named under
+[Known inconsistencies](#known-inconsistencies) and are migrated when you are
+already editing them, not as a drive-by.
 
 **Throw a plain `Error` for a programmer error**, something no request should
 ever be able to trigger. It becomes a bare 500.
@@ -771,6 +812,12 @@ upload route, `{ errors }` on a validation failure, and `{ error, ... }` on a
 409 conflict, where `error` is a machine-readable slug such as
 `revision_conflict`, `branch_exists` or `branch_protected`. Do not introduce a
 general response envelope.
+
+**A route does not send user-facing prose.** The client owns localized copy, so
+an English `{ message }` in an error body is both a fourth envelope and an i18n
+regression: a Spanish respondent is shown English. Send the status with an empty
+body and let the client pick its own string. The email challenge routes answer
+503, 400, 502 and 422 that way.
 
 **Authenticated routes opt in per route**, never globally, by setting
 `preHandler` in the `RouteOptions` literal (keys stay alphabetical: `config`,
@@ -928,6 +975,20 @@ when you are already editing that line for another reason.
 - **Conversation order is `sequence`, never `created_at`.** Publishing imports
   messages with their original timestamps after appending a marker, so a
   timestamp sort interleaves them wrongly.
+- **Four services still throw `HttpError`**, against rule 14:
+  `internal-form.service.ts` (ten throws plus a private `revisionConflict`
+  factory), `form-message.service.ts`, `organization.service.ts` and
+  `authentication.service.ts`. `gateways/openai.ts` builds them too. Until they
+  are migrated, two shapes produce a 422 `{ errors }`: `HttpError.invalid()` and
+  `ValidationError`. Migrate a file when you are already editing it.
+- **`TokenService` is a codec, not a domain service**, and still sits in
+  `services/` against rule 15. It is left there because moving it touches OAuth
+  state, auth codes and email verification in one change.
+- **A final submit missing its verification proof reports the same field
+  twice.** The engine marks every `<field-id>_token` field implicitly
+  `required`, so `validate` records `errors['<id>_token']` from that rule and
+  `errors['<id>']` from the proof check. Harmless: `packages/core` discards the
+  422 body and only the status reaches the respondent.
 
 ## Before you hand work back
 
@@ -950,6 +1011,10 @@ grep -rnE "\b(Result|Summary|Dto)\b" packages/api/src  # expect no project types
 grep -rnE ": Date\b" packages/api/src/core/repositories  # only domain timestamps
 grep -rn "IOrganization" packages/api/src/core/services   # only organization.service.ts
 grep -rn "for (const" packages/api/src                 # none that only push
+grep -rln "HttpError" packages/api/src/core/services   # only the four legacy files
+grep -rn "statusCode" packages/api/src/core/services   # only form-message.service.ts
+grep -rn "reply\." packages/api/src/core               # expect no matches
+grep -rn "getTokenFieldId" packages/api/src            # the only spelling of the suffix
 ```
 
 And confirm by inspection:

@@ -2,7 +2,12 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
 import Ajv from 'ajv';
 import { Db, MongoClient } from 'mongodb';
-import { GitHubGateway, GitHubOAuthGateway, OpenAiGateway } from './gateways';
+import {
+  EmailGateway,
+  GitHubGateway,
+  GitHubOAuthGateway,
+  OpenAiGateway,
+} from './gateways';
 import {
   AuthCodeRepository,
   FormMessageRepository,
@@ -14,6 +19,7 @@ import {
 } from './repositories';
 import {
   AuthenticationService,
+  EmailVerificationService,
   FileService,
   FormMessageService,
   FormService,
@@ -51,6 +57,7 @@ export type Container = {
   formService: FormService;
   formMessageService: FormMessageService;
   authenticationService: AuthenticationService;
+  emailVerificationService: EmailVerificationService;
   submissionService: SubmissionService;
   jobService: JobService;
 };
@@ -92,7 +99,11 @@ export async function getContainer(): Promise<Container> {
   const organizationRepository = new OrganizationRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const jobRepository = new JobRepository(db);
-  const tokenService = new TokenService(process.env.AUTH_STATE_SECRET || '');
+  const tokenService = new TokenService(
+    process.env.AUTH_STATE_SECRET || '',
+    'oauth',
+  );
+  const emailGateway = new EmailGateway();
   const fileService = new FileService(s3Client);
   const organizationService = new OrganizationService(organizationRepository);
   const internalFormService = new InternalFormService(
@@ -104,6 +115,10 @@ export async function getContainer(): Promise<Container> {
     gitHubFileRepository,
     gitHubGateway,
     internalFormService,
+  );
+  const emailVerificationService = new EmailVerificationService(
+    new TokenService(process.env.VERIFICATION_SECRET || '', 'verification'),
+    emailGateway,
   );
   const formMessageService = new FormMessageService(
     formMessageRepository,
@@ -140,12 +155,14 @@ export async function getContainer(): Promise<Container> {
     formService,
     submissionRepository,
     jobService,
+    emailVerificationService,
   );
 
   container = {
     authCodeRepository,
     authenticationService,
     db,
+    emailVerificationService,
     fileService,
     formMessageRepository,
     formMessageService,

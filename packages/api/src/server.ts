@@ -5,7 +5,7 @@ import fastifyRateLimit from '@fastify/rate-limit';
 import fastify, { type FastifyError } from 'fastify';
 import { randomBytes } from 'node:crypto';
 import * as qs from 'qs';
-import { getContainer, HttpError } from './core';
+import { getContainer, HttpError, ValidationError } from './core';
 import {
   AUTH_DEMO_POST,
   AUTH_ME_GET,
@@ -15,6 +15,8 @@ import {
   CONFIG_GET,
   FILES_KEY_GET,
   FILES_UPLOAD_POST,
+  FORMS_ID_EMAIL_CHALLENGES_POST,
+  FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST,
   FORMS_ID_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
@@ -58,6 +60,12 @@ export async function startServer() {
   });
 
   server.setErrorHandler((error: FastifyError, _request, reply) => {
+    if (error instanceof ValidationError) {
+      reply.status(422).send({ errors: error.errors });
+
+      return;
+    }
+
     const statusCode = error.statusCode ?? 500;
     const payload = (error as unknown as HttpError).payload;
 
@@ -162,6 +170,8 @@ export async function startServer() {
   server.route(CONFIG_GET);
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
+  server.route(FORMS_ID_EMAIL_CHALLENGES_POST);
+  server.route(FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST);
   server.route(FORMS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
