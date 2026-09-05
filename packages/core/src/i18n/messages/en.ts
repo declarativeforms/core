@@ -14,6 +14,7 @@ const enMessageSource = {
   'thank_you.page_title': 'Thank You — Declarative Forms',
   'thank_you.default_title': 'Thank You!',
   'thank_you.default_description': 'Your submission has been received.',
+  'start.button': 'Start',
   'section.back': 'Back',
   'section.next': 'Next',
   'dropdown.select_a': 'Select a {{label}}',

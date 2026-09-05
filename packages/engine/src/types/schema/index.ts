@@ -31,6 +31,7 @@ import type {
   FormRatingField,
   FormSection,
   FormSelectField,
+  FormStart,
   FormValidator,
   FormWebhookConnection,
 } from './model';
@@ -44,6 +45,7 @@ export type IDeclarativeFormButton = FormButton<ILocalizedText>;
 export type IDeclarativeFormCompletion = FormCompletion<ILocalizedText>;
 export type IDeclarativeFormCompletionRule = FormCompletionRule<ILocalizedText>;
 export type IDeclarativeFormSection = FormSection<ILocalizedText>;
+export type IDeclarativeFormStart = FormStart<ILocalizedText>;
 export type IDeclarativeFormEmailField = FormEmailField<ILocalizedText>;
 export type IDeclarativeFormDropdownField = FormDropdownField<ILocalizedText>;
 export type IDeclarativeFormSelectField = FormSelectField<ILocalizedText>;

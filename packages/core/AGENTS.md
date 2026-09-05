@@ -58,7 +58,7 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-80 hand-written files, plus 16 generated ones under `src/components/ui`.
+84 hand-written files, plus 16 generated ones under `src/components/ui`.
 
 | Path | Holds |
 | ---- | ----- |
@@ -299,8 +299,8 @@ use it as licence to destructure named props.
 
 | Pattern | Count | Denotes |
 | ------- | ----- | ------- |
-| `*.component.tsx` | 23 | A component under `components/declarative-form/` |
-| `*.page.tsx` | 4 | A page-level view under `views/` |
+| `*.component.tsx` | 25 | A component under `components/declarative-form/` |
+| `*.page.tsx` | 5 | A page-level view under `views/` |
 | `use-*.ts` | 5 | A hook, named for its export |
 | `*.types.ts` | 3 | A shared type-only module |
 | `*.client.tsx` | 1 | An explicit client boundary inside `app/` |

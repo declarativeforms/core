@@ -102,9 +102,16 @@ export type ICompiledConnection =
 export type ICompiledEmailConnection = ICompiledFormEmailConnection;
 export type ICompiledWebhookConnection = ICompiledFormWebhookConnection;
 
+export type ICompiledFormStart = {
+  title: string;
+  description?: string;
+  button?: string;
+};
+
 export type ICompiledFormSection = {
   id: string;
   title: string;
+  description?: string;
   fields: Array<ICompiledFormField>;
   next?: string;
 };
@@ -114,6 +121,7 @@ export type ICompiledForm = {
   version: number;
   title: string;
   description?: string;
+  start?: ICompiledFormStart;
   sections: Array<ICompiledFormSection>;
   completion?: ICompiledFormCompletion;
   connections: Array<ICompiledConnection>;

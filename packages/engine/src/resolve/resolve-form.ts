@@ -3,6 +3,7 @@ import { isDeclarativeConnectionType } from '../types';
 import { resolveConnection } from './resolve-connection';
 import { resolveFormCompletion } from './resolve-form-completion';
 import { resolveFormSection } from './resolve-form-section';
+import { resolveFormStart } from './resolve-form-start';
 import { resolveLocalizedText } from './localize';
 import { getTokenFieldId } from './token-field-id';
 
@@ -45,6 +46,9 @@ export function resolve(
     }),
     ...(schema.description !== undefined && {
       description: resolveLocalizedText(schema.description, locale),
+    }),
+    ...(schema.start !== undefined && {
+      start: resolveFormStart(schema.start, locale),
     }),
     ...(schema.completion !== undefined && {
       completion: resolveFormCompletion(schema.completion, locale),

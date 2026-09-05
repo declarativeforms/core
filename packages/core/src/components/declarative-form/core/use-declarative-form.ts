@@ -17,12 +17,9 @@ export function useDeclarativeForm(
   schema: IDeclarativeForm,
   locale: string,
   initialData: Record<string, unknown>,
-  initialSectionId?: string,
+  sectionId: string,
 ): UseDeclarativeForm {
-  const [formState, setFormState] = useState(() => ({
-    data: initialData,
-    activeSectionId: initialSectionId ?? schema.sections?.[0]?.id ?? '',
-  }));
+  const [data, setData] = useState(initialData);
 
   const resolved = useMemo(() => resolve(schema, locale), [schema, locale]);
 
@@ -31,70 +28,65 @@ export function useDeclarativeForm(
       const compiled = compile(resolved, answers);
 
       return compiled.sections.length
-        ? render(compiled, answers, { sectionId: formState.activeSectionId })
+        ? render(compiled, answers, { sectionId })
         : null;
     },
-    [resolved, formState.activeSectionId],
+    [resolved, sectionId],
   );
 
-  const section = useMemo(
-    () => renderableFormFn(formState.data)?.section,
-    [renderableFormFn, formState.data],
+  const renderable = useMemo(
+    () => renderableFormFn(data),
+    [renderableFormFn, data],
   );
 
   const submitSection = useCallback(
     (sectionData: Record<string, unknown>): SubmitResult => {
-      const data = { ...formState.data, ...sectionData };
+      const merged = { ...data, ...sectionData };
 
-      const next = renderableFormFn(data)?.section.next;
+      const next = renderableFormFn(merged)?.section.next;
+
+      setData(merged);
 
       if (next?.type === 'redirect') {
-        setFormState((state) => ({ ...state, data }));
-
         return {
           type: 'redirect',
           url: next.url,
-          activeSectionId: formState.activeSectionId,
-          data,
+          activeSectionId: renderable?.section.id ?? '',
+          data: merged,
         };
       }
-      if (!next || next.type === 'complete') {
-        setFormState((state) => ({ ...state, data }));
 
+      if (!next || next.type === 'complete') {
         return {
           type: 'complete',
-          data,
-          activeSectionId: formState.activeSectionId,
+          data: merged,
+          activeSectionId: renderable?.section.id ?? '',
         };
       }
-
-      setFormState({ data, activeSectionId: next.sectionId });
 
       return {
         type: 'submit',
-        data,
+        data: merged,
         isPartial: true,
         activeSectionId: next.sectionId,
       };
     },
-    [formState, renderableFormFn],
+    [data, renderable, renderableFormFn],
   );
 
-  const goBack = useCallback(() => {
-    setFormState((state) => {
-      const previous = findPreviousSectionId(
-        compile(resolved, state.data),
-        state.activeSectionId,
-      );
+  const goBack = useCallback((): string => {
+    const previous = findPreviousSectionId(
+      compile(resolved, data),
+      renderable?.section.id ?? '',
+    );
 
-      return previous ? { ...state, activeSectionId: previous } : state;
-    });
-  }, [resolved]);
+    return previous ?? '';
+  }, [resolved, data, renderable]);
 
   return {
-    section,
-    data: formState.data,
-    activeSectionId: formState.activeSectionId,
+    start: renderable?.start,
+    section: renderable?.section,
+    data,
     submitSection,
     goBack,
   };

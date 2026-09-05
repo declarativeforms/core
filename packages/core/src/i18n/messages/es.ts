@@ -14,6 +14,7 @@ export const esMessages: TranslationMessages = {
   'thank_you.page_title': 'Gracias — Declarative Forms',
   'thank_you.default_title': '¡Gracias!',
   'thank_you.default_description': 'Hemos recibido tu envío.',
+  'start.button': 'Comenzar',
   'section.back': 'Atrás',
   'section.next': 'Siguiente',
   'dropdown.select_a': 'Selecciona {{label}}',

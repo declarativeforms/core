@@ -2,6 +2,7 @@ import type { ICompiledForm, IResolvedForm } from '../types';
 import { compileConnection } from './compile-connection';
 import { compileFormCompletion } from './compile-form-completion';
 import { compileFormSection } from './compile-form-section';
+import { compileFormStart } from './compile-form-start';
 import { DEFAULT_MESSAGES, type ValidationMessages } from './messages';
 import { interpolateTemplate } from './template';
 
@@ -11,6 +12,7 @@ export function compile(
   messages: ValidationMessages = DEFAULT_MESSAGES,
 ): ICompiledForm {
   const completion = compileFormCompletion(resolved.completion, data);
+  const start = compileFormStart(resolved, data);
 
   return {
     ...(resolved.id !== undefined && { id: resolved.id }),
@@ -22,6 +24,7 @@ export function compile(
     ...(resolved.description !== undefined && {
       description: interpolateTemplate(resolved.description, data),
     }),
+    ...(start && { start }),
     sections: (resolved.sections ?? []).map((section) =>
       compileFormSection(section, data, messages),
     ),

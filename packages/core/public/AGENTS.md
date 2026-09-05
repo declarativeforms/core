@@ -159,8 +159,9 @@ validation.
 | Key | Type | Description |
 | --- | --- | --- |
 | `version` | integer | Schema version. Use `1`. |
-| `title` | localized text | Shown at the top. Supports templating. |
-| `description` | localized text | Short text under the title. |
+| `title` | localized text | Shown on the start page. Supports templating. |
+| `description` | localized text | Short text under the title on the start page. |
+| `start` | object or `false` | The start page. `false` skips it. |
 | `sections` | array | **Required.** At least one section. |
 | `completion` | object or array | The screen shown after submission. |
 | `connections` | array | Webhooks and emails fired on submit. |
@@ -193,12 +194,14 @@ the first non-empty value.
 
 ### Sections and navigation
 
-A section is one page, validated and saved as a step.
+A section is one page, validated and saved as a step. Its `title` and
+`description` are the heading shown at the top of that page.
 
 ```yaml
 sections:
   - id: attendee
     title: "About you"
+    description: "So we know who is coming."
     fields: []
     next:
       - when: "data.ticket === 'VIP'"
@@ -210,6 +213,42 @@ sections:
 The first truthy `when` wins, and `else` is the fallback. A target is a section
 `id`, the literal `done`, or an absolute `https://` URL that redirects the
 respondent. Omitting `next` finishes the form.
+
+**Give every section a `title`.** The form `title` is not repeated above the
+fields: a section with neither `title` nor `description` renders no heading at
+all.
+
+### The start page
+
+Before the first section the respondent sees a start page: the form `title`, the
+form `description`, and a button. It is on by default and needs no
+configuration, and it is omitted only when the form has neither a `title` nor a
+`description`.
+
+Add a `start` block to override any of the three. Each key falls back to the
+form-level value, so set only what should differ.
+
+```yaml
+title: "Speaker application"
+description: "Applications close on 30 June."
+
+start:
+  title: "Apply to speak"
+  description: "Six questions, about five minutes."
+  button: "Start"
+```
+
+The form `title` stays the document title even when `start.title` replaces the
+heading. All three keys are localized text and support templating, so a URL
+prefill can address the respondent by name.
+
+Set `start: false` to send the respondent straight into the first section. Do
+that for a short embedded form where the host page already carries the heading,
+or when an extra click is not worth it.
+
+The respondent returns to the start page with the **Back** button on the first
+section. A resumed form (`?step=`) opens on the saved section, not the start
+page.
 
 ### Field types
 
@@ -310,7 +349,8 @@ computation.
 ### Templating
 
 `{{data.field_id}}` placeholders resolve in the form `title` and `description`,
-a section `title`, a field `label` and `placeholder`, option labels, a rating's
+the `start` `title`, `description`, and `button`, a section `title` and
+`description`, a field `label` and `placeholder`, option labels, a rating's
 `min_label` and `max_label`, the completion `title`, `message`, and button
 `label` and `url`, and an email connection's `to`, `subject`, and `body`.
 

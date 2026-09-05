@@ -28,12 +28,14 @@ export function render(
     ...(compiled.description !== undefined && {
       description: compiled.description,
     }),
+    ...(compiled.start !== undefined && { start: compiled.start }),
     locale: compiled.locale,
     ...(compiled.theme !== undefined && { theme: compiled.theme }),
     section: renderFormSection(
       section,
       data,
-      findPreviousSectionId(compiled, section.id) !== undefined,
+      findPreviousSectionId(compiled, section.id) !== undefined ||
+        compiled.start !== undefined,
     ),
   };
 }

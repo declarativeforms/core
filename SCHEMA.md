@@ -22,6 +22,7 @@ type:
 
 - [Top-level keys](#top-level-keys)
 - [Localized text](#localized-text)
+- [Start page](#start-page)
 - [Sections](#sections)
 - [Navigation (`next`)](#navigation-next)
 - [Fields](#fields)
@@ -41,6 +42,7 @@ type:
 version: 1
 title: "Contact us"
 description: "Send us a message."
+start: {}        # optional, or `false` to skip the start page
 locale: "en"
 start_date: "2025-01-01"
 end_date: "2025-12-31"
@@ -59,8 +61,9 @@ connections: []    # optional
 | Key | Type | Required | Description |
 | --- | --- | --- | --- |
 | `version` | number | Recommended | Schema version. Use `1`. |
-| `title` | [localized text](#localized-text) | No | Form title, shown at the top. |
+| `title` | [localized text](#localized-text) | No | Form title, shown on the [start page](#start-page). |
 | `description` | [localized text](#localized-text) | No | Short description under the title. |
+| `start` | [Start](#start-page) or `false` | No | Overrides the start page, or `false` to skip it. |
 | `sections` | array of [Section](#sections) | Yes | The body of the form. At least one. |
 | `completion` | [Completion](#completion-screen) | No | The screen shown after submission. |
 | `connections` | array of [Connection](#connections) | No | Webhooks or emails fired on submit. |
@@ -91,15 +94,61 @@ title:
 The active language follows the form's `locale`, and can be overridden with a
 `?lang=es` query parameter.
 
+## Start page
+
+Before the first section the respondent sees a start page: the form `title`, the
+form `description`, and a button. It is on by default and needs no
+configuration. It is omitted only when the form has neither a `title` nor a
+`description`.
+
+Add a `start` block to override any of the three. Each key falls back to the
+form-level value, so set only what should differ.
+
+```yaml
+title: "Speaker application"
+description: "Applications close on 30 June."
+
+start:
+  title: "Apply to speak"
+  description: "Six questions, about five minutes."
+  button: "Start"
+```
+
+| Key | Type | Description |
+| --- | --- | --- |
+| `title` | [localized text](#localized-text) | Heading. Defaults to the form `title`. |
+| `description` | [localized text](#localized-text) | Body text. Defaults to the form `description`. |
+| `button` | [localized text](#localized-text) | Call-to-action label. Defaults to a localized "Start". |
+
+All three support [templating](#templating), so a
+[URL prefill](#prefilling-fields-from-the-url) can address the respondent by
+name. The form `title` remains the browser document title even when
+`start.title` replaces the heading.
+
+Set `start: false` to send the respondent straight into the first section:
+
+```yaml
+start: false
+```
+
+The respondent returns to the start page with the **Back** button on the first
+section. A resumed form (`?step=`) opens on the saved section, not the start
+page.
+
 ## Sections
 
 A form is one or more sections. Each section is a page of fields, submitted as a
-step. Multi-section forms show progress and support conditional routing.
+step. Multi-section forms support conditional routing.
+
+A section's `title` and `description` are the heading shown at the top of that
+page. The form `title` is not repeated above the fields, so a section with
+neither renders no heading at all. Give every section a `title`.
 
 ```yaml
 sections:
   - id: contact
     title: "Your details"
+    description: "So we know how to reach you."
     fields:
       - id: full_name
         type: short_text
@@ -110,7 +159,8 @@ sections:
 | Key | Type | Description |
 | --- | --- | --- |
 | `id` | string | Section identifier. Referenced by `next` rules. |
-| `title` | [localized text](#localized-text) | Section heading. |
+| `title` | [localized text](#localized-text) | Section heading, shown at the top of the page. |
+| `description` | [localized text](#localized-text) | Text under the section heading. |
 | `fields` | array of [Field](#fields) | The fields on this page. |
 | `next` | string or array | Where to go after this section. See below. |
 
@@ -377,7 +427,8 @@ conditions, not computation.
 They are supported in:
 
 - the form `title` and `description`
-- a section `title`
+- the `start` `title`, `description`, and `button`
+- a section `title` and `description`
 - a field `label` and `placeholder`
 - option labels, and a rating's `min_label` and `max_label`
 - the completion `title`, `message`, and the button's `label` and `url`

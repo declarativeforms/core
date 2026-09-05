@@ -18,4 +18,5 @@ export * from './rating-field';
 export * from './section';
 export * from './signature-field';
 export * from './single-select-field';
+export * from './start';
 export * from './text-field';

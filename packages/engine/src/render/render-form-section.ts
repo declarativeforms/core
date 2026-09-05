@@ -11,6 +11,7 @@ export function renderFormSection(
   return {
     id: section.id,
     ...(section.title && { title: section.title }),
+    ...(section.description && { description: section.description }),
     fields: section.fields.map(renderFormField),
     next: renderNavigation(section.next),
     canGoBack,

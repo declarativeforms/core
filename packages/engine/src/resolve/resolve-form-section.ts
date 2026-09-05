@@ -12,6 +12,9 @@ export function resolveFormSection(
     ...(section.title !== undefined && {
       title: resolveLocalizedText(section.title, locale),
     }),
+    ...(section.description !== undefined && {
+      description: resolveLocalizedText(section.description, locale),
+    }),
     ...(section.fields !== undefined && {
       fields: section.fields.flatMap((field) => {
         const resolved = resolveFormField(field, locale);

@@ -11,6 +11,18 @@ description:
   en: "A comprehensive form that exercises every feature of the platform."
   es: "Un formulario que ejercita todas las funciones de la plataforma."
 
+# The start page. Every key falls back to the form title and description.
+start:
+  title:
+    en: "Before you begin"
+    es: "Antes de empezar"
+  description:
+    en: "Four short pages. Your answers are saved as you go."
+    es: "Cuatro páginas cortas. Tus respuestas se guardan sobre la marcha."
+  button:
+    en: "Start"
+    es: "Comenzar"
+
 theme:
   primary: "#542EBC"
 
@@ -20,6 +32,7 @@ end_date: "2099-12-31"
 sections:
   - id: basics
     title: "About you"
+    description: "The basics, so we know who we are talking to."
     fields:
       - id: utm_source
         type: hidden
@@ -97,6 +110,7 @@ sections:
 
   - id: organization
     title: "Organization details"
+    description: "You told us you are responding for a business."
     fields:
       - id: org_name
         type: short_text
@@ -141,6 +155,7 @@ sections:
 
   - id: preferences
     title: "Preferences for {{data.full_name}}"
+    description: "Tell us what you care about, {{data.full_name}}."
     fields:
       - id: interests
         type: multiple_select
@@ -226,6 +241,7 @@ sections:
 
   - id: media
     title: "Media and location"
+    description: "Optional. Skip anything you would rather not share."
     fields:
       - id: bio
         type: long_text

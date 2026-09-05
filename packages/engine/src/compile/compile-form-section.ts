@@ -15,6 +15,9 @@ export function compileFormSection(
       section.title !== undefined
         ? interpolateTemplate(section.title, data)
         : '',
+    ...(section.description !== undefined && {
+      description: interpolateTemplate(section.description, data),
+    }),
     fields: (section.fields ?? []).map((field) =>
       compileFormField(field, data, messages),
     ),

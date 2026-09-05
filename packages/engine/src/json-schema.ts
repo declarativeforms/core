@@ -347,12 +347,31 @@ export const FORM_JSON_SCHEMA = {
     },
     title: ref(
       'localizedText',
-      'Form title, shown at the top and used as the document title. Supports templating.',
+      'Form title, shown on the start page and used as the document title. Supports templating.',
     ),
     description: ref(
       'localizedText',
-      'Short description under the title. Supports templating.',
+      'Short description under the title on the start page. Supports templating.',
     ),
+    start: {
+      description:
+        'The start page: the screen a respondent sees before the first section. Shown by default whenever the form has a title or a description, and omitted when it has neither. Set it to `false` to send the respondent straight into the first section.',
+      oneOf: [
+        {
+          const: false,
+          description: 'Skip the start page.',
+        },
+        { $ref: '#/definitions/start' },
+      ],
+      examples: [
+        {
+          title: 'Tell us about your project',
+          description: 'Six questions, about two minutes.',
+          button: 'Start',
+        },
+        false,
+      ],
+    },
     locale: {
       type: 'string',
       pattern: '^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$',
@@ -511,7 +530,7 @@ export const FORM_JSON_SCHEMA = {
     section: {
       type: 'object',
       description:
-        'One page of the form, validated and saved as a step. Multi-section forms show progress and support conditional routing.',
+        'One page of the form, validated and saved as a step. Its `title` and `description` are the heading the respondent sees on that page. Multi-section forms support conditional routing.',
       additionalProperties: false,
       required: ['id', 'fields'],
       properties: {
@@ -519,7 +538,14 @@ export const FORM_JSON_SCHEMA = {
           'identifier',
           'Section identifier. This is what `next` rules target.',
         ),
-        title: ref('localizedText', 'Section heading. Supports templating.'),
+        title: ref(
+          'localizedText',
+          'Section heading, shown at the top of this page. Supports templating.',
+        ),
+        description: ref(
+          'localizedText',
+          'Text under the section heading, shown at the top of this page. Supports templating.',
+        ),
         fields: {
           type: 'array',
           description: 'The fields on this page.',
@@ -558,6 +584,26 @@ export const FORM_JSON_SCHEMA = {
         url: ref(
           'localizedText',
           'Where the button goes. Localized text, so it can point at a different page per language.',
+        ),
+      },
+    },
+    start: {
+      type: 'object',
+      description:
+        'The start page. Every key is optional and falls back to the form-level value, so a form with a `title` and a `description` already has a working start page without this block.',
+      additionalProperties: false,
+      properties: {
+        title: ref(
+          'localizedText',
+          'Heading on the start page. Defaults to the form `title`. Supports templating.',
+        ),
+        description: ref(
+          'localizedText',
+          'Body text on the start page. Defaults to the form `description`. Supports templating.',
+        ),
+        button: ref(
+          'localizedText',
+          'Label on the call to action. Defaults to a localized "Start". Supports templating.',
         ),
       },
     },

@@ -205,6 +205,13 @@ export function FormRoute(props: FormRouteProps) {
     return submissionResponse?.id as string | undefined;
   }
 
+  function handleStepChange(sectionId: string): void {
+    updateProgressQuery({
+      submissionId: searchParams.get('submission_id'),
+      step: sectionId,
+    });
+  }
+
   async function handleEffect(
     effect: FormEffect,
     runtimeState: {
@@ -339,25 +346,21 @@ export function FormRoute(props: FormRouteProps) {
   };
 
   const stepParam = searchParams.get('step');
-  const initialSectionId =
+  const sectionId =
     stepParam &&
     (formQuery.data.sections ?? []).some((section) => section.id === stepParam)
       ? stepParam
-      : formQuery.data.sections?.[0]?.id;
+      : '';
 
-  const resolvedTitle =
+  const documentTitle =
     resolveLocalizedText(formQuery.data.title, i18n.locale) ||
     formQuery.data.id ||
     props.id ||
     '';
-  const resolvedDescription = formQuery.data.description
-    ? resolveLocalizedText(formQuery.data.description, i18n.locale)
-    : undefined;
 
   return (
     <BasePage
-      title={resolvedTitle}
-      description={resolvedDescription}
+      documentTitle={documentTitle}
       theme={formQuery.data.theme}
       embed={searchParams.get('embed') === 'true'}
     >
@@ -365,7 +368,8 @@ export function FormRoute(props: FormRouteProps) {
         form={formQuery.data}
         locale={i18n.locale}
         initialData={initialData}
-        initialSectionId={initialSectionId}
+        sectionId={sectionId}
+        onStepChange={handleStepChange}
         onEffect={handleEffect}
       />
     </BasePage>

@@ -88,6 +88,7 @@ export type FormField<Text> =
 export type FormSection<Text> = {
   id?: string;
   title?: Text;
+  description?: Text;
   fields?: Array<FormField<Text>>;
   next?: string | Array<IDeclarativeFormNextRule>;
 };
@@ -105,6 +106,12 @@ export type FormCompletion<Text> = {
 
 export type FormCompletionRule<Text> = FormCompletion<Text> & {
   when?: string;
+};
+
+export type FormStart<Text> = {
+  title?: Text;
+  description?: Text;
+  button?: Text;
 };
 
 export type FormConnectionBase = {
@@ -134,6 +141,7 @@ export type Form<Text> = {
   version?: number;
   title?: Text;
   description?: Text;
+  start?: FormStart<Text> | false;
   completion?: FormCompletion<Text> | Array<FormCompletionRule<Text>>;
   sections?: Array<FormSection<Text>>;
   connections?: Array<FormConnection<Text>>;

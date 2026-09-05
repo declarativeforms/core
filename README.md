@@ -218,7 +218,8 @@ returns "not found" without `?branch=master`.
 | --- | --- |
 | **22 field types** | Text, email, number, dates, single and multiple select, searchable dropdown, rating, file upload, camera capture, signature, address autocomplete, geolocation, hidden, and more. |
 | **Validation** | Required, length, numeric and count bounds, regex patterns, and cross-field expressions with custom messages. |
-| **Multi-step forms** | Split a form into sections with progress and per-section submission. |
+| **Start page** | Every form opens on its title, description, and a call to action. Override it with `start`, or skip it with `start: false`. |
+| **Multi-step forms** | Split a form into sections, each with its own heading and per-section submission. |
 | **Conditional logic** | Show or hide fields with `visible_when`. Branch between sections with conditional `next` rules. |
 | **Templating** | Personalize titles and messages with `{{data.field_id}}` placeholders. |
 | **Localization** | Provide any text as a per-language map. Switch with `?lang=`. |

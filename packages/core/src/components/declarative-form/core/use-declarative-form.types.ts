@@ -1,4 +1,7 @@
-import type { IRenderableSection } from '@declarativeforms/engine';
+import type {
+  IRenderableSection,
+  IRenderableStart,
+} from '@declarativeforms/engine';
 
 export type FormEffect =
   | { type: 'submit'; data: Record<string, unknown>; isPartial: boolean }
@@ -11,9 +14,9 @@ export type SubmitResult = FormEffect & {
 };
 
 export type UseDeclarativeForm = {
+  start: IRenderableStart | undefined;
   section: IRenderableSection | undefined;
   data: Record<string, unknown>;
-  activeSectionId: string;
   submitSection: (sectionData: Record<string, unknown>) => SubmitResult;
-  goBack: () => void;
+  goBack: () => string;
 };

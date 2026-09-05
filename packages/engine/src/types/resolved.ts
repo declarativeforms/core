@@ -18,6 +18,7 @@ import type {
   FormRatingField,
   FormSection,
   FormSelectField,
+  FormStart,
   FormValidator,
   FormWebhookConnection,
 } from './schema/model';
@@ -31,6 +32,7 @@ export type IResolvedFormButton = FormButton<string>;
 export type IResolvedFormCompletion = FormCompletion<string>;
 export type IResolvedFormCompletionRule = FormCompletionRule<string>;
 export type IResolvedFormSection = FormSection<string>;
+export type IResolvedFormStart = FormStart<string>;
 export type IResolvedFormEmailField = FormEmailField<string>;
 export type IResolvedFormDropdownField = FormDropdownField<string>;
 export type IResolvedFormSelectField = FormSelectField<string>;

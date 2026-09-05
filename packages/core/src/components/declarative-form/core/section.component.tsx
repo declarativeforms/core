@@ -1,13 +1,14 @@
 'use client';
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { useForm, useWatch, type FieldValues } from 'react-hook-form';
 import {
   evaluateExpression,
   type IRenderableSection,
 } from '@declarativeforms/engine';
-import { Button } from '@/components/ui';
+import { Button, CardContent } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { DeclarativeFormField } from './field.component';
+import { DeclarativeFormHeading } from './heading.component';
 
 export const DeclarativeFormSection = forwardRef<
   HTMLFormElement,
@@ -21,6 +22,7 @@ export const DeclarativeFormSection = forwardRef<
 >(function DeclarativeFormSection(props, ref) {
   const i18n = useI18n();
   const form = useForm({ defaultValues: props.section.defaultValues });
+  const headingId = useId();
 
   const values = useWatch({ control: form.control });
 
@@ -33,54 +35,64 @@ export const DeclarativeFormSection = forwardRef<
   );
 
   return (
-    <form
-      ref={ref}
-      tabIndex={-1}
-      aria-label={props.section.title || undefined}
-      onSubmit={form.handleSubmit(
-        (data: FieldValues) => props.onSubmit(data),
-        (errors) => {
-          const firstErrorField = Object.keys(errors)[0];
-          if (firstErrorField) {
-            form.setFocus(
-              firstErrorField.endsWith('_token')
-                ? firstErrorField.slice(0, -'_token'.length)
-                : firstErrorField,
-            );
-          }
-        },
-      )}
-      noValidate
-      className="outline-none"
-    >
-      <div className="space-y-6">
-        {fields.map((field) => (
-          <DeclarativeFormField
-            key={field.id}
-            field={field}
-            form={form}
-            formId={props.formId}
-          />
-        ))}
-      </div>
+    <>
+      <DeclarativeFormHeading
+        title={props.section.title}
+        description={props.section.description}
+        titleId={headingId}
+      />
 
-      <div className="mt-8 flex justify-between items-center">
-        {props.section.canGoBack ? (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={form.formState.isSubmitting}
-            onClick={props.onBack}
-          >
-            {i18n.t('section.back')}
-          </Button>
-        ) : (
-          <div />
-        )}
-        <Button type="submit" disabled={form.formState.isSubmitting}>
-          {i18n.t('section.next')}
-        </Button>
-      </div>
-    </form>
+      <CardContent className="px-6">
+        <form
+          ref={ref}
+          tabIndex={-1}
+          aria-labelledby={props.section.title ? headingId : undefined}
+          onSubmit={form.handleSubmit(
+            (data: FieldValues) => props.onSubmit(data),
+            (errors) => {
+              const firstErrorField = Object.keys(errors)[0];
+              if (firstErrorField) {
+                form.setFocus(
+                  firstErrorField.endsWith('_token')
+                    ? firstErrorField.slice(0, -'_token'.length)
+                    : firstErrorField,
+                );
+              }
+            },
+          )}
+          noValidate
+          className="outline-none"
+        >
+          <div className="space-y-6">
+            {fields.map((field) => (
+              <DeclarativeFormField
+                key={field.id}
+                field={field}
+                form={form}
+                formId={props.formId}
+              />
+            ))}
+          </div>
+
+          <div className="mt-8 flex justify-between items-center">
+            {props.section.canGoBack ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={form.formState.isSubmitting}
+                onClick={props.onBack}
+              >
+                {i18n.t('section.back')}
+              </Button>
+            ) : (
+              <div />
+            )}
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {i18n.t('section.next')}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </>
   );
 });

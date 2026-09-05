@@ -48,6 +48,11 @@ Connections
 - Add a connection only when the user asks for one.
 
 Design
+- Give every section a "title", and a "description" when the page needs framing. They
+  are the heading the respondent sees; the form title is not repeated above the fields.
+- The start page is on by default and already shows the form title and description. Add
+  a "start" block only to change the wording, and "start: false" only when the user asks
+  to drop it.
 - Prefer one section unless the form is genuinely long or has branching.
 - Order fields easiest-first and keep labels sentence case.
 - Mark a field required only when an answer is genuinely mandatory.
