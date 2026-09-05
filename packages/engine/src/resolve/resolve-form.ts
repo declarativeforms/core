@@ -4,11 +4,39 @@ import { resolveConnection } from './resolve-connection';
 import { resolveFormCompletion } from './resolve-form-completion';
 import { resolveFormSection } from './resolve-form-section';
 import { resolveLocalizedText } from './localize';
+import { getTokenFieldId } from './token-field-id';
+
+function assertTokenFieldIdsAvailable(schema: IDeclarativeForm): void {
+  const fieldIds = new Set(
+    (schema.sections ?? []).flatMap((section) =>
+      (section.fields ?? []).flatMap((field) =>
+        field.id === undefined ? [] : [field.id],
+      ),
+    ),
+  );
+
+  for (const section of schema.sections ?? []) {
+    for (const field of section.fields ?? []) {
+      if (field.type !== 'email' || field.otp !== true) {
+        continue;
+      }
+
+      const tokenFieldId = getTokenFieldId(field.id ?? '');
+      if (fieldIds.has(tokenFieldId)) {
+        throw new Error(
+          `Field id "${tokenFieldId}" is reserved for verification`,
+        );
+      }
+    }
+  }
+}
 
 export function resolve(
   schema: IDeclarativeForm,
   locale: string,
 ): IResolvedForm {
+  assertTokenFieldIdsAvailable(schema);
+
   return {
     ...(schema.id !== undefined && { id: schema.id }),
     ...(schema.version !== undefined && { version: schema.version }),

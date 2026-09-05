@@ -20,7 +20,14 @@ export function DropdownField(
   const i18n = useI18n();
 
   if (props.field.searchable) {
-    return <SearchableDropdown field={props.field} control={props.control} />;
+    return (
+      <SearchableDropdown
+        field={props.field}
+        control={props.control}
+        form={props.form}
+        formId={props.formId}
+      />
+    );
   }
 
   return (

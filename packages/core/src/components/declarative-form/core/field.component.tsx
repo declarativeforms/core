@@ -14,6 +14,7 @@ import { fieldRegistry } from './field-registry';
 export function DeclarativeFormField(props: {
   field: IRenderableField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
+  formId: string;
 }) {
   useEffect(() => {
     if (!props.field.visible) {
@@ -44,11 +45,21 @@ export function DeclarativeFormField(props: {
       rules={rules}
       render={(renderProps) =>
         props.field.type === 'hidden' ? (
-          <Renderer control={renderProps.field} field={props.field} />
+          <Renderer
+            control={renderProps.field}
+            field={props.field}
+            form={props.form}
+            formId={props.formId}
+          />
         ) : (
           <Field>
             <FieldLabel field={props.field} />
-            <Renderer control={renderProps.field} field={props.field} />
+            <Renderer
+              control={renderProps.field}
+              field={props.field}
+              form={props.form}
+              formId={props.formId}
+            />
             <FieldError errors={[renderProps.fieldState.error]} />
           </Field>
         )

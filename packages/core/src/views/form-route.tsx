@@ -114,7 +114,7 @@ export function FormRoute(props: FormRouteProps) {
   const urlPrefill: FieldValues = {};
 
   for (const [key, value] of searchParams.entries()) {
-    if (RESERVED_QUERY_KEYS.has(key)) {
+    if (RESERVED_QUERY_KEYS.has(key) || key.endsWith('_token')) {
       continue;
     }
 
@@ -195,6 +195,11 @@ export function FormRoute(props: FormRouteProps) {
       },
       method: 'POST',
     });
+
+    if (!response.ok) {
+      throw new Error(`Submission failed: ${response.status}`);
+    }
+
     const submissionResponse = await response.json();
 
     return submissionResponse?.id as string | undefined;

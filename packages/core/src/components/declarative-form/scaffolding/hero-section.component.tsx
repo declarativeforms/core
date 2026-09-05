@@ -63,7 +63,7 @@ export function HeroSection(props: {
         <p className="text-xs text-gray-500">
           {i18n.t('base.powered_by')}{' '}
           <a
-            href="https://docs.declarativeforms.com"
+            href="https://frms.dev"
             className="font-medium text-gray-900 hover:underline underline-offset-4"
           >
             Declarative Forms

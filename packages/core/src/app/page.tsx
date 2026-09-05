@@ -1,5 +1,10 @@
-import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { LandingPage } from '@/views/landing.page';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default function HomePage() {
-  redirect('https://github.com/declarativeforms');
+  return <LandingPage />;
 }

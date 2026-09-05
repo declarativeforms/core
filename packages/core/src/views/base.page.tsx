@@ -69,7 +69,7 @@ export function BasePage(props: {
         <span>
           {i18n.t('base.powered_by')}{' '}
           <a
-            href="https://docs.declarativeforms.com"
+            href="https://frms.dev"
             className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
           >
             Declarative Forms

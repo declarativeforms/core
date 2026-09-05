@@ -220,7 +220,7 @@ All 22 types. Every field also accepts `id`, `type`, `label`, `placeholder`,
 | --- | --- | --- |
 | `short_text` | Single-line input | none |
 | `long_text` | Textarea | none |
-| `email` | Email input | none |
+| `email` | Email input | `otp` |
 | `url` | URL input | none |
 | `mobile_number` | Telephone input | none |
 | `number` | Numeric input | none |
@@ -255,6 +255,11 @@ options:
 object with `formatted_address`, `place_id`, and where available
 `street_number`, `route`, `locality`, `administrative_area_level_1`, `country`,
 and `postal_code`.
+
+Set `otp: true` on an email field when the respondent must prove ownership of
+the address before continuing. The runtime sends a six-digit code and stores
+the successful proof JWT in a generated hidden field named
+`<email-id>_token`. Do not author that companion field yourself.
 
 ### Validators
 
@@ -390,6 +395,10 @@ behaviour that a schema file cannot describe.
 - Option **values** have no such restriction. `1-10` and `200+` are fine.
 - Filenames may be kebab-case. Ids may not.
 - Field ids must be unique across the whole form, not just within a section.
+- The `_token` suffix is reserved for verification proofs. Every field with
+  that suffix is required and its value is validated as a proof JWT bound to
+  the form, source field id, and source value. An email field with `otp: true`
+  generates and reserves `<field-id>_token` automatically.
 
 ### Validators behave differently per type
 
@@ -405,8 +414,8 @@ behaviour that a schema file cannot describe.
   is what makes `"2026-10-01"` work on a date field.
 - `number` gets an implicit `^\d+$` whole-number check **unless you supply your
   own `pattern`**. Negatives and decimals need one.
-- `email` has **no** implicit format check on the client or the server. Add a
-  `pattern` validator if you need one.
+- `email` has **no** implicit format check unless `otp: true` is set. Add a
+  `pattern` validator when an unverified email field needs format validation.
 - `pattern` is **not anchored for you**, and an empty value passes it. In a
   double-quoted YAML scalar the backslash must be doubled:
   `regex: "^\\+?[0-9 ()-]{7,20}$"`.

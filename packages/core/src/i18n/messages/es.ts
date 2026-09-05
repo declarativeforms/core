@@ -25,6 +25,21 @@ export const esMessages: TranslationMessages = {
   'address.loading_suggestions': 'Cargando sugerencias',
   'address.no_results': 'No se encontraron resultados.',
   'email.placeholder_default': 'Tu respuesta',
+  'email.verification_send': 'Enviar código',
+  'email.verification_sending': 'Enviando...',
+  'email.verification_resend': 'Reenviar código',
+  'email.verification_resend_in': 'Reenviar en {{seconds}}s',
+  'email.verification_code_placeholder': 'Código de 6 dígitos',
+  'email.verification_code_sent':
+    'Revisa tu correo para encontrar el código de verificación.',
+  'email.verification_verify': 'Verificar',
+  'email.verification_verifying': 'Verificando...',
+  'email.verification_success': 'Dirección de correo verificada.',
+  'email.verification_change': 'Cambiar',
+  'email.verification_request_failed':
+    'No se pudo enviar un código de verificación.',
+  'email.verification_invalid_code':
+    'El código de verificación no es válido o ha expirado.',
   'cookie.message': 'Usamos cookies para mejorar tu experiencia.',
   'cookie.learn_more': 'Más información',
   'cookie.decline': 'Rechazar',

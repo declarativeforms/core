@@ -47,6 +47,7 @@ export function DeclarativeForm(props: {
     <DeclarativeFormSection
       ref={sectionRef}
       key={declarativeForm.activeSectionId}
+      formId={props.form.id ?? ''}
       section={declarativeForm.section}
       data={declarativeForm.data}
       onBack={declarativeForm.goBack}

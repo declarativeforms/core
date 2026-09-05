@@ -88,6 +88,7 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
       return {
         ...base,
         type: 'email',
+        otp: field.otp === true,
         ...(min !== undefined && { min }),
         ...(max !== undefined && { max }),
       };

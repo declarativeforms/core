@@ -87,7 +87,15 @@ const fieldBranches: Array<JsonSchemaNode> = [
   ),
   fieldBranch(
     FIELD_TYPE_GROUPS.email,
-    'An email input. There is no implicit format check on either the client or the server: add a `pattern` validator if you need one.',
+    'An email input. There is no implicit format check on either the client or the server: add a `pattern` validator if you need one. Set `otp` to require ownership verification before completion.',
+    {
+      otp: {
+        type: 'boolean',
+        default: false,
+        description:
+          'Requires a one-time passcode sent to the address. The proof JWT is stored in a generated required hidden `<field-id>_token` field.',
+      },
+    },
   ),
   fieldBranch(FIELD_TYPE_GROUPS.dropdown, 'A select menu.', {
     options: optionsProperty,

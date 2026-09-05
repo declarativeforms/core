@@ -8,6 +8,7 @@ export * from './types';
 
 export { parse } from './parse';
 export { resolve } from './resolve';
+export { getTokenFieldId } from './resolve';
 export { serialize } from './serialize';
 export { compile, DEFAULT_MESSAGES } from './compile';
 export type { ValidationMessages } from './compile';

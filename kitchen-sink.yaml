@@ -276,7 +276,7 @@ sections:
     next:
       # Businesses are routed to an external page; everyone else completes here.
       - when: "data.respondent_type === 'Business'"
-        go: "https://docs.declarativeforms.com"
+        go: "https://frms.dev"
       - else: "done"
 
 completion:
@@ -291,7 +291,7 @@ completion:
       es: "Recibimos tu envío y responderemos a {{data.email}}."
     button:
       label: "Read the docs"
-      url: "https://docs.declarativeforms.com"
+      url: "https://frms.dev"
 
 connections:
   - type: webhook

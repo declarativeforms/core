@@ -30,7 +30,11 @@ export function resolveFormField(
 
   switch (field.type) {
     case 'email':
-      return { ...base, type: 'email' };
+      return {
+        ...base,
+        type: 'email',
+        ...(field.otp !== undefined && { otp: field.otp }),
+      };
     case 'dropdown':
       return {
         ...base,

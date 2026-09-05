@@ -44,6 +44,36 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Landing page design tokens. Literal values with no light/dark swap, so a
+   plain @theme rather than @theme inline. These utility names are used only by
+   views/landing.page.tsx and do not exist elsewhere in this package, so they
+   cannot affect how a form renders. --font-sans is deliberately not redefined
+   here: the base layer applies it to body on every route. */
+@theme {
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #000000;
+  --color-ink-muted: #4a4a48;
+  --color-paper: #fbfbfa;
+  --color-paper-alt: #f4f3ef;
+  --color-brand-yellow: #f8d806;
+  --color-brand-yellow-soft: #fdf3b8;
+  --color-brand-purple: #542ebc;
+  --color-brand-purple-soft: #ede7fb;
+}
+
+@utility shadow-hard {
+  box-shadow: 3px 3px 0 0 var(--color-ink);
+}
+
+@utility shadow-hard-lg {
+  box-shadow: 5px 5px 0 0 var(--color-ink);
+}
+
+@utility shadow-hard-xl {
+  box-shadow: 7px 7px 0 0 var(--color-ink);
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

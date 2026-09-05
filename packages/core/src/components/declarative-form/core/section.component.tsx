@@ -12,6 +12,7 @@ import { DeclarativeFormField } from './field.component';
 export const DeclarativeFormSection = forwardRef<
   HTMLFormElement,
   {
+    formId: string;
     section: IRenderableSection;
     data: Record<string, unknown>;
     onBack: () => void;
@@ -41,7 +42,11 @@ export const DeclarativeFormSection = forwardRef<
         (errors) => {
           const firstErrorField = Object.keys(errors)[0];
           if (firstErrorField) {
-            form.setFocus(firstErrorField);
+            form.setFocus(
+              firstErrorField.endsWith('_token')
+                ? firstErrorField.slice(0, -'_token'.length)
+                : firstErrorField,
+            );
           }
         },
       )}
@@ -50,7 +55,12 @@ export const DeclarativeFormSection = forwardRef<
     >
       <div className="space-y-6">
         {fields.map((field) => (
-          <DeclarativeFormField key={field.id} field={field} form={form} />
+          <DeclarativeFormField
+            key={field.id}
+            field={field}
+            form={form}
+            formId={props.formId}
+          />
         ))}
       </div>
 

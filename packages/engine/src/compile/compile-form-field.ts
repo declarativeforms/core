@@ -12,12 +12,23 @@ export function compileFormField(
 ): ICompiledFormField {
   const label =
     field.label !== undefined ? interpolateTemplate(field.label, data) : '';
-  const validation = buildValidationRules(
+  const authoredValidation = buildValidationRules(
     field.type,
     field.validators ?? [],
     label,
     messages,
   );
+  const validation =
+    field.id?.endsWith('_token') &&
+    !authoredValidation.some((rule) => rule.type === 'required')
+      ? [
+          ...authoredValidation,
+          {
+            type: 'required' as const,
+            message: 'Verification is required.',
+          },
+        ]
+      : authoredValidation;
 
   const base = {
     id: field.id ?? '',
@@ -37,7 +48,11 @@ export function compileFormField(
 
   switch (field.type) {
     case 'email':
-      return { ...base, type: 'email' };
+      return {
+        ...base,
+        type: 'email',
+        ...(field.otp !== undefined && { otp: field.otp }),
+      };
     case 'dropdown':
       return {
         ...base,

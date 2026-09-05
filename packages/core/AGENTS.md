@@ -637,15 +637,23 @@ plugin only for `js,jsx,mjs,ts,tsx,mts,cts`, so an unscoped object referencing a
 `react-hooks` rule is a hard config error the moment a `.cjs` file exists in the
 package. It does now: `prettier.config.cjs`.
 
-**Five ESLint warnings are expected and are not yours to fix** unless you are
+**Six ESLint warnings are expected and are not yours to fix** unless you are
 changing that code anyway. See [Known inconsistencies](#known-inconsistencies).
+
+**`npm run lint` currently crashes before it reports anything.** It dies with
+`TypeError: Error while loading rule 'react/display-name'` from
+`eslint-plugin-react`, which is not compatible with the eslint 10 that
+`eslint-config-next` pulls in. This predates the landing page and is not caused
+by your change. Until it is fixed, the warning counts below cannot be confirmed
+by running the linter.
 
 ## Known inconsistencies
 
 Recorded so you neither copy them nor "fix" them as a drive-by.
 
-- **Five standing ESLint warnings, zero errors.** A custom font in
-  `app/layout.tsx`, two `<img>` elements in the camera and signature fields, an
+- **Six standing ESLint warnings, zero errors.** A custom font in
+  `app/layout.tsx`, three `<img>` elements: two in the camera and signature
+  fields, and one in the brand mark in `views/landing.page.tsx`. Plus an
   unsupported `aria-required` on a `role="group"` in the multiple-select field,
   and one `set-state-in-effect` in the address autocomplete effect. The last is
   downgraded to `warn` on purpose, with the reason recorded in

@@ -1,4 +1,5 @@
 import type { IRenderableField } from '@declarativeforms/engine';
+import type { FieldValues, UseFormReturn } from 'react-hook-form';
 
 export type FieldControl<TValue = unknown> = {
   name: string;
@@ -14,4 +15,6 @@ export type FieldProps<
 > = {
   field: TField;
   control: FieldControl<TValue>;
+  form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
+  formId: string;
 };

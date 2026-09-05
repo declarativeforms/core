@@ -4,4 +4,5 @@ export type IRenderableEmailField = IRenderableFieldBase & {
   type: 'email';
   min?: number;
   max?: number;
+  otp: boolean;
 };
