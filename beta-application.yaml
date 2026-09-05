@@ -2,11 +2,20 @@
 version: 1
 locale: "en"
 
-title: "Declarative Forms — Founding Design Partner Program"
+title: "Declarative Forms: Founding Design Partner Program"
 description: >-
   Help shape Declarative Forms by using it in one real workflow and sharing
   candid feedback. We're selecting 20 founding design partners for a paid
   pilot. No technical experience is required. Estimated time: 3 minutes.
+
+start:
+  title: "Apply to be a founding design partner"
+  description: >-
+    We're selecting 20 partners for a paid pilot. You will use Declarative
+    Forms in one real workflow and tell us candidly what works and what does
+    not. Eleven questions, about three minutes. No technical experience is
+    required.
+  button: "Start the application"
 
 theme:
   primary: "#542EBC"
