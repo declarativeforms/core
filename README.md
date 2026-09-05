@@ -434,7 +434,14 @@ are running by putting `API_INTERNAL_ORIGIN` in `packages/core/.env.local`:
 # packages/core/.env.local
 API_INTERNAL_ORIGIN=http://127.0.0.1:8080
 GOOGLE_MAPS_API_KEY=          # optional, enables address autocomplete
+POSTHOG_PROJECT_KEY=          # optional, enables platform web analytics
+POSTHOG_API_HOST=https://us.i.posthog.com
 ```
+
+For direct Studio development, put the equivalent browser-visible values in
+`packages/studio/.env.local` as `VITE_POSTHOG_PROJECT_KEY` and
+`VITE_POSTHOG_API_HOST`. Docker Compose uses the unprefixed variables from the
+root `.env` for both applications at container startup.
 
 The browser always calls `/api/v1/...` on the same origin, so there is no CORS
 hop in development either.

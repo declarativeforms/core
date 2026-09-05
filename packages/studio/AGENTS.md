@@ -8,8 +8,8 @@ If this file and the code disagree, the code is wrong. Fix the code, then keep
 this file accurate.
 
 Studio is the form management interface: React 19 on Vite 8, a client-rendered
-SPA. It holds 69 hand-written modules, one type-declaration file and 15
-generated shadcn primitives: five views, 14 hooks, 13 `lib/` modules and six
+SPA. It holds 71 hand-written modules, one type-declaration file and 15
+generated shadcn primitives: five views, 14 hooks, 15 `lib/` modules and six
 `components/` subtrees.
 
 Its standards are `packages/core`'s, because both are React and because the two
@@ -64,7 +64,7 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-68 hand-written modules, one declaration file, 15 generated primitives.
+70 hand-written modules, one declaration file, 15 generated primitives.
 
 | Path | Holds |
 | ---- | ----- |
@@ -74,7 +74,7 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 | `src/components/<subtree>/` | Hand-written components, one `index.ts` barrel each: `conversation/`, `feedback/`, `forms/`, `organization/`, `shell/` |
 | `src/components/ui/` | Generated shadcn primitives. See [Generated code](#generated-code) |
 | `src/hooks/` | Hooks shared across views and components, `use-*.ts`. No barrel, so `@/hooks/use-session` is the correct form |
-| `src/lib/` | Framework-agnostic helpers: the api client and paths, wire types, the auth/selection/draft stores, query keys, error copy, preview URLs, time |
+| `src/lib/` | Framework-agnostic helpers: the api client and paths, wire types, analytics and runtime config, the auth/selection/draft stores, query keys, error copy, preview URLs, time |
 | `src/styles/globals.css` | Tailwind 4 entry and the shadcn design tokens |
 | `src/vite-env.d.ts` | The `vite/client` type reference. One line, no exports |
 | `public/` | Static files Vite copies to `dist/` verbatim and nginx serves at the site root: the favicon set, the apple-touch icon and `og-image.png`. Referenced from `index.html` by absolute path, never imported |

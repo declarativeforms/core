@@ -44,6 +44,8 @@ services:
       PORT: "8080"
       API_INTERNAL_ORIGIN: ${API_INTERNAL_ORIGIN:-http://api:8080}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      POSTHOG_API_HOST: ${POSTHOG_API_HOST:-https://us.i.posthog.com}
+      POSTHOG_PROJECT_KEY: ${POSTHOG_PROJECT_KEY:-}
     networks:
       - edge
       - backend
@@ -76,6 +78,8 @@ services:
     restart: unless-stopped
     environment:
       API_INTERNAL_ORIGIN: ${API_INTERNAL_ORIGIN:-http://api:8080}
+      POSTHOG_API_HOST: ${POSTHOG_API_HOST:-https://us.i.posthog.com}
+      POSTHOG_PROJECT_KEY: ${POSTHOG_PROJECT_KEY:-}
     networks:
       - edge
       - backend

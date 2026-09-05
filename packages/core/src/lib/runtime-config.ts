@@ -4,6 +4,8 @@ declare global {
   interface Window {
     __CONFIG__?: {
       googleMapsApiKey?: string;
+      posthogApiHost?: string;
+      posthogProjectKey?: string;
     };
   }
 }

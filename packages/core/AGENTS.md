@@ -58,7 +58,7 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-78 hand-written files, plus 16 generated ones under `src/components/ui`.
+80 hand-written files, plus 16 generated ones under `src/components/ui`.
 
 | Path | Holds |
 | ---- | ----- |

@@ -49,6 +49,11 @@ server {
         add_header Cache-Control "no-store";
     }
 
+    location = /runtime-config.js {
+        add_header Cache-Control "no-store";
+        try_files $uri =404;
+    }
+
     location / {
         try_files $uri $uri/ /index.html;
     }

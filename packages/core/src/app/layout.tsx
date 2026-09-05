@@ -5,6 +5,7 @@ import { resolveRequestLocale } from '@/i18n/server';
 import { GoogleMapsLoader } from './google-maps-loader.client';
 import { Providers } from './providers';
 import { RuntimeConfigScript } from './runtime-config-script';
+import { WebAnalytics } from './web-analytics.client';
 import './globals.css';
 
 export const dynamic = 'force-dynamic';
@@ -53,6 +54,7 @@ export default async function RootLayout(props: { children: ReactNode }) {
       </head>
       <body className="bg-neutral-50 min-h-lvh">
         <RuntimeConfigScript />
+        <WebAnalytics />
         <Providers fallbackLocale={fallbackLocale}>
           <GoogleMapsLoader />
           {props.children}

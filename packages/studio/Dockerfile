@@ -18,10 +18,16 @@ RUN npm run build --workspace=@declarativeforms/studio
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS studio
 
-ENV API_INTERNAL_ORIGIN=http://api:8080
+ENV API_INTERNAL_ORIGIN=http://api:8080 \
+    POSTHOG_API_HOST=https://us.i.posthog.com \
+    POSTHOG_PROJECT_KEY=
 
 COPY --chown=nginx:nginx --chmod=0644 packages/studio/docker/default.conf.template \
      /etc/nginx/templates/default.conf.template
+COPY --chown=nginx:nginx --chmod=0644 packages/studio/docker/runtime-config.js.template \
+     /opt/declarativeforms/runtime-config.js.template
+COPY --chown=nginx:nginx --chmod=0755 packages/studio/docker/40-runtime-config.sh \
+     /docker-entrypoint.d/40-runtime-config.sh
 COPY --chown=nginx:nginx --from=build /app/packages/studio/dist /usr/share/nginx/html
 
 USER root

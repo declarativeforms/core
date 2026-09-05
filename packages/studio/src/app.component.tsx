@@ -2,6 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router';
 import { watchAuthStorage } from '@/lib/auth-store';
+import {
+  initializeWebAnalytics,
+  syncWebAnalyticsIdentity,
+} from '@/lib/web-analytics';
 import { useSession } from '@/hooks/use-session';
 import { restoreSelectionPath } from '@/hooks/use-selection';
 import { Authenticating } from '@/views/authenticating.page';
@@ -16,6 +20,14 @@ function buildQueryClient(): QueryClient {
       queries: { gcTime: 300_000, retry: 1, staleTime: 30_000 },
     },
   });
+}
+
+function WebAnalytics() {
+  useEffect(() => {
+    initializeWebAnalytics();
+  }, []);
+
+  return null;
 }
 
 function SessionGate() {
@@ -40,6 +52,18 @@ function SessionGate() {
       void navigate(path, { replace: true });
     }
   }, [navigate, session.status]);
+
+  useEffect(() => {
+    if (session.status === 'signed-in') {
+      syncWebAnalyticsIdentity(session.email);
+
+      return;
+    }
+
+    if (session.status === 'signed-out') {
+      syncWebAnalyticsIdentity(null);
+    }
+  }, [session.email, session.status]);
 
   if (session.status === 'authenticating') {
     return <Authenticating label="Completing sign-in…" />;
@@ -103,6 +127,7 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <WebAnalytics />
       <BrowserRouter>
         <Routes>
           <Route element={<Demo />} path="/demo" />
