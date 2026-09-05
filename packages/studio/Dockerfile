@@ -31,7 +31,7 @@ COPY --chown=nginx:nginx --chmod=0755 packages/studio/docker/40-runtime-config.s
 COPY --chown=nginx:nginx --from=build /app/packages/studio/dist /usr/share/nginx/html
 
 USER root
-RUN chmod 0755 /etc/nginx/templates \
+RUN chmod 0755 /etc/nginx/templates /opt/declarativeforms \
     && chown nginx:nginx /usr/share/nginx/html
 USER nginx
 
