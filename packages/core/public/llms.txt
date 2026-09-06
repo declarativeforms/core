@@ -34,5 +34,5 @@ than rows in someone else's database.
 
 ## Optional
 
-- [README.md](https://raw.githubusercontent.com/declarativeforms/core/main/README.md): Project overview, quick start, where your data lives, architecture, and self-hosting with Docker Compose.
+- [README.md](https://raw.githubusercontent.com/declarativeforms/core/main/README.md): A quick start for creating a Git-native form with Codex, Claude Code, or YAML.
 - [Source repository](https://github.com/declarativeforms/core): The monorepo. Engine, web app, and API.
