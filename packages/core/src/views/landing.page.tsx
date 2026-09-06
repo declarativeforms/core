@@ -8,26 +8,26 @@ const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap';
 
 const HERO_TICKS: Array<string> = [
-  'Version controlled',
-  'Branch previews',
-  'Open source',
+  'Versioned in Git',
+  'Reviewable by pull request',
+  'Portable by design',
 ];
 
-const HERO_YAML = `# contact.yaml, committed to your repo
+const HERO_YAML = `# beta-access.yaml, committed to your repo
 version: 1
-title: "Contact us"
+title: "Request beta access"
 
 sections:
-  - id: contact
+  - id: application
     fields:
       - id: email
         type: email
         label: "Email address"
         validators: [required]
 
-      - id: message
+      - id: project
         type: long_text
-        label: "How can we help?"
+        label: "What are you building?"
         validators: [required]
     next: done
 `;
@@ -35,18 +35,18 @@ sections:
 const STEPS: Array<{ index: string; title: string; body: string }> = [
   {
     index: '01',
-    title: 'Write the YAML',
-    body: 'A form is one file. Fields, validation, branching and the completion screen all live in it.',
+    title: 'Define the form',
+    body: 'Fields, validation, branching and the completion screen live together in one YAML file.',
   },
   {
     index: '02',
-    title: 'Commit it to GitHub',
-    body: 'Open a pull request. Review the change like any other diff. Roll a bad one back with git revert.',
+    title: 'Review it in GitHub',
+    body: 'Commit the file, open a pull request and review the change like any other diff.',
   },
   {
     index: '03',
-    title: 'Open the URL',
-    body: 'The form renders live, read from your repository on every request. That is the whole workflow.',
+    title: 'Share the live form',
+    body: 'The definition renders as a hosted form, with branch previews available before you merge.',
   },
 ];
 
@@ -201,14 +201,15 @@ function Hero() {
       <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-16">
         <div className="flex flex-col items-start gap-7">
           <h1 className="-rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            Open source form builder
+            Forms as Code
           </h1>
           <p className="font-display text-5xl leading-[0.95] font-semibold tracking-[-0.03em] text-balance sm:text-6xl lg:text-7xl">
             Forms that live in your Git repo.
           </p>
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
-            Every form is a file you own, not a row in someone else&apos;s
-            database. Commit it, and it renders as a live, hosted form.
+            Define a form in YAML, commit it to GitHub, and it becomes a live,
+            hosted form—without moving its source of truth into another
+            dashboard.
           </p>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <ActionButton href={STUDIO_URL} size="lg">
@@ -220,7 +221,7 @@ function Hero() {
               href={GITHUB_URL}
               rel="noreferrer"
             >
-              or, browse the source
+              Explore the source
             </a>
           </div>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
@@ -236,7 +237,7 @@ function Hero() {
           <div className="flex items-center gap-2 border-b-2 border-ink bg-paper-alt px-4 py-2.5">
             <span className="size-2.5 rounded-full border-2 border-ink bg-brand-yellow" />
             <span className="font-mono text-xs font-medium text-ink-muted">
-              contact.yaml
+              beta-access.yaml
             </span>
           </div>
           <pre className="overflow-x-auto px-4 py-4 font-mono text-[13px] leading-6">
@@ -270,11 +271,11 @@ function HowItWorks() {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex flex-col gap-4">
           <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-            Write it. Commit it. Ship it.
+            One file. Your existing workflow.
           </h2>
           <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
-            A form is a file in your repository. It is diffable, reviewable and
-            portable.
+            The definition lives in your repository, so changes are versioned,
+            reviewable and reproducible—like the code and workflows it supports.
           </p>
         </div>
         <ol className="mt-12 grid gap-6 md:grid-cols-3">
@@ -326,20 +327,20 @@ function Tradeoff() {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex max-w-[58ch] flex-col gap-6">
           <span className="inline-block w-fit -rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            The honest tradeoff
+            The source of truth
           </span>
           <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-            No drag and drop. Not now, not later.
+            Author it your way. Keep the result in Git.
           </h2>
           <p className="text-lg leading-relaxed text-white/85">
-            There is no WYSIWYG canvas here, and we are not planning one. A form
-            is a file, and that is the product. Review, history, branches and
-            rollback all follow from it.
+            Start with YAML or let Studio create it from a description. Either
+            way, the canonical form is a structured file in your repository—not
+            hidden state in another dashboard.
           </p>
           <p className="text-lg leading-relaxed text-white/85">
-            So if what you want is an interface for arranging fields by hand,
-            use a builder that does that well. We would rather say so now than
-            waste your afternoon.
+            That makes every change visible, reviewable and reversible, while
+            Declarative Forms handles rendering, validation, submissions and the
+            rest of the form experience.
           </p>
         </div>
       </div>
@@ -352,12 +353,11 @@ function FinalCta() {
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
         <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-          Start with one form.
+          Put your next form in the repo.
         </h2>
         <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
-          Write the YAML yourself, or describe what you need and let Studio
-          write it for you. Either way you end up with a file you own and a link
-          to share.
+          Start in Studio or write the YAML yourself. You keep the definition;
+          Declarative Forms handles the live form.
         </p>
         <ActionButton href={STUDIO_URL} size="lg">
           Open Studio
@@ -376,7 +376,7 @@ function SiteFooter() {
           <div className="flex flex-col gap-3">
             <BrandMark />
             <p className="max-w-[32ch] text-sm leading-relaxed text-ink-muted">
-              Forms that live in your Git repo.
+              Forms as Code for GitHub-native teams.
             </p>
           </div>
           {FOOTER_COLUMNS.map((column) => (
