@@ -807,11 +807,11 @@ below 500 keeps its status and its message; anything else is logged with
 `console.error` and answered with a bare 500 carrying no detail.
 
 **Success sends the raw resource with no envelope:** `reply.status(200).send(form)`.
-Three responses are wrapped, and all three are deliberate: `{ url }` from the
-upload route, `{ errors }` on a validation failure, and `{ error, ... }` on a
-409 conflict, where `error` is a machine-readable slug such as
-`revision_conflict`, `branch_exists` or `branch_protected`. Do not introduce a
-general response envelope.
+The upload route likewise sends its uploaded-file resource directly. Two
+responses are wrapped, and both are deliberate: `{ errors }` on a validation
+failure, and `{ error, ... }` on a 409 conflict, where `error` is a
+machine-readable slug such as `revision_conflict`, `branch_exists` or
+`branch_protected`. Do not introduce a general response envelope.
 
 **A route does not send user-facing prose.** The client owns localized copy, so
 an English `{ message }` in an error body is both a fourth envelope and an i18n

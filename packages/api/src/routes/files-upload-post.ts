@@ -21,9 +21,13 @@ export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
 
     const buffer = await file.toBuffer();
 
-    const url = await fileService.upload(buffer, file.filename, file.mimetype);
+    const uploadedFile = await fileService.upload(
+      buffer,
+      file.filename,
+      file.mimetype,
+    );
 
-    reply.status(200).send({ url });
+    reply.status(200).send(uploadedFile);
   },
   method: 'POST',
   url: '/api/v1/files/upload',

@@ -1,6 +1,9 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { IRenderableSignatureField } from '@declarativeforms/engine';
+import type {
+  IRenderableSignatureField,
+  IUploadedFile,
+} from '@declarativeforms/engine';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
 import {
@@ -25,7 +28,7 @@ function applyPenStyle(ctx: CanvasRenderingContext2D): void {
 }
 
 export function SignatureField(
-  props: FieldProps<IRenderableSignatureField, string | null>,
+  props: FieldProps<IRenderableSignatureField, IUploadedFile | null>,
 ) {
   const i18n = useI18n();
   const label = stripHtml(props.field.label);
@@ -46,8 +49,7 @@ export function SignatureField(
         : i18n.t('signature.upload_failed')
       : null);
 
-  const savedUrl =
-    typeof props.control.value === 'string' ? props.control.value : null;
+  const savedUrl = props.control.value?.url ?? null;
   const showSavedPreview = !!savedUrl && !hasSignature;
 
   const redraw = useCallback(() => {

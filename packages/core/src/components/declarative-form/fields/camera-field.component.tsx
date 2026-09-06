@@ -1,7 +1,10 @@
 'use client';
 import { Camera, Loader2, RefreshCw, VideoOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { IRenderableCameraField } from '@declarativeforms/engine';
+import type {
+  IRenderableCameraField,
+  IUploadedFile,
+} from '@declarativeforms/engine';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
@@ -20,7 +23,7 @@ type CameraState = {
 };
 
 export function CameraField(
-  props: FieldProps<IRenderableCameraField, string | null>,
+  props: FieldProps<IRenderableCameraField, IUploadedFile | null>,
 ) {
   const i18n = useI18n();
   const label = stripHtml(props.field.label);
@@ -31,7 +34,7 @@ export function CameraField(
 
   const [camera, setCamera] = useState<CameraState>(() => ({
     status: props.control.value ? 'captured' : 'idle',
-    url: typeof props.control.value === 'string' ? props.control.value : null,
+    url: props.control.value?.url ?? null,
     error: null,
   }));
   const blobUpload = useUploadBlob(props.control.onChange);
@@ -135,9 +138,11 @@ export function CameraField(
       return;
     }
 
-    const url = await blobUpload.upload(blob, 'camera-capture.png');
+    const uploadedFile = await blobUpload.upload(blob, 'camera-capture.png');
     setCamera((c) =>
-      url ? { ...c, status: 'captured', url } : { ...c, status: 'error' },
+      uploadedFile
+        ? { ...c, status: 'captured', url: uploadedFile.url }
+        : { ...c, status: 'error' },
     );
   };
 

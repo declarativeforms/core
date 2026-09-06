@@ -7,6 +7,7 @@ export * from './form-theme';
 export * from './localized-text';
 export * from './structured-address';
 export * from './submission';
+export * from './uploaded-file';
 
 export * from './model';
 

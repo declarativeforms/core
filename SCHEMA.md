@@ -298,8 +298,15 @@ value passed in the URL, for example a campaign source. See
       message: "Upload at most two files."
 ```
 
-Uploaded files are stored in your S3-compatible bucket, and the answer holds
-their URLs.
+Uploaded media is stored in your S3-compatible bucket. Each `file_upload`,
+`camera`, and `signature` answer contains an object with the file's `url`,
+original or generated `name`, byte `size`, and MIME `type`. A `file_upload`
+stores one object with no `max` or with `max: 1`, and an array of objects with a
+larger `max`. Camera and signature fields store one object.
+
+Templates can address individual properties, such as `{{data.resume.url}}`. For
+a multiple-file answer, iterate over the array and address the same properties
+on each item.
 
 ### Location
 

@@ -7,6 +7,7 @@ import type {
   IDeclarativeForm,
   IEmailConnection,
   ISubmission,
+  IUploadedFile,
 } from '@declarativeforms/engine';
 import { Resend } from 'resend';
 
@@ -76,7 +77,14 @@ export class EmailConnectionStrategy {
           continue;
         }
 
-        const value = String(data[fieldId]);
+        const isMediaField =
+          isDeclarativeFieldType(field.type) &&
+          (field.type === 'file_upload' ||
+            field.type === 'camera' ||
+            field.type === 'signature');
+        const value = isMediaField
+          ? this.generateUploadedFilesHtml(data[fieldId])
+          : String(data[fieldId]);
         const label = resolveLocalizedText(field.label, form.locale) || fieldId;
 
         rows.push(
@@ -86,5 +94,47 @@ export class EmailConnectionStrategy {
     }
 
     return `<table border="1" cellpadding="8" cellspacing="0">${rows.join('')}</table>`;
+  }
+
+  private generateUploadedFilesHtml(value: unknown): string {
+    const values = Array.isArray(value) ? value : [value];
+
+    return values
+      .filter((entry): entry is IUploadedFile => this.isUploadedFile(entry))
+      .map(
+        (file) =>
+          `<a href="${file.url}">${file.name}</a> (${file.type}, ${this.formatFileSize(file.size)})`,
+      )
+      .join('<br>');
+  }
+
+  private isUploadedFile(value: unknown): value is IUploadedFile {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      'url' in value &&
+      typeof value.url === 'string' &&
+      'name' in value &&
+      typeof value.name === 'string' &&
+      'size' in value &&
+      typeof value.size === 'number' &&
+      'type' in value &&
+      typeof value.type === 'string'
+    );
+  }
+
+  private formatFileSize(bytes: number): string {
+    if (bytes === 0) {
+      return '0 B';
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const index = Math.min(
+      Math.floor(Math.log(bytes) / Math.log(1024)),
+      units.length - 1,
+    );
+    const size = Math.round((bytes / Math.pow(1024, index)) * 100) / 100;
+
+    return `${size} ${units[index]}`;
   }
 }

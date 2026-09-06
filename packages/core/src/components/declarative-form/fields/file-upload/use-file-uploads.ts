@@ -1,12 +1,13 @@
 'use client';
 import { useRef, useState } from 'react';
+import type { IUploadedFile } from '@declarativeforms/engine';
 import { uploadFile } from '@/lib/file-upload';
 
 export type UploadedFile = {
   id: string;
   url: string | null;
   name: string;
-  size?: number;
+  size: number;
   type: string;
   status: 'uploading' | 'uploaded' | 'error';
   error?: string;
@@ -43,34 +44,23 @@ function acceptsMimeType(
   });
 }
 
-function toUrls(value: unknown): Array<string> {
+function toUploadedFiles(
+  value: IUploadedFile | Array<IUploadedFile> | null,
+): Array<IUploadedFile> {
   if (Array.isArray(value)) {
-    return value.filter(
-      (entry): entry is string => typeof entry === 'string' && entry.length > 0,
-    );
+    return value;
   }
 
-  return typeof value === 'string' && value ? [value] : [];
+  return value ? [value] : [];
 }
 
-const EXTENSION_MIME_TYPES: Record<string, string> = {
-  png: 'image/png',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  gif: 'image/gif',
-  webp: 'image/webp',
-  pdf: 'application/pdf',
-};
-
-function restoredFile(url: string): UploadedFile {
-  const name = decodeURIComponent(url.split('/').pop() || url);
-  const extension = name.split('.').pop()?.toLowerCase() ?? '';
-
+function restoredFile(uploadedFile: IUploadedFile): UploadedFile {
   return {
-    id: url,
-    url,
-    name,
-    type: EXTENSION_MIME_TYPES[extension] ?? '',
+    id: uploadedFile.url,
+    url: uploadedFile.url,
+    name: uploadedFile.name,
+    size: uploadedFile.size,
+    type: uploadedFile.type,
     status: 'uploaded',
   };
 }
@@ -79,10 +69,15 @@ function occupied(files: Array<UploadedFile>): Array<UploadedFile> {
   return files.filter((file) => file.status !== 'error');
 }
 
-function uploadedUrls(files: Array<UploadedFile>): Array<string> {
+function uploadedFiles(files: Array<UploadedFile>): Array<IUploadedFile> {
   return files
     .filter((file) => file.status === 'uploaded' && !!file.url)
-    .map((file) => file.url as string);
+    .map((file) => ({
+      url: file.url as string,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    }));
 }
 
 export type FileUploads = {
@@ -94,15 +89,15 @@ export type FileUploads = {
 };
 
 export function useFileUploads(options: {
-  value: unknown;
-  onChange: (value: string | Array<string> | null) => void;
+  value: IUploadedFile | Array<IUploadedFile> | null;
+  onChange: (value: IUploadedFile | Array<IUploadedFile> | null) => void;
   acceptedMimeTypes: Array<string>;
   maxFiles: number;
   storesScalar: boolean;
   messages: UploadMessages;
 }): FileUploads {
   const [files, setFiles] = useState<Array<UploadedFile>>(() =>
-    toUrls(options.value).map(restoredFile),
+    toUploadedFiles(options.value).map(restoredFile),
   );
 
   const filesRef = useRef(files);
@@ -115,15 +110,15 @@ export function useFileUploads(options: {
   }
 
   function write(next: Array<UploadedFile>): void {
-    const before = uploadedUrls(filesRef.current);
-    const after = uploadedUrls(next);
+    const before = uploadedFiles(filesRef.current);
+    const after = uploadedFiles(next);
 
     filesRef.current = next;
     setFiles(next);
 
     const unchanged =
       before.length === after.length &&
-      before.every((url, index) => url === after[index]);
+      before.every((file, index) => file.url === after[index].url);
 
     if (unchanged) {
       return;
@@ -182,8 +177,10 @@ export function useFileUploads(options: {
 
     for (const entry of queued) {
       try {
+        const uploadedFile = await uploadFile(entry.file);
+
         settle(entry.id, {
-          url: await uploadFile(entry.file),
+          ...uploadedFile,
           status: 'uploaded',
         });
       } catch (error) {

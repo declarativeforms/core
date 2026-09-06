@@ -1,7 +1,10 @@
 'use client';
 import { Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
-import type { IRenderableFileUploadField } from '@declarativeforms/engine';
+import type {
+  IRenderableFileUploadField,
+  IUploadedFile,
+} from '@declarativeforms/engine';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
 import { cn } from '@/lib/utils';
@@ -12,7 +15,7 @@ import {
 import { FilePreview } from './file-preview.component';
 import { useFileUploads } from './use-file-uploads';
 
-type FileUploadValue = string | Array<string> | null;
+type FileUploadValue = IUploadedFile | Array<IUploadedFile> | null;
 
 export function FileUploadField(
   props: FieldProps<IRenderableFileUploadField, FileUploadValue>,

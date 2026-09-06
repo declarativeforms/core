@@ -496,8 +496,12 @@ Default messages, which `message` overrides:
 
 ### Storage shapes
 
-- `file_upload` stores a **single URL string** with no `max` or with `max: 1`,
-  and an **array** with any larger `max`. Downstream consumers care about this.
+- `file_upload` stores a **single uploaded-file object** with no `max` or with
+  `max: 1`, and an **array of uploaded-file objects** with any larger `max`.
+  Each object contains `url`, `name`, byte `size`, and MIME `type` properties.
+  `camera` and `signature` also store a single uploaded-file object. Templates
+  can address properties such as `{{data.resume.url}}`; iterate over a
+  multiple-file answer before addressing its item properties.
 - `single_select` stores a string. `multiple_select` stores an array.
 - Empty defaults: `file_upload` and `multiple_select` start as `[]`; `camera`,
   `geolocation`, and `signature` start as `null`; everything else starts as `""`.

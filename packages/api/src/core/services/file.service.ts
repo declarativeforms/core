@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
+import type { IUploadedFile } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
 import type { IDownloadedFile } from '../types';
 
@@ -15,7 +16,7 @@ export class FileService {
     buffer: Buffer,
     filename: string,
     contentType: string,
-  ): Promise<string> {
+  ): Promise<IUploadedFile> {
     const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${filename.split('.').pop()}`;
 
     const command = new PutObjectCommand({
@@ -30,7 +31,12 @@ export class FileService {
     const encodedKey = key.split('/').map(encodeURIComponent).join('/');
     const publicBaseUrl = process.env.PUBLIC_BASE_URL?.replace(/\/$/, '') || '';
 
-    return `${publicBaseUrl}/api/v1/files/${encodedKey}`;
+    return {
+      url: `${publicBaseUrl}/api/v1/files/${encodedKey}`,
+      name: filename,
+      size: buffer.length,
+      type: contentType,
+    };
   }
 
   public async download(key: string): Promise<IDownloadedFile | null> {

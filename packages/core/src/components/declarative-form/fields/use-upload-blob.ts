@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import type { IUploadedFile } from '@declarativeforms/engine';
 import { uploadFile } from '@/lib/file-upload';
 
 export function canvasToPngBlob(
@@ -10,7 +11,7 @@ export function canvasToPngBlob(
 }
 
 export type UploadBlob = {
-  upload: (blob: Blob, filename: string) => Promise<string | null>;
+  upload: (blob: Blob, filename: string) => Promise<IUploadedFile | null>;
   isUploading: boolean;
   manualError: string | null;
   uploadError: Error | null;
@@ -18,21 +19,21 @@ export type UploadBlob = {
 };
 
 export function useUploadBlob(
-  onChange: (value: string | null) => void,
+  onChange: (value: IUploadedFile | null) => void,
 ): UploadBlob {
   const [manualError, setManualError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: (variables: { blob: Blob; filename: string }) =>
       uploadFile(variables.blob, variables.filename),
-    onSuccess: (url) => onChange(url),
+    onSuccess: (uploadedFile) => onChange(uploadedFile),
   });
 
   const uploadBlob = mutation.mutateAsync;
   const resetUpload = mutation.reset;
 
   const upload = useCallback(
-    async (blob: Blob, filename: string): Promise<string | null> => {
+    async (blob: Blob, filename: string): Promise<IUploadedFile | null> => {
       setManualError(null);
       try {
         return await uploadBlob({ blob, filename });
