@@ -1,0 +1,20 @@
+version: 1
+title: "Text block field"
+description: "This form demonstrates a single field type."
+start: false
+
+sections:
+  - id: example
+    title: "Text block"
+    fields:
+      - id: summary
+        type: text_block
+        content: |
+          ## Before you continue
+
+          Text blocks support **emphasis**, lists, code, and
+          [safe links](https://example.com).
+
+          - Their stored value is an empty string.
+          - They can appear between questions.
+    next: done

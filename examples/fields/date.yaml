@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: date
+        label: "Response"
+        validators:
+          - type: min
+            value: "2026-01-01"
+            message: "Choose a date on or after 1 January 2026."
+          - type: max
+            value: "2026-12-31"
+            message: "Choose a date on or before 31 December 2026."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

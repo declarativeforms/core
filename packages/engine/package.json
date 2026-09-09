@@ -1,0 +1,26 @@
+{
+  "name": "@declarativeforms/engine",
+  "private": true,
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "lint": "prettier --write --config prettier.config.cjs --list-different \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "handlebars": "^4.7.9",
+    "js-yaml": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2"
+  }
+}

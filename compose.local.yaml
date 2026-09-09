@@ -1,0 +1,39 @@
+services:
+  traefik:
+    profiles:
+      - production
+
+  # Local development builds from source, so nothing should be pulled or
+  # recreated from the registry underneath it.
+  updater:
+    profiles:
+      - production
+
+  web:
+    build:
+      context: .
+      dockerfile: packages/core/Dockerfile
+    ports:
+      - "${CORE_PORT:-8080}:8080"
+
+  studio:
+    build:
+      context: .
+      dockerfile: packages/studio/Dockerfile
+    ports:
+      - "${STUDIO_PORT:-8081}:8080"
+
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    environment:
+      PUBLIC_BASE_URL: http://localhost:${CORE_PORT:-8080}
+    networks:
+      - backend
+      - edge
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile

@@ -1,0 +1,4 @@
+window.__CONFIG__ = {
+  posthogApiHost: '${POSTHOG_API_HOST}',
+  posthogProjectKey: '${POSTHOG_PROJECT_KEY}',
+};

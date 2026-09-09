@@ -1,0 +1,240 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+locale: "en"
+
+title: "Declarative Forms: Founding Design Partner Program"
+description: >-
+  Help shape Declarative Forms by using it in one real workflow and sharing
+  candid feedback. We're selecting 20 founding design partners for a paid
+  pilot. No technical experience is required. Estimated time: 3 minutes.
+
+start:
+  title: "Apply to be a founding design partner"
+  description: >-
+    We're selecting 20 partners for a paid pilot. You will use Declarative
+    Forms in one real workflow and tell us candidly what works and what does
+    not. Eleven questions, about three minutes. No technical experience is
+    required.
+  button: "Start the application"
+
+theme:
+  primary: "#542EBC"
+
+measurements:
+  posthog:
+    token: "phc_PG5OhDQIzFkoQxel2QjLVC85JPW0hHBB8gJkruofkrS"
+    api_host: "https://eu.i.posthog.com"
+
+sections:
+  - id: about_you
+    title: "About you"
+    fields:
+      - id: utm_source
+        type: hidden
+
+      - id: utm_medium
+        type: hidden
+
+      - id: utm_campaign
+        type: hidden
+
+      - id: full_name
+        type: short_text
+        label: "1. What's your name?"
+        placeholder: "Jane Smith"
+        validators:
+          - required
+
+      - id: email
+        type: email
+        label: "2. What's your work email?"
+        placeholder: "jane@example.com"
+        validators:
+          - required
+          - type: pattern
+            regex: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+            message: "Enter a valid email address."
+
+      - id: primary_role
+        type: single_select
+        label: "3. What best describes your work?"
+        allow_other: true
+        options:
+          - label: "Founder / business owner"
+            value: "founder_business_owner"
+          - label: "Operations / customer success / implementation"
+            value: "operations_customer_success_implementation"
+          - label: "Sales / marketing / growth"
+            value: "sales_marketing_growth"
+          - label: "Product / design"
+            value: "product_design"
+          - label: "Engineering / IT"
+            value: "engineering_it"
+          - label: "Consultant / agency / freelancer"
+            value: "consultant_agency_freelancer"
+        validators:
+          - required
+
+      - id: company_size
+        type: single_select
+        label: "4. How large is your company or team?"
+        options:
+          - label: "Just me"
+            value: "just_me"
+          - label: "2–10"
+            value: "2_to_10"
+          - label: "11–50"
+            value: "11_to_50"
+          - label: "51–250"
+            value: "51_to_250"
+          - label: "251+"
+            value: "251_plus"
+        validators:
+          - required
+
+    next: workflow
+
+  - id: workflow
+    title: "Your workflow"
+    fields:
+      - id: form_change_frequency
+        type: single_select
+        label: "5. How often do you create or significantly change forms?"
+        options:
+          - label: "Weekly or more"
+            value: "weekly_or_more"
+          - label: "A few times a month"
+            value: "a_few_times_a_month"
+          - label: "A few times a year"
+            value: "a_few_times_a_year"
+          - label: "Rarely or never"
+            value: "rarely_or_never"
+        validators:
+          - required
+
+      - id: current_form_tools
+        type: multiple_select
+        label: "6. Which form tools do you currently use?"
+        allow_other: true
+        options:
+          - label: "Google or Microsoft Forms"
+            value: "google_microsoft_forms"
+          - label: "Typeform, Tally, Jotform, or Fillout"
+            value: "dedicated_form_builders"
+          - label: >-
+              Airtable, HubSpot, or forms built into another product
+            value: "forms_in_other_products"
+          - label: "Custom-built forms"
+            value: "custom_built_forms"
+          - label: "No form tool today"
+            value: "no_form_tool"
+        validators:
+          - type: min
+            value: 1
+            message: "Select at least one option."
+
+      - id: proposed_workflow
+        type: long_text
+        label: >-
+          7. What real form or workflow would you build or replace during the
+          pilot?
+        placeholder: >-
+          Tell us what it's for, who uses it, what frustrates you today, and
+          what happens after someone submits it.
+        validators:
+          - required
+
+      - id: workflow_requirements
+        type: multiple_select
+        label: >-
+          8. What would this workflow need to do after someone submits it?
+        allow_other: true
+        options:
+          - label: "Support manual review or approval"
+            value: "manual_review_approval"
+          - label: "Store data in a spreadsheet or database"
+            value: "store_in_spreadsheet_database"
+          - label: "Add or update a CRM / business system"
+            value: "update_crm_business_system"
+          - label: "Create a task, ticket, or project"
+            value: "create_task_ticket_project"
+          - label: "Send an email or notification"
+            value: "send_email_notification"
+          - label: "Trigger an automation, API, or webhook"
+            value: "trigger_automation_api_webhook"
+        validators:
+          - type: min
+            value: 1
+            message: "Select at least one option."
+
+    next: pilot_fit
+
+  - id: pilot_fit
+    title: "The pilot"
+    fields:
+      - id: pilot_readiness
+        type: single_select
+        label: "9. How soon could you try this in a real workflow?"
+        options:
+          - label: "Immediately"
+            value: "immediately"
+          - label: "Within a week"
+            value: "within_a_week"
+          - label: "After agreement from one or two people"
+            value: "after_limited_agreement"
+          - label: "After a formal IT / security / procurement review"
+            value: "after_formal_review"
+          - label: "I'm not sure yet"
+            value: "not_sure"
+        validators:
+          - required
+
+      - id: proposed_workflow_frequency
+        type: single_select
+        label: "10. How often would that workflow realistically be used?"
+        options:
+          - label: "Daily or several times a week"
+            value: "daily_or_several_times_a_week"
+          - label: "Weekly or several times a month"
+            value: "weekly_or_several_times_a_month"
+          - label: "Monthly or occasionally"
+            value: "monthly_or_occasionally"
+          - label: "One-off or not yet known"
+            value: "one_off_or_unknown"
+        validators:
+          - required
+
+      - id: participation_level
+        type: single_select
+        label: "11. Which best describes how you could participate?"
+        options:
+          - label: >-
+              Use a real workflow and join onboarding plus 2–3 feedback calls
+            value: "real_workflow_and_calls"
+          - label: >-
+              Use a real workflow and provide written or asynchronous feedback
+            value: "real_workflow_and_async_feedback"
+          - label: >-
+              Test the product but not commit to a live workflow
+            value: "test_without_live_workflow"
+          - label: "I'm not sure yet"
+            value: "not_sure"
+        validators:
+          - required
+
+    next: done
+
+completion:
+  title: "Thanks, {{data.full_name}}"
+  message: >-
+    We received your application for the Founding Design Partner Program. We're
+    selecting approximately 20 partners and will contact selected applicants
+    about the paid pilot.
+
+connections:
+  - type: email
+    to: "recipient@example.com"
+    subject: "New Founding Design Partner application from {{data.full_name}}"
+    body: "A new application has been submitted."
+    include_responses: true
+    trigger_on: completed

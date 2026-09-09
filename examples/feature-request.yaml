@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Missing a feature?"
+description: "Tell us what you need. If we accept your request, we’ll build it within 72 hours. We’ll confirm acceptance and scope by email. The 72 hours starts when we accept."
+
+start:
+  button: "Request a feature"
+
+theme:
+  primary: "#542EBC"
+
+sections:
+  - id: request
+    title: "Request a feature"
+    fields:
+      - id: feature
+        type: short_text
+        label: "What’s missing?"
+        validators: [required]
+
+      - id: use_case
+        type: long_text
+        label: "What would it help you do?"
+        validators: [required]
+
+      - id: email
+        type: email
+        label: "Your email"
+        validators:
+          - required
+          - type: pattern
+            regex: '^[^\s@]+@[^\s@]+\.[^\s@]+$'
+            message: "Enter a valid email address so we can reply."
+
+    next: done
+
+completion:
+  title: "Request received"
+  message: "We’ll review it and email you. If accepted, we’ll confirm the scope and build it within 72 hours."
+
+connections:
+  - type: email
+    to: "info@frms.dev"
+    subject: "New feature request — Declarative Forms"
+    body: "A new feature request has been submitted."
+    include_responses: true
+    trigger_on: completed

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: rating
+        label: "Response"
+        min_label: "Low"
+        max_label: "High"
+        validators:
+          - type: min
+            value: 1
+          - type: max
+            value: 10
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

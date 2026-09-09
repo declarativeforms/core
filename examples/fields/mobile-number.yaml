@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: mobile_number
+        label: "Response"
+        placeholder: "+1 555 123 4567"
+        validators:
+          - type: pattern
+            regex: "^\\+?[0-9 ()-]{7,20}$"
+            message: "Enter a valid mobile number."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: number
+        label: "Response"
+        validators:
+          - type: pattern
+            regex: "^-?[0-9]+(\\.[0-9]+)?$"
+            message: "Enter a valid number."
+          - type: min
+            value: -100
+            message: "Enter a number of at least -100."
+          - type: max
+            value: 100
+            message: "Enter a number of at most 100."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

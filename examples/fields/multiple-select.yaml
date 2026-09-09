@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: multiple_select
+        label: "Response"
+        allow_other: true
+        options:
+          - "First option"
+          - label: "Second option"
+            value: "second"
+          - "Third option"
+        validators:
+          - type: min
+            value: 1
+            message: "Select at least one option."
+          - type: max
+            value: 2
+            message: "Select at most two options."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

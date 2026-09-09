@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: short_text
+        label: "Response"
+        placeholder: "Enter a response"
+        visible_when: "data.response !== 'Hide'"
+        validators:
+          - type: required
+            message: "Enter a response."
+          - type: pattern
+            regex: "^[A-Za-z ]+$"
+            message: "Use letters and spaces only."
+          - type: min_length
+            value: 2
+            message: "Enter at least two characters."
+          - type: max_length
+            value: 100
+            message: "Enter at most 100 characters."
+          - type: expression
+            expression: "data.response !== 'Blocked'"
+            message: "This response is not allowed."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

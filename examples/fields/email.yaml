@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: email
+        label: "Response"
+        placeholder: "name@example.com"
+        otp: true
+        validators:
+          - required
+          - type: pattern
+            regex: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+            message: "Enter a valid email address."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

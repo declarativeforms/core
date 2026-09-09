@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Field example"
+description: "This form demonstrates a single field type."
+
+sections:
+  - id: example
+    title: "Example field"
+    fields:
+      - id: response
+        type: time
+        label: "Response"
+        validators:
+          - type: min
+            value: "09:00"
+            message: "Choose 09:00 or later."
+          - type: max
+            value: "17:00"
+            message: "Choose 17:00 or earlier."
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."
