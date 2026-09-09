@@ -467,7 +467,7 @@ optional field is only flagged once the respondent starts filling it in.
 
 ## Expressions
 
-Four keys accept an expression: `visible_when` on a field, `when` inside `next`
+Five keys accept an expression: `visible_when` on a field, `when` inside `next`
 rules, `when` on completion rules and connections, and the `expression`
 validator.
 
@@ -508,6 +508,25 @@ completion:
   title: "Thanks, {{data.full_name}}"
   message: "We will reply to {{data.email}}."
 ```
+
+Use `calculate` to render a JavaScript expression inside any template-capable
+property:
+
+```yaml
+- id: estimate
+  type: text_block
+  content: |
+    ## Estimated value
+
+    ${{calculate "(Number(data.floor_area) * Number(data.price_per_square_metre)).toLocaleString('en-US')"}}
+```
+
+The only supplied variable is `data`. Calculations use answers collected before
+the current page and are re-evaluated when another page, the completion screen,
+or an email is rendered. They do not update while the respondent types on the
+current page, and their results are not stored in submissions or included in
+webhook payloads. A calculation that throws or has invalid syntax renders as an
+empty string.
 
 ## Completion screen
 

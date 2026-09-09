@@ -387,6 +387,22 @@ option labels, a rating's `min_label` and `max_label`, the completion `title`,
 `message`, and button `label` and `url`, and an email connection's `to`,
 `subject`, and `body`.
 
+Use `{{calculate "<JavaScript expression>"}}` to render a derived value in any
+of those properties. The expression receives `data`, just like a condition:
+
+```yaml
+- id: estimate
+  type: text_block
+  content: |
+    Estimated value: ${{calculate "Number(data.floor_area) * Number(data.price_per_square_metre)"}}
+```
+
+Calculations use answers collected before the current page. They update when
+the next page, completion screen, or an email is rendered, not while the
+respondent types on the current page. Results are not stored in submissions or
+included in webhook payloads. A calculation that throws or has invalid syntax
+renders as an empty string. Convert numeric answers explicitly with `Number()`.
+
 ### Completion
 
 Either one object, or a list of rules where the first truthy `when` wins. A rule
@@ -475,6 +491,9 @@ behaviour that a schema file cannot describe.
   a missing value such as `data.a.b` when `a` is undefined, is caught and
   becomes `false`. A misspelled field id in a `visible_when` means the field is
   never shown, with no error anywhere.
+- **A broken calculation renders an empty string.** Calculations use the same
+  JavaScript evaluator as conditions but preserve the returned value for
+  templating.
 
 ### Identifiers
 

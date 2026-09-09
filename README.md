@@ -99,6 +99,7 @@ https://frms.dev/your-org/your-repo/forms/beta-access?branch=my-form
 - [SCHEMA.md](./SCHEMA.md) is the human-readable reference for every field,
   validator, condition, and connection.
 - [`contact.yaml`](./examples/contact.yaml) is a compact example;
+  [`calculator.yaml`](./examples/calculator.yaml) demonstrates derived estimates;
   [`kitchen-sink.yaml`](./examples/kitchen-sink.yaml) demonstrates the full
   feature set.
 

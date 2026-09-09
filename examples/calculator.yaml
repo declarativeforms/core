@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Property value estimate"
+description: "Enter the property details to get a simple indicative estimate."
+
+sections:
+  - id: property
+    title: "Property details"
+    fields:
+      - id: floor_area
+        type: number
+        label: "Floor area (m²)"
+        validators:
+          - required
+          - type: min
+            value: 1
+
+      - id: price_per_square_metre
+        type: number
+        label: "Price per square metre"
+        validators:
+          - required
+          - type: min
+            value: 1
+
+    next: estimate
+
+  - id: estimate
+    title: "Your estimate"
+    fields:
+      - id: estimate_summary
+        type: text_block
+        content: |
+          ## ${{calculate "(Number(data.floor_area) * Number(data.price_per_square_metre)).toLocaleString('en-US')"}}
+
+          This estimate is indicative and is not a formal valuation.
+
+    next: done
+
+completion:
+  title: "Estimate complete"
+  message: "Estimated property value: ${{calculate \"(Number(data.floor_area) * Number(data.price_per_square_metre)).toLocaleString('en-US')\"}}"

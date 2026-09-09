@@ -442,7 +442,7 @@ export const FORM_JSON_SCHEMA = {
   definitions: {
     localizedText: {
       description:
-        'Either a plain string, or a map of language code to translated string. Resolution order is the active locale, then its base language, then `en`, then the first non-empty value.',
+        'Either a plain string, or a map of language code to translated string. Resolution order is the active locale, then its base language, then `en`, then the first non-empty value. Where a property supports templating, `{{calculate "<JavaScript expression>"}}` renders a derived value from `data` without storing it.',
       oneOf: [
         { type: 'string' },
         {

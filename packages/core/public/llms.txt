@@ -12,8 +12,9 @@ each field has an `id` and a `type`; fields can add `label`, `validators`, and a
 `visible_when` condition, while `text_block` fields also carry Markdown content.
 There are 24 field types, 7 validators, conditional
 branching between sections, multi-language text, and webhook and email
-connections. Responses are stored in your own MongoDB, and uploaded files in
-your own S3-compatible bucket.
+connections. Template calculations can render estimates and scores without
+storing derived values. Responses are stored in your own MongoDB, and uploaded
+files in your own S3-compatible bucket.
 
 Alternatives people compare it to: Tally, Jotform, Youform, Typeform, Google
 Forms. The difference is that forms are diffable files under code review rather
@@ -31,6 +32,7 @@ than rows in someone else's database.
 ## Examples
 
 - [contact.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/examples/contact.yaml): A minimal single-section form with validation and a templated completion screen.
+- [calculator.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/examples/calculator.yaml): A two-page property estimate calculated from respondent answers.
 - [kitchen-sink.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/examples/kitchen-sink.yaml): Every field type, every validator, conditional navigation, visibility conditions, a cross-field expression, localization, a conditional completion screen, and a gated webhook.
 
 ## Optional

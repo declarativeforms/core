@@ -43,6 +43,10 @@ Expressions and templates
   depend on answers from questions hidden on the same path.
 - Templates use {{data.<field_id>}} and are not HTML-escaped. Use them in completion
   titles and messages.
+- Templates can calculate derived values with
+  {{calculate "<JavaScript expression>"}}. The expression receives data. Convert
+  number answers with Number(), and default missing inputs defensively. Calculations
+  update between pages, are not stored or sent in webhooks, and render blank on error.
 
 Connections
 - Only https URLs are accepted for a webhook, and never with credentials or an IP host.
