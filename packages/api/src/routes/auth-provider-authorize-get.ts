@@ -14,7 +14,7 @@ export const AUTH_PROVIDER_AUTHORIZE_GET: RouteOptions<any, any, any, any> = {
       Querystring: { redirect_uri?: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { authenticationService } = await getContainer();
 
     if (!authenticationService.isConfigured()) {

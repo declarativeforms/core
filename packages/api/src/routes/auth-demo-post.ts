@@ -8,7 +8,11 @@ export const AUTH_DEMO_POST: RouteOptions<any, any, any, any> = {
       timeWindow: '1 minute',
     },
   },
-  handler: async (_request: FastifyRequest, reply: FastifyReply) => {
+  handler: async (
+    _request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    const { authenticationService, organizationService } = await getContainer();
     const email = (process.env.DEMO_USER_EMAIL || '').trim().toLowerCase();
 
     if (!email) {
@@ -16,8 +20,6 @@ export const AUTH_DEMO_POST: RouteOptions<any, any, any, any> = {
 
       return;
     }
-
-    const { authenticationService, organizationService } = await getContainer();
 
     if (!authenticationService.isConfigured() || !email.includes('@')) {
       reply.status(503).send();

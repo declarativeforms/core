@@ -7,7 +7,8 @@ export const FILES_KEY_GET: RouteOptions<any, any, any, any> = {
       Params: { '*': string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { fileService } = await getContainer();
     const key = request.params['*'];
 
     if (!key) {
@@ -16,7 +17,6 @@ export const FILES_KEY_GET: RouteOptions<any, any, any, any> = {
       return;
     }
 
-    const { fileService } = await getContainer();
     const file = await fileService.download(key);
 
     if (!file) {

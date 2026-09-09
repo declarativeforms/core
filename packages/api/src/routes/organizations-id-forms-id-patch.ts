@@ -14,10 +14,12 @@ export const ORGANIZATIONS_ID_FORMS_ID_PATCH: RouteOptions<any, any, any, any> =
     handler: async (
       request: FastifyRequest<{
         Body: { name?: unknown };
-        Params: { id: string };
+        Params: { organizationId: string; id: string };
       }>,
       reply: FastifyReply,
-    ) => {
+    ): Promise<void> => {
+      const { internalFormService } = await getContainer();
+
       const name =
         request.body && typeof request.body.name === 'string'
           ? request.body.name.trim()
@@ -29,21 +31,20 @@ export const ORGANIZATIONS_ID_FORMS_ID_PATCH: RouteOptions<any, any, any, any> =
         return;
       }
 
-      const { internalFormService } = await getContainer();
-      const summary = await internalFormService.rename(
+      const form = await internalFormService.rename(
         request.organization!.id,
         request.email!,
         request.params.id,
         name,
       );
 
-      if (!summary) {
+      if (!form) {
         reply.status(404).send();
 
         return;
       }
 
-      reply.status(200).send(summary);
+      reply.status(200).send(form);
     },
     method: 'PATCH',
     preHandler: [authenticate, authorizeOrganization],

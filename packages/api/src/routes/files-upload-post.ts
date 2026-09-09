@@ -8,7 +8,11 @@ export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
       timeWindow: '1 hour',
     },
   },
-  handler: async (request: FastifyRequest, reply: FastifyReply) => {
+  handler: async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    const { fileService } = await getContainer();
     const file = await request.file();
 
     if (!file) {
@@ -16,8 +20,6 @@ export const FILES_UPLOAD_POST: RouteOptions<any, any, any, any> = {
 
       return;
     }
-
-    const { fileService } = await getContainer();
 
     const buffer = await file.toBuffer();
 

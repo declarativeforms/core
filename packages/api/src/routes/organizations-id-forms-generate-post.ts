@@ -11,7 +11,7 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
 > = {
   config: {
     rateLimit: {
-      keyGenerator: (request: FastifyRequest) =>
+      keyGenerator: (request: FastifyRequest): string =>
         request.headers.authorization || request.ip,
       max: 20,
       timeWindow: '1 hour',
@@ -20,9 +20,12 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
   handler: async (
     request: FastifyRequest<{
       Body: { prompt?: unknown };
+      Params: { organizationId: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { formMessageService } = await getContainer();
+
     const prompt =
       request.body && typeof request.body.prompt === 'string'
         ? request.body.prompt
@@ -33,8 +36,6 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
 
       return;
     }
-
-    const { formMessageService } = await getContainer();
 
     reply
       .status(200)

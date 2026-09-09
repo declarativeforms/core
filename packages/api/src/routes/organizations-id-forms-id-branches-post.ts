@@ -18,10 +18,12 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST: RouteOptions<
   handler: async (
     request: FastifyRequest<{
       Body: { from?: unknown; name?: unknown };
-      Params: { id: string };
+      Params: { organizationId: string; id: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { internalFormService } = await getContainer();
+
     const name =
       request.body && typeof request.body.name === 'string'
         ? request.body.name
@@ -31,13 +33,16 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST: RouteOptions<
         ? request.body.from
         : 'main';
 
-    if (!name) {
+    if (
+      !name ||
+      (request.body?.from !== undefined &&
+        typeof request.body.from !== 'string')
+    ) {
       reply.status(400).send();
 
       return;
     }
 
-    const { internalFormService } = await getContainer();
     const form = await internalFormService.createBranch(
       request.organization!.id,
       request.email!,

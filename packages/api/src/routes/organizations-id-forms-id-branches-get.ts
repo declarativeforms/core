@@ -17,10 +17,10 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET: RouteOptions<
   },
   handler: async (
     request: FastifyRequest<{
-      Params: { id: string };
+      Params: { organizationId: string; id: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { internalFormService } = await getContainer();
     const branches = await internalFormService.listAllBranchNames(
       request.organization!.id,

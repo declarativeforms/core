@@ -14,7 +14,7 @@ export * from './forms-id-get';
 export * from './forms-id-submissions-id-get';
 export * from './forms-id-submissions-post';
 export * from './forms-id-turnstile-verify-post';
-export * from './forms-slug-get';
+export * from './forms-owner-repository-slug-get';
 export * from './organizations-get';
 export * from './organizations-id-forms-generate-post';
 export * from './organizations-id-forms-get';

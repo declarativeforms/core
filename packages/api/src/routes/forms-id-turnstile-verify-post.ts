@@ -16,10 +16,10 @@ export const FORMS_ID_TURNSTILE_VERIFY_POST: RouteOptions<any, any, any, any> =
       }>,
       reply: FastifyReply,
     ): Promise<void> => {
-      reply.header('Cache-Control', 'no-store');
-
       const { formService, turnstileVerificationService } =
         await getContainer();
+
+      reply.header('Cache-Control', 'no-store');
 
       if (!turnstileVerificationService.isConfigured()) {
         reply.status(503).send();
@@ -43,9 +43,9 @@ export const FORMS_ID_TURNSTILE_VERIFY_POST: RouteOptions<any, any, any, any> =
 
       if (
         !form ||
-        !(form.sections ?? []).some((section) =>
+        !(form.sections ?? []).some((section): boolean =>
           (section.fields ?? []).some(
-            (field) =>
+            (field): boolean =>
               field.id === request.body.field_id && field.type === 'turnstile',
           ),
         )

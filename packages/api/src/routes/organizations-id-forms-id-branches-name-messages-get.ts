@@ -17,11 +17,24 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET: RouteOptions<
   },
   handler: async (
     request: FastifyRequest<{
-      Params: { branch: string; id: string };
+      Params: { organizationId: string; id: string; branch: string };
       Querystring: { cursor?: string; limit?: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { formMessageService } = await getContainer();
+
+    if (
+      (request.query.cursor !== undefined &&
+        typeof request.query.cursor !== 'string') ||
+      (request.query.limit !== undefined &&
+        typeof request.query.limit !== 'string')
+    ) {
+      reply.status(400).send();
+
+      return;
+    }
+
     const cursor =
       typeof request.query.cursor === 'string' && request.query.cursor
         ? request.query.cursor
@@ -38,7 +51,6 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET: RouteOptions<
       return;
     }
 
-    const { formMessageService } = await getContainer();
     const page = await formMessageService.list(
       request.organization!.id,
       request.params.id,

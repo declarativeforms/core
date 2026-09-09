@@ -12,11 +12,29 @@ export const ORGANIZATIONS_ID_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
   },
   handler: async (
     request: FastifyRequest<{
-      Params: { id: string };
+      Body: unknown;
+      Params: { organizationId: string; id: string };
       Querystring: { branch?: string; expected_revision?: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { internalFormService } = await getContainer();
+
+    if (
+      request.body === undefined ||
+      request.body === null ||
+      (typeof request.body !== 'string' &&
+        (typeof request.body !== 'object' || Array.isArray(request.body))) ||
+      (request.query.branch !== undefined &&
+        (typeof request.query.branch !== 'string' || !request.query.branch)) ||
+      (request.query.expected_revision !== undefined &&
+        typeof request.query.expected_revision !== 'string')
+    ) {
+      reply.status(400).send();
+
+      return;
+    }
+
     const branch =
       typeof request.query.branch === 'string'
         ? request.query.branch
@@ -33,7 +51,6 @@ export const ORGANIZATIONS_ID_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
       return;
     }
 
-    const { internalFormService } = await getContainer();
     const form = await internalFormService.update(
       request.organization!.id,
       request.email!,

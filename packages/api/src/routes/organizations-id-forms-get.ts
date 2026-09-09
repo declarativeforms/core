@@ -10,7 +10,12 @@ export const ORGANIZATIONS_ID_FORMS_GET: RouteOptions<any, any, any, any> = {
       timeWindow: '1 minute',
     },
   },
-  handler: async (request: FastifyRequest, reply: FastifyReply) => {
+  handler: async (
+    request: FastifyRequest<{
+      Params: { organizationId: string };
+    }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
     const { internalFormService } = await getContainer();
 
     reply

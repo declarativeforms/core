@@ -17,10 +17,10 @@ export const ORGANIZATIONS_ID_FORMS_ID_DELETE: RouteOptions<
   },
   handler: async (
     request: FastifyRequest<{
-      Params: { id: string };
+      Params: { organizationId: string; id: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { internalFormService, organizationService } = await getContainer();
 
     organizationService.assertAdmin(request.organization!, request.email!);

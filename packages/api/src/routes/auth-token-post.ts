@@ -13,7 +13,9 @@ export const AUTH_TOKEN_POST: RouteOptions<any, any, any, any> = {
       Body: { auth_code?: unknown };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { authenticationService, organizationService } = await getContainer();
+
     const authCode =
       request.body && typeof request.body.auth_code === 'string'
         ? request.body.auth_code
@@ -24,8 +26,6 @@ export const AUTH_TOKEN_POST: RouteOptions<any, any, any, any> = {
 
       return;
     }
-
-    const { authenticationService, organizationService } = await getContainer();
 
     if (!authenticationService.isConfigured()) {
       reply.status(503).send();

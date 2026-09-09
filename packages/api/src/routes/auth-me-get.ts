@@ -9,20 +9,15 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
       timeWindow: '1 minute',
     },
   },
-  handler: async (request: FastifyRequest, reply: FastifyReply) => {
-    const email = request.email;
-
-    if (!email) {
-      reply.status(401).send();
-
-      return;
-    }
-
+  handler: async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
     const { organizationService } = await getContainer();
 
     reply.status(200).send({
-      email,
-      organizations: await organizationService.listAllByMember(email),
+      email: request.email!,
+      organizations: await organizationService.listAllByMember(request.email!),
       provider: request.user.provider,
     });
   },

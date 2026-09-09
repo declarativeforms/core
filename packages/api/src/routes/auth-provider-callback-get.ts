@@ -14,7 +14,9 @@ export const AUTH_PROVIDER_CALLBACK_GET: RouteOptions<any, any, any, any> = {
       Querystring: { code?: string; state?: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { authenticationService } = await getContainer();
+
     const code =
       typeof request.query.code === 'string' ? request.query.code : '';
     const state =
@@ -25,8 +27,6 @@ export const AUTH_PROVIDER_CALLBACK_GET: RouteOptions<any, any, any, any> = {
 
       return;
     }
-
-    const { authenticationService } = await getContainer();
 
     if (!authenticationService.isConfigured()) {
       reply.status(503).send();

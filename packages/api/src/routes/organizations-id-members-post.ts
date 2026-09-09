@@ -13,24 +13,28 @@ export const ORGANIZATIONS_ID_MEMBERS_POST: RouteOptions<any, any, any, any> = {
   handler: async (
     request: FastifyRequest<{
       Body: { email?: unknown; role?: unknown };
+      Params: { organizationId: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { organizationService } = await getContainer();
+
     const email =
       request.body && typeof request.body.email === 'string'
         ? request.body.email.trim().toLowerCase()
         : '';
 
-    if (!email || !email.includes('@')) {
+    const role = request.body?.role;
+
+    if (
+      !email ||
+      !email.includes('@') ||
+      (role !== undefined && role !== 'admin' && role !== 'member')
+    ) {
       reply.status(400).send();
 
       return;
     }
-
-    const role =
-      request.body && request.body.role === 'admin' ? 'admin' : 'member';
-
-    const { organizationService } = await getContainer();
 
     reply
       .status(200)
@@ -38,7 +42,7 @@ export const ORGANIZATIONS_ID_MEMBERS_POST: RouteOptions<any, any, any, any> = {
         await organizationService.addMember(
           request.organization!,
           email,
-          role,
+          role ?? 'member',
           request.email!,
         ),
       );

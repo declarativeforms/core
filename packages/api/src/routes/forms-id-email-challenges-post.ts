@@ -15,10 +15,10 @@ export const FORMS_ID_EMAIL_CHALLENGES_POST: RouteOptions<any, any, any, any> =
         Params: { id: string };
       }>,
       reply: FastifyReply,
-    ) => {
-      reply.header('Cache-Control', 'no-store');
-
+    ): Promise<void> => {
       const { emailVerificationService } = await getContainer();
+
+      reply.header('Cache-Control', 'no-store');
 
       if (!emailVerificationService.isConfigured()) {
         reply.status(503).send();

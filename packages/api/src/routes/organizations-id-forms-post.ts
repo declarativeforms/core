@@ -10,8 +10,26 @@ export const ORGANIZATIONS_ID_FORMS_POST: RouteOptions<any, any, any, any> = {
       timeWindow: '1 hour',
     },
   },
-  handler: async (request: FastifyRequest, reply: FastifyReply) => {
+  handler: async (
+    request: FastifyRequest<{
+      Body: unknown;
+      Params: { organizationId: string };
+    }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
     const { internalFormService } = await getContainer();
+
+    if (
+      request.body === undefined ||
+      request.body === null ||
+      (typeof request.body !== 'string' &&
+        (typeof request.body !== 'object' || Array.isArray(request.body)))
+    ) {
+      reply.status(400).send();
+
+      return;
+    }
+
     const form = await internalFormService.create(
       request.organization!.id,
       request.email!,

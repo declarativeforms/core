@@ -13,7 +13,7 @@ export const FORMS_ID_SUBMISSIONS_ID_GET: RouteOptions<any, any, any, any> = {
       Params: { id: string; submissionId: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { submissionService } = await getContainer();
 
     const submission = await submissionService.findById(

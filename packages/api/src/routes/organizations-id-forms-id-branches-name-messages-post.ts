@@ -11,7 +11,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
 > = {
   config: {
     rateLimit: {
-      keyGenerator: (request: FastifyRequest) =>
+      keyGenerator: (request: FastifyRequest): string =>
         request.headers.authorization || request.ip,
       max: 60,
       timeWindow: '1 hour',
@@ -20,16 +20,22 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
   handler: async (
     request: FastifyRequest<{
       Body: { content?: unknown; idempotency_key?: unknown };
-      Params: { branch: string; id: string };
+      Params: { organizationId: string; id: string; branch: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
+    const { formMessageService } = await getContainer();
+
     const content =
       request.body && typeof request.body.content === 'string'
         ? request.body.content
         : '';
 
-    if (!content.trim()) {
+    if (
+      !content.trim() ||
+      (request.body?.idempotency_key !== undefined &&
+        typeof request.body.idempotency_key !== 'string')
+    ) {
       reply.status(400).send();
 
       return;
@@ -40,7 +46,6 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
         ? request.body.idempotency_key
         : null;
 
-    const { formMessageService } = await getContainer();
     const messages = await formMessageService.send(
       request.organization!.id,
       request.email!,

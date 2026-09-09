@@ -1,4 +1,4 @@
-# API route specification
+# API routes: agent instructions
 
 ## Purpose
 
@@ -6,12 +6,14 @@
 HTTP request, validates transport input, establishes caller context, invokes
 domain services, and translates the result into an HTTP response.
 
+## Scope and authority
+
 This specification is authoritative for Fastify route definitions in this
 directory. Apply it together with the parent `AGENTS.md` files. The words MUST,
 MUST NOT, SHOULD, and SHOULD NOT are normative. Existing routes that conflict
 with this specification are legacy code to align, not exceptions to copy.
 
-## Responsibilities and limitations
+## Responsibilities and boundaries
 
 A route may:
 
@@ -43,7 +45,43 @@ The required dependency direction is:
 route -> core facade/container -> domain service
 ```
 
-## URL, filename, and export name
+## Contents
+
+- [Purpose](#purpose)
+- [Scope and authority](#scope-and-authority)
+- [Responsibilities and boundaries](#responsibilities-and-boundaries)
+- [Standards](#standards)
+  - [Architecture and layout](#architecture-and-layout)
+  - [Naming](#naming)
+  - [Interfaces and contracts](#interfaces-and-contracts)
+  - [Behavior and workflow](#behavior-and-workflow)
+  - [Coding standards](#coding-standards)
+  - [Errors, security, and edge cases](#errors-security-and-edge-cases)
+- [Examples](#examples)
+- [Known exceptions](#known-exceptions)
+- [Validation checklist](#validation-checklist)
+- [Verification](#verification)
+
+## Standards
+
+### Architecture and layout
+
+#### Export and registration
+
+Every route MUST:
+
+1. Be exported exactly once from `routes/index.ts`.
+2. Be imported into `server.ts` through the routes barrel.
+3. Be passed to `server.route(...)` exactly once.
+4. Keep barrel exports and server imports/registrations alphabetically ordered.
+5. Have a unique method and URL combination.
+
+Feature routes belong in this directory. Do not add another inline route to
+`server.ts`.
+
+### Naming
+
+#### URL, filename, and export name
 
 Every API URL MUST begin with `/api/v1`. Derive the route filename and export
 name from the URL and HTTP method as follows:
@@ -93,9 +131,11 @@ Query parameters never affect naming. Both `/api/v1/forms/:id` and
 Route-adjacent pre-handler modules are the only files in this directory that do
 not use a method suffix.
 
-## HTTP method selection
+### Interfaces and contracts
 
-### GET
+#### HTTP method selection
+
+##### GET
 
 Use `GET` to read one resource or a collection. A GET route MUST be safe: it
 MUST NOT create, update, delete, publish, enqueue, or otherwise mutate
@@ -103,7 +143,7 @@ application state. Use path parameters for resource identity and query
 parameters for optional filters, pagination, projections, or version/branch
 selection. A GET route normally has no request body.
 
-### POST
+##### POST
 
 Use `POST` to:
 
@@ -117,7 +157,7 @@ effect, the route MUST accept and pass a validated idempotency key to a service
 that enforces it. Input normally belongs in the request body. Do not encode a
 large command payload in the query string.
 
-### PUT
+##### PUT
 
 Use `PUT` to create or completely replace the state of a resource at a known
 URL. It MUST be idempotent: repeating the same request expresses the same final
@@ -126,21 +166,21 @@ PUT when omitted fields must retain their previous values. Explicit concurrency
 controls, such as an expected revision, may be passed as validated query or
 header input when that is part of the public contract.
 
-### PATCH
+##### PATCH
 
 Use `PATCH` to update only specified fields of an existing resource. Its body
 contains the fields eligible for change; omitted fields retain their existing
 values. A PATCH route MUST NOT silently perform full replacement. PATCH
 operations SHOULD be idempotent for the same request in this API.
 
-### DELETE
+##### DELETE
 
 Use `DELETE` to remove or deactivate the resource identified by the URL. The
 intended final state MUST be idempotent: repeating the request cannot recreate
 the resource or apply an additional mutation. A DELETE route normally identifies
 its target through path parameters and has no request body.
 
-### HEAD and OPTIONS
+##### HEAD and OPTIONS
 
 Use Fastify and registered plugins for standard `HEAD` and `OPTIONS` behavior.
 Add a dedicated route only when the endpoint requires behavior that the
@@ -150,7 +190,7 @@ The API currently uses `200` for successful creates, updates, deletions, and
 commands, including successful operations with an empty body. Do not introduce
 `201` or `204` without an explicit API-contract change.
 
-## Route definition
+#### Route definition
 
 Export a Fastify `RouteOptions<any, any, any, any>` object. The four `any`
 arguments are the approved existing Fastify framework boundary; they do not
@@ -175,36 +215,14 @@ also updates this specification.
 Use one uppercase method string, not a method array. One route definition
 represents one method and URL pair.
 
-## Imports
-
-All imports MUST be at the top and ordered in these groups:
-
-1. Scoped packages beginning with `@`, including internal workspace packages.
-2. Unscoped npm packages and `node:` built-ins.
-3. Parent and sibling relative paths.
-
-Use `import type` whenever an import is used only as a type. Do not add blank
-imports for side effects in route modules.
-
-Routes obtain application services only through `getContainer` imported from
-the parent core facade:
-
-```typescript
-import { getContainer } from '../core';
-```
-
-Do not import a concrete service, repository, gateway, strategy, database
-client, or container implementation. Relative imports may provide reusable
-route pre-handlers.
-
-## Request types
+#### Request types
 
 Use an async arrow handler with explicit `FastifyRequest` and `FastifyReply`
 types. Add only the request generic members used by the route. The supported
 members are `Body`, `Headers`, `Params`, and `Querystring`; preserve this order
 when more than one is present.
 
-### Params
+##### Params
 
 Use `Params` when the URL contains a named parameter or wildcard. Its keys MUST
 cover every placeholder in the URL, even when a pre-handler is the only code
@@ -229,7 +247,7 @@ Read a Fastify wildcard through `request.params['*']` and type it as
 contract defines that syntax. Resource existence and other domain meaning
 belong in the service.
 
-### Querystring
+##### Querystring
 
 Use `Querystring` for optional read controls, filters, pagination, modes, or
 concurrency inputs. Client-controlled query fields SHOULD be optional because
@@ -248,7 +266,7 @@ Parse numeric strings with namespaced helpers such as
 `Number.parseInt(value, 10)`, then validate the result with the required
 `Number` predicate. Do not use truthiness as type validation.
 
-### Body
+##### Body
 
 Use `Body` only when the method accepts a payload. Fields supplied by an
 untrusted client MUST be optional `unknown` until runtime-validated:
@@ -267,14 +285,14 @@ primitive type, empty values, length, and public syntax. Services own reusable
 domain invariants, authorization policy, uniqueness, state transitions, and
 persistence-dependent checks.
 
-### Headers
+##### Headers
 
 Add `Headers` only for a custom typed header contract consumed by the handler.
 Fastify already types standard headers, so do not redeclare them without need.
 Header values can be strings, arrays, or absent and MUST be narrowed or
 normalized before they reach a service.
 
-### Decorated request context
+##### Decorated request context
 
 Values attached by a pre-handler use the project's Fastify declaration merging;
 do not repeat them in the request generic. A handler may use a non-null assertion
@@ -282,7 +300,9 @@ only when its configured pre-handler guarantees that value or terminates the
 request. The specific context fields and authorization helpers are application
 concerns, not part of this general route definition.
 
-## Handler flow
+### Behavior and workflow
+
+#### Handler flow
 
 When a route uses domain services, the first executable handler statement MUST
 resolve the container and destructure only the required services:
@@ -317,7 +337,7 @@ Do not catch service or domain exceptions in a handler. Catch an error only when
 the route layer can genuinely recover or translate a transport operation, such
 as failed credential parsing in an authentication pre-handler.
 
-## Service access
+#### Service access
 
 A handler may call domain services obtained from the container. It MUST NOT call
 a repository, gateway, strategy, SDK, database driver, or other infrastructure
@@ -331,7 +351,7 @@ Name local results after the domain value returned by the service. Do not rename
 a service operation with transport terminology or introduce a one-use result
 type.
 
-## Pre-handlers
+#### Pre-handlers
 
 Omit `preHandler` for public routes. Use one function directly when there is one
 precondition and an array when multiple concerns must run in order.
@@ -363,7 +383,7 @@ export async function establishContext(
 The comment above is illustrative documentation and MUST NOT be copied into a
 source file.
 
-## Route configuration and rate limiting
+#### Route configuration and rate limiting
 
 Use `config` only for supported per-route metadata. Omit it when the route needs
 no metadata.
@@ -384,7 +404,33 @@ keyGenerator: (request: FastifyRequest) =>
 The rate-limit plugin owns `429` responses. Do not reproduce rate-limit logic in
 the handler.
 
-## Responses and errors
+### Coding standards
+
+#### Imports
+
+All imports MUST be at the top and ordered in these groups:
+
+1. Scoped packages beginning with `@`, including internal workspace packages.
+2. Unscoped npm packages and `node:` built-ins.
+3. Parent and sibling relative paths.
+
+Use `import type` whenever an import is used only as a type. Do not add blank
+imports for side effects in route modules.
+
+Routes obtain application services only through `getContainer` imported from
+the parent core facade:
+
+```typescript
+import { getContainer } from '../core';
+```
+
+Do not import a concrete service, repository, gateway, strategy, database
+client, or container implementation. Relative imports may provide reusable
+route pre-handlers.
+
+### Errors, security, and edge cases
+
+#### Responses and errors
 
 Use these mappings unless an endpoint's explicit public contract requires a
 different response:
@@ -414,7 +460,9 @@ representation. Keep localized or user-facing prose out of route error bodies.
 Set headers before sending the response. Use `redirect()` only when redirecting
 is the endpoint's intended HTTP contract.
 
-## Canonical example
+## Examples
+
+### Canonical route
 
 `GET /api/v1/forms/:id` is defined in `forms-id-get.ts` and exported as
 `FORMS_ID_GET`:
@@ -461,19 +509,15 @@ The example is concrete so its naming and structure can be validated. Product
 entities and service names shown in an example do not create general-purpose
 requirements for unrelated routes.
 
-## Export and registration
+## Known exceptions
 
-Every route MUST:
+`GET /api/v1/auth/:provider/callback` is an OAuth protocol callback. It may
+exchange the provider's one-time code and persist only the short-lived,
+single-use authentication handoff required to complete sign-in. It MUST NOT
+mutate product or domain resources.
 
-1. Be exported exactly once from `routes/index.ts`.
-2. Be imported into `server.ts` through the routes barrel.
-3. Be passed to `server.route(...)` exactly once.
-4. Keep barrel exports and server imports/registrations alphabetically ordered.
-5. Have a unique method and URL combination.
-
-Feature routes belong in this directory. Do not add another inline route to
-`server.ts`. The existing root, health, and ping routes are legacy composition
-exceptions, not patterns for feature work.
+The existing root, health, and ping routes are legacy composition exceptions,
+not patterns for feature work.
 
 ## Agent validation checklist
 

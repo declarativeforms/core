@@ -18,10 +18,10 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_YAML_GET: RouteOptions<
   },
   handler: async (
     request: FastifyRequest<{
-      Params: { branch: string; id: string };
+      Params: { organizationId: string; id: string; branch: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { internalFormService } = await getContainer();
     const form = await internalFormService.findByBranch(
       request.organization!.id,

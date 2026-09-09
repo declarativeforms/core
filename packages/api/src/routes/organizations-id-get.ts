@@ -9,8 +9,13 @@ export const ORGANIZATIONS_ID_GET: RouteOptions<any, any, any, any> = {
       timeWindow: '1 minute',
     },
   },
-  handler: async (request: FastifyRequest, reply: FastifyReply) => {
-    reply.status(200).send(request.organization);
+  handler: async (
+    request: FastifyRequest<{
+      Params: { organizationId: string };
+    }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    reply.status(200).send(request.organization!);
   },
   method: 'GET',
   preHandler: [authenticate, authorizeOrganization],

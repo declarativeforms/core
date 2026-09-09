@@ -9,7 +9,7 @@ export const FORMS_ID_GET: RouteOptions<any, any, any, any> = {
       Querystring: { branch?: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { formService } = await getContainer();
 
     const branch =

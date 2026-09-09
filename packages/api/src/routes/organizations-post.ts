@@ -14,14 +14,8 @@ export const ORGANIZATIONS_POST: RouteOptions<any, any, any, any> = {
       Body: { name?: unknown };
     }>,
     reply: FastifyReply,
-  ) => {
-    const email = request.email;
-
-    if (!email) {
-      reply.status(401).send();
-
-      return;
-    }
+  ): Promise<void> => {
+    const { organizationService } = await getContainer();
 
     const name =
       request.body && typeof request.body.name === 'string'
@@ -34,9 +28,9 @@ export const ORGANIZATIONS_POST: RouteOptions<any, any, any, any> = {
       return;
     }
 
-    const { organizationService } = await getContainer();
-
-    reply.status(200).send(await organizationService.create(name, email, []));
+    reply
+      .status(200)
+      .send(await organizationService.create(name, request.email!, []));
   },
   method: 'POST',
   preHandler: authenticate,

@@ -17,18 +17,25 @@ export const ORGANIZATIONS_ID_MEMBERS_EMAIL_DELETE: RouteOptions<
   },
   handler: async (
     request: FastifyRequest<{
-      Params: { email: string };
+      Params: { organizationId: string; email: string };
     }>,
     reply: FastifyReply,
-  ) => {
+  ): Promise<void> => {
     const { organizationService } = await getContainer();
+    const email = request.params.email.trim().toLowerCase();
+
+    if (!email || !email.includes('@')) {
+      reply.status(400).send();
+
+      return;
+    }
 
     reply
       .status(200)
       .send(
         await organizationService.removeMember(
           request.organization!,
-          decodeURIComponent(request.params.email).toLowerCase(),
+          email,
           request.email!,
         ),
       );

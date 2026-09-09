@@ -7,7 +7,10 @@ export const CONFIG_GET: RouteOptions<any, any, any, any> = {
       timeWindow: '1 minute',
     },
   },
-  handler: async (_request: FastifyRequest, reply: FastifyReply) => {
+  handler: async (
+    _request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
     reply.status(200).send({
       form_base_url: (process.env.PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
     });
