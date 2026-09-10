@@ -9,7 +9,6 @@ import {
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
 import type { SubmissionRepository } from '../repositories';
-import type { IValidationIssue } from '../types';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
 import type { TokenService } from './token.service';
@@ -31,19 +30,15 @@ export class SubmissionService {
       userAgent: string;
     },
     submissionId?: string,
-  ): Promise<ISubmission | Array<IValidationIssue> | null> {
+  ): Promise<ISubmission | null> {
     const form = await this.formService.findById(formId);
 
     if (!form) {
       return null;
     }
 
-    if (!isPartial) {
-      const errors = this.validate(form, data);
-
-      if (errors.length > 0) {
-        return errors;
-      }
+    if (!isPartial && !this.isValid(form, data)) {
+      throw new Error('Submission is invalid');
     }
 
     const now = new Date();
@@ -111,17 +106,15 @@ export class SubmissionService {
     );
   }
 
-  private validate(
+  private isValid(
     form: IDeclarativeForm,
     data: Record<string, unknown>,
-  ): Array<IValidationIssue> {
+  ): boolean {
     const compiled = compile(resolve(form, form.locale ?? 'en'), data);
 
     const sectionsById = new Map(
       compiled.sections.map((section) => [section.id, section]),
     );
-
-    const errors: Array<IValidationIssue> = [];
 
     const visited = new Set<string>();
 
@@ -141,12 +134,8 @@ export class SubmissionService {
           continue;
         }
 
-        const message = validateField(field, data[field.id], data);
-
-        if (message) {
-          errors.push({ message, path: field.id });
-
-          continue;
+        if (validateField(field, data[field.id], data)) {
+          return false;
         }
 
         if (
@@ -161,10 +150,7 @@ export class SubmissionService {
             data[getTokenFieldId(field.id)],
           )
         ) {
-          errors.push({
-            message: 'Verification is invalid.',
-            path: field.id,
-          });
+          return false;
         }
 
         if (
@@ -180,10 +166,7 @@ export class SubmissionService {
               data[getTokenFieldId(field.id)],
             ))
         ) {
-          errors.push({
-            message: 'Verification is invalid.',
-            path: field.id,
-          });
+          return false;
         }
       }
 
@@ -195,7 +178,7 @@ export class SubmissionService {
           : section.next;
     }
 
-    return errors;
+    return true;
   }
 
   private async scheduleConnections(

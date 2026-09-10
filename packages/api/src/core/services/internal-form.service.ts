@@ -69,12 +69,8 @@ export class InternalFormService {
     emailAddress: string,
     definitionInput: unknown,
     name: string | null,
-  ): Promise<IInternalForm | Array<IValidationIssue>> {
-    const definition = this.validateDefinition(definitionInput);
-
-    if (Array.isArray(definition)) {
-      return definition;
-    }
+  ): Promise<IInternalForm> {
+    const definition = this.requireValidDefinition(definitionInput);
 
     const now = new Date();
 
@@ -104,21 +100,17 @@ export class InternalFormService {
     branch: string | undefined,
     definitionInput: unknown,
     expectedRevision: number | null,
-  ): Promise<IInternalForm | Array<IValidationIssue> | false | null> {
+  ): Promise<IInternalForm | null> {
     const existing = await this.findOwnedBranch(organizationId, id, branch);
 
     if (!existing) {
       return null;
     }
 
-    const definition = this.validateDefinition(definitionInput);
-
-    if (Array.isArray(definition)) {
-      return definition;
-    }
+    const definition = this.requireValidDefinition(definitionInput);
 
     if (expectedRevision !== null && expectedRevision !== existing.revision) {
-      return false;
+      throw new Error('Form revision does not match');
     }
 
     const form = this.carryMetadata(
@@ -130,7 +122,7 @@ export class InternalFormService {
     const replaced = await this.formRepository.replace(form, existing.revision);
 
     if (!replaced) {
-      return false;
+      throw new Error('Form revision changed during update');
     }
 
     return form;
@@ -180,7 +172,7 @@ export class InternalFormService {
     return this.toFormListing(renamed);
   }
 
-  public async listBranchNamesByFormId(
+  public async listBranchNamesById(
     organizationId: string,
     id: string,
   ): Promise<Array<string> | null> {
@@ -190,7 +182,7 @@ export class InternalFormService {
       return null;
     }
 
-    return this.formRepository.findAllBranchNamesByFormId(id);
+    return this.formRepository.findAllBranchNamesById(id);
   }
 
   public findByBranch(
@@ -207,13 +199,13 @@ export class InternalFormService {
     id: string,
     name: string,
     from: string,
-  ): Promise<IInternalForm | false | null> {
+  ): Promise<IInternalForm | null> {
     if (!BRANCH_PATTERN.test(name) || !BRANCH_PATTERN.test(from)) {
       return null;
     }
 
     if (name === DEFAULT_BRANCH) {
-      return false;
+      return null;
     }
 
     const source = await this.findOwnedBranch(organizationId, id, from);
@@ -241,7 +233,7 @@ export class InternalFormService {
       await this.formRepository.insert(form);
     } catch (error: any) {
       if (error?.code === 11000) {
-        return false;
+        return null;
       }
 
       throw error;
@@ -256,9 +248,9 @@ export class InternalFormService {
     organizationId: string,
     id: string,
     name: string,
-  ): Promise<IInternalForm | false | null> {
+  ): Promise<IInternalForm | null> {
     if (name === DEFAULT_BRANCH) {
-      return false;
+      throw new Error('The main branch cannot be deleted');
     }
 
     const existing = await this.findOwnedBranch(organizationId, id, name);
@@ -280,9 +272,9 @@ export class InternalFormService {
     source: string,
     target: string,
     deleteSource: boolean,
-  ): Promise<IInternalForm | false | null> {
+  ): Promise<IInternalForm | null> {
     if (source === target) {
-      return false;
+      throw new Error('Source and target branches must differ');
     }
 
     const from = await this.findOwnedBranch(organizationId, id, source);
@@ -301,7 +293,7 @@ export class InternalFormService {
     const replaced = await this.formRepository.replace(form, to.revision);
 
     if (!replaced) {
-      return false;
+      throw new Error('Target branch changed during publish');
     }
 
     await this.importConversation(
@@ -540,6 +532,16 @@ export class InternalFormService {
       updated_at: new Date(),
       updated_by: emailAddress,
     };
+  }
+
+  private requireValidDefinition(definitionInput: unknown): IDeclarativeForm {
+    const definition = this.validateDefinition(definitionInput);
+
+    if (Array.isArray(definition)) {
+      throw new Error('Form definition is invalid');
+    }
+
+    return definition;
   }
 
   private parseDefinitionInput(

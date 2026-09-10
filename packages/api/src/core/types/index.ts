@@ -2,7 +2,6 @@ export * from './access-token-claims';
 export * from './auth-code';
 export * from './downloaded-file';
 export * from './fastify';
-export * from './form-generation-failure';
 export * from './form-message';
 export * from './form-message-page';
 export * from './github-file';

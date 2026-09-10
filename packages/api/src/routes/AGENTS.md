@@ -448,10 +448,6 @@ different response:
 | Missing or invalid authentication                    | `401`                                |
 | Known caller lacks permission and disclosure is safe | `403`                                |
 | Missing or intentionally invisible resource          | `404`                                |
-| Conflicting domain state                             | `409` with an empty body             |
-| Semantically invalid domain operation                | `422` with an empty body             |
-| Upstream rate limit                                  | `429` with an empty body             |
-| Known unavailable capability                         | `503`                                |
 | Rate limit exceeded                                  | Plugin-owned `429`                   |
 | Unexpected exception                                 | Shared `500` handling                |
 
@@ -463,6 +459,11 @@ Expected non-success responses have an empty body. Send resources directly
 without a general `{ data: ... }` envelope. An
 endpoint-specific projection is allowed only when it is the established public
 representation. Keep localized or user-facing prose out of route error bodies.
+
+Do not add service return variants and route branches merely to distinguish
+domain validation, conflicts, upstream rate limits, or unavailable
+dependencies. Unless an endpoint has an explicit current product contract for
+one of those outcomes, let the plain error reach the shared `500` handler.
 
 Set headers before sending the response. Use `redirect()` only when redirecting
 is the endpoint's intended HTTP contract.

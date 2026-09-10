@@ -84,7 +84,7 @@ export class FormService {
 
     const id = `${GITHUB_FORM_PREFIX}${md5(`${slug}@${resolvedBranch}`).substring(0, 8)}`;
 
-    await this.gitHubFileRepository.replace({
+    await this.gitHubFileRepository.upsert({
       branch: resolvedBranch,
       file,
       id,

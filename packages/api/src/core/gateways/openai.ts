@@ -1,5 +1,5 @@
 import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
-import type { IFormGenerationFailure, IFormMessage } from '../types';
+import type { IFormMessage } from '../types';
 
 const RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const DEFAULT_MODEL = 'gpt-5.6-terra';
@@ -195,29 +195,29 @@ export class OpenAiGateway {
     repair: { definition: string; errors: Record<string, string> } | null,
     branch: string,
     previewUrl: string | null,
-  ): Promise<GeneratedForm | IFormGenerationFailure> {
+  ): Promise<GeneratedForm> {
     if (!this.isConfigured()) {
-      return 'unavailable';
+      throw new Error('OpenAI is not configured');
     }
 
     const response = await this.sendRequest(
       this.buildBody(prompt, definition, history, repair, branch, previewUrl),
     );
 
-    if (!response) {
-      return 'unavailable';
-    }
-
     const payload = (await response
       .json()
       .catch(() => null)) as ResponsesPayload | null;
 
     if (!response.ok) {
-      return this.mapErrorStatus(response.status, payload);
+      console.error(
+        `OpenAI request failed: status=${response.status} code=${payload?.error?.code ?? 'none'} type=${payload?.error?.type ?? 'none'}`,
+      );
+
+      throw new Error('OpenAI request failed');
     }
 
     if (!payload || payload.status === 'incomplete') {
-      return 'unavailable';
+      throw new Error('OpenAI response is incomplete');
     }
 
     return this.readGenerated(payload, definition !== null && repair === null);
@@ -227,26 +227,22 @@ export class OpenAiGateway {
     return !!process.env.OPEN_AI_API_KEY;
   }
 
-  private async sendRequest(body: unknown): Promise<Response | null> {
+  private sendRequest(body: unknown): Promise<Response> {
     const timeout = this.readNumber(
       process.env.OPENAI_TIMEOUT_MS,
       DEFAULT_TIMEOUT_MS,
     );
 
-    try {
-      return await fetch(RESPONSES_URL, {
-        body: JSON.stringify(body),
-        cache: 'no-store',
-        headers: {
-          authorization: `Bearer ${process.env.OPEN_AI_API_KEY as string}`,
-          'content-type': 'application/json',
-        },
-        method: 'POST',
-        signal: AbortSignal.timeout(timeout),
-      });
-    } catch {
-      return null;
-    }
+    return fetch(RESPONSES_URL, {
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      headers: {
+        authorization: `Bearer ${process.env.OPEN_AI_API_KEY as string}`,
+        'content-type': 'application/json',
+      },
+      method: 'POST',
+      signal: AbortSignal.timeout(timeout),
+    });
   }
 
   private buildBody(
@@ -338,11 +334,11 @@ export class OpenAiGateway {
   private readGenerated(
     payload: ResponsesPayload,
     allowConversation: boolean,
-  ): GeneratedForm | IFormGenerationFailure {
+  ): GeneratedForm {
     for (const item of payload.output ?? []) {
       for (const part of item.content ?? []) {
         if (part.refusal) {
-          return 'invalid';
+          throw new Error('OpenAI refused the request');
         }
       }
     }
@@ -350,7 +346,7 @@ export class OpenAiGateway {
     const text = this.readOutputText(payload);
 
     if (!text) {
-      return 'unavailable';
+      throw new Error('OpenAI response has no output');
     }
 
     let parsed: unknown;
@@ -358,11 +354,11 @@ export class OpenAiGateway {
     try {
       parsed = JSON.parse(text);
     } catch {
-      return 'unavailable';
+      throw new Error('OpenAI response is not valid JSON');
     }
 
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return 'unavailable';
+      throw new Error('OpenAI response is not an object');
     }
 
     const generated = parsed as Record<string, unknown>;
@@ -376,7 +372,7 @@ export class OpenAiGateway {
       typeof generated.message === 'string' ? generated.message : '';
 
     if ((definition !== null && !definition.trim()) || !message.trim()) {
-      return 'unavailable';
+      throw new Error('OpenAI response is missing required content');
     }
 
     return {
@@ -415,21 +411,6 @@ export class OpenAiGateway {
     const withoutOpening = trimmed.replace(/^```[a-zA-Z]*\n?/, '');
 
     return withoutOpening.replace(/\n?```$/, '').trim();
-  }
-
-  private mapErrorStatus(
-    status: number,
-    payload: ResponsesPayload | null,
-  ): IFormGenerationFailure {
-    console.error(
-      `OpenAI request failed: status=${status} code=${payload?.error?.code ?? 'none'} type=${payload?.error?.type ?? 'none'}`,
-    );
-
-    if (status === 429) {
-      return 'rate_limited';
-    }
-
-    return 'unavailable';
   }
 
   private readNumber(value: string | undefined, fallback: number): number {

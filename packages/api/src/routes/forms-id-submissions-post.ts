@@ -48,12 +48,6 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
       submissionId,
     );
 
-    if (Array.isArray(submission)) {
-      reply.status(422).send();
-
-      return;
-    }
-
     if (!submission) {
       reply.status(404).send();
 

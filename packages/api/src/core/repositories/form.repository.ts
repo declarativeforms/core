@@ -32,12 +32,10 @@ export class FormRepository {
       }) as Promise<IInternalForm | null>;
   }
 
-  public async findAllBranchNamesByFormId(
-    formId: string,
-  ): Promise<Array<string>> {
+  public async findAllBranchNamesById(id: string): Promise<Array<string>> {
     const documents = await this.db
       .collection<IInternalForm>('forms')
-      .find({ deleted_at: null, form_id: formId } as any, {
+      .find({ deleted_at: null, form_id: id } as any, {
         projection: { _id: 0, branch: 1 },
       })
       .toArray();
@@ -85,40 +83,31 @@ export class FormRepository {
     return result.matchedCount > 0;
   }
 
-  public async deleteByIdAndBranch(
-    id: string,
-    branch: string,
-  ): Promise<boolean> {
-    const result = await this.db
+  public async deleteByIdAndBranch(id: string, branch: string): Promise<void> {
+    await this.db
       .collection<IInternalForm>('forms')
       .deleteOne({ branch, form_id: id } as any);
-
-    return result.deletedCount > 0;
   }
 
   public async setName(
     id: string,
     name: string,
     emailAddress: string,
-  ): Promise<boolean> {
-    const result = await this.db.collection<IInternalForm>('forms').updateMany(
+  ): Promise<void> {
+    await this.db.collection<IInternalForm>('forms').updateMany(
       { deleted_at: null, form_id: id } as any,
       {
         $set: { name, updated_at: new Date(), updated_by: emailAddress },
       } as any,
     );
-
-    return result.modifiedCount > 0;
   }
 
-  public async setDeletedAt(id: string): Promise<boolean> {
-    const result = await this.db.collection<IInternalForm>('forms').updateMany(
+  public async setDeletedAt(id: string): Promise<void> {
+    await this.db.collection<IInternalForm>('forms').updateMany(
       { deleted_at: null, form_id: id } as any,
       {
         $set: { deleted_at: new Date() },
       } as any,
     );
-
-    return result.modifiedCount > 0;
   }
 }

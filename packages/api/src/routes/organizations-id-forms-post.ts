@@ -37,12 +37,6 @@ export const ORGANIZATIONS_ID_FORMS_POST: RouteOptions<any, any, any, any> = {
       null,
     );
 
-    if (Array.isArray(form)) {
-      reply.status(422).send();
-
-      return;
-    }
-
     reply.status(200).send({
       branch: form.branch,
       id: form.form_id,

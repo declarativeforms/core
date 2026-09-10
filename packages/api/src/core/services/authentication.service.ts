@@ -48,7 +48,7 @@ export class AuthenticationService {
   public buildAuthorizationUrl(
     provider: string,
     redirectUri: string,
-  ): string | null | false {
+  ): string | null {
     const strategy = this.findStrategy(provider);
 
     if (!strategy) {
@@ -56,7 +56,7 @@ export class AuthenticationService {
     }
 
     if (!this.isAllowedRedirectUri(redirectUri)) {
-      return false;
+      return null;
     }
 
     const codeVerifier = randomBytes(32).toString('base64url');

@@ -78,31 +78,22 @@ export class OrganizationRepository {
     id: string,
     emailAddress: string,
     role: IOrganizationRole,
-  ): Promise<boolean> {
-    const result = await this.db
+  ): Promise<void> {
+    await this.db
       .collection<IOrganization>('organizations')
       .updateOne(
         { id, 'members.email': emailAddress },
         { $set: { 'members.$.role': role, updated_at: new Date() } },
       );
-
-    return result.matchedCount > 0;
   }
 
-  public async deleteMember(
-    id: string,
-    emailAddress: string,
-  ): Promise<boolean> {
-    const result = await this.db
-      .collection<IOrganization>('organizations')
-      .updateOne(
-        { id },
-        {
-          $pull: { members: { email: emailAddress } },
-          $set: { updated_at: new Date() },
-        },
-      );
-
-    return result.modifiedCount > 0;
+  public async deleteMember(id: string, emailAddress: string): Promise<void> {
+    await this.db.collection<IOrganization>('organizations').updateOne(
+      { id },
+      {
+        $pull: { members: { email: emailAddress } },
+        $set: { updated_at: new Date() },
+      },
+    );
   }
 }

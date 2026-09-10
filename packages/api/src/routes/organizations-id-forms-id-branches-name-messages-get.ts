@@ -59,12 +59,6 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET: RouteOptions<
       limit,
     );
 
-    if (page === false) {
-      reply.status(400).send();
-
-      return;
-    }
-
     if (page === null) {
       reply.status(404).send();
 

@@ -285,6 +285,15 @@ A name MUST NOT:
 For example, `FormRepository.findById` is preferable to
 `FormRepository.findFormById`; the class already supplies the word `Form`.
 
+This contextual naming rule also applies to criteria and parameters. The
+owning concept MUST be omitted when it merely repeats the class context:
+`FormRepository.findAllBranchNamesById(id)` is preferable to
+`findAllBranchNamesByFormId(formId)`. The concept MUST remain when it identifies
+a different entity, distinguishes multiple identifiers in the same signature,
+or prevents genuine ambiguity. For example, a submission repository may use
+`findByFormIdAndSubmissionId(formId, submissionId)` because both identifiers are
+required to describe the stored lookup.
+
 ### 6.2 Common semantic prefixes
 
 Use these prefixes consistently:
@@ -298,6 +307,7 @@ Use these prefixes consistently:
 | `is`, `has`, `can` | Return a boolean predicate without mutating state.                     |
 | `create`           | Perform a domain creation action.                                      |
 | `insert`           | Persist a new stored value.                                            |
+| `upsert`           | Insert a stored value or replace it when the key already exists.       |
 | `replace`          | Replace the complete stored representation.                            |
 | `update`           | Change a partial stored representation.                                |
 | `setX`             | Atomically assign one named persisted property or closely coupled set. |
@@ -407,11 +417,11 @@ public findAllByMember(
     .toArray();
 }
 
-public async findAllBranchNamesByFormId(
-  formId: string,
+public async findAllBranchNamesById(
+  id: string,
 ): Promise<Array<string>> {
   const forms = await this.collection
-    .find({ form_id: formId }, { projection: { _id: 0, branch: 1 } })
+    .find({ form_id: id }, { projection: { _id: 0, branch: 1 } })
     .toArray();
 
   return forms.map((form) => form.branch);
@@ -425,16 +435,19 @@ equivalent `find` and `findById` methods.
 Entity-write action vocabulary is restricted to:
 
 - `insert` for a new stored representation.
+- `upsert` for an insert-or-replace operation selected by a stored key.
 - `replace` for a complete stored representation.
 - `update` for a partial stored representation.
 - `setX` for an atomic assignment whose property is named by `X`.
 - `delete` for removal.
 
 The method MAY add a criterion or cardinality suffix, but MUST NOT introduce a
-different action verb. For example, `deleteById`, `deleteAllByBranch`, and
-`setStatus` retain the approved action vocabulary. Names such as `publish`,
-`complete`, `fail`, `rename`, `consume`, and `allocate` are forbidden for entity
-writes; the corresponding service owns that business meaning.
+different action verb. `upsert` MUST be used when the persistence operation can
+both create and replace; `replace` MUST NOT conceal that behavior. For example,
+`deleteById`, `deleteAllByBranch`, and `setStatus` retain the approved action
+vocabulary. Names such as `publish`, `complete`, `fail`, `rename`, `consume`,
+and `allocate` are forbidden for entity writes; the corresponding service owns
+that business meaning.
 
 Administrative repository methods such as index initialization are not entity
 writes. Their names MAY state the exact persistence maintenance operation when
@@ -626,7 +639,8 @@ Allowed return categories are:
 - A domain entity.
 - A domain projection, including an inline `Pick`.
 - A primitive.
-- A string-literal union representing a genuine domain value.
+- A string-literal union representing a genuine domain value that current
+  domain behavior consumes.
 - An array of domain values.
 - `null` or `undefined` with the meanings defined below.
 - `void` when the caller needs no value.
@@ -670,11 +684,20 @@ A shared entity, established cross-layer contract, or genuine cursor page is
 not a result type merely because a method returns it. The distinction is whether
 the type models durable domain data or only encodes one call's control flow.
 
+A callable MUST NOT add `false`, validation issues, status literals, or another
+failure-only union member merely so a caller or route can select a more specific
+error response. The normal contract is the successful domain value with its
+natural absence value. A richer outcome is allowed only when a current,
+explicit product workflow consumes that distinction as domain behavior rather
+than transport categorization.
+
 ### 9.3 `null`
 
-Within the API, `null` means a safe, expected absence of a singular domain
-value. Repository and service `find...` methods MUST return `null` when no
-matching entity exists.
+Within the API, `null` means a safe, expected absence or non-result for a
+singular domain operation. Repository and service `find...` methods MUST return
+`null` when no matching entity exists. A command MAY return `null` when its
+caller can safely treat multiple ordinary non-results identically and no
+current product behavior requires their causes to be distinguished.
 
 `null` MAY also represent an explicit empty sentinel when the caller must
 distinguish emptiness from omission. It MUST NOT be returned for an unexpected
@@ -701,13 +724,14 @@ ordinary values.
 
 ### 9.6 Boolean results
 
-Use `boolean` when the caller needs only a yes/no outcome. `false` MUST represent
-an expected negative result, not a hidden exception.
+Use `boolean` when the caller needs only a yes/no outcome as part of the domain
+contract. `false` MUST represent an expected negative result, not a hidden
+exception or a route-specific error category.
 
 Examples of appropriate boolean contracts include a predicate, an optional
-remote verification, or an action whose only useful outcome is whether it was
-performed. If the caller requires the changed domain value, return that value
-instead.
+remote verification, or an action whose current caller must branch on whether
+it was performed. If the caller requires the changed domain value, return that
+value instead. If no caller branches on the value, return `void`.
 
 ### 9.7 Repository write results
 
@@ -892,12 +916,19 @@ Expected outcomes use direct return values:
 | ------------------------------------------------------- | ---------------------- |
 | Singular value not found                                | `null`                 |
 | Collection has no matches                               | `[]`                   |
-| Predicate or recoverable yes/no operation is negative   | `false`                |
+| Domain predicate or recoverable yes/no operation is negative | `false`           |
 | Optional engine value is absent                         | `undefined`            |
 | Changed entity is unavailable because no target matched | `null`                 |
-| Domain has a meaningful finite value set                | A direct literal union |
+| Current workflow consumes a meaningful finite value set | A direct literal union |
 
 A caller MAY branch on these values. That branch is normal control flow.
+
+Validation failures, conflicts, and dependency failures MUST NOT become extra
+return variants solely to let an API route distinguish `409`, `422`, `429`, or
+`503`. Until a product requirement defines a recoverable workflow for one of
+those cases, the operation has no happy-path continuation and MAY throw a plain
+`Error`; the shared API error handler then produces the generic `500` response.
+Do not preserve speculative distinctions for possible future clients.
 
 ### 11.2 Terminal failures
 
@@ -909,6 +940,8 @@ cannot continue on a valid happy path. Examples include:
 - Missing mandatory configuration for a required capability.
 - Invalid data at a trust boundary when the callable's contract cannot express
   a safe continuation.
+- Domain validation or conflicting state for which no current product workflow
+  defines a recoverable branch.
 - A required dependency failure for which no degraded behavior exists.
 
 An explicit terminal failure MUST use plain native `Error`:
@@ -965,9 +998,11 @@ not the repository, determines the business meaning of that absence.
 
 ### 11.5 Gateway failures
 
-A gateway returns `null` or `false` when remote absence or rejection is expected
-and its caller can continue safely. Examples include an unknown remote user, an
-invalid verification token, or an optional capability that is not configured.
+A gateway returns `null` or `false` only when remote absence or rejection is an
+established part of the capability and its caller can continue safely. Examples
+include an unknown remote user or an invalid verification token. Missing
+configuration for a capability the current operation requires is a terminal
+failure, not an additional return variant.
 
 A gateway allows an unexpected failure to propagate when continuing would be
 unsafe or would falsely report success. If it must create a terminal failure,
@@ -982,6 +1017,12 @@ throw for the same failure on another execution path.
 A service returns a direct domain value for an expected business outcome the
 caller can handle. It throws plain `Error` only when the requested operation has
 no valid continuation.
+
+A service MUST default to its success value plus the natural `null` or empty
+collection result. It MUST NOT expose validation arrays, conflict booleans, or
+failure status literals merely to give a route a more specific HTTP status.
+Detailed validation issues MAY cross the boundary only when an explicit current
+workflow consumes them, such as an internal automatic repair pass.
 
 A service MUST NOT use an exception as an alternate return channel. It MUST NOT
 catch a repository or gateway exception and convert it to a business decision
@@ -1137,8 +1178,11 @@ following:
 - The caller can predict the relevant behavior without reading the body.
 - The name states an action, capability, predicate, conversion, or lookup.
 - Cardinality and lookup criteria are visible.
+- Names and parameters do not repeat the owning class concept unless needed to
+  distinguish another entity or multiple identifiers.
 - Service names use domain vocabulary.
 - Repository names use the required read and fixed write vocabularies.
+- Insert-or-replace persistence operations use `upsert`, not `replace`.
 - Gateway names expose remote capabilities rather than client mechanics.
 - Engine names identify their pipeline stage and subject.
 
@@ -1161,7 +1205,9 @@ following:
 - Collection absence is an empty array.
 - Optional engine absence is `undefined`.
 - Repository writes return only the direct value current callers need.
-- Expected negative outcomes do not throw.
+- No failure-only boolean, validation array, or status union exists merely to
+  select an HTTP error response.
+- Safe expected absence and negative predicates do not throw.
 - Explicit terminal failures use plain `Error`.
 - No caller must inspect an error to make a business decision.
 - Unexpected dependency failures are not hidden as absence.

@@ -46,10 +46,13 @@ unless it has more than one real consumer or implementation.
 - Repository singular reads use `find` or `findByX`.
 - Repository collection reads use `findAll`, `findAllByX`, or an equally
   explicit persisted-filter name such as `findAllByRunAtBeforeNow`.
-- Repository writes use persistence verbs: `insert`, `replace`, `update`,
-  `delete`, or `setX`. Business verbs belong in services.
+- Repository writes use persistence verbs: `insert`, `upsert`, `replace`,
+  `update`, `delete`, or `setX`. Use `upsert` only when the operation can insert
+  or replace. Business verbs belong in services.
 - Services use domain verbs. Collection reads use `listByX`, including when they
   proxy a repository `findAllByX` operation.
+- Omit the owning class concept from criteria and parameters unless it names a
+  different entity or distinguishes multiple identifiers.
 - Gateways use remote-capability verbs such as `get`, `find`, `send`, `verify`,
   and `generate`.
 - Acronyms are words in identifiers: `Id`, `Url`, `Html`, `Yaml`, `Json`, and
@@ -71,10 +74,11 @@ unless it has more than one real consumer or implementation.
 - Use `type` for shapes and unions. Use `interface` only for a contract fulfilled
   by classes. Shared shapes live in `core/types`, use an `I`-prefixed PascalCase
   name, and are exported from its alphabetical barrel.
-- Return an entity, validation issues, an inline `Pick`, or a primitive. Return
-  `null`, `false`, or an empty array for expected negative outcomes. Throw plain
-  `Error` only for terminal failure; never use an exception to drive caller
-  logic or introduce result, summary, or DTO wrappers.
+- Return an entity, an inline `Pick`, or a primitive with its natural `null` or
+  empty-array result. Do not add validation arrays, booleans, or status literals
+  merely to select an HTTP error. Throw plain `Error` when no current happy-path
+  continuation exists; never inspect an error to drive caller logic or
+  introduce result, summary, or DTO wrappers.
 - Use `import type` for type-only imports, `node:` for built-ins, non-relative
   imports before relative imports, and parent barrels for cross-folder imports.
 - Inject dependencies with private constructor parameter properties named after

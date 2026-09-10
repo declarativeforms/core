@@ -23,6 +23,8 @@ and domain-oriented operations.
 - Public methods use business verbs such as `schedule`, `publish`, `verify`, or
   `consume`.
 - Singular reads use `find` or `findByX`. Collection reads use `listByX`.
+- Omit the service's owning concept from criteria and parameters unless it
+  identifies another entity or distinguishes multiple identifiers.
 - Prefix accessors that compute or retrieve a value with `get`, such as
   `getAccessTokenTtlSeconds`.
 - Name injected dependencies after their concrete class.
@@ -31,8 +33,12 @@ and domain-oriented operations.
 
 - Public methods precede private helpers and every method declares its access
   modifier and return type.
-- Return `null`, `false`, validation issues, or a direct scalar for expected
-  outcomes. Throw plain `Error` only when the caller cannot continue.
+- Return the successful domain value with its natural `null` or empty-array
+  result. Do not add validation arrays, conflict booleans, or failure status
+  literals merely to let a route select an HTTP status.
+- Throw plain `Error` when the operation has no current happy-path continuation.
+  Detailed validation issues may cross the service boundary only for an
+  explicit workflow that consumes them, such as automatic repair.
 - Return entities, primitives, or inline `Pick` projections. Do not create a
   result/summary/DTO type for one method.
 - Accept an id instead of an entity unless the method reads other entity fields.

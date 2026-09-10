@@ -26,8 +26,9 @@ infrastructure code separated by directory.
 - Keep the hand-written container; do not add a dependency-injection framework.
 - Construct each dependency once, after everything it requires.
 - Resolve the container lazily and reset it to `null` after disposal.
-- Expected domain outcomes use direct values. Plain `Error` is reserved for
-  terminal failure, and routes select HTTP status codes from direct outcomes.
+- Expected domain outcomes use direct values with natural absence. Do not add
+  failure-only variants for HTTP distinctions; plain `Error` represents an
+  operation with no current happy-path continuation.
 - Cross-layer data shapes belong in `types`, not `container.ts` or a barrel.
 - Apply package rules for return values, imports, comments, and formatting.
 

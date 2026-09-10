@@ -21,7 +21,7 @@ export class GitHubFileRepository {
     );
   }
 
-  public async replace(gitHubFile: IGitHubFile): Promise<void> {
+  public async upsert(gitHubFile: IGitHubFile): Promise<void> {
     await this.db
       .collection<IGitHubFile>('github_files')
       .replaceOne({ id: gitHubFile.id }, gitHubFile, { upsert: true });

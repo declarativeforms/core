@@ -28,8 +28,9 @@
 - Give generic parameters a default when most callers omit them.
 - Do not create one-use result, summary, or DTO wrappers. Use an inline `Pick`
   when a caller needs only part of an entity.
-- Shared validation issues and direct scalar outcome unions are contracts, not
-  result wrappers, when multiple layers consume them directly.
+- Shared validation issues or scalar unions are contracts only when an explicit
+  current domain workflow consumes them. They must not exist merely to carry a
+  failure category to an HTTP route.
 - A genuine cursor page may have a shared page type because its cursor belongs
   to the query rather than an entity.
 

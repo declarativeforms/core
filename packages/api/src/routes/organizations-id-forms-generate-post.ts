@@ -45,24 +45,6 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
       prompt,
     );
 
-    if (messages === 'invalid') {
-      reply.status(422).send();
-
-      return;
-    }
-
-    if (messages === 'rate_limited') {
-      reply.status(429).send();
-
-      return;
-    }
-
-    if (messages === 'unavailable') {
-      reply.status(503).send();
-
-      return;
-    }
-
     reply.status(200).send(messages);
   },
   method: 'POST',

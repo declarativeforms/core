@@ -17,11 +17,13 @@ and mutations without deciding business policy.
 ## Naming
 
 - A repository class already names its entity; do not repeat it in method names
-  or parameters unless it refers to a different entity.
+  or parameters unless it refers to a different entity or distinguishes
+  multiple identifiers.
 - `findByX` returns one entity or `null`.
 - `findAllByX` returns a collection and an empty array when nothing matches.
-- Use `insert`, `replace`, `update`, `delete`, and `setX` for writes. Do not use
-  business verbs such as `consume`, `publish`, or `reschedule`.
+- Use `insert`, `upsert`, `replace`, `update`, `delete`, and `setX` for writes.
+  `upsert` means insert-or-replace; `replace` must not conceal an upsert. Do not
+  use business verbs such as `consume`, `publish`, or `reschedule`.
 - Parameters are camelCase versions of persisted criteria; stored fields remain
   `snake_case`.
 
