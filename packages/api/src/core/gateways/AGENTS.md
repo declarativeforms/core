@@ -25,8 +25,8 @@ OpenAI, Resend, and Turnstile.
 
 ## Coding standards
 
-- Return `null` or `false` for expected remote absence/failure that a service can
-  handle; allow unexpected failures to propagate.
+- Return `null`, `false`, or a direct scalar union for expected remote outcomes
+  that a service can handle; allow unexpected failures to propagate.
 - Keep request and response casts local. Move only cross-layer return contracts
   to `types`.
 - Set explicit request method, headers, caching behavior, and body shape.

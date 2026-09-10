@@ -8,8 +8,8 @@ application code.
 ## Architecture
 
 - `main.ts` loads environment variables and starts or clusters the HTTP process.
-- `server.ts` constructs Fastify, installs cross-cutting HTTP behavior, maps
-  errors, and registers routes.
+- `server.ts` constructs Fastify, installs cross-cutting HTTP behavior, handles
+  unexpected failures, and registers routes.
 - `scheduler.ts` is an independent worker entrypoint with graceful shutdown.
 - Feature behavior belongs below `routes` or `core`; entrypoints only compose and
   start the process.

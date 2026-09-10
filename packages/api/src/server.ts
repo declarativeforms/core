@@ -5,7 +5,7 @@ import fastifyRateLimit from '@fastify/rate-limit';
 import fastify, { type FastifyError } from 'fastify';
 import { randomBytes } from 'node:crypto';
 import * as qs from 'qs';
-import { getContainer, HttpError, ValidationError } from './core';
+import { getContainer } from './core';
 import {
   AUTH_DEMO_POST,
   AUTH_ME_GET,
@@ -47,7 +47,7 @@ const JWT_AUDIENCE = 'declarativeforms-api';
 const JWT_ISSUER = 'declarativeforms';
 const STRICT_CORS_PREFIXES = ['/api/v1/auth/', '/api/v1/organizations'];
 
-export async function startServer() {
+export async function startServer(): Promise<void> {
   const server = fastify({
     bodyLimit: 10 * 1048576,
     logger: true,
@@ -61,19 +61,8 @@ export async function startServer() {
   });
 
   server.setErrorHandler((error: FastifyError, _request, reply) => {
-    if (error instanceof ValidationError) {
-      reply.status(422).send({ errors: error.errors });
-
-      return;
-    }
-
-    const statusCode = error.statusCode ?? 500;
-    const payload = (error as unknown as HttpError).payload;
-
-    if (statusCode < 500 || payload) {
-      reply
-        .status(statusCode)
-        .send(payload ?? { errors: { '/': error.message } });
+    if (error.statusCode) {
+      reply.status(error.statusCode).send();
 
       return;
     }
@@ -121,10 +110,6 @@ export async function startServer() {
       'x-ratelimit-remaining': false,
       'x-ratelimit-reset': false,
     },
-    errorResponseBuilder: (_request, context) =>
-      Object.assign(new Error('too many requests'), {
-        statusCode: context.statusCode,
-      }),
     global: false,
   });
 
@@ -150,18 +135,20 @@ export async function startServer() {
   server.decorateRequest('organization', null);
 
   const {
-    authenticationService,
-    formMessageService,
-    formService,
-    organizationService,
-    submissionService,
+    authCodeRepository,
+    formMessageRepository,
+    formRepository,
+    gitHubFileRepository,
+    organizationRepository,
+    submissionRepository,
   } = await getContainer();
 
-  await authenticationService.ensureIndexes();
-  await formMessageService.ensureIndexes();
-  await formService.ensureIndexes();
-  await organizationService.ensureIndexes();
-  await submissionService.ensureIndexes();
+  await authCodeRepository.ensureIndexes();
+  await formMessageRepository.ensureIndexes();
+  await formRepository.ensureIndexes();
+  await gitHubFileRepository.ensureIndexes();
+  await organizationRepository.ensureIndexes();
+  await submissionRepository.ensureIndexes();
 
   server.route(AUTH_DEMO_POST);
   server.route(AUTH_ME_GET);

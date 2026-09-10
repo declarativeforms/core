@@ -14,7 +14,7 @@ import { Resend } from 'resend';
 export class EmailConnectionStrategy {
   readonly type = 'email';
 
-  public async handle(
+  public async deliver(
     connection: IEmailConnection,
     submission: ISubmission,
     form: IDeclarativeForm,
@@ -48,7 +48,7 @@ export class EmailConnectionStrategy {
     }
 
     if (connection.include_responses) {
-      html += this.generateResponsesHtml(form, submission.data);
+      html += this.buildResponsesHtml(form, submission.data);
     }
 
     await resend.emails.send({
@@ -59,7 +59,7 @@ export class EmailConnectionStrategy {
     });
   }
 
-  private generateResponsesHtml(
+  private buildResponsesHtml(
     form: IDeclarativeForm,
     data: Record<string, unknown>,
   ): string {
@@ -83,7 +83,7 @@ export class EmailConnectionStrategy {
             field.type === 'camera' ||
             field.type === 'signature');
         const value = isMediaField
-          ? this.generateUploadedFilesHtml(data[fieldId])
+          ? this.buildUploadedFilesHtml(data[fieldId])
           : String(data[fieldId]);
         const label = resolveLocalizedText(field.label, form.locale) || fieldId;
 
@@ -96,7 +96,7 @@ export class EmailConnectionStrategy {
     return `<table border="1" cellpadding="8" cellspacing="0">${rows.join('')}</table>`;
   }
 
-  private generateUploadedFilesHtml(value: unknown): string {
+  private buildUploadedFilesHtml(value: unknown): string {
     const values = Array.isArray(value) ? value : [value];
 
     return values

@@ -3,6 +3,9 @@ import { getContainer } from '../core';
 import { authenticate } from './authenticate';
 import { authorizeOrganization } from './authorize-organization';
 
+const MAX_PROMPT_CHARS = 4000;
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
 export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions<
   any,
   any,
@@ -33,8 +36,10 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
 
     if (
       !content.trim() ||
+      content.length > MAX_PROMPT_CHARS ||
       (request.body?.idempotency_key !== undefined &&
-        typeof request.body.idempotency_key !== 'string')
+        (typeof request.body.idempotency_key !== 'string' ||
+          !IDEMPOTENCY_KEY_PATTERN.test(request.body.idempotency_key)))
     ) {
       reply.status(400).send();
 
@@ -55,8 +60,32 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_POST: RouteOptions
       idempotencyKey,
     );
 
-    if (!messages) {
+    if (messages === null) {
       reply.status(404).send();
+
+      return;
+    }
+
+    if (messages === 'conflict') {
+      reply.status(409).send();
+
+      return;
+    }
+
+    if (messages === 'invalid') {
+      reply.status(422).send();
+
+      return;
+    }
+
+    if (messages === 'rate_limited') {
+      reply.status(429).send();
+
+      return;
+    }
+
+    if (messages === 'unavailable') {
+      reply.status(503).send();
 
       return;
     }

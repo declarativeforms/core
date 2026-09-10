@@ -3,7 +3,7 @@ import type { IOAuthTokens, IOAuthUser } from '../types';
 
 export interface IConnectionStrategy {
   readonly type: string;
-  handle(
+  deliver(
     connection: any,
     submission: ISubmission,
     form: IDeclarativeForm,

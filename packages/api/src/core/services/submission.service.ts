@@ -8,8 +8,8 @@ import {
 } from '@declarativeforms/engine';
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
-import { ValidationError } from '../errors';
 import type { SubmissionRepository } from '../repositories';
+import type { IValidationIssue } from '../types';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
 import type { TokenService } from './token.service';
@@ -22,11 +22,7 @@ export class SubmissionService {
     private tokenService: TokenService,
   ) {}
 
-  public async ensureIndexes(): Promise<void> {
-    await this.submissionRepository.ensureIndexes();
-  }
-
-  public async createOrUpdate(
+  public async submit(
     formId: string,
     data: Record<string, unknown>,
     isPartial: boolean,
@@ -35,7 +31,7 @@ export class SubmissionService {
       userAgent: string;
     },
     submissionId?: string,
-  ): Promise<ISubmission | null> {
+  ): Promise<ISubmission | Array<IValidationIssue> | null> {
     const form = await this.formService.findById(formId);
 
     if (!form) {
@@ -45,8 +41,8 @@ export class SubmissionService {
     if (!isPartial) {
       const errors = this.validate(form, data);
 
-      if (Object.keys(errors).length > 0) {
-        throw new ValidationError(errors);
+      if (errors.length > 0) {
+        return errors;
       }
     }
 
@@ -58,10 +54,11 @@ export class SubmissionService {
     let submission: ISubmission;
 
     if (submissionId) {
-      const existingSubmission = await this.submissionRepository.find(
-        persistedFormId,
-        submissionId,
-      );
+      const existingSubmission =
+        await this.submissionRepository.findByFormIdAndSubmissionId(
+          persistedFormId,
+          submissionId,
+        );
 
       if (!existingSubmission) {
         return null;
@@ -81,7 +78,7 @@ export class SubmissionService {
         updated_at: timestamp,
       };
 
-      await this.submissionRepository.replace(persistedFormId, submission);
+      await this.submissionRepository.replace(submission);
     } else {
       submission = {
         created_at: timestamp,
@@ -104,24 +101,27 @@ export class SubmissionService {
     return submission;
   }
 
-  public async findById(
+  public findById(
     formId: string,
     submissionId: string,
   ): Promise<ISubmission | null> {
-    return this.submissionRepository.find(formId, submissionId);
+    return this.submissionRepository.findByFormIdAndSubmissionId(
+      formId,
+      submissionId,
+    );
   }
 
   private validate(
     form: IDeclarativeForm,
     data: Record<string, unknown>,
-  ): Record<string, string> {
+  ): Array<IValidationIssue> {
     const compiled = compile(resolve(form, form.locale ?? 'en'), data);
 
     const sectionsById = new Map(
       compiled.sections.map((section) => [section.id, section]),
     );
 
-    const errors: Record<string, string> = {};
+    const errors: Array<IValidationIssue> = [];
 
     const visited = new Set<string>();
 
@@ -144,7 +144,7 @@ export class SubmissionService {
         const message = validateField(field, data[field.id], data);
 
         if (message) {
-          errors[field.id] = message;
+          errors.push({ message, path: field.id });
 
           continue;
         }
@@ -161,7 +161,10 @@ export class SubmissionService {
             data[getTokenFieldId(field.id)],
           )
         ) {
-          errors[field.id] = 'Verification is invalid.';
+          errors.push({
+            message: 'Verification is invalid.',
+            path: field.id,
+          });
         }
 
         if (
@@ -177,7 +180,10 @@ export class SubmissionService {
               data[getTokenFieldId(field.id)],
             ))
         ) {
-          errors[field.id] = 'Verification is invalid.';
+          errors.push({
+            message: 'Verification is invalid.',
+            path: field.id,
+          });
         }
       }
 

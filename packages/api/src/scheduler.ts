@@ -10,7 +10,8 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
 }
 
 async function main(): Promise<void> {
-  const { jobService } = await getContainer();
+  const { jobRepository, jobService } = await getContainer();
+  await jobRepository.ensureIndexes();
   await jobService.run(abortController.signal);
   await disposeContainer();
 }

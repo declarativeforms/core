@@ -27,9 +27,9 @@ export class FormMessageRepository {
     );
   }
 
-  public async findAllByBranch(
-    formId: string,
+  public findAllByOrganizationIdAndFormIdAndBranch(
     organizationId: string,
+    formId: string,
     branch: string,
     before: number | null,
     limit: number,
@@ -52,7 +52,7 @@ export class FormMessageRepository {
       .toArray() as Promise<Array<IFormMessage>>;
   }
 
-  public async findAllAuthoredByBranch(
+  public findAllByFormIdAndBranchWithoutOriginMessageId(
     formId: string,
     branch: string,
     limit: number,
@@ -67,7 +67,7 @@ export class FormMessageRepository {
       .toArray() as Promise<Array<IFormMessage>>;
   }
 
-  public async findAllOriginIdsByBranch(
+  public async findAllOriginMessageIdsByFormIdAndBranch(
     formId: string,
     branch: string,
   ): Promise<Array<string>> {
@@ -102,7 +102,7 @@ export class FormMessageRepository {
     return (document?.value ?? count) - count + 1;
   }
 
-  public async findAllByGeneration(
+  public findAllByFormIdAndBranchAndGenerationId(
     formId: string,
     branch: string,
     generationId: string,
@@ -122,51 +122,29 @@ export class FormMessageRepository {
       .insertOne(message as any);
   }
 
-  public async complete(
+  public async setStatus(
     id: string,
+    status: 'complete' | 'failed',
     content: string,
     schemaRevision: number | null,
-  ): Promise<boolean> {
-    const result = await this.db
-      .collection<IFormMessage>('form_messages')
-      .updateOne(
-        { id } as any,
-        {
-          $set: {
-            content,
-            schema_revision: schemaRevision,
-            status: 'complete',
-          },
-        } as any,
-      );
-
-    return result.modifiedCount > 0;
+  ): Promise<void> {
+    await this.db.collection<IFormMessage>('form_messages').updateOne(
+      { id } as any,
+      {
+        $set: { content, schema_revision: schemaRevision, status },
+      } as any,
+    );
   }
 
-  public async fail(id: string, content: string): Promise<boolean> {
-    const result = await this.db
-      .collection<IFormMessage>('form_messages')
-      .updateOne(
-        { id } as any,
-        {
-          $set: { content, status: 'failed' },
-        } as any,
-      );
-
-    return result.modifiedCount > 0;
-  }
-
-  public async insertMany(messages: Array<IFormMessage>): Promise<number> {
+  public async insertMany(messages: Array<IFormMessage>): Promise<void> {
     if (messages.length === 0) {
-      return 0;
+      return;
     }
 
     try {
-      const result = await this.db
+      await this.db
         .collection<IFormMessage>('form_messages')
         .insertMany(messages as any, { ordered: false });
-
-      return result.insertedCount;
     } catch (error: any) {
       const writeErrors: Array<{ code?: number }> = error?.writeErrors ?? [];
 
@@ -176,16 +154,15 @@ export class FormMessageRepository {
       ) {
         throw error;
       }
-
-      return error?.result?.insertedCount ?? 0;
     }
   }
 
-  public async delete(formId: string, branch: string): Promise<number> {
-    const result = await this.db
+  public async deleteAllByFormIdAndBranch(
+    formId: string,
+    branch: string,
+  ): Promise<void> {
+    await this.db
       .collection<IFormMessage>('form_messages')
       .deleteMany({ branch, form_id: formId } as any);
-
-    return result.deletedCount;
   }
 }

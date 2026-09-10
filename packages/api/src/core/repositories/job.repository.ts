@@ -12,7 +12,7 @@ export class JobRepository {
     await this.db.collection<IJob<T>>('jobs').insertOne(job);
   }
 
-  public async findAllByRunAtBeforeNow(limit = 25): Promise<Array<IJob>> {
+  public findAllByRunAtBeforeNow(limit = 25): Promise<Array<IJob>> {
     return this.db
       .collection<IJob>('jobs')
       .find({ run_at: { $lte: new Date() } })

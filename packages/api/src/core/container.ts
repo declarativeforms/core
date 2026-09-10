@@ -161,7 +161,7 @@ export async function getContainer(): Promise<Container> {
         return;
       }
 
-      await strategy.handle(connection, submission, form);
+      await strategy.deliver(connection, submission, form);
     },
   });
   const submissionService = new SubmissionService(

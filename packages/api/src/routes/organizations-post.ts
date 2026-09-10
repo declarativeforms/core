@@ -30,7 +30,7 @@ export const ORGANIZATIONS_POST: RouteOptions<any, any, any, any> = {
 
     reply
       .status(200)
-      .send(await organizationService.create(name, request.email!, []));
+      .send(await organizationService.create(request.email!, name, []));
   },
   method: 'POST',
   preHandler: authenticate,

@@ -15,11 +15,6 @@ export class FormService {
     private internalFormService: InternalFormService,
   ) {}
 
-  public async ensureIndexes(): Promise<void> {
-    await this.gitHubFileRepository.ensureIndexes();
-    await this.internalFormService.ensureIndexes();
-  }
-
   public async findById(
     id: string,
     branch?: string,
@@ -32,13 +27,13 @@ export class FormService {
       return null;
     }
 
-    const gitHubFile = await this.gitHubFileRepository.find(id);
+    const gitHubFile = await this.gitHubFileRepository.findById(id);
 
     if (!gitHubFile) {
       return null;
     }
 
-    const text = await this.gitHubGateway.retrieveYamlFile(
+    const text = await this.gitHubGateway.findYamlFile(
       gitHubFile.owner,
       gitHubFile.repository,
       gitHubFile.file,
@@ -74,7 +69,7 @@ export class FormService {
     const file = parts.slice(3).join('/');
     const resolvedBranch = branch || DEFAULT_BRANCH;
 
-    const text = await this.gitHubGateway.retrieveYamlFile(
+    const text = await this.gitHubGateway.findYamlFile(
       owner,
       repository,
       file,
@@ -89,7 +84,7 @@ export class FormService {
 
     const id = `${GITHUB_FORM_PREFIX}${md5(`${slug}@${resolvedBranch}`).substring(0, 8)}`;
 
-    await this.gitHubFileRepository.upsert({
+    await this.gitHubFileRepository.replace({
       branch: resolvedBranch,
       file,
       id,

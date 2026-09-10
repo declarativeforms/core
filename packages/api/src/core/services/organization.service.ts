@@ -1,5 +1,4 @@
 import { randomBytes } from 'node:crypto';
-import { HttpError } from '../errors';
 import type { OrganizationRepository } from '../repositories';
 import type {
   IOrganization,
@@ -15,21 +14,19 @@ const SLUG_ATTEMPTS = 5;
 export class OrganizationService {
   constructor(private organizationRepository: OrganizationRepository) {}
 
-  public async ensureIndexes(): Promise<void> {
-    await this.organizationRepository.ensureIndexes();
+  public find(id: string): Promise<IOrganization | null> {
+    return this.organizationRepository.findById(id);
   }
 
-  public async find(id: string): Promise<IOrganization | null> {
-    return this.organizationRepository.find(id);
-  }
-
-  public async listAllByMember(email: string): Promise<Array<IOrganization>> {
-    return this.organizationRepository.findAllByMember(email);
+  public listByMember(emailAddress: string): Promise<Array<IOrganization>> {
+    return this.organizationRepository.findAllByMemberEmailAddress(
+      emailAddress,
+    );
   }
 
   public async create(
+    emailAddress: string,
     name: string,
-    email: string,
     tags: Array<string>,
   ): Promise<IOrganization> {
     const now = new Date();
@@ -37,9 +34,9 @@ export class OrganizationService {
     for (let attempt = 0; attempt < SLUG_ATTEMPTS; attempt += 1) {
       const organization: IOrganization = {
         created_at: now,
-        created_by: email,
+        created_by: emailAddress,
         id: `${ORGANIZATION_ID_PREFIX}${randomBytes(6).toString('hex')}`,
-        members: [{ email, role: 'admin' }],
+        members: [{ email: emailAddress, role: 'admin' }],
         name,
         slug: this.buildSlug(name, attempt),
         tags,
@@ -65,23 +62,28 @@ export class OrganizationService {
   }
 
   public async ensurePersonalWorkspace(
-    email: string,
+    emailAddress: string,
   ): Promise<IOrganization | null> {
-    const existing = await this.organizationRepository.findAllByMember(email);
+    const existing =
+      await this.organizationRepository.findAllByMemberEmailAddress(
+        emailAddress,
+      );
 
     if (existing.length > 0) {
       return null;
     }
 
     try {
-      return await this.create(PERSONAL_WORKSPACE_NAME, email, [PERSONAL_TAG]);
+      return await this.create(emailAddress, PERSONAL_WORKSPACE_NAME, [
+        PERSONAL_TAG,
+      ]);
     } catch (error: any) {
       if (error?.code !== 11000 || !error?.keyPattern?.created_by) {
         throw error;
       }
 
-      return this.organizationRepository.findByCreatorAndTag(
-        email,
+      return this.organizationRepository.findByCreatedByAndTag(
+        emailAddress,
         PERSONAL_TAG,
       );
     }
@@ -89,65 +91,74 @@ export class OrganizationService {
 
   public async addMember(
     organization: IOrganization,
-    email: string,
+    actorEmailAddress: string,
+    emailAddress: string,
     role: IOrganizationRole,
-    actor: string,
-  ): Promise<IOrganization> {
-    this.assertAdmin(organization, actor);
+  ): Promise<IOrganization | null> {
+    if (!this.isAdmin(organization, actorEmailAddress)) {
+      return null;
+    }
 
-    const added = await this.organizationRepository.addMember(organization.id, {
-      email,
-      role,
-    });
+    const added = await this.organizationRepository.insertMember(
+      organization.id,
+      {
+        email: emailAddress,
+        role,
+      },
+    );
 
     if (!added) {
       await this.organizationRepository.setMemberRole(
         organization.id,
-        email,
+        emailAddress,
         role,
       );
     }
 
-    return this.reload(organization.id);
+    return this.getOrganizationAfterWrite(organization.id);
   }
 
   public async removeMember(
     organization: IOrganization,
-    email: string,
-    actor: string,
-  ): Promise<IOrganization> {
-    this.assertAdmin(organization, actor);
+    actorEmailAddress: string,
+    emailAddress: string,
+  ): Promise<IOrganization | null> {
+    if (!this.isAdmin(organization, actorEmailAddress)) {
+      return null;
+    }
 
     const remaining = organization.members.filter(
-      (member) => member.email !== email,
+      (member) => member.email !== emailAddress,
     );
 
     if (!remaining.some((member) => member.role === 'admin')) {
-      throw HttpError.forbidden();
+      return null;
     }
 
-    await this.organizationRepository.removeMember(organization.id, email);
+    await this.organizationRepository.deleteMember(
+      organization.id,
+      emailAddress,
+    );
 
-    return this.reload(organization.id);
+    return this.getOrganizationAfterWrite(organization.id);
   }
 
   public findMember(
     organization: IOrganization,
-    email: string,
+    emailAddress: string,
   ): IOrganizationMember | null {
     return (
-      organization.members.find((member) => member.email === email) ?? null
+      organization.members.find((member) => member.email === emailAddress) ??
+      null
     );
   }
 
-  public assertAdmin(organization: IOrganization, email: string): void {
-    if (this.findMember(organization, email)?.role !== 'admin') {
-      throw HttpError.forbidden();
-    }
+  public isAdmin(organization: IOrganization, emailAddress: string): boolean {
+    return this.findMember(organization, emailAddress)?.role === 'admin';
   }
 
-  private async reload(id: string): Promise<IOrganization> {
-    const organization = await this.organizationRepository.find(id);
+  private async getOrganizationAfterWrite(id: string): Promise<IOrganization> {
+    const organization = await this.organizationRepository.findById(id);
 
     if (!organization) {
       throw new Error(`Organization ${id} disappeared during a write`);

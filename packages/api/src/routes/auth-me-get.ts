@@ -17,7 +17,7 @@ export const AUTH_ME_GET: RouteOptions<any, any, any, any> = {
 
     reply.status(200).send({
       email: request.email!,
-      organizations: await organizationService.listAllByMember(request.email!),
+      organizations: await organizationService.listByMember(request.email!),
       provider: request.user.provider,
     });
   },

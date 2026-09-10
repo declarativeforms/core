@@ -18,8 +18,8 @@ and mutations without deciding business policy.
 
 - A repository class already names its entity; do not repeat it in method names
   or parameters unless it refers to a different entity.
-- `find` or `findByX` returns one entity or `null`.
-- `findAll`, `findAllByX`, or an explicit filter name returns a collection.
+- `findByX` returns one entity or `null`.
+- `findAllByX` returns a collection and an empty array when nothing matches.
 - Use `insert`, `replace`, `update`, `delete`, and `setX` for writes. Do not use
   business verbs such as `consume`, `publish`, or `reschedule`.
 - Parameters are camelCase versions of persisted criteria; stored fields remain
@@ -29,6 +29,8 @@ and mutations without deciding business policy.
 
 - Exclude MongoDB `_id` from every returned domain object.
 - Return `null` for missing singular reads and `Array<T>` for collection reads.
+- Writes return only the direct value current callers need: entity, boolean,
+  count, or `void`. Never add a read merely to enrich a write result.
 - Keep business validation and authorization in services.
 - Read the current clock inside a repository when recording persistence time.
   A caller-provided domain timestamp such as `runAt` remains a parameter.

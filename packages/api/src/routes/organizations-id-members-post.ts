@@ -36,16 +36,20 @@ export const ORGANIZATIONS_ID_MEMBERS_POST: RouteOptions<any, any, any, any> = {
       return;
     }
 
-    reply
-      .status(200)
-      .send(
-        await organizationService.addMember(
-          request.organization!,
-          email,
-          role ?? 'member',
-          request.email!,
-        ),
-      );
+    const organization = await organizationService.addMember(
+      request.organization!,
+      request.email!,
+      email,
+      role ?? 'member',
+    );
+
+    if (!organization) {
+      reply.status(403).send();
+
+      return;
+    }
+
+    reply.status(200).send(organization);
   },
   method: 'POST',
   preHandler: [authenticate, authorizeOrganization],

@@ -1,9 +1,14 @@
 import { serialize, type IDeclarativeForm } from '@declarativeforms/engine';
 import { randomBytes } from 'node:crypto';
-import { HttpError } from '../errors';
 import type { OpenAiGateway } from '../gateways';
 import type { FormMessageRepository } from '../repositories';
-import type { IFormMessage, IFormMessagePage, IInternalForm } from '../types';
+import type {
+  IFormGenerationFailure,
+  IFormMessage,
+  IFormMessagePage,
+  IInternalForm,
+  IValidationIssue,
+} from '../types';
 import type { InternalFormService } from './internal-form.service';
 
 const MESSAGE_PAGE_DEFAULT = 50;
@@ -12,18 +17,12 @@ const MAX_PROMPT_CHARS = 4000;
 const HISTORY_MESSAGES = 10;
 const MAX_CONTEXT_DEFINITION_BYTES = 65536;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
-const FAILURE_MESSAGES: Record<string, string> = {
-  ai_unconfigured:
-    'Form generation is not configured on this deployment. Nothing was changed.',
-  definition_too_large:
-    'This form is too large to change automatically. Nothing was changed.',
-  generation_invalid:
+const FAILURE_MESSAGES: Record<IFormGenerationFailure, string> = {
+  invalid:
     'The generated form did not pass validation, so the form was left unchanged.',
-  generation_rate_limited:
+  rate_limited:
     'The generation service is rate limited right now. Nothing was changed.',
-  generation_refused:
-    'The request was refused, so the form was left unchanged.',
-  generation_unavailable:
+  unavailable:
     'The generation service did not respond in time. Nothing was changed.',
 };
 
@@ -34,17 +33,13 @@ export class FormMessageService {
     private openAiGateway: OpenAiGateway,
   ) {}
 
-  public async ensureIndexes(): Promise<void> {
-    await this.formMessageRepository.ensureIndexes();
-  }
-
-  public async list(
+  public async listByFormAndBranch(
     organizationId: string,
     id: string,
     branch: string,
-    limit: number | null,
     cursor: string | null,
-  ): Promise<IFormMessagePage | null> {
+    limit: number | null,
+  ): Promise<IFormMessagePage | false | null> {
     const form = await this.internalFormService.findByBranch(
       organizationId,
       id,
@@ -56,14 +51,20 @@ export class FormMessageService {
     }
 
     const before = this.decodeCursor(cursor);
+
+    if (before === false) {
+      return false;
+    }
+
     const size = this.clampLimit(limit);
-    const messages = await this.formMessageRepository.findAllByBranch(
-      id,
-      organizationId,
-      branch,
-      before,
-      size + 1,
-    );
+    const messages =
+      await this.formMessageRepository.findAllByOrganizationIdAndFormIdAndBranch(
+        organizationId,
+        id,
+        branch,
+        before,
+        size + 1,
+      );
 
     const page = messages.slice(0, size);
 
@@ -78,24 +79,31 @@ export class FormMessageService {
 
   public async generate(
     organizationId: string,
-    email: string,
+    emailAddress: string,
     prompt: string,
-  ): Promise<Array<IFormMessage>> {
-    this.assertPrompt(prompt);
-
-    if (!this.openAiGateway.isConfigured()) {
-      throw this.generationFailure('ai_unconfigured', 503, null, null);
+  ): Promise<Array<IFormMessage> | IFormGenerationFailure> {
+    if (!this.isValidPrompt(prompt)) {
+      return 'invalid';
     }
 
     const generationId = this.buildId();
-    const generated = await this.produce(prompt, null, [], generationId, null);
+    const generated = await this.generateResponse(prompt, null, [], null);
+
+    if (typeof generated === 'string') {
+      return generated;
+    }
 
     const form = await this.internalFormService.create(
       organizationId,
-      email,
+      emailAddress,
       generated.definition,
       this.readName(generated.name, null),
     );
+
+    if (Array.isArray(form)) {
+      return 'invalid';
+    }
+
     const previewUrl = this.buildPreviewUrl(form);
     const message = `${generated.message}\n\n${previewUrl ? `Preview your form: ${previewUrl}` : 'Your form was created, but its preview link is currently unavailable.'}`;
 
@@ -112,7 +120,7 @@ export class FormMessageService {
       'user',
       prompt,
       'complete',
-      email,
+      emailAddress,
       generationId,
       null,
     );
@@ -123,7 +131,7 @@ export class FormMessageService {
       'assistant',
       message,
       'complete',
-      email,
+      emailAddress,
       generationId,
       form.revision,
     );
@@ -138,12 +146,12 @@ export class FormMessageService {
 
   public async send(
     organizationId: string,
-    email: string,
+    emailAddress: string,
     id: string,
     branch: string,
     content: string,
     idempotencyKey: string | null,
-  ): Promise<Array<IFormMessage> | null> {
+  ): Promise<Array<IFormMessage> | IFormGenerationFailure | 'conflict' | null> {
     const form = await this.internalFormService.findByBranch(
       organizationId,
       id,
@@ -154,16 +162,17 @@ export class FormMessageService {
       return null;
     }
 
-    this.assertPrompt(content);
-
-    if (idempotencyKey && !IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey)) {
-      throw new HttpError(400, 'invalid_idempotency_key');
+    if (
+      !this.isValidPrompt(content) ||
+      (idempotencyKey && !IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey))
+    ) {
+      return 'invalid';
     }
 
     const generationId = idempotencyKey ?? this.buildId();
 
     if (idempotencyKey) {
-      const replay = await this.replay(form, generationId);
+      const replay = await this.findIdempotentMessages(form, generationId);
 
       if (replay) {
         return replay;
@@ -183,7 +192,7 @@ export class FormMessageService {
       'user',
       content,
       'complete',
-      email,
+      emailAddress,
       generationId,
       null,
     );
@@ -194,7 +203,7 @@ export class FormMessageService {
       'assistant',
       '',
       'pending',
-      email,
+      emailAddress,
       generationId,
       null,
     );
@@ -207,26 +216,26 @@ export class FormMessageService {
         throw error;
       }
 
-      throw new HttpError(409, 'generation_in_progress', {
-        error: 'generation_in_progress',
-        generation_id: generationId,
-      });
+      return 'conflict';
     }
 
-    const generated = await this.produce(
+    const generated = await this.generateResponse(
       content,
       form,
       history,
-      generationId,
       assistantMessage.id,
     );
+
+    if (typeof generated === 'string') {
+      return generated;
+    }
 
     let revision: number | null = null;
 
     if (generated.definition !== null) {
-      const applied = await this.internalFormService.applyGenerated(
+      const applied = await this.internalFormService.applyGeneratedDefinition(
         organizationId,
-        email,
+        emailAddress,
         id,
         branch,
         generated.definition,
@@ -234,19 +243,22 @@ export class FormMessageService {
       );
 
       if (!applied) {
-        await this.formMessageRepository.fail(
+        await this.formMessageRepository.setStatus(
           assistantMessage.id,
-          FAILURE_MESSAGES.generation_unavailable,
+          'failed',
+          FAILURE_MESSAGES.unavailable,
+          null,
         );
 
-        return null;
+        return 'unavailable';
       }
 
       revision = applied.revision;
     }
 
-    await this.formMessageRepository.complete(
+    await this.formMessageRepository.setStatus(
       assistantMessage.id,
+      'complete',
       generated.message,
       revision,
     );
@@ -262,168 +274,179 @@ export class FormMessageService {
     ];
   }
 
-  private async produce(
+  private async generateResponse(
     prompt: string,
     form: IInternalForm | null,
     history: Array<IFormMessage>,
-    generationId: string,
     messageId: string | null,
-  ): Promise<{
-    definition: IDeclarativeForm | null;
-    message: string;
-    name: string | null;
-  }> {
-    const candidate = await this.callGateway(
+  ): Promise<
+    | {
+        definition: IDeclarativeForm | null;
+        message: string;
+        name: string | null;
+      }
+    | IFormGenerationFailure
+  > {
+    const contextDefinition = form ? this.readContextDefinition(form) : null;
+
+    if (contextDefinition === false) {
+      await this.recordGenerationFailure('invalid', messageId);
+
+      return 'invalid';
+    }
+
+    const candidate = await this.requestGeneration(
       prompt,
       form,
       history,
       null,
-      generationId,
       messageId,
+      contextDefinition,
     );
+
+    if (typeof candidate === 'string') {
+      return candidate;
+    }
 
     if (candidate.definition === null) {
       return { definition: null, message: candidate.message, name: null };
     }
 
-    try {
+    const definition = this.internalFormService.validateDefinition(
+      candidate.definition,
+    );
+
+    if (!Array.isArray(definition)) {
       return {
-        definition: this.internalFormService.readDefinition(
-          candidate.definition,
-        ),
+        definition,
         message: candidate.message,
         name: candidate.name,
       };
-    } catch (error: unknown) {
-      return this.repair(
-        prompt,
-        form,
-        history,
-        candidate.definition,
-        this.readValidationErrors(error),
-        generationId,
-        messageId,
-      );
     }
-  }
 
-  private async repair(
-    prompt: string,
-    form: IInternalForm | null,
-    history: Array<IFormMessage>,
-    invalid: string,
-    errors: Record<string, string>,
-    generationId: string,
-    messageId: string | null,
-  ): Promise<{
-    definition: IDeclarativeForm;
-    message: string;
-    name: string | null;
-  }> {
-    const repaired = await this.callGateway(
+    return this.repairGeneratedDefinition(
       prompt,
       form,
       history,
-      { definition: invalid, errors },
-      generationId,
+      candidate.definition,
+      definition,
       messageId,
+      contextDefinition,
+    );
+  }
+
+  private async repairGeneratedDefinition(
+    prompt: string,
+    form: IInternalForm | null,
+    history: Array<IFormMessage>,
+    invalidDefinition: string,
+    issues: Array<IValidationIssue>,
+    messageId: string | null,
+    contextDefinition: string | null,
+  ): Promise<
+    | {
+        definition: IDeclarativeForm;
+        message: string;
+        name: string | null;
+      }
+    | IFormGenerationFailure
+  > {
+    const repaired = await this.requestGeneration(
+      prompt,
+      form,
+      history,
+      {
+        definition: invalidDefinition,
+        errors: Object.fromEntries(
+          issues.map((issue) => [issue.path, issue.message]),
+        ),
+      },
+      messageId,
+      contextDefinition,
     );
 
-    try {
+    if (typeof repaired === 'string') {
+      return repaired;
+    }
+
+    const definition = this.internalFormService.validateDefinition(
+      repaired.definition,
+    );
+
+    if (!Array.isArray(definition)) {
       return {
-        definition: this.internalFormService.readDefinition(
-          repaired.definition,
-        ),
+        definition,
         message: repaired.message,
         name: repaired.name,
       };
-    } catch (error: unknown) {
-      throw await this.recordFailure(
-        new HttpError(422, 'generation_invalid', {
-          error: 'generation_invalid',
-          errors: this.readValidationErrors(error),
-        }),
-        generationId,
-        messageId,
-      );
     }
+
+    await this.recordGenerationFailure('invalid', messageId);
+
+    return 'invalid';
   }
 
-  private async callGateway(
+  private async requestGeneration(
     prompt: string,
     form: IInternalForm | null,
     history: Array<IFormMessage>,
     repair: { definition: string; errors: Record<string, string> } | null,
-    generationId: string,
     messageId: string | null,
-  ): Promise<{
-    definition: string | null;
-    message: string;
-    name: string | null;
-  }> {
+    contextDefinition: string | null,
+  ): Promise<
+    | {
+        definition: string | null;
+        message: string;
+        name: string | null;
+      }
+    | IFormGenerationFailure
+  > {
     try {
-      return await this.openAiGateway.generate(
+      const generated = await this.openAiGateway.generate(
         prompt,
-        form ? this.readContextDefinition(form) : null,
+        contextDefinition,
         history,
         repair,
         form?.branch ?? 'main',
         form ? this.buildPreviewUrl(form) : null,
       );
-    } catch (error: unknown) {
-      throw await this.recordFailure(error, generationId, messageId);
-    }
-  }
 
-  private readValidationErrors(error: unknown): Record<string, string> {
-    if (!(error instanceof HttpError) || error.statusCode !== 422) {
+      if (typeof generated === 'string') {
+        await this.recordGenerationFailure(generated, messageId);
+      }
+
+      return generated;
+    } catch (error: unknown) {
+      await this.recordGenerationFailure('unavailable', messageId);
+
       throw error;
     }
-
-    const payload = error.payload as {
-      errors?: Record<string, string>;
-    } | null;
-
-    return payload?.errors ?? {};
   }
 
-  private async recordFailure(
-    error: unknown,
-    generationId: string,
+  private async recordGenerationFailure(
+    failure: IFormGenerationFailure,
     messageId: string | null,
-  ): Promise<unknown> {
-    if (!(error instanceof HttpError)) {
-      return error;
-    }
-
-    const slug = error.message;
-
+  ): Promise<void> {
     if (messageId) {
-      await this.formMessageRepository.fail(
+      await this.formMessageRepository.setStatus(
         messageId,
-        FAILURE_MESSAGES[slug] ?? FAILURE_MESSAGES.generation_unavailable,
+        'failed',
+        FAILURE_MESSAGES[failure],
+        null,
       );
     }
-
-    const payload = error.payload as { errors?: Record<string, string> } | null;
-
-    return new HttpError(error.statusCode, slug, {
-      error: slug,
-      generation_id: generationId,
-      message_id: messageId,
-      ...(payload?.errors ? { errors: payload.errors } : {}),
-    });
   }
 
-  private async replay(
+  private async findIdempotentMessages(
     form: IInternalForm,
     generationId: string,
-  ): Promise<Array<IFormMessage> | null> {
-    const existing = await this.formMessageRepository.findAllByGeneration(
-      form.form_id,
-      form.branch,
-      generationId,
-    );
+  ): Promise<Array<IFormMessage> | 'conflict' | null> {
+    const existing =
+      await this.formMessageRepository.findAllByFormIdAndBranchAndGenerationId(
+        form.form_id,
+        form.branch,
+        generationId,
+      );
 
     if (existing.length === 0) {
       return null;
@@ -438,20 +461,8 @@ export class FormMessageService {
       return null;
     }
 
-    if (assistantMessage.status === 'pending') {
-      throw new HttpError(409, 'generation_in_progress', {
-        error: 'generation_in_progress',
-        generation_id: generationId,
-        message_id: assistantMessage.id,
-      });
-    }
-
-    if (assistantMessage.status === 'failed') {
-      throw new HttpError(409, 'generation_already_failed', {
-        error: 'generation_already_failed',
-        generation_id: generationId,
-        message_id: assistantMessage.id,
-      });
+    if (assistantMessage.status !== 'complete') {
+      return 'conflict';
     }
 
     return [userMessage, assistantMessage];
@@ -462,24 +473,23 @@ export class FormMessageService {
     id: string,
     branch: string,
   ): Promise<Array<IFormMessage>> {
-    const recent = await this.formMessageRepository.findAllByBranch(
-      id,
-      organizationId,
-      branch,
-      null,
-      HISTORY_MESSAGES,
-    );
+    const recent =
+      await this.formMessageRepository.findAllByOrganizationIdAndFormIdAndBranch(
+        organizationId,
+        id,
+        branch,
+        null,
+        HISTORY_MESSAGES,
+      );
 
     return recent.filter((message) => message.status === 'complete').reverse();
   }
 
-  private readContextDefinition(form: IInternalForm): string {
+  private readContextDefinition(form: IInternalForm): string | false {
     const yaml = serialize(this.internalFormService.toDefinition(form));
 
     if (Buffer.byteLength(yaml, 'utf8') > MAX_CONTEXT_DEFINITION_BYTES) {
-      throw new HttpError(422, 'definition_too_large', {
-        error: 'definition_too_large',
-      });
+      return false;
     }
 
     return yaml;
@@ -516,7 +526,7 @@ export class FormMessageService {
     role: 'assistant' | 'user',
     content: string,
     status: 'complete' | 'pending',
-    email: string,
+    emailAddress: string,
     generationId: string,
     schemaRevision: number | null,
   ): IFormMessage {
@@ -524,7 +534,7 @@ export class FormMessageService {
       branch: form.branch,
       content,
       created_at: new Date(),
-      created_by: email,
+      created_by: emailAddress,
       form_id: form.form_id,
       generation_id: generationId,
       id: this.buildId(),
@@ -549,27 +559,12 @@ export class FormMessageService {
     return name.slice(0, 120);
   }
 
-  private assertPrompt(prompt: string): void {
-    if (!prompt.trim() || prompt.length > MAX_PROMPT_CHARS) {
-      throw new HttpError(400, 'invalid_prompt');
-    }
+  private isValidPrompt(prompt: string): boolean {
+    return !!prompt.trim() && prompt.length <= MAX_PROMPT_CHARS;
   }
 
   private buildId(): string {
     return randomBytes(16).toString('hex');
-  }
-
-  private generationFailure(
-    slug: string,
-    status: number,
-    generationId: string | null,
-    messageId: string | null,
-  ): HttpError {
-    return new HttpError(status, slug, {
-      error: slug,
-      generation_id: generationId,
-      message_id: messageId,
-    });
   }
 
   private clampLimit(limit: number | null): number {
@@ -584,7 +579,7 @@ export class FormMessageService {
     return Buffer.from(String(sequence), 'utf8').toString('base64url');
   }
 
-  private decodeCursor(cursor: string | null): number | null {
+  private decodeCursor(cursor: string | null): number | null | false {
     if (cursor === null) {
       return null;
     }
@@ -595,7 +590,7 @@ export class FormMessageService {
     );
 
     if (!Number.isInteger(decoded) || decoded < 1) {
-      throw new HttpError(400, 'invalid_cursor');
+      return false;
     }
 
     return decoded;

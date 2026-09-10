@@ -17,7 +17,7 @@ export const ORGANIZATIONS_GET: RouteOptions<any, any, any, any> = {
 
     reply
       .status(200)
-      .send(await organizationService.listAllByMember(request.email!));
+      .send(await organizationService.listByMember(request.email!));
   },
   method: 'GET',
   preHandler: authenticate,

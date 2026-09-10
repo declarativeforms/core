@@ -27,27 +27,29 @@ export class OrganizationRepository {
     );
   }
 
-  public async find(id: string): Promise<IOrganization | null> {
+  public findById(id: string): Promise<IOrganization | null> {
     return this.db
       .collection<IOrganization>('organizations')
       .findOne({ id }, { projection: { _id: 0 } });
   }
 
-  public async findByCreatorAndTag(
-    createdBy: string,
+  public findByCreatedByAndTag(
+    createdByEmailAddress: string,
     tag: string,
   ): Promise<IOrganization | null> {
     return this.db
       .collection<IOrganization>('organizations')
-      .findOne({ created_by: createdBy, tags: tag } as any, {
+      .findOne({ created_by: createdByEmailAddress, tags: tag } as any, {
         projection: { _id: 0 },
       });
   }
 
-  public async findAllByMember(email: string): Promise<Array<IOrganization>> {
+  public findAllByMemberEmailAddress(
+    emailAddress: string,
+  ): Promise<Array<IOrganization>> {
     return this.db
       .collection<IOrganization>('organizations')
-      .find({ 'members.email': email }, { projection: { _id: 0 } })
+      .find({ 'members.email': emailAddress }, { projection: { _id: 0 } })
       .sort({ created_at: 1 })
       .toArray();
   }
@@ -58,7 +60,7 @@ export class OrganizationRepository {
       .insertOne(organization);
   }
 
-  public async addMember(
+  public async insertMember(
     id: string,
     member: IOrganizationMember,
   ): Promise<boolean> {
@@ -74,26 +76,29 @@ export class OrganizationRepository {
 
   public async setMemberRole(
     id: string,
-    email: string,
+    emailAddress: string,
     role: IOrganizationRole,
   ): Promise<boolean> {
     const result = await this.db
       .collection<IOrganization>('organizations')
       .updateOne(
-        { id, 'members.email': email },
+        { id, 'members.email': emailAddress },
         { $set: { 'members.$.role': role, updated_at: new Date() } },
       );
 
     return result.matchedCount > 0;
   }
 
-  public async removeMember(id: string, email: string): Promise<boolean> {
+  public async deleteMember(
+    id: string,
+    emailAddress: string,
+  ): Promise<boolean> {
     const result = await this.db
       .collection<IOrganization>('organizations')
       .updateOne(
         { id },
         {
-          $pull: { members: { email } },
+          $pull: { members: { email: emailAddress } },
           $set: { updated_at: new Date() },
         },
       );

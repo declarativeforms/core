@@ -30,7 +30,13 @@ export const AUTH_PROVIDER_AUTHORIZE_GET: RouteOptions<any, any, any, any> = {
         : '',
     );
 
-    if (!url) {
+    if (url === false) {
+      reply.status(400).send();
+
+      return;
+    }
+
+    if (url === null) {
       reply.status(404).send();
 
       return;

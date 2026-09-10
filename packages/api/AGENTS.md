@@ -18,7 +18,7 @@ routes -> core/container -> services -> repositories, gateways, strategies
 ```
 
 - `src/main.ts` starts the HTTP process and optionally forks workers.
-- `src/server.ts` configures Fastify, maps domain errors to HTTP, and registers
+- `src/server.ts` configures Fastify, handles unexpected failures, and registers
   routes.
 - `src/scheduler.ts` runs the job worker as a separate process.
 - `src/routes` is the presentation and application boundary. It owns HTTP
@@ -48,8 +48,8 @@ unless it has more than one real consumer or implementation.
   explicit persisted-filter name such as `findAllByRunAtBeforeNow`.
 - Repository writes use persistence verbs: `insert`, `replace`, `update`,
   `delete`, or `setX`. Business verbs belong in services.
-- Services use domain verbs. A complete collection uses `listAllX`; a paginated
-  query may use `list` because it does not return all records.
+- Services use domain verbs. Collection reads use `listByX`, including when they
+  proxy a repository `findAllByX` operation.
 - Gateways use remote-capability verbs such as `get`, `find`, `send`, `verify`,
   and `generate`.
 - Acronyms are words in identifiers: `Id`, `Url`, `Html`, `Yaml`, `Json`, and
@@ -59,9 +59,8 @@ unless it has more than one real consumer or implementation.
 
 ## Coding standards
 
-- Write no explanatory comments in `src`. The only source comments allowed are
-  concrete imperative `// TODO:` items and genuine tool directives. Prefer a
-  better name, constant, or small method over an explanation.
+- Write no comments inside named functions or methods. Prefer a better name,
+  constant, or small method over an explanation.
 - Do not add unit-test files, fixtures, mocking libraries, or a test framework.
   This package is verified with formatting and TypeScript builds.
 - Use `Array<T>`, never `T[]`. Use `unknown` at untrusted boundaries and `any`
@@ -72,9 +71,10 @@ unless it has more than one real consumer or implementation.
 - Use `type` for shapes and unions. Use `interface` only for a contract fulfilled
   by classes. Shared shapes live in `core/types`, use an `I`-prefixed PascalCase
   name, and are exported from its alphabetical barrel.
-- Return an entity, an inline `Pick`, or a primitive. Return `null` for a safe
-  absence and throw a domain error for an unsafe outcome. Do not introduce
-  one-use result, summary, or DTO wrappers.
+- Return an entity, validation issues, an inline `Pick`, or a primitive. Return
+  `null`, `false`, or an empty array for expected negative outcomes. Throw plain
+  `Error` only for terminal failure; never use an exception to drive caller
+  logic or introduce result, summary, or DTO wrappers.
 - Use `import type` for type-only imports, `node:` for built-ins, non-relative
   imports before relative imports, and parent barrels for cross-folder imports.
 - Inject dependencies with private constructor parameter properties named after
@@ -93,10 +93,9 @@ unless it has more than one real consumer or implementation.
 - Make no compatibility alias, migration, backfill, speculative abstraction, or
   unrelated refactor unless the task explicitly asks for it.
 
-Known exceptions are not patterns to copy: legacy `HttpError` uses in services,
-`TokenService` living under `services`, repeated collection/id literals, and the
-small inline routes and missing `startServer` return type in `server.ts`. Change
-them only when the requested work requires it.
+Known exceptions are not patterns to copy: `TokenService` living under
+`services`, repeated collection/id literals, and the small inline routes in
+`server.ts`. Change them only when requested work requires it.
 
 ## Verification
 

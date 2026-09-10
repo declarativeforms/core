@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { HttpError } from '../errors';
 import type { AuthCodeRepository } from '../repositories';
 import type { IOAuthProviderStrategy } from '../strategies';
 import type { TokenService } from './token.service';
@@ -30,10 +29,6 @@ export class AuthenticationService {
     private strategies: Array<IOAuthProviderStrategy>,
   ) {}
 
-  public async ensureIndexes(): Promise<void> {
-    await this.authCodeRepository.ensureIndexes();
-  }
-
   public isConfigured(): boolean {
     return !!process.env.AUTH_JWT_SECRET && !!process.env.AUTH_STATE_SECRET;
   }
@@ -53,7 +48,7 @@ export class AuthenticationService {
   public buildAuthorizationUrl(
     provider: string,
     redirectUri: string,
-  ): string | null {
+  ): string | null | false {
     const strategy = this.findStrategy(provider);
 
     if (!strategy) {
@@ -61,7 +56,7 @@ export class AuthenticationService {
     }
 
     if (!this.isAllowedRedirectUri(redirectUri)) {
-      throw new HttpError(400, 'redirect_uri is not allowed');
+      return false;
     }
 
     const codeVerifier = randomBytes(32).toString('base64url');
@@ -77,7 +72,7 @@ export class AuthenticationService {
     );
 
     return strategy.buildAuthorizationUrl(
-      this.callbackUri(strategy.type),
+      this.buildCallbackUrl(strategy.type),
       state,
       strategy.usesPkce
         ? createHash('sha256').update(codeVerifier).digest('base64url')
@@ -110,7 +105,7 @@ export class AuthenticationService {
     }
 
     const tokens = await strategy.getAccessToken(
-      this.callbackUri(strategy.type),
+      this.buildCallbackUrl(strategy.type),
       code,
       strategy.usesPkce ? payload.codeVerifier : null,
     );
@@ -168,7 +163,7 @@ export class AuthenticationService {
     return strategy && strategy.isConfigured() ? strategy : null;
   }
 
-  private callbackUri(provider: string): string {
+  private buildCallbackUrl(provider: string): string {
     const base = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
 
     return `${base}/api/v1/auth/${provider}/callback`;
@@ -177,10 +172,10 @@ export class AuthenticationService {
   private isAllowedRedirectUri(value: string): boolean {
     const normalized = this.normalizeRedirectUri(value);
 
-    return !!normalized && this.allowedRedirectUris().has(normalized);
+    return !!normalized && this.readAllowedRedirectUrls().has(normalized);
   }
 
-  private allowedRedirectUris(): Set<string> {
+  private readAllowedRedirectUrls(): Set<string> {
     const configured = (process.env.AUTH_ALLOWED_REDIRECT_URIS || '')
       .split(',')
       .map((entry) => entry.trim())

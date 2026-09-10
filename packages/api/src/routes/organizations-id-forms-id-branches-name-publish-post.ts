@@ -52,7 +52,13 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST: RouteOptions<
       request.body?.delete_branch === true,
     );
 
-    if (!form) {
+    if (form === false) {
+      reply.status(409).send();
+
+      return;
+    }
+
+    if (form === null) {
       reply.status(404).send();
 
       return;

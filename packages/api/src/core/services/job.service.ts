@@ -23,12 +23,13 @@ export class JobService {
     const jobs = await this.jobRepository.findAllByRunAtBeforeNow();
 
     for (const job of jobs) {
-      try {
-        const handler = this.handlers[job.event];
-        if (!handler) {
-          throw new Error(`No handler registered for event: ${job.event}`);
-        }
+      const handler = this.handlers[job.event];
 
+      if (!handler) {
+        throw new Error(`No handler registered for event: ${job.event}`);
+      }
+
+      try {
         await handler(job.data);
         await this.jobRepository.delete(job.id);
       } catch (error) {
@@ -44,8 +45,6 @@ export class JobService {
   }
 
   public async run(signal: AbortSignal): Promise<void> {
-    await this.jobRepository.ensureIndexes();
-
     while (!signal.aborted) {
       const processed = await this.processOnce();
       if (processed === 0) {

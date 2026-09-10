@@ -28,7 +28,13 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE: RouteOptions<
       request.params.branch,
     );
 
-    if (!form) {
+    if (form === false) {
+      reply.status(409).send();
+
+      return;
+    }
+
+    if (form === null) {
       reply.status(404).send();
 
       return;

@@ -38,14 +38,14 @@ export const FORMS_ID_EMAIL_CHALLENGES_POST: RouteOptions<any, any, any, any> =
         return;
       }
 
-      const challenge = await emailVerificationService.request(
+      const challenge = await emailVerificationService.requestChallenge(
         request.params.id,
         request.body.field_id,
         request.body.email_address,
       );
 
       if (!challenge) {
-        reply.status(502).send();
+        reply.status(503).send();
 
         return;
       }

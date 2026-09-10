@@ -56,11 +56,23 @@ export const ORGANIZATIONS_ID_FORMS_ID_PUT: RouteOptions<any, any, any, any> = {
       request.email!,
       request.params.id,
       branch,
-      expectedRevision,
       request.body,
+      expectedRevision,
     );
 
-    if (!form) {
+    if (Array.isArray(form)) {
+      reply.status(422).send();
+
+      return;
+    }
+
+    if (form === false) {
+      reply.status(409).send();
+
+      return;
+    }
+
+    if (form === null) {
       reply.status(404).send();
 
       return;

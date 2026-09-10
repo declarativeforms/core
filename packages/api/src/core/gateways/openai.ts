@@ -1,6 +1,5 @@
 import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
-import { HttpError } from '../errors';
-import type { IFormMessage } from '../types';
+import type { IFormGenerationFailure, IFormMessage } from '../types';
 
 const RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const DEFAULT_MODEL = 'gpt-5.6-terra';
@@ -182,11 +181,13 @@ type ResponsesPayload = {
   status?: string;
 };
 
-export class OpenAiGateway {
-  public isConfigured(): boolean {
-    return !!process.env.OPEN_AI_API_KEY;
-  }
+type GeneratedForm = {
+  definition: string | null;
+  message: string;
+  name: string | null;
+};
 
+export class OpenAiGateway {
   public async generate(
     prompt: string,
     definition: string | null,
@@ -194,34 +195,39 @@ export class OpenAiGateway {
     repair: { definition: string; errors: Record<string, string> } | null,
     branch: string,
     previewUrl: string | null,
-  ): Promise<{
-    definition: string | null;
-    message: string;
-    name: string | null;
-  }> {
+  ): Promise<GeneratedForm | IFormGenerationFailure> {
     if (!this.isConfigured()) {
-      throw this.failure(503, 'ai_unconfigured');
+      return 'unavailable';
     }
 
-    const response = await this.post(
+    const response = await this.sendRequest(
       this.buildBody(prompt, definition, history, repair, branch, previewUrl),
     );
+
+    if (!response) {
+      return 'unavailable';
+    }
+
     const payload = (await response
       .json()
       .catch(() => null)) as ResponsesPayload | null;
 
     if (!response.ok) {
-      throw this.mapErrorStatus(response.status, payload);
+      return this.mapErrorStatus(response.status, payload);
     }
 
     if (!payload || payload.status === 'incomplete') {
-      throw this.failure(503, 'generation_unavailable');
+      return 'unavailable';
     }
 
     return this.readGenerated(payload, definition !== null && repair === null);
   }
 
-  private async post(body: unknown): Promise<Response> {
+  private isConfigured(): boolean {
+    return !!process.env.OPEN_AI_API_KEY;
+  }
+
+  private async sendRequest(body: unknown): Promise<Response | null> {
     const timeout = this.readNumber(
       process.env.OPENAI_TIMEOUT_MS,
       DEFAULT_TIMEOUT_MS,
@@ -239,7 +245,7 @@ export class OpenAiGateway {
         signal: AbortSignal.timeout(timeout),
       });
     } catch {
-      throw this.failure(503, 'generation_unavailable');
+      return null;
     }
   }
 
@@ -332,15 +338,11 @@ export class OpenAiGateway {
   private readGenerated(
     payload: ResponsesPayload,
     allowConversation: boolean,
-  ): {
-    definition: string | null;
-    message: string;
-    name: string | null;
-  } {
+  ): GeneratedForm | IFormGenerationFailure {
     for (const item of payload.output ?? []) {
       for (const part of item.content ?? []) {
         if (part.refusal) {
-          throw this.failure(422, 'generation_refused');
+          return 'invalid';
         }
       }
     }
@@ -348,7 +350,7 @@ export class OpenAiGateway {
     const text = this.readOutputText(payload);
 
     if (!text) {
-      throw this.failure(503, 'generation_unavailable');
+      return 'unavailable';
     }
 
     let parsed: unknown;
@@ -356,11 +358,11 @@ export class OpenAiGateway {
     try {
       parsed = JSON.parse(text);
     } catch {
-      throw this.failure(503, 'generation_unavailable');
+      return 'unavailable';
     }
 
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      throw this.failure(503, 'generation_unavailable');
+      return 'unavailable';
     }
 
     const generated = parsed as Record<string, unknown>;
@@ -374,7 +376,7 @@ export class OpenAiGateway {
       typeof generated.message === 'string' ? generated.message : '';
 
     if ((definition !== null && !definition.trim()) || !message.trim()) {
-      throw this.failure(503, 'generation_unavailable');
+      return 'unavailable';
     }
 
     return {
@@ -418,20 +420,16 @@ export class OpenAiGateway {
   private mapErrorStatus(
     status: number,
     payload: ResponsesPayload | null,
-  ): HttpError {
+  ): IFormGenerationFailure {
     console.error(
       `OpenAI request failed: status=${status} code=${payload?.error?.code ?? 'none'} type=${payload?.error?.type ?? 'none'}`,
     );
 
     if (status === 429) {
-      return this.failure(429, 'generation_rate_limited');
+      return 'rate_limited';
     }
 
-    return this.failure(503, 'generation_unavailable');
-  }
-
-  private failure(status: number, slug: string): HttpError {
-    return new HttpError(status, slug, { error: slug });
+    return 'unavailable';
   }
 
   private readNumber(value: string | undefined, fallback: number): number {

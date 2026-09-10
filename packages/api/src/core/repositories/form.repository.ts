@@ -1,13 +1,5 @@
-import type { IDeclarativeForm } from '@declarativeforms/engine';
 import type { Db } from 'mongodb';
-import { INTERNAL_FORM_METADATA_KEYS, type IInternalForm } from '../types';
-
-const PUBLIC_PROJECTION = {
-  _id: 0,
-  ...Object.fromEntries(
-    INTERNAL_FORM_METADATA_KEYS.map((key) => [key, 0] as const),
-  ),
-};
+import type { IInternalForm } from '../types';
 
 export class FormRepository {
   constructor(private db: Db) {}
@@ -21,20 +13,7 @@ export class FormRepository {
       .createIndex({ organization_id: 1, updated_at: -1 });
   }
 
-  public async find(
-    id: string,
-    branch: string,
-  ): Promise<IDeclarativeForm | null> {
-    const document = await this.db
-      .collection<IInternalForm>('forms')
-      .findOne({ branch, deleted_at: null, form_id: id } as any, {
-        projection: PUBLIC_PROJECTION,
-      });
-
-    return document ? { ...(document as IDeclarativeForm), id } : null;
-  }
-
-  public async findByBranch(
+  public findByIdAndBranch(
     id: string,
     branch: string,
   ): Promise<IInternalForm | null> {
@@ -45,7 +24,7 @@ export class FormRepository {
       }) as Promise<IInternalForm | null>;
   }
 
-  public async findAnyBranch(id: string): Promise<IInternalForm | null> {
+  public findById(id: string): Promise<IInternalForm | null> {
     return this.db
       .collection<IInternalForm>('forms')
       .findOne({ deleted_at: null, form_id: id } as any, {
@@ -53,10 +32,12 @@ export class FormRepository {
       }) as Promise<IInternalForm | null>;
   }
 
-  public async findAllBranchNames(id: string): Promise<Array<string>> {
+  public async findAllBranchNamesByFormId(
+    formId: string,
+  ): Promise<Array<string>> {
     const documents = await this.db
       .collection<IInternalForm>('forms')
-      .find({ deleted_at: null, form_id: id } as any, {
+      .find({ deleted_at: null, form_id: formId } as any, {
         projection: { _id: 0, branch: 1 },
       })
       .toArray();
@@ -64,7 +45,7 @@ export class FormRepository {
     return documents.map((document) => document.branch).sort();
   }
 
-  public async findAllByOrganization(
+  public findAllByOrganizationIdAndBranch(
     organizationId: string,
     branch: string,
   ): Promise<Array<IInternalForm>> {
@@ -104,7 +85,10 @@ export class FormRepository {
     return result.matchedCount > 0;
   }
 
-  public async delete(id: string, branch: string): Promise<boolean> {
+  public async deleteByIdAndBranch(
+    id: string,
+    branch: string,
+  ): Promise<boolean> {
     const result = await this.db
       .collection<IInternalForm>('forms')
       .deleteOne({ branch, form_id: id } as any);
@@ -112,22 +96,22 @@ export class FormRepository {
     return result.deletedCount > 0;
   }
 
-  public async rename(
+  public async setName(
     id: string,
     name: string,
-    email: string,
+    emailAddress: string,
   ): Promise<boolean> {
     const result = await this.db.collection<IInternalForm>('forms').updateMany(
       { deleted_at: null, form_id: id } as any,
       {
-        $set: { name, updated_at: new Date(), updated_by: email },
+        $set: { name, updated_at: new Date(), updated_by: emailAddress },
       } as any,
     );
 
     return result.modifiedCount > 0;
   }
 
-  public async softDelete(id: string): Promise<boolean> {
+  public async setDeletedAt(id: string): Promise<boolean> {
     const result = await this.db.collection<IInternalForm>('forms').updateMany(
       { deleted_at: null, form_id: id } as any,
       {

@@ -1,5 +1,5 @@
 export class GitHubGateway {
-  public async retrieveYamlFile(
+  public async findYamlFile(
     owner: string,
     repository: string,
     file: string,

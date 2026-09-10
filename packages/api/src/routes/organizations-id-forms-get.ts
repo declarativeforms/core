@@ -20,7 +20,9 @@ export const ORGANIZATIONS_ID_FORMS_GET: RouteOptions<any, any, any, any> = {
 
     reply
       .status(200)
-      .send(await internalFormService.listAll(request.organization!.id));
+      .send(
+        await internalFormService.listByOrganization(request.organization!.id),
+      );
   },
   method: 'GET',
   preHandler: [authenticate, authorizeOrganization],

@@ -9,7 +9,6 @@ infrastructure code separated by directory.
 ## Architecture
 
 - `container.ts` constructs dependencies in order and memoizes one container.
-- `errors.ts` defines domain errors; `server.ts` alone maps them to HTTP.
 - `index.ts` is the flat facade used by routes.
 - Services may depend on repositories, gateways, strategies, and other genuine
   services. Infrastructure layers never depend on services.
@@ -27,8 +26,8 @@ infrastructure code separated by directory.
 - Keep the hand-written container; do not add a dependency-injection framework.
 - Construct each dependency once, after everything it requires.
 - Resolve the container lazily and reset it to `null` after disposal.
-- Domain errors carry domain facts, not status codes. Add the server mapping in
-  the same change as any new domain error.
+- Expected domain outcomes use direct values. Plain `Error` is reserved for
+  terminal failure, and routes select HTTP status codes from direct outcomes.
 - Cross-layer data shapes belong in `types`, not `container.ts` or a barrel.
 - Apply package rules for return values, imports, comments, and formatting.
 

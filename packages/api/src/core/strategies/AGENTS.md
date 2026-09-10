@@ -18,7 +18,7 @@ OAuth providers and submission connection delivery.
 - Files end in `*.strategy.ts`; classes end in `Strategy`.
 - Each strategy exposes a readonly string `type` discriminant.
 - Contract methods follow the capability vocabulary used by their gateway and
-  consumer, such as `getAccessToken` and `findUser`.
+  consumer, such as `deliver`, `getAccessToken`, and `findUser`.
 - Interfaces are `I`-prefixed and named for the capability family.
 
 ## Coding standards

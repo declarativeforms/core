@@ -711,20 +711,23 @@ instead.
 
 ### 9.7 Repository write results
 
-Repository writes return stored domain values:
+Repository writes MUST return only the information a current caller needs:
 
-- `insert` returns the inserted entity after persistence-assigned values are
-  represented.
-- `replace`, `update`, and `setX` return the resulting entity.
-- `delete` returns the entity that was removed.
-- A single-target write returns `null` when no matching target exists.
-- A collection write returns an array of affected domain values and returns an
-  empty array when no targets exist.
+- Return `void` when callers need only completion or a thrown terminal failure.
+- Return `boolean` when callers must distinguish whether a target was changed.
+- Return a count when callers need the number of affected records.
+- Return the stored entity only when callers immediately need its stored state.
+- Return `null` with an entity result when no matching target is an expected
+  outcome.
+
+A repository MUST NOT perform an additional read only to manufacture a richer
+write result. When the database operation already returns the required entity,
+the repository MAY return it directly.
 
 A repository write MUST NOT return a driver result, acknowledged flag, raw
-document containing `_id`, or persistence response envelope. A caller that only
-needs to know whether a returned entity exists MAY branch on `null`; the
-repository MUST NOT add a parallel `success` flag.
+document containing `_id`, or persistence response envelope. It MUST translate
+driver metadata into the direct caller-needed value and MUST NOT add a parallel
+result or success wrapper.
 
 ## 10. Implementation structure
 
@@ -840,6 +843,13 @@ A callable MUST NOT mutate a parameter. It MUST create a local value or a new
 object when transformation is required. Engine functions MUST be pure; API
 methods SHOULD also avoid hidden mutation so the caller retains ownership of
 objects it passes.
+
+A Fastify authentication or authorization hook MAY assign a value to a request
+property that was explicitly registered with `decorateRequest` and declared by
+the API's Fastify type augmentation. This exception is limited to request-scoped
+context such as the authenticated email address or authorized organization. It
+MUST NOT mutate request body, parameters, query values, headers, or undeclared
+properties.
 
 ### 10.5 Comments
 
@@ -1042,27 +1052,24 @@ matches.
 export class OrganizationRepository {
   constructor(private collection: Collection<IOrganization>) {}
 
-  public setMemberRole(
+  public async setMemberRole(
     organizationId: string,
     emailAddress: string,
     role: IOrganizationRole,
-  ): Promise<IOrganization | null> {
-    return this.collection.findOneAndUpdate(
+  ): Promise<boolean> {
+    const result = await this.collection.updateOne(
       { id: organizationId, "members.email": emailAddress },
       { $set: { "members.$.role": role } },
-      {
-        includeResultMetadata: false,
-        projection: { _id: 0 },
-        returnDocument: "after",
-      },
     );
+
+    return result.matchedCount > 0;
   }
 }
 ```
 
 The name states the persisted property, the parameters follow hierarchy, and
-the return value is the updated entity or `null` rather than a driver result or
-boolean wrapper.
+the return value provides exactly the existence signal its caller needs without
+an additional read or a result wrapper.
 
 ### 12.4 Engine function
 
@@ -1153,7 +1160,7 @@ following:
 - Singular API absence is `null`.
 - Collection absence is an empty array.
 - Optional engine absence is `undefined`.
-- Repository writes return affected domain values.
+- Repository writes return only the direct value current callers need.
 - Expected negative outcomes do not throw.
 - Explicit terminal failures use plain `Error`.
 - No caller must inspect an error to make a business decision.
@@ -1166,7 +1173,7 @@ following:
 - Blank lines separate logical stages without fragmenting coupled statements.
 - No local merely aliases a parameter.
 - Every local materially improves reuse, narrowing, safety, or clarity.
-- Parameters are not mutated.
+- Parameters are not mutated except for declared Fastify request context.
 - The declaration and body contain no comments.
 - Prettier owns mechanical formatting.
 

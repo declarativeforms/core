@@ -23,7 +23,7 @@ export class GitHubOAuthStrategy {
     );
   }
 
-  public async getAccessToken(
+  public getAccessToken(
     redirectUri: string,
     code: string,
     codeVerifier: string | null,
@@ -35,7 +35,7 @@ export class GitHubOAuthStrategy {
     );
   }
 
-  public async findUser(accessToken: string): Promise<IOAuthUser | null> {
+  public findUser(accessToken: string): Promise<IOAuthUser | null> {
     return this.gitHubOAuthGateway.findUser(accessToken);
   }
 }

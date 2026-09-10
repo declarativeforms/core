@@ -51,15 +51,21 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET: RouteOptions<
       return;
     }
 
-    const page = await formMessageService.list(
+    const page = await formMessageService.listByFormAndBranch(
       request.organization!.id,
       request.params.id,
       request.params.branch,
-      limit,
       cursor,
+      limit,
     );
 
-    if (!page) {
+    if (page === false) {
+      reply.status(400).send();
+
+      return;
+    }
+
+    if (page === null) {
       reply.status(404).send();
 
       return;

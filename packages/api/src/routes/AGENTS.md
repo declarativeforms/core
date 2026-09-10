@@ -368,6 +368,11 @@ Identity establishment MUST precede authorization or contextual resource
 loading. Pre-handlers MUST NOT implement the endpoint's domain workflow or
 mutate its target resource.
 
+Authentication and authorization pre-handlers MAY assign declared request
+context registered with `decorateRequest`, such as `request.email` and
+`request.organization`. They MUST NOT mutate request input or undeclared
+properties.
+
 A reusable pre-handler declares explicit Fastify parameters and a
 `Promise<void>` return type:
 
@@ -443,8 +448,9 @@ different response:
 | Missing or invalid authentication                    | `401`                                |
 | Known caller lacks permission and disclosure is safe | `403`                                |
 | Missing or intentionally invisible resource          | `404`                                |
-| Semantically invalid domain operation                | Shared `422` mapping                 |
-| Classified upstream failure                          | `502`                                |
+| Conflicting domain state                             | `409` with an empty body             |
+| Semantically invalid domain operation                | `422` with an empty body             |
+| Upstream rate limit                                  | `429` with an empty body             |
 | Known unavailable capability                         | `503`                                |
 | Rate limit exceeded                                  | Plugin-owned `429`                   |
 | Unexpected exception                                 | Shared `500` handling                |
@@ -453,7 +459,8 @@ Use `404`, rather than `403`, when revealing the resource or membership would
 leak information. Use `403` only after the caller and relevant membership or
 visibility are known safely.
 
-Send resources directly without a general `{ data: ... }` envelope. An
+Expected non-success responses have an empty body. Send resources directly
+without a general `{ data: ... }` envelope. An
 endpoint-specific projection is allowed only when it is the established public
 representation. Keep localized or user-facing prose out of route error bodies.
 

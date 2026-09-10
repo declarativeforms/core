@@ -37,7 +37,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     const submissionId =
       typeof request.query.id === 'string' ? request.query.id : undefined;
 
-    const submission = await submissionService.createOrUpdate(
+    const submission = await submissionService.submit(
       request.params.id,
       request.body,
       request.query.partial === 'true',
@@ -47,6 +47,12 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
       },
       submissionId,
     );
+
+    if (Array.isArray(submission)) {
+      reply.status(422).send();
+
+      return;
+    }
 
     if (!submission) {
       reply.status(404).send();

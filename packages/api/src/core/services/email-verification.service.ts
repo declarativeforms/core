@@ -15,7 +15,7 @@ export class EmailVerificationService {
     return this.tokenService.isConfigured() && this.emailGateway.isConfigured();
   }
 
-  public async request(
+  public async requestChallenge(
     formId: string,
     fieldId: string,
     emailAddress: string,

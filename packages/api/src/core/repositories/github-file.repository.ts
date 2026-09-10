@@ -10,7 +10,7 @@ export class GitHubFileRepository {
       .createIndex({ id: 1 });
   }
 
-  public async find(id: string): Promise<IGitHubFile | null> {
+  public findById(id: string): Promise<IGitHubFile | null> {
     return this.db.collection<IGitHubFile>('github_files').findOne(
       { id },
       {
@@ -21,7 +21,7 @@ export class GitHubFileRepository {
     );
   }
 
-  public async upsert(gitHubFile: IGitHubFile): Promise<void> {
+  public async replace(gitHubFile: IGitHubFile): Promise<void> {
     await this.db
       .collection<IGitHubFile>('github_files')
       .replaceOne({ id: gitHubFile.id }, gitHubFile, { upsert: true });
