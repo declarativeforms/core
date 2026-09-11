@@ -1,3 +1,3 @@
-export function getBackendUrl(path: string): string {
+export function buildApiUrl(path: string): string {
   return `/api/v1/${path}`;
 }

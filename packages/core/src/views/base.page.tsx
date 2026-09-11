@@ -11,7 +11,7 @@ export function BasePage(props: {
   theme?: { logo?: string; primary?: string };
   embed?: boolean;
   children: ReactNode;
-}) {
+}): React.JSX.Element {
   const i18n = useI18n();
 
   useEffect(() => {

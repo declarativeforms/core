@@ -10,10 +10,13 @@ import {
   FileArchiveIcon,
 } from 'lucide-react';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 import type { UploadedFile } from './use-file-uploads';
 
-function FileTypeIcon(props: { type: string; className?: string }) {
+function FileTypeIcon(props: {
+  type: string;
+  className?: string;
+}): React.JSX.Element {
   if (props.type.startsWith('image/')) {
     return <ImageIcon className={props.className} aria-hidden="true" />;
   }
@@ -56,7 +59,7 @@ function formatFileSize(bytes: number): string {
 export function FilePreview(props: {
   file: UploadedFile;
   onRemove: () => void;
-}) {
+}): React.JSX.Element {
   const i18n = useI18n();
 
   const isError = props.file.status === 'error';
@@ -71,7 +74,7 @@ export function FilePreview(props: {
   return (
     <div
       role="listitem"
-      className={cn(
+      className={mergeClassNames(
         'rounded-md flex items-center gap-3 p-3 min-h-[48px]',
         isError
           ? 'border border-destructive/60 bg-destructive/10'
@@ -87,14 +90,14 @@ export function FilePreview(props: {
         />
       ) : (
         <div
-          className={cn(
+          className={mergeClassNames(
             'w-10 h-10 rounded flex-shrink-0 flex items-center justify-center',
             isError ? 'bg-destructive/15' : 'bg-muted',
           )}
         >
           <FileTypeIcon
             type={props.file.type}
-            className={cn(
+            className={mergeClassNames(
               'w-5 h-5',
               isError ? 'text-destructive' : 'text-muted-foreground',
             )}
@@ -104,7 +107,7 @@ export function FilePreview(props: {
 
       <div className="flex-1 min-w-0">
         <p
-          className={cn(
+          className={mergeClassNames(
             'text-sm font-medium truncate',
             isError ? 'text-destructive' : 'text-foreground',
           )}
@@ -131,7 +134,7 @@ export function FilePreview(props: {
         <button
           type="button"
           onClick={props.onRemove}
-          className={cn(
+          className={mergeClassNames(
             'w-8 h-8 rounded flex items-center justify-center flex-shrink-0',
             'hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2',
             'transition-colors',

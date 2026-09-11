@@ -6,7 +6,7 @@ export function DeclarativeFormHeading(props: {
   title?: string;
   description?: string;
   titleId?: string;
-}) {
+}): React.JSX.Element | null {
   if (!props.title && !props.description) {
     return null;
   }

@@ -1,36 +1,37 @@
 # RFC: Method and Function Coding Standards
 
-| Field      | Value                                   |
-| ---------- | --------------------------------------- |
-| Status     | Active                                  |
-| Applies to | `packages/api` and `packages/engine`    |
-| Subject    | Named TypeScript methods and functions  |
-| Audience   | Engineers, reviewers, and coding agents |
+| Field      | Value                                                  |
+| ---------- | ------------------------------------------------------ |
+| Status     | Active                                                 |
+| Applies to | `packages/api`, `packages/core`, and `packages/engine` |
+| Subject    | Named TypeScript methods and functions                 |
+| Audience   | Engineers, reviewers, and coding agents                |
 
 ## 1. Abstract
 
 This RFC defines how named methods and functions are declared, named,
-parameterized, implemented, and consumed in the API and engine packages. Its
-purpose is to make a callable's contract understandable from its name,
+parameterized, implemented, and consumed in the API, core, and engine packages.
+Its purpose is to make a callable's contract understandable from its name,
 signature, and return type without reading its implementation or relying on
 comments.
 
-The API and engine use different module styles. The API primarily uses classes,
-while the engine uses pure exported functions. The shared rules in this RFC
-apply to both. Rules concerning access modifiers apply only to concrete class
-methods because TypeScript functions and interface method signatures cannot
-declare `public` or `private`.
+The packages use different module styles. The API primarily uses classes, the
+core uses React components, hooks, and browser or server functions, and the
+engine uses pure exported functions. The shared rules in this RFC apply to all
+three. Rules concerning access modifiers apply only to concrete class methods
+because TypeScript functions and interface method signatures cannot declare
+`public` or `private`.
 
 ## 2. Status and authority
 
 This RFC is active and normative.
 
 When this RFC conflicts with method- or function-definition guidance in an
-`AGENTS.md` file under `packages/api` or `packages/engine`, this RFC takes
-precedence for that subject. More specific package rules continue to apply when
-they do not conflict with this RFC. Compiler constraints, public API contracts,
-security requirements, and data-integrity requirements are never weakened by
-this precedence rule.
+`AGENTS.md` file under an applicable package, this RFC takes precedence for
+that subject. More specific package rules continue to apply when they do not
+conflict with this RFC. Compiler constraints, public API contracts, security
+requirements, and data-integrity requirements are never weakened by this
+precedence rule.
 
 Existing code that does not conform is legacy code. It MUST NOT be treated as a
 pattern to copy. A new named callable MUST conform. An existing named callable
@@ -492,6 +493,14 @@ that performs that complete pipeline stage.
 Engine functions MUST remain pure. They MUST NOT perform I/O, read environment
 variables, log, mutate their parameters, or depend on API package classes.
 
+### 7.6 Core functions
+
+Core React components use PascalCase noun names and hooks use the established
+`useX` convention. Framework-mandated exports such as Next.js `Page`,
+`generateMetadata`, and HTTP verb route handlers retain the names required by
+the framework. Other core functions follow the general caller-oriented naming
+rules and MAY perform browser, server, or integration I/O.
+
 ## 8. Parameters
 
 ### 8.1 Parameter names
@@ -693,10 +702,11 @@ than transport categorization.
 
 ### 9.3 `null`
 
-Within the API, `null` means a safe, expected absence or non-result for a
-singular domain operation. Repository and service `find...` methods MUST return
-`null` when no matching entity exists. A command MAY return `null` when its
-caller can safely treat multiple ordinary non-results identically and no
+Within the API and core, `null` means a safe, expected absence or non-result for
+a singular domain operation. Repository and service `find...` methods MUST
+return `null` when no matching entity exists. A core React component MAY return
+`null` when it intentionally renders nothing. A command MAY return `null` when
+its caller can safely treat multiple ordinary non-results identically and no
 current product behavior requires their causes to be distinguished.
 
 `null` MAY also represent an explicit empty sentinel when the caller must
@@ -705,9 +715,9 @@ infrastructure failure.
 
 ### 9.4 `undefined`
 
-Within the engine, `undefined` means an optional or omitted authored value.
-Functions MAY return `undefined` when no optional bound, validation message,
-navigation target, or authored property exists.
+Within the engine and core, `undefined` means an optional or omitted authored
+or application value. Functions MAY return `undefined` when no optional bound,
+validation message, navigation target, or authored property exists.
 
 The API MUST prefer `null` for a safe singular search result. The engine MUST
 reserve `null` for a deliberate explicit empty sentinel and MUST NOT exchange
@@ -864,9 +874,9 @@ public buildAuthorizationUrl(redirectUri: string): string {
 ### 10.4 Parameter mutation
 
 A callable MUST NOT mutate a parameter. It MUST create a local value or a new
-object when transformation is required. Engine functions MUST be pure; API
-methods SHOULD also avoid hidden mutation so the caller retains ownership of
-objects it passes.
+object when transformation is required. Engine functions MUST be pure; API and
+core callables SHOULD also avoid hidden mutation so the caller retains
+ownership of objects it passes.
 
 A Fastify authentication or authorization hook MAY assign a value to a request
 property that was explicitly registered with `decorateRequest` and declared by
@@ -1036,6 +1046,14 @@ plain `Error` for an invalid invariant that prevents a safe transformation.
 
 Engine functions MUST NOT define custom error classes or attach transport,
 repository, or HTTP metadata to an error.
+
+### 11.8 Core failures
+
+A core integration function returns `null`, `undefined`, or an empty collection
+only for an expected outcome its caller can safely handle. Unexpected network,
+SDK, parsing, and dependency failures MUST propagate unless the current UI
+explicitly provides degraded behavior at the call site. Explicit terminal
+failures use plain `Error`.
 
 ## 12. Complete examples
 
@@ -1246,11 +1264,21 @@ npm run build -w @declarativeforms/engine
 npx tsc -b
 ```
 
-The lint commands format files in place. A second lint run MUST report no
-changed source files. Reviewers MUST additionally inspect the changed callable
-against the checklist because naming quality, expected-versus-terminal outcomes,
-unnecessary locals, and comment-free clarity cannot be established by the type
-checker or formatter alone.
+When modifying the core, verification MUST include:
+
+```bash
+npm run format -w @declarativeforms/core
+npm run lint -w @declarativeforms/core
+npm run build -w @declarativeforms/core
+npx tsc -b
+```
+
+The API and engine lint commands and the core format command format files in
+place. A second formatting run MUST report no changed source files. Reviewers
+MUST additionally inspect the changed callable against the checklist because
+naming quality, expected-versus-terminal outcomes, unnecessary locals, and
+comment-free clarity cannot be established by the type checker or formatter
+alone.
 
 This RFC does not authorize compatibility aliases, migrations, broad cleanup,
 or unrelated refactoring. When a requested change exposes a legacy

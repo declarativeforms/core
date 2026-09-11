@@ -12,14 +12,14 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@/components/ui';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 import { useI18n } from '@/i18n';
 
 const OTHER_VALUE = '__other__';
 
 export function SingleSelectField(
   props: FieldProps<IRenderableSingleSelectField, string>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
 
   const [other, setOther] = useState(() => {
@@ -31,20 +31,20 @@ export function SingleSelectField(
     return { active, text: active ? String(props.control.value) : '' };
   });
 
-  const handleValueChange = (value: string): void => {
-    if (value === OTHER_VALUE) {
+  const selectValue = (selectedValue: string): void => {
+    if (selectedValue === OTHER_VALUE) {
       setOther((o) => ({ ...o, active: true }));
       props.control.onChange(other.text || '');
     } else {
       setOther((o) => ({ ...o, active: false }));
-      props.control.onChange(value);
+      props.control.onChange(selectedValue);
     }
   };
 
-  const handleOtherTextChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+  const changeOtherText = (
+    event: React.ChangeEvent<HTMLInputElement>,
   ): void => {
-    const text = e.target.value;
+    const text = event.target.value;
     setOther((o) => ({ ...o, text }));
     props.control.onChange(text);
   };
@@ -53,7 +53,7 @@ export function SingleSelectField(
 
   return (
     <RadioGroup
-      onValueChange={handleValueChange}
+      onValueChange={selectValue}
       value={radioValue}
       className="gap-2"
       aria-required={props.field.required}
@@ -64,7 +64,7 @@ export function SingleSelectField(
         return (
           <Field key={option.value}>
             <FieldLabel
-              className={cn(
+              className={mergeClassNames(
                 'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
                 { 'border-ring': isSelected },
               )}
@@ -78,7 +78,7 @@ export function SingleSelectField(
       {props.field.allowOther && (
         <Field>
           <FieldLabel
-            className={cn(
+            className={mergeClassNames(
               'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
               { 'border-ring': other.active },
             )}
@@ -91,7 +91,7 @@ export function SingleSelectField(
               className="mt-2 text-sm/4"
               placeholder={i18n.t('select.other_placeholder')}
               value={other.text}
-              onChange={handleOtherTextChange}
+              onChange={changeOtherText}
               autoFocus
             />
           )}

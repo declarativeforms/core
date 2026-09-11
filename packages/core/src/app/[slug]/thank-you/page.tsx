@@ -5,7 +5,7 @@ import { PageShell } from '@/app/page-shell';
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<SearchParams>;
-}) {
+}): Promise<React.JSX.Element> {
   const params = await props.params;
   const query = await props.searchParams;
 

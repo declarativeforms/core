@@ -3,7 +3,9 @@ import type { IRenderableField } from '@declarativeforms/engine';
 import { FieldLabel as BaseFieldLabel } from '@/components/ui';
 import { HtmlText } from '@/components/declarative-form/supporting';
 
-export function FieldLabel(props: { field: IRenderableField }) {
+export function FieldLabel(props: {
+  field: IRenderableField;
+}): React.JSX.Element {
   return (
     <BaseFieldLabel className="text-sm/4.5">
       <HtmlText html={props.field.label} />

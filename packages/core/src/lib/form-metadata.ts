@@ -15,7 +15,7 @@ export const SITE_NAME = 'Declarative Forms';
 
 const REVALIDATE_SECONDS = 300;
 
-function apiOrigin(): string {
+function getApiOrigin(): string {
   return process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080';
 }
 
@@ -23,11 +23,11 @@ export type FormRouteTarget =
   | { id: string; branch?: string }
   | { owner: string; repository: string; path: string; branch?: string };
 
-function formUrl(target: FormRouteTarget): string {
+function buildFormUrl(target: FormRouteTarget): string {
   if ('id' in target) {
     const idUrl = new URL(
       `/api/v1/forms/${encodeURIComponent(target.id)}`,
-      apiOrigin(),
+      getApiOrigin(),
     );
 
     if (target.branch) {
@@ -42,7 +42,7 @@ function formUrl(target: FormRouteTarget): string {
     `/api/v1/forms/${encodeURIComponent(target.owner)}/${encodeURIComponent(
       target.repository,
     )}/${path}`,
-    apiOrigin(),
+    getApiOrigin(),
   );
 
   if (target.branch) {
@@ -52,22 +52,22 @@ function formUrl(target: FormRouteTarget): string {
   return url.toString();
 }
 
-export const fetchForm = cache(async function fetchForm(
+export const findForm = cache(async function findForm(
   target: FormRouteTarget,
 ): Promise<IDeclarativeForm | null> {
-  try {
-    const response = await fetch(formUrl(target), {
-      next: { revalidate: REVALIDATE_SECONDS },
-    });
+  const response = await fetch(buildFormUrl(target), {
+    next: { revalidate: REVALIDATE_SECONDS },
+  });
 
-    if (!response.ok) {
-      return null;
-    }
-
-    return (await response.json()) as IDeclarativeForm;
-  } catch {
+  if (response.status === 404) {
     return null;
   }
+
+  if (!response.ok) {
+    throw new Error(`Could not load form: ${response.status}`);
+  }
+
+  return (await response.json()) as IDeclarativeForm;
 });
 
 const HTML_ENTITIES: Record<string, string> = {
@@ -119,7 +119,7 @@ export async function resolveFormLocale(
   return lang || form?.locale || (await resolveRequestLocale());
 }
 
-export async function metadataBase(): Promise<URL> {
+export async function buildMetadataBase(): Promise<URL> {
   const requestHeaders = await headers();
 
   const host =
@@ -136,11 +136,11 @@ export async function metadataBase(): Promise<URL> {
   return new URL(`${protocol}://${host}`);
 }
 
-export async function formMetadata(
+export async function buildFormMetadata(
   target: FormRouteTarget,
   lang?: string,
 ): Promise<Metadata> {
-  const form = await fetchForm(target);
+  const form = await findForm(target);
 
   const cardId = 'id' in target ? target.id : form?.id;
   const images = cardId ? [`/${cardId}/opengraph-image`] : undefined;

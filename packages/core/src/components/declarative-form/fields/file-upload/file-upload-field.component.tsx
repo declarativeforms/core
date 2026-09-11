@@ -7,7 +7,7 @@ import type {
 } from '@declarativeforms/engine';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 import {
   mediaFrame,
   type FieldProps,
@@ -19,7 +19,7 @@ type FileUploadValue = IUploadedFile | Array<IUploadedFile> | null;
 
 export function FileUploadField(
   props: FieldProps<IRenderableFileUploadField, FileUploadValue>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +108,7 @@ export function FileUploadField(
           tabIndex={0}
           role="button"
           aria-label={i18n.t('file_upload.upload_files')}
-          className={cn(
+          className={mergeClassNames(
             mediaFrame({
               height: 'sm',
               interactive: true,

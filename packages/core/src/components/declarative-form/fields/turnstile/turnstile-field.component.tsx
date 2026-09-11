@@ -8,8 +8,8 @@ import {
 import { Button, FieldError } from '@/components/ui';
 import { type FieldProps } from '@/components/declarative-form/supporting';
 import { useI18n } from '@/i18n';
-import { getBackendUrl } from '@/lib/api';
-import { runtimeConfig } from '@/lib/runtime-config';
+import { buildApiUrl } from '@/lib/api';
+import { getRuntimeConfig } from '@/lib/runtime-config';
 import { loadTurnstile } from './turnstile';
 
 type VerificationStatus =
@@ -17,7 +17,7 @@ type VerificationStatus =
 
 export function TurnstileField(
   props: FieldProps<IRenderableTurnstileField, string>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const container = useRef<HTMLDivElement>(null);
   const [attempt, setAttempt] = useState(0);
@@ -46,7 +46,7 @@ export function TurnstileField(
 
     onChange('');
     setValue(tokenFieldId, '');
-    const siteKey = runtimeConfig().turnstileSiteKey;
+    const siteKey = getRuntimeConfig().turnstileSiteKey;
 
     if (!siteKey || !props.formId) {
       setStatus('unavailable');
@@ -60,7 +60,7 @@ export function TurnstileField(
     const controller = new AbortController();
     setStatus('loading');
 
-    function fail(): void {
+    function markFailed(): void {
       if (disposed || exchanging) {
         return;
       }
@@ -78,7 +78,7 @@ export function TurnstileField(
 
       try {
         const response = await fetch(
-          getBackendUrl(
+          buildApiUrl(
             `forms/${encodeURIComponent(props.formId)}/turnstile/verify`,
           ),
           {
@@ -137,9 +137,9 @@ export function TurnstileField(
           callback: (response): void => {
             void verify(response);
           },
-          'error-callback': fail,
-          'expired-callback': fail,
-          'timeout-callback': fail,
+          'error-callback': markFailed,
+          'expired-callback': markFailed,
+          'timeout-callback': markFailed,
         });
         removeWidget = (): void => turnstile.remove(widgetId);
       })

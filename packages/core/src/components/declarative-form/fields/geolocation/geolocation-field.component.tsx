@@ -8,7 +8,7 @@ import type {
 } from '@declarativeforms/engine';
 import { useI18n } from '@/i18n';
 import type { TranslationKey } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 import {
   ClearButton,
   mediaFrame,
@@ -32,14 +32,16 @@ type GeolocationState =
 
 const SETTLE_MS = 3000;
 
-function isGeolocationValue(v: unknown): v is IRenderableGeolocationValue {
+function isGeolocationValue(
+  candidate: unknown,
+): candidate is IRenderableGeolocationValue {
   return (
-    typeof v === 'object' &&
-    v !== null &&
-    'latitude' in v &&
-    'longitude' in v &&
-    'accuracy' in v &&
-    'timestamp' in v
+    typeof candidate === 'object' &&
+    candidate !== null &&
+    'latitude' in candidate &&
+    'longitude' in candidate &&
+    'accuracy' in candidate &&
+    'timestamp' in candidate
   );
 }
 
@@ -55,7 +57,7 @@ export function GeolocationField(
     IRenderableGeolocationField,
     IRenderableGeolocationValue | null
   >,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
 
   const [state, setState] = useState<GeolocationState>(() => {
@@ -168,7 +170,7 @@ export function GeolocationField(
               requestLocation();
             }
           }}
-          className={cn(
+          className={mergeClassNames(
             mediaFrame({ height: 'sm', interactive: true }),
             'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
           )}
@@ -184,7 +186,12 @@ export function GeolocationField(
       )}
 
       {visibleState.status === 'loading' && (
-        <div className={cn(mediaFrame({ height: 'sm' }), 'cursor-wait')}>
+        <div
+          className={mergeClassNames(
+            mediaFrame({ height: 'sm' }),
+            'cursor-wait',
+          )}
+        >
           <Loader2
             className="h-6 w-6 text-muted-foreground animate-spin"
             aria-hidden="true"
@@ -224,7 +231,7 @@ export function GeolocationField(
       )}
 
       {visibleState.status === 'error' && (
-        <div className={cn(mediaFrame({ height: 'sm' }), 'gap-3')}>
+        <div className={mergeClassNames(mediaFrame({ height: 'sm' }), 'gap-3')}>
           <p className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {i18n.t(ERROR_MESSAGE_KEYS[visibleState.code])}

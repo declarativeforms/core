@@ -10,7 +10,7 @@ export function HtmlText<T extends ElementType = 'span'>({
   html,
   as,
   ...rest
-}: HtmlTextProps<T>) {
+}: HtmlTextProps<T>): React.JSX.Element {
   const Tag = as || 'span';
 
   return <Tag dangerouslySetInnerHTML={{ __html: html }} {...rest} />;

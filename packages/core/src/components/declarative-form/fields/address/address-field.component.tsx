@@ -48,13 +48,17 @@ type AddressSearch = {
   loading: boolean;
 };
 
-function toAddressDisplay(value: unknown): string {
-  if (typeof value === 'string') {
-    return value;
+function toAddressDisplay(address: unknown): string {
+  if (typeof address === 'string') {
+    return address;
   }
 
-  if (value && typeof value === 'object' && 'formatted_address' in value) {
-    const formatted = (value as { formatted_address?: unknown })
+  if (
+    address &&
+    typeof address === 'object' &&
+    'formatted_address' in address
+  ) {
+    const formatted = (address as { formatted_address?: unknown })
       .formatted_address;
 
     return typeof formatted === 'string' ? formatted : '';
@@ -65,7 +69,7 @@ function toAddressDisplay(value: unknown): string {
 
 export function AddressField(
   props: FieldProps<IRenderableAddressField, AddressValue>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const autocompleteType = AUTOCOMPLETE_TYPE[props.field.type];
   const isApiLoaded = useGooglePlacesReady();
@@ -116,7 +120,7 @@ export function AddressField(
     };
   }, [debouncedInput, isApiLoaded, autocompleteType]);
 
-  const handleSelect = async (placeId: string): Promise<void> => {
+  const selectPlace = async (placeId: string): Promise<void> => {
     try {
       const place = await getPlaceDetails(placeId);
       props.control.onChange(
@@ -204,7 +208,7 @@ export function AddressField(
             {visibleSuggestions.map((suggestion) => (
               <CommandItem
                 key={suggestion.place_id}
-                onSelect={() => handleSelect(suggestion.place_id)}
+                onSelect={() => selectPlace(suggestion.place_id)}
                 className="cursor-pointer items-start"
               >
                 <div className="flex flex-col w-full">

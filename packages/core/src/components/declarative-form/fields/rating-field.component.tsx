@@ -6,9 +6,11 @@ import {
 } from '@/components/declarative-form/supporting';
 import { Field, FieldLabel, RadioGroup, RadioGroupItem } from '@/components/ui';
 import { stripHtml } from '@/lib/strip-html';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 
-export function RatingField(props: FieldProps<IRenderableRatingField, string>) {
+export function RatingField(
+  props: FieldProps<IRenderableRatingField, string>,
+): React.JSX.Element {
   const min = props.field.min ?? 1;
   const max = props.field.max ?? 5;
   const values = Array.from({ length: max - min + 1 }, (_, index) =>
@@ -43,7 +45,7 @@ export function RatingField(props: FieldProps<IRenderableRatingField, string>) {
           return (
             <Field key={value}>
               <FieldLabel
-                className={cn(
+                className={mergeClassNames(
                   'h-9 min-w-9 w-full rounded-md border border-input px-3 cursor-pointer hover:bg-muted/50 transition-colors inline-flex items-center justify-center',
                   { 'border-ring bg-muted/60': isSelected },
                 )}

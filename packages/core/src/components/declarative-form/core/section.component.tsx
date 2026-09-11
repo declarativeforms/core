@@ -19,7 +19,7 @@ export const DeclarativeFormSection = forwardRef<
     onBack: () => void;
     onSubmit: (sectionData: FieldValues) => void | Promise<void>;
   }
->(function DeclarativeFormSection(props, ref) {
+>(function DeclarativeFormSection(props, ref): React.JSX.Element {
   const i18n = useI18n();
   const form = useForm({ defaultValues: props.section.defaultValues });
   const headingId = useId();

@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write --config prettier.config.cjs --list-different \"src/**/*.{ts,tsx}\"",
+    "test": "node --experimental-strip-types --test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -40,7 +41,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "ajv": "^8.20.0",
-    "eslint": "^10.10.0",
+    "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.4",
     "prettier": "^3.9.6",
     "shadcn": "^4.21.0",

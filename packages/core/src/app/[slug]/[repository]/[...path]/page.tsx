@@ -1,6 +1,6 @@
 import type { SearchParams } from '@/app/search-params.types';
 import type { Metadata } from 'next';
-import { formMetadata } from '@/lib/form-metadata';
+import { buildFormMetadata } from '@/lib/form-metadata';
 import { FormRoute } from '@/views/form-route';
 import { PageShell } from '@/app/page-shell';
 
@@ -11,7 +11,7 @@ export async function generateMetadata(props: {
   const params = await props.params;
   const query = await props.searchParams;
 
-  return formMetadata(
+  return buildFormMetadata(
     {
       owner: params.slug,
       repository: params.repository,
@@ -25,7 +25,7 @@ export async function generateMetadata(props: {
 export default async function Page(props: {
   params: Promise<{ slug: string; repository: string; path: Array<string> }>;
   searchParams: Promise<SearchParams>;
-}) {
+}): Promise<React.JSX.Element> {
   const params = await props.params;
   const query = await props.searchParams;
 

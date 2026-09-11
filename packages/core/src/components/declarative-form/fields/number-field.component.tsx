@@ -7,7 +7,9 @@ import {
   type FieldProps,
 } from '@/components/declarative-form/supporting';
 
-export function NumberField(props: FieldProps<IRenderableNumberField, string>) {
+export function NumberField(
+  props: FieldProps<IRenderableNumberField, string>,
+): React.JSX.Element {
   const i18n = useI18n();
 
   return (

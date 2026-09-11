@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useFormState, useWatch } from 'react-hook-form';
 import { Button, FieldError, Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { getBackendUrl } from '@/lib/api';
+import { buildApiUrl } from '@/lib/api';
 import {
   bindTextInput,
   type FieldProps,
@@ -22,18 +22,22 @@ type VerificationResponse = {
   token: string;
 };
 
-async function getResponseMessage(
+async function readResponseMessage(
   response: Response,
-  fallback: string,
+  fallbackMessage: string,
 ): Promise<string> {
   const payload = (await response.json().catch(() => null)) as {
     message?: unknown;
   } | null;
 
-  return typeof payload?.message === 'string' ? payload.message : fallback;
+  return typeof payload?.message === 'string'
+    ? payload.message
+    : fallbackMessage;
 }
 
-export function EmailField(props: FieldProps<IRenderableEmailField, string>) {
+export function EmailField(
+  props: FieldProps<IRenderableEmailField, string>,
+): React.JSX.Element {
   const i18n = useI18n();
   const [challenge, setChallenge] = useState('');
   const [code, setCode] = useState('');
@@ -79,7 +83,7 @@ export function EmailField(props: FieldProps<IRenderableEmailField, string>) {
 
     try {
       const response = await fetch(
-        getBackendUrl(
+        buildApiUrl(
           `forms/${encodeURIComponent(props.formId)}/email-challenges`,
         ),
         {
@@ -94,7 +98,7 @@ export function EmailField(props: FieldProps<IRenderableEmailField, string>) {
 
       if (!response.ok) {
         throw new Error(
-          await getResponseMessage(
+          await readResponseMessage(
             response,
             i18n.t('email.verification_request_failed'),
           ),
@@ -123,7 +127,7 @@ export function EmailField(props: FieldProps<IRenderableEmailField, string>) {
 
     try {
       const response = await fetch(
-        getBackendUrl(
+        buildApiUrl(
           `forms/${encodeURIComponent(props.formId)}/email-challenges/verify`,
         ),
         {
@@ -140,7 +144,7 @@ export function EmailField(props: FieldProps<IRenderableEmailField, string>) {
 
       if (!response.ok) {
         throw new Error(
-          await getResponseMessage(
+          await readResponseMessage(
             response,
             i18n.t('email.verification_invalid_code'),
           ),

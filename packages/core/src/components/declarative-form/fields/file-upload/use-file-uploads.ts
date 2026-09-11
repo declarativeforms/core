@@ -44,17 +44,17 @@ function acceptsMimeType(
   });
 }
 
-function toUploadedFiles(
-  value: IUploadedFile | Array<IUploadedFile> | null,
+function toUploadedFileArray(
+  uploadedFiles: IUploadedFile | Array<IUploadedFile> | null,
 ): Array<IUploadedFile> {
-  if (Array.isArray(value)) {
-    return value;
+  if (Array.isArray(uploadedFiles)) {
+    return uploadedFiles;
   }
 
-  return value ? [value] : [];
+  return uploadedFiles ? [uploadedFiles] : [];
 }
 
-function restoredFile(uploadedFile: IUploadedFile): UploadedFile {
+function toRestoredFile(uploadedFile: IUploadedFile): UploadedFile {
   return {
     id: uploadedFile.url,
     url: uploadedFile.url,
@@ -65,11 +65,11 @@ function restoredFile(uploadedFile: IUploadedFile): UploadedFile {
   };
 }
 
-function occupied(files: Array<UploadedFile>): Array<UploadedFile> {
+function findAllOccupiedFiles(files: Array<UploadedFile>): Array<UploadedFile> {
   return files.filter((file) => file.status !== 'error');
 }
 
-function uploadedFiles(files: Array<UploadedFile>): Array<IUploadedFile> {
+function toCompletedUploads(files: Array<UploadedFile>): Array<IUploadedFile> {
   return files
     .filter((file) => file.status === 'uploaded' && !!file.url)
     .map((file) => ({
@@ -97,24 +97,24 @@ export function useFileUploads(options: {
   messages: UploadMessages;
 }): FileUploads {
   const [files, setFiles] = useState<Array<UploadedFile>>(() =>
-    toUploadedFiles(options.value).map(restoredFile),
+    toUploadedFileArray(options.value).map(toRestoredFile),
   );
 
   const filesRef = useRef(files);
   const nextIdRef = useRef(0);
 
-  function nextId(prefix: string): string {
+  function getNextFileId(prefix: string): string {
     nextIdRef.current += 1;
 
     return `${prefix}-${nextIdRef.current}`;
   }
 
-  function write(next: Array<UploadedFile>): void {
-    const before = uploadedFiles(filesRef.current);
-    const after = uploadedFiles(next);
+  function replaceFiles(nextFiles: Array<UploadedFile>): void {
+    const before = toCompletedUploads(filesRef.current);
+    const after = toCompletedUploads(nextFiles);
 
-    filesRef.current = next;
-    setFiles(next);
+    filesRef.current = nextFiles;
+    setFiles(nextFiles);
 
     const unchanged =
       before.length === after.length &&
@@ -127,20 +127,21 @@ export function useFileUploads(options: {
     options.onChange(options.storesScalar ? (after[0] ?? null) : after);
   }
 
-  function settle(id: string, entry: Partial<UploadedFile>): void {
-    write(
+  function updateFile(id: string, changes: Partial<UploadedFile>): void {
+    replaceFiles(
       filesRef.current.map((file) =>
-        file.id === id ? { ...file, ...entry } : file,
+        file.id === id ? { ...file, ...changes } : file,
       ),
     );
   }
 
-  async function add(incoming: Array<File>): Promise<void> {
-    let slots = options.maxFiles - occupied(filesRef.current).length;
+  async function add(incomingFiles: Array<File>): Promise<void> {
+    let slots =
+      options.maxFiles - findAllOccupiedFiles(filesRef.current).length;
     const queued: Array<{ file: File; id: string }> = [];
     const entries: Array<UploadedFile> = [];
 
-    for (const file of incoming) {
+    for (const file of incomingFiles) {
       const rejection = !acceptsMimeType(file, options.acceptedMimeTypes)
         ? options.messages.invalidType()
         : slots <= 0
@@ -149,7 +150,7 @@ export function useFileUploads(options: {
 
       if (rejection) {
         entries.push({
-          id: nextId('rejected'),
+          id: getNextFileId('rejected'),
           url: null,
           name: file.name,
           size: file.size,
@@ -161,7 +162,7 @@ export function useFileUploads(options: {
       }
 
       slots -= 1;
-      const id = nextId('pending');
+      const id = getNextFileId('pending');
       queued.push({ file, id });
       entries.push({
         id,
@@ -173,18 +174,18 @@ export function useFileUploads(options: {
       });
     }
 
-    write([...filesRef.current, ...entries]);
+    replaceFiles([...filesRef.current, ...entries]);
 
     for (const entry of queued) {
       try {
         const uploadedFile = await uploadFile(entry.file);
 
-        settle(entry.id, {
+        updateFile(entry.id, {
           ...uploadedFile,
           status: 'uploaded',
         });
       } catch (error) {
-        settle(entry.id, {
+        updateFile(entry.id, {
           status: 'error',
           error:
             error instanceof Error
@@ -196,14 +197,14 @@ export function useFileUploads(options: {
   }
 
   function remove(id: string): void {
-    write(filesRef.current.filter((file) => file.id !== id));
+    replaceFiles(filesRef.current.filter((file) => file.id !== id));
   }
 
   return {
     files,
     add,
     remove,
-    canAddMore: occupied(files).length < options.maxFiles,
+    canAddMore: findAllOccupiedFiles(files).length < options.maxFiles,
     isUploading: files.some((file) => file.status === 'uploading'),
   };
 }

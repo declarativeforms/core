@@ -1,7 +1,7 @@
 'use client';
 
-export function replaceSearchParams(next: URLSearchParams): void {
-  const query = next.toString();
+export function replaceSearchParams(searchParams: URLSearchParams): void {
+  const query = searchParams.toString();
 
   window.history.replaceState(
     null,

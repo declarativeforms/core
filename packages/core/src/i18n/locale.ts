@@ -2,8 +2,10 @@ export const SUPPORTED_LOCALES = ['en', 'es'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
 
-export function toSupportedLocale(value?: string | null): Locale | null {
-  const normalized = value ? value.trim().toLowerCase().replace('_', '-') : '';
+export function toSupportedLocale(localeTag?: string | null): Locale | null {
+  const normalized = localeTag
+    ? localeTag.trim().toLowerCase().replace('_', '-')
+    : '';
 
   if (!normalized) {
     return null;

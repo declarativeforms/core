@@ -6,6 +6,8 @@ import {
   type FieldProps,
 } from '@/components/declarative-form/supporting';
 
-export function HiddenField(props: FieldProps<IRenderableHiddenField, string>) {
+export function HiddenField(
+  props: FieldProps<IRenderableHiddenField, string>,
+): React.JSX.Element {
   return <Input {...bindTextInput(props.control)} type="hidden" />;
 }

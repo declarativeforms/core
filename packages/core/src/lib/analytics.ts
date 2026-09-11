@@ -124,57 +124,62 @@ async function createPostHogProvider(
 }
 
 async function initializeProvider(
-  name: string,
-  initialize: () => Promise<AnalyticsProvider | null>,
+  providerName: string,
+  createProvider: () => Promise<AnalyticsProvider | null>,
 ): Promise<AnalyticsProvider | null> {
   try {
-    return await initialize();
+    return await createProvider();
   } catch (error) {
-    console.warn(`Unable to initialize ${name} analytics.`, error);
+    console.warn(`Unable to initialize ${providerName} analytics.`, error);
 
     return null;
   }
 }
 
 function createDeferredProvider(
-  name: string,
-  initialize: () => Promise<AnalyticsProvider | null>,
+  providerName: string,
+  createProvider: () => Promise<AnalyticsProvider | null>,
 ): AnalyticsProvider {
   let provider: AnalyticsProvider | null = null;
   let isShutDown = false;
   const queuedEvents: Array<QueuedEvent> = [];
 
-  void initializeProvider(name, initialize).then((initializedProvider) => {
-    if (!initializedProvider) {
+  void initializeProvider(providerName, createProvider).then(
+    (initializedProvider) => {
+      if (!initializedProvider) {
+        queuedEvents.length = 0;
+
+        return;
+      }
+
+      for (const queuedEvent of queuedEvents) {
+        try {
+          initializedProvider.capture(
+            queuedEvent.event,
+            queuedEvent.properties,
+          );
+        } catch (error) {
+          console.warn(
+            `Unable to capture ${providerName} analytics event "${queuedEvent.event}".`,
+            error,
+          );
+        }
+      }
       queuedEvents.length = 0;
 
-      return;
-    }
+      if (isShutDown) {
+        try {
+          initializedProvider.shutdown();
+        } catch (error) {
+          console.warn(`Unable to shut down ${providerName} analytics.`, error);
+        }
 
-    for (const queuedEvent of queuedEvents) {
-      try {
-        initializedProvider.capture(queuedEvent.event, queuedEvent.properties);
-      } catch (error) {
-        console.warn(
-          `Unable to capture ${name} analytics event "${queuedEvent.event}".`,
-          error,
-        );
-      }
-    }
-    queuedEvents.length = 0;
-
-    if (isShutDown) {
-      try {
-        initializedProvider.shutdown();
-      } catch (error) {
-        console.warn(`Unable to shut down ${name} analytics.`, error);
+        return;
       }
 
-      return;
-    }
-
-    provider = initializedProvider;
-  });
+      provider = initializedProvider;
+    },
+  );
 
   return {
     capture: (event, properties) => {

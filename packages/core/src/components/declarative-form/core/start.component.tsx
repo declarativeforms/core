@@ -8,7 +8,7 @@ import { DeclarativeFormHeading } from './heading.component';
 export function DeclarativeFormStart(props: {
   start: IRenderableStart;
   onBegin: () => void;
-}) {
+}): React.JSX.Element {
   const i18n = useI18n();
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { runtimeConfig } from '@/lib/runtime-config';
+import { getRuntimeConfig } from '@/lib/runtime-config';
 
 const POLL_INTERVAL_MS = 100;
 
@@ -12,7 +12,7 @@ export function useGooglePlacesReady(): boolean {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (ready || !runtimeConfig().googleMapsApiKey) {
+    if (ready || !getRuntimeConfig().googleMapsApiKey) {
       return;
     }
 

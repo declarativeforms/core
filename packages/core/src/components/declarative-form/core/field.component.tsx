@@ -15,7 +15,7 @@ export function DeclarativeFormField(props: {
   field: IRenderableField;
   form: UseFormReturn<FieldValues, FieldValues, FieldValues>;
   formId: string;
-}) {
+}): React.JSX.Element | null {
   useEffect(() => {
     if (!props.field.visible) {
       props.form.unregister(props.field.id);

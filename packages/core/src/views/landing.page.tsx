@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { mergeClassNames } from '@/lib/utils';
 
 const STUDIO_URL = 'https://studio.frms.dev';
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
@@ -138,13 +139,13 @@ function ActionButton(props: {
   children: ReactNode;
   variant?: 'primary' | 'secondary';
   size?: 'md' | 'lg';
-}) {
+}): React.JSX.Element {
   const variant = props.variant ?? 'primary';
   const size = props.size ?? 'md';
 
   return (
     <a
-      className={cn(
+      className={mergeClassNames(
         'inline-flex items-center justify-center gap-2 rounded-md border-2 border-ink font-semibold text-ink shadow-hard transition-all duration-150',
         'hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg',
         'active:translate-x-0 active:translate-y-0 active:shadow-hard',
@@ -160,7 +161,7 @@ function ActionButton(props: {
   );
 }
 
-function BrandMark() {
+function BrandMark(): React.JSX.Element {
   return (
     <span className="inline-flex items-center gap-2.5">
       <img
@@ -175,16 +176,16 @@ function BrandMark() {
   );
 }
 
-function SiteNav() {
+function SiteNav(): React.JSX.Element {
   return (
     <header className="border-b-2 border-ink bg-paper">
       <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4 md:px-10 lg:px-16">
-        <a
+        <Link
           className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
           href="/"
         >
           <BrandMark />
-        </a>
+        </Link>
         <div className="flex items-center gap-6">
           <a
             className="text-sm font-semibold text-ink underline-offset-4 hover:underline"
@@ -206,7 +207,7 @@ function SiteNav() {
   );
 }
 
-function Hero() {
+function Hero(): React.JSX.Element {
   return (
     <section className="border-b-2 border-ink bg-paper-alt px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-16">
@@ -280,7 +281,7 @@ function Hero() {
   );
 }
 
-function HowItWorks() {
+function HowItWorks(): React.JSX.Element {
   return (
     <section className="bg-paper px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto w-full max-w-6xl">
@@ -347,7 +348,7 @@ function HowItWorks() {
   );
 }
 
-function Tradeoff() {
+function Tradeoff(): React.JSX.Element {
   return (
     <section className="border-y-2 border-ink bg-brand-purple px-6 py-20 text-white md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto w-full max-w-6xl">
@@ -373,7 +374,7 @@ function Tradeoff() {
   );
 }
 
-function FeatureRequests() {
+function FeatureRequests(): React.JSX.Element {
   return (
     <section
       className="bg-paper-alt px-6 py-20 md:px-10 md:py-24 lg:px-16"
@@ -434,7 +435,7 @@ function FeatureRequests() {
   );
 }
 
-function Pricing() {
+function Pricing(): React.JSX.Element {
   return (
     <section
       className="border-t-2 border-ink bg-paper px-6 py-20 md:px-10 md:py-24 lg:px-16"
@@ -481,7 +482,7 @@ function Pricing() {
   );
 }
 
-function FinalCta() {
+function FinalCta(): React.JSX.Element {
   return (
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
@@ -501,7 +502,7 @@ function FinalCta() {
   );
 }
 
-function SiteFooter() {
+function SiteFooter(): React.JSX.Element {
   return (
     <footer className="border-t-2 border-ink bg-paper px-6 py-14 md:px-10 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12">
@@ -541,7 +542,7 @@ function SiteFooter() {
   );
 }
 
-export function LandingPage() {
+export function LandingPage(): React.JSX.Element {
   return (
     <div className="flex min-h-lvh flex-col bg-paper">
       <link href={FONT_HREF} rel="stylesheet" />

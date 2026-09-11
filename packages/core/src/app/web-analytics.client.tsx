@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { initializeWebAnalytics } from '@/lib/web-analytics';
 
-export function WebAnalytics() {
+export function WebAnalytics(): null {
   useEffect(() => {
     initializeWebAnalytics();
   }, []);

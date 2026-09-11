@@ -27,10 +27,10 @@ export function loadTurnstile(): Promise<Turnstile> {
   loading = new Promise<Turnstile>((resolve, reject): void => {
     const runtime = window as Window & { turnstile?: Turnstile };
     const script = document.createElement('script');
-    const timeout = window.setTimeout(fail, 15000);
+    const timeout = window.setTimeout(rejectLoading, 15000);
     let settled = false;
 
-    function fail(): void {
+    function rejectLoading(): void {
       if (settled) {
         return;
       }
@@ -41,9 +41,9 @@ export function loadTurnstile(): Promise<Turnstile> {
       reject(new Error('Could not load verification'));
     }
 
-    function ready(): void {
+    function resolveWhenReady(): void {
       if (!runtime.turnstile) {
-        fail();
+        rejectLoading();
 
         return;
       }
@@ -60,7 +60,7 @@ export function loadTurnstile(): Promise<Turnstile> {
     }
 
     if (runtime.turnstile) {
-      ready();
+      resolveWhenReady();
 
       return;
     }
@@ -68,8 +68,8 @@ export function loadTurnstile(): Promise<Turnstile> {
     script.src =
       'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
     script.async = true;
-    script.onload = ready;
-    script.onerror = fail;
+    script.onload = resolveWhenReady;
+    script.onerror = rejectLoading;
     document.head.appendChild(script);
   }).catch((error: unknown): never => {
     loading = undefined;

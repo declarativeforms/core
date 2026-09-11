@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 
-export function PageShell(props: { embed?: boolean; children: ReactNode }) {
+export function PageShell(props: {
+  embed?: boolean;
+  children: ReactNode;
+}): React.JSX.Element {
   return (
     <main
       id="main-content"

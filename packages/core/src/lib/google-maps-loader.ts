@@ -1,8 +1,8 @@
 'use client';
-import { runtimeConfig } from './runtime-config';
+import { getRuntimeConfig } from './runtime-config';
 
 export function loadGoogleMaps(): void {
-  const apiKey = runtimeConfig().googleMapsApiKey;
+  const apiKey = getRuntimeConfig().googleMapsApiKey;
 
   if (!apiKey || typeof document === 'undefined') {
     return;

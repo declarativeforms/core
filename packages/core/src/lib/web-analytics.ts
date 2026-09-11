@@ -3,18 +3,18 @@ import type {
   PostHog,
   PostHogInterface,
 } from 'posthog-js/dist/module.no-external';
-import { runtimeConfig } from '@/lib/runtime-config';
+import { getRuntimeConfig } from '@/lib/runtime-config';
 
 const DEFAULT_POSTHOG_API_HOST = 'https://us.i.posthog.com';
 
 let posthogPromise: Promise<PostHog | null> | null = null;
 
-function prepareWebAnalytics(posthog: PostHogInterface): void {
+function registerWebAnalyticsProperties(posthog: PostHogInterface): void {
   posthog.register({ application: 'core' });
 }
 
 async function createWebAnalytics(): Promise<PostHog | null> {
-  const config = runtimeConfig();
+  const config = getRuntimeConfig();
 
   if (!config.posthogProjectKey) {
     return null;
@@ -34,7 +34,7 @@ async function createWebAnalytics(): Promise<PostHog | null> {
     capture_performance: false,
     disable_session_recording: true,
     disable_surveys: true,
-    loaded: prepareWebAnalytics,
+    loaded: registerWebAnalyticsProperties,
     persistence: 'localStorage',
     persistence_name: 'declarative_forms_core',
     person_profiles: 'never',

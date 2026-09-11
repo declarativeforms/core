@@ -19,11 +19,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 
 export function SearchableDropdown(
   props: FieldProps<IRenderableDropdownField, string>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const [open, setOpen] = useState(false);
   const selectedOption = props.field.options?.find(
@@ -38,7 +38,7 @@ export function SearchableDropdown(
           role="combobox"
           aria-expanded={open}
           aria-required={props.field.required}
-          className={cn(
+          className={mergeClassNames(
             'w-full justify-between text-sm/4 font-normal',
             !props.control.value && 'text-muted-foreground',
           )}
@@ -72,7 +72,7 @@ export function SearchableDropdown(
                 >
                   <HtmlText html={option.label} />
                   <Check
-                    className={cn(
+                    className={mergeClassNames(
                       'ml-auto size-4',
                       props.control.value === option.value
                         ? 'opacity-100'

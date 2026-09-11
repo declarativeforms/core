@@ -1,7 +1,7 @@
 'use client';
 import { useI18n } from '@/i18n';
 
-export function PrivacyPolicyPage() {
+export function PrivacyPolicyPage(): React.JSX.Element {
   const i18n = useI18n();
 
   return (

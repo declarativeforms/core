@@ -9,19 +9,19 @@ import {
   type IRenderableForm,
 } from '@declarativeforms/engine';
 import type {
-  SubmitResult,
+  FormTransition,
   UseDeclarativeForm,
 } from './use-declarative-form.types';
 
 export function useDeclarativeForm(
-  schema: IDeclarativeForm,
+  form: IDeclarativeForm,
   locale: string,
-  initialData: Record<string, unknown>,
   sectionId: string,
+  initialData: Record<string, unknown>,
 ): UseDeclarativeForm {
   const [data, setData] = useState(initialData);
 
-  const resolved = useMemo(() => resolve(schema, locale), [schema, locale]);
+  const resolved = useMemo(() => resolve(form, locale), [form, locale]);
 
   const renderableFormFn = useCallback(
     (answers: Record<string, unknown>): IRenderableForm | null => {
@@ -40,7 +40,7 @@ export function useDeclarativeForm(
   );
 
   const submitSection = useCallback(
-    (sectionData: Record<string, unknown>): SubmitResult => {
+    (sectionData: Record<string, unknown>): FormTransition => {
       const merged = { ...data, ...sectionData };
 
       const next = renderableFormFn(merged)?.section.next;

@@ -11,19 +11,31 @@ import {
 
 const AGENT_INSTRUCTIONS = 'public/AGENTS.md';
 
-const EXAMPLE_FORMS = ['examples/contact.yaml', 'examples/kitchen-sink.yaml'];
-
 const packageDirectory = process.cwd();
 const repositoryRoot = path.resolve(packageDirectory, '..', '..');
+const agentInstructionsPath = path.resolve(
+  /*turbopackIgnore: true*/ packageDirectory,
+  AGENT_INSTRUCTIONS,
+);
+const exampleForms = [
+  {
+    name: 'examples/contact.yaml',
+    file: path.resolve(
+      /*turbopackIgnore: true*/ repositoryRoot,
+      'examples/contact.yaml',
+    ),
+  },
+  {
+    name: 'examples/kitchen-sink.yaml',
+    file: path.resolve(
+      /*turbopackIgnore: true*/ repositoryRoot,
+      'examples/kitchen-sink.yaml',
+    ),
+  },
+];
 
 function assertFieldTypesDocumented(): void {
-  const instructions = fs.readFileSync(
-    path.resolve(
-      /*turbopackIgnore: true*/ packageDirectory,
-      AGENT_INSTRUCTIONS,
-    ),
-    'utf8',
-  );
+  const instructions = fs.readFileSync(agentInstructionsPath, 'utf8');
 
   const undocumented = DECLARATIVE_FIELD_TYPES.filter(
     (fieldType) => !instructions.includes(fieldType),
@@ -41,19 +53,15 @@ function assertExampleFormsValid(): void {
     FORM_JSON_SCHEMA,
   );
 
-  for (const example of EXAMPLE_FORMS) {
-    const file = path.resolve(
-      /*turbopackIgnore: true*/ repositoryRoot,
-      example,
-    );
-    if (validate(parse(fs.readFileSync(file, 'utf8')))) {
+  for (const example of exampleForms) {
+    if (validate(parse(fs.readFileSync(example.file, 'utf8')))) {
       continue;
     }
 
     const errors = (validate.errors ?? [])
       .map((error) => `  ${error.instancePath || '/'} ${error.message}`)
       .join('\n');
-    throw new Error(`${example} no longer matches the schema:\n${errors}`);
+    throw new Error(`${example.name} no longer matches the schema:\n${errors}`);
   }
 }
 

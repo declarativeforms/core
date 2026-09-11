@@ -48,71 +48,65 @@ type GooglePlacesLibrary = {
   };
 };
 
-function placesLibrary(): GooglePlacesLibrary {
+function getPlacesLibrary(): GooglePlacesLibrary {
   return window.google.maps.places as unknown as GooglePlacesLibrary;
 }
 
 export async function getPlacePredictions(
-  input: string,
-  types: Array<string>,
+  searchText: string,
+  includedPrimaryTypes: Array<string>,
 ): Promise<Array<PlacePrediction>> {
-  if (!input.trim()) {
+  if (!searchText.trim()) {
     return [];
   }
 
-  try {
-    const predictionRequest: AutocompleteSuggestionRequest = {
-      input,
-    };
+  const predictionRequest: AutocompleteSuggestionRequest = {
+    input: searchText,
+  };
 
-    if (types.length > 0) {
-      const validTypes = types.filter(
-        (type) =>
-          type !== 'address' &&
-          type !== 'geocode' &&
-          type !== '(regions)' &&
-          type !== '(cities)',
-      );
+  if (includedPrimaryTypes.length > 0) {
+    const validTypes = includedPrimaryTypes.filter(
+      (type) =>
+        type !== 'address' &&
+        type !== 'geocode' &&
+        type !== '(regions)' &&
+        type !== '(cities)',
+    );
 
-      if (validTypes.length > 0) {
-        predictionRequest.includedPrimaryTypes = validTypes;
-      }
+    if (validTypes.length > 0) {
+      predictionRequest.includedPrimaryTypes = validTypes;
     }
+  }
 
-    const response =
-      await placesLibrary().AutocompleteSuggestion.fetchAutocompleteSuggestions(
-        predictionRequest,
-      );
+  const response =
+    await getPlacesLibrary().AutocompleteSuggestion.fetchAutocompleteSuggestions(
+      predictionRequest,
+    );
 
-    if (!response.suggestions || response.suggestions.length === 0) {
-      return [];
-    }
-
-    return response.suggestions.map((suggestion) => ({
-      place_id: suggestion.placePrediction.placeId,
-      description: suggestion.placePrediction.text?.toString() || '',
-      structured_formatting: {
-        main_text:
-          suggestion.placePrediction.structuredFormat?.mainText?.toString() ||
-          suggestion.placePrediction.text?.toString() ||
-          '',
-        secondary_text:
-          suggestion.placePrediction.structuredFormat?.secondaryText?.toString() ||
-          '',
-      },
-    }));
-  } catch (error) {
-    console.error('Error fetching autocomplete suggestions:', error);
-
+  if (!response.suggestions || response.suggestions.length === 0) {
     return [];
   }
+
+  return response.suggestions.map((suggestion) => ({
+    place_id: suggestion.placePrediction.placeId,
+    description: suggestion.placePrediction.text?.toString() || '',
+    structured_formatting: {
+      main_text:
+        suggestion.placePrediction.structuredFormat?.mainText?.toString() ||
+        suggestion.placePrediction.text?.toString() ||
+        '',
+      secondary_text:
+        suggestion.placePrediction.structuredFormat?.secondaryText?.toString() ||
+        '',
+    },
+  }));
 }
 
 export async function getPlaceDetails(
   placeId: string,
 ): Promise<google.maps.places.PlaceResult> {
   try {
-    const places = placesLibrary();
+    const places = getPlacesLibrary();
 
     const place = new places.Place({
       id: placeId,

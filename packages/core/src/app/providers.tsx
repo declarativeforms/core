@@ -7,7 +7,7 @@ import type { Locale } from '@/i18n/locale';
 export function Providers(props: {
   children: ReactNode;
   fallbackLocale: Locale;
-}) {
+}): React.JSX.Element {
   const [queryClient] = useState(() => new QueryClient());
 
   return (

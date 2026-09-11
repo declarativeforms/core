@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import { metadataBase, SITE_NAME } from '@/lib/form-metadata';
+import { buildMetadataBase, SITE_NAME } from '@/lib/form-metadata';
 import { resolveRequestLocale } from '@/i18n/server';
 import { GoogleMapsLoader } from './google-maps-loader.client';
 import { Providers } from './providers';
@@ -15,7 +15,7 @@ const SITE_DESCRIPTION =
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    metadataBase: await metadataBase(),
+    metadataBase: await buildMetadataBase(),
     title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
     description: SITE_DESCRIPTION,
     icons: { icon: '/favicon-32x32.png' },
@@ -35,7 +35,9 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default async function RootLayout(props: { children: ReactNode }) {
+export default async function RootLayout(props: {
+  children: ReactNode;
+}): Promise<React.JSX.Element> {
   const fallbackLocale = await resolveRequestLocale();
 
   return (

@@ -1,27 +1,30 @@
 'use client';
 import Image, { type ImageLoaderProps } from 'next/image';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 
 function loadLogo(props: ImageLoaderProps): string {
   return props.src;
 }
 
-function resolveLogoUrl(value: string | undefined): string | null {
-  if (!value) {
+function resolveLogoUrl(logoUrl: string | undefined): string | null {
+  if (!logoUrl) {
     return null;
   }
 
   try {
-    const url = new URL(value);
+    const parsedUrl = new URL(logoUrl);
 
-    return url.protocol === 'https:' ? value : null;
+    return parsedUrl.protocol === 'https:' ? logoUrl : null;
   } catch {
     return null;
   }
 }
 
-export function FormLogo(props: { url?: string; className?: string }) {
+export function FormLogo(props: {
+  url?: string;
+  className?: string;
+}): React.JSX.Element | null {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const logoUrl = resolveLogoUrl(props.url);
 
@@ -31,7 +34,7 @@ export function FormLogo(props: { url?: string; className?: string }) {
 
   return (
     <div
-      className={cn(
+      className={mergeClassNames(
         'flex h-20 items-center justify-center px-6 pt-5',
         props.className,
       )}

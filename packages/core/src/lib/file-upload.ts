@@ -1,6 +1,6 @@
 'use client';
 import type { IUploadedFile } from '@declarativeforms/engine';
-import { getBackendUrl } from './api';
+import { buildApiUrl } from './api';
 
 export async function uploadFile(
   file: File | Blob,
@@ -13,7 +13,7 @@ export async function uploadFile(
     formData.append('file', file);
   }
 
-  const response = await fetch(getBackendUrl('files/upload'), {
+  const response = await fetch(buildApiUrl('files/upload'), {
     body: formData,
     method: 'POST',
   });

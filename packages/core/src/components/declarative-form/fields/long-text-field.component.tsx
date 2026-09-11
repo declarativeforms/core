@@ -9,7 +9,7 @@ import {
 
 export function LongTextField(
   props: FieldProps<IRenderableLongTextField, string>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
 
   return (

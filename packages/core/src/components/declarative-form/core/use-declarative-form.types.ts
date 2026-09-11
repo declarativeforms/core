@@ -8,7 +8,7 @@ export type FormEffect =
   | { type: 'complete'; data: Record<string, unknown> }
   | { type: 'redirect'; url: string };
 
-export type SubmitResult = FormEffect & {
+export type FormTransition = FormEffect & {
   activeSectionId: string;
   data: Record<string, unknown>;
 };
@@ -17,6 +17,6 @@ export type UseDeclarativeForm = {
   start: IRenderableStart | undefined;
   section: IRenderableSection | undefined;
   data: Record<string, unknown>;
-  submitSection: (sectionData: Record<string, unknown>) => SubmitResult;
+  submitSection: (sectionData: Record<string, unknown>) => FormTransition;
   goBack: () => string;
 };

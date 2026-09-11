@@ -14,7 +14,7 @@ export function HeroSection(props: {
   buttonLabel?: string;
   buttonHref?: string;
   theme?: { logo?: string; primary?: string };
-}) {
+}): React.JSX.Element {
   const i18n = useI18n();
 
   useEffect(() => {

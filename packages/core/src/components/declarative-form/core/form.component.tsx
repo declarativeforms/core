@@ -21,14 +21,14 @@ export function DeclarativeForm(props: {
       completedSectionId: string;
     },
   ) => void | Promise<void>;
-}) {
+}): React.JSX.Element | null {
   const sectionRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
   const declarativeForm = useDeclarativeForm(
     props.form,
     props.locale,
-    props.initialData,
     props.sectionId,
+    props.initialData,
   );
 
   useEffect(() => {
@@ -64,15 +64,15 @@ export function DeclarativeForm(props: {
       onBack={() => props.onStepChange(declarativeForm.goBack())}
       onSubmit={async (sectionData: FieldValues) => {
         const completedSectionId = declarativeForm.section?.id ?? '';
-        const result = declarativeForm.submitSection(sectionData);
+        const transition = declarativeForm.submitSection(sectionData);
 
-        if (result.type === 'submit') {
-          props.onStepChange(result.activeSectionId);
+        if (transition.type === 'submit') {
+          props.onStepChange(transition.activeSectionId);
         }
 
-        await props.onEffect(result, {
-          data: result.data,
-          activeSectionId: result.activeSectionId,
+        await props.onEffect(transition, {
+          data: transition.data,
+          activeSectionId: transition.activeSectionId,
           completedSectionId,
         });
       }}

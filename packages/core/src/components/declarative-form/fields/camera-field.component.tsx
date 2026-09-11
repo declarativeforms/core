@@ -8,7 +8,7 @@ import type {
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 import {
   mediaFrame,
   type FieldProps,
@@ -24,7 +24,7 @@ type CameraState = {
 
 export function CameraField(
   props: FieldProps<IRenderableCameraField, IUploadedFile | null>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const label = stripHtml(props.field.label);
 
@@ -160,7 +160,7 @@ export function CameraField(
         <button
           type="button"
           onClick={startCamera}
-          className={cn(
+          className={mergeClassNames(
             'w-full',
             mediaFrame({ height: 'md', interactive: true }),
             'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',

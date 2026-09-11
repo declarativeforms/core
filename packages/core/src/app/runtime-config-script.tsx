@@ -1,6 +1,6 @@
 import { connection } from 'next/server';
 
-export async function RuntimeConfigScript() {
+export async function RuntimeConfigScript(): Promise<React.JSX.Element> {
   await connection();
 
   const config = {

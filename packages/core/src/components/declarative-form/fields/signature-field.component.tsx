@@ -20,16 +20,9 @@ const CANVAS_HEIGHT = 160;
 const UPLOAD_DEBOUNCE_MS = 500;
 const INK = '#111827';
 
-function applyPenStyle(ctx: CanvasRenderingContext2D): void {
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = 2;
-}
-
 export function SignatureField(
   props: FieldProps<IRenderableSignatureField, IUploadedFile | null>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const label = stripHtml(props.field.label);
 
@@ -60,7 +53,10 @@ export function SignatureField(
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    applyPenStyle(ctx);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2;
 
     for (const stroke of strokesRef.current) {
       if (stroke.length < 2) {
@@ -102,11 +98,10 @@ export function SignatureField(
 
   useEffect(() => {
     resizeCanvas();
-    const onResize = (): void => resizeCanvas();
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener('resize', resizeCanvas);
       if (uploadTimeoutRef.current !== null) {
         window.clearTimeout(uploadTimeoutRef.current);
         uploadTimeoutRef.current = null;
@@ -153,9 +148,7 @@ export function SignatureField(
     }
   };
 
-  const handlePointerDown = (
-    event: React.PointerEvent<HTMLCanvasElement>,
-  ): void => {
+  const startStroke = (event: React.PointerEvent<HTMLCanvasElement>): void => {
     const point = canvasPoint(event);
     if (!point) {
       return;
@@ -168,7 +161,7 @@ export function SignatureField(
     setHasSignature(true);
   };
 
-  const handlePointerMove = (
+  const continueStroke = (
     event: React.PointerEvent<HTMLCanvasElement>,
   ): void => {
     if (!isDrawingRef.current) {
@@ -195,7 +188,7 @@ export function SignatureField(
     stroke.push(point);
   };
 
-  const handlePointerUp = (): void => {
+  const finishStroke = (): void => {
     if (!isDrawingRef.current) {
       return;
     }
@@ -235,11 +228,11 @@ export function SignatureField(
           <canvas
             ref={canvasRef}
             className="w-full h-[160px] touch-none"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            onPointerCancel={handlePointerUp}
+            onPointerDown={startStroke}
+            onPointerMove={continueStroke}
+            onPointerUp={finishStroke}
+            onPointerLeave={finishStroke}
+            onPointerCancel={finishStroke}
             aria-label={label}
           />
           {showSavedPreview && (

@@ -11,6 +11,6 @@ declare global {
   }
 }
 
-export function runtimeConfig(): NonNullable<Window['__CONFIG__']> {
+export function getRuntimeConfig(): NonNullable<Window['__CONFIG__']> {
   return (typeof window === 'undefined' ? undefined : window.__CONFIG__) ?? {};
 }

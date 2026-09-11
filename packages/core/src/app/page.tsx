@@ -29,6 +29,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default function HomePage(): React.JSX.Element {
   return <LandingPage />;
 }

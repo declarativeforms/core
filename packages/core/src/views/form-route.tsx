@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { createAnalytics, type Analytics } from '@/lib/analytics';
-import { getBackendUrl } from '@/lib/api';
+import { buildApiUrl } from '@/lib/api';
 import { replacePath, replaceSearchParams } from '@/lib/url-state';
 import { BasePage } from './base.page';
 
@@ -29,7 +29,7 @@ export type FormRouteProps = {
   slugPath?: string;
 };
 
-export function FormRoute(props: FormRouteProps) {
+export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
   const router = useRouter();
 
   const i18n = useI18n();
@@ -56,9 +56,9 @@ export function FormRoute(props: FormRouteProps) {
     ],
     queryFn: async () => {
       const url = props.id
-        ? getBackendUrl(`forms/${props.id}`)
+        ? buildApiUrl(`forms/${props.id}`)
         : props.owner && props.repository && props.slugPath
-          ? getBackendUrl(
+          ? buildApiUrl(
               `forms/${props.owner}/${props.repository}/${props.slugPath}`,
             )
           : '/default.yaml';
@@ -85,7 +85,7 @@ export function FormRoute(props: FormRouteProps) {
     queryKey: ['submission', formId, resumeSubmissionId],
     queryFn: async () => {
       const response = await fetch(
-        getBackendUrl(`forms/${formId}/submissions/${resumeSubmissionId}`),
+        buildApiUrl(`forms/${formId}/submissions/${resumeSubmissionId}`),
       );
       if (!response.ok) {
         return null;
@@ -139,7 +139,7 @@ export function FormRoute(props: FormRouteProps) {
     };
   }, [formQuery.data?.measurements, formId]);
 
-  function updateProgressQuery(progress: {
+  function replaceProgress(progress: {
     submissionId: string | null;
     step: string;
   }): void {
@@ -160,7 +160,7 @@ export function FormRoute(props: FormRouteProps) {
     replaceSearchParams(nextParams);
   }
 
-  async function submitToBackend(
+  async function submitForm(
     submissionData: Record<string, unknown>,
     isPartial: boolean,
   ): Promise<string | undefined> {
@@ -175,7 +175,7 @@ export function FormRoute(props: FormRouteProps) {
     }
 
     const url = new URL(
-      getBackendUrl(`forms/${submitFormId}/submissions`),
+      buildApiUrl(`forms/${submitFormId}/submissions`),
       window.location.origin,
     );
 
@@ -205,14 +205,14 @@ export function FormRoute(props: FormRouteProps) {
     return submissionResponse?.id as string | undefined;
   }
 
-  function handleStepChange(sectionId: string): void {
-    updateProgressQuery({
+  function changeStep(sectionId: string): void {
+    replaceProgress({
       submissionId: searchParams.get('submission_id'),
       step: sectionId,
     });
   }
 
-  async function handleEffect(
+  async function applyFormEffect(
     effect: FormEffect,
     runtimeState: {
       data: Record<string, unknown>;
@@ -228,11 +228,11 @@ export function FormRoute(props: FormRouteProps) {
 
     switch (effect.type) {
       case 'submit': {
-        const submissionId = await submitToBackend(
+        const submissionId = await submitForm(
           runtimeState.data,
           effect.isPartial,
         );
-        updateProgressQuery({
+        replaceProgress({
           submissionId: submissionId ?? searchParams.get('submission_id'),
           step: runtimeState.activeSectionId,
         });
@@ -248,11 +248,11 @@ export function FormRoute(props: FormRouteProps) {
         isCompletingRef.current = true;
 
         try {
-          const submissionId = await submitToBackend(runtimeState.data, false);
+          const submissionId = await submitForm(runtimeState.data, false);
           const finalSubmissionId =
             submissionId ?? searchParams.get('submission_id');
 
-          updateProgressQuery({
+          replaceProgress({
             submissionId: finalSubmissionId,
             step: 'done',
           });
@@ -280,9 +280,9 @@ export function FormRoute(props: FormRouteProps) {
         isCompletingRef.current = true;
 
         try {
-          const submissionId = await submitToBackend(runtimeState.data, false);
+          const submissionId = await submitForm(runtimeState.data, false);
 
-          updateProgressQuery({
+          replaceProgress({
             submissionId: submissionId ?? searchParams.get('submission_id'),
             step: 'done',
           });
@@ -369,8 +369,8 @@ export function FormRoute(props: FormRouteProps) {
         locale={i18n.locale}
         initialData={initialData}
         sectionId={sectionId}
-        onStepChange={handleStepChange}
-        onEffect={handleEffect}
+        onStepChange={changeStep}
+        onEffect={applyFormEffect}
       />
     </BasePage>
   );

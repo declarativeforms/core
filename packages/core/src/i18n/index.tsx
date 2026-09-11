@@ -67,7 +67,7 @@ export function useI18n(): I18nContextValue {
 export function I18nProvider(props: {
   children: ReactNode;
   fallbackLocale: Locale;
-}) {
+}): React.JSX.Element {
   const searchParams = useSearchParams();
 
   const resolved = resolveLocale(

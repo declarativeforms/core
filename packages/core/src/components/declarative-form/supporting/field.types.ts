@@ -4,7 +4,7 @@ import type { FieldValues, UseFormReturn } from 'react-hook-form';
 export type FieldControl<TValue = unknown> = {
   name: string;
   value: TValue;
-  onChange: (next: TValue) => void;
+  onChange: (nextValue: TValue) => void;
   onBlur: () => void;
   ref: (instance: unknown) => void;
 };

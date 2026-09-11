@@ -9,13 +9,13 @@ import {
   type IDeclarativeForm,
 } from '@declarativeforms/engine';
 import { useI18n, useSyncLangParam } from '@/i18n';
-import { getBackendUrl } from '@/lib/api';
+import { buildApiUrl } from '@/lib/api';
 
 type SubmissionPayload = {
   data: Record<string, unknown>;
 };
 
-export function ThankYouPage(props: { id: string }) {
+export function ThankYouPage(props: { id: string }): React.JSX.Element | null {
   const i18n = useI18n();
   const searchParams = useSearchParams();
   const submissionId = searchParams.get('submission_id');
@@ -23,7 +23,7 @@ export function ThankYouPage(props: { id: string }) {
   const formQuery = useQuery({
     queryKey: ['form', props.id],
     queryFn: async () => {
-      const url = getBackendUrl(`forms/${props.id}`);
+      const url = buildApiUrl(`forms/${props.id}`);
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -45,7 +45,7 @@ export function ThankYouPage(props: { id: string }) {
       }
 
       const response = await fetch(
-        getBackendUrl(`forms/${formId}/submissions/${submissionId}`),
+        buildApiUrl(`forms/${formId}/submissions/${submissionId}`),
       );
       if (!response.ok) {
         return null;

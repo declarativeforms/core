@@ -4,7 +4,7 @@ import type { IRenderableMultipleSelectField } from '@declarativeforms/engine';
 import { Checkbox, Field, FieldLabel, Input } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { stripHtml } from '@/lib/strip-html';
-import { cn } from '@/lib/utils';
+import { mergeClassNames } from '@/lib/utils';
 import {
   HtmlText,
   type FieldProps,
@@ -15,7 +15,7 @@ const OPTION_ROW_CLASS =
 
 export function MultipleSelectField(
   props: FieldProps<IRenderableMultipleSelectField, Array<string>>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
   const minSelections = props.field.min ?? 0;
   const maxSelections = props.field.max;
@@ -55,12 +55,12 @@ export function MultipleSelectField(
 
   const isFull = !!maxSelections && selected.length >= maxSelections;
 
-  function commit(next: Array<string>): void {
-    if (maxSelections && next.length > maxSelections) {
+  function setSelectedValues(selectedValues: Array<string>): void {
+    if (maxSelections && selectedValues.length > maxSelections) {
       return;
     }
 
-    props.control.onChange(next);
+    props.control.onChange(selectedValues);
   }
 
   return (
@@ -83,13 +83,15 @@ export function MultipleSelectField(
         return (
           <Field key={option.value}>
             <FieldLabel
-              className={cn(OPTION_ROW_CLASS, { 'border-ring': isChecked })}
+              className={mergeClassNames(OPTION_ROW_CLASS, {
+                'border-ring': isChecked,
+              })}
             >
               <Checkbox
                 checked={isChecked}
                 disabled={!isChecked && isFull}
                 onCheckedChange={(checked: boolean) =>
-                  commit(
+                  setSelectedValues(
                     checked
                       ? [...selected, option.value]
                       : selected.filter((value) => value !== option.value),
@@ -105,19 +107,21 @@ export function MultipleSelectField(
       {props.field.allowOther && (
         <Field>
           <FieldLabel
-            className={cn(OPTION_ROW_CLASS, { 'border-ring': isOtherChecked })}
+            className={mergeClassNames(OPTION_ROW_CLASS, {
+              'border-ring': isOtherChecked,
+            })}
           >
             <Checkbox
               checked={isOtherChecked}
               disabled={!isOtherChecked && isFull}
               onCheckedChange={(checked: boolean) => {
                 if (checked) {
-                  commit([...chosenOptions, otherText]);
+                  setSelectedValues([...chosenOptions, otherText]);
 
                   return;
                 }
                 setOtherText('');
-                commit(chosenOptions);
+                setSelectedValues(chosenOptions);
               }}
             />
             <span className="flex-1">{i18n.t('select.other')}</span>
@@ -129,7 +133,7 @@ export function MultipleSelectField(
               value={otherText}
               onChange={(event) => {
                 setOtherText(event.target.value);
-                commit([...chosenOptions, event.target.value]);
+                setSelectedValues([...chosenOptions, event.target.value]);
               }}
               autoFocus
             />

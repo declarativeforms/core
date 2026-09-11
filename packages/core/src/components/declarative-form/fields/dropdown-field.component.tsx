@@ -16,7 +16,7 @@ import { SearchableDropdown } from './searchable-dropdown.component';
 
 export function DropdownField(
   props: FieldProps<IRenderableDropdownField, string>,
-) {
+): React.JSX.Element {
   const i18n = useI18n();
 
   if (props.field.searchable) {

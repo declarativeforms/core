@@ -7,7 +7,9 @@ import {
   type FieldProps,
 } from '@/components/declarative-form/supporting';
 
-export function TextField(props: FieldProps<IRenderableTextField, string>) {
+export function TextField(
+  props: FieldProps<IRenderableTextField, string>,
+): React.JSX.Element {
   const i18n = useI18n();
 
   return (

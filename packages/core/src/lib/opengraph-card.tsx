@@ -1,7 +1,7 @@
 import 'server-only';
 import { ImageResponse } from 'next/og';
 import {
-  fetchForm,
+  findForm,
   resolveFormLocale,
   resolveFormText,
   SITE_NAME,
@@ -23,14 +23,14 @@ const DESCRIPTION_LIMIT = 120;
 const TITLE_SIZE = { short: 64, long: 44 };
 const SHORT_TITLE_CHARS = 45;
 
-function clamp(text: string, limit: number): string {
+function clampText(text: string, limit: number): string {
   return text.length > limit ? `${text.slice(0, limit - 1).trimEnd()}…` : text;
 }
 
 export async function renderFormCard(
   target: FormRouteTarget,
 ): Promise<ImageResponse> {
-  const form = await fetchForm(target);
+  const form = await findForm(target);
   const locale = await resolveFormLocale(form);
 
   const title = resolveFormText(form?.title, locale) || FALLBACK_TITLE;
@@ -38,7 +38,7 @@ export async function renderFormCard(
     ? resolveFormText(form.description, locale)
     : FALLBACK_DESCRIPTION;
   const accent = form?.theme?.primary || DEFAULT_ACCENT;
-  const headline = clamp(title, TITLE_LIMIT);
+  const headline = clampText(title, TITLE_LIMIT);
 
   return new ImageResponse(
     <div
@@ -102,7 +102,7 @@ export async function renderFormCard(
                   color: '#6b7280',
                 }}
               >
-                {clamp(description, DESCRIPTION_LIMIT)}
+                {clampText(description, DESCRIPTION_LIMIT)}
               </div>
             ) : null}
           </div>

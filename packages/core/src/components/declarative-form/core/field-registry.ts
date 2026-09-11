@@ -27,7 +27,7 @@ import { type FieldProps } from '@/components/declarative-form/supporting';
 
 type DeclarativeFieldRenderer = ComponentType<FieldProps>;
 
-function renderer<TField extends IRenderableField, TValue>(
+function toFieldRenderer<TField extends IRenderableField, TValue>(
   component: ComponentType<FieldProps<TField, TValue>>,
 ): DeclarativeFieldRenderer {
   return component as DeclarativeFieldRenderer;
@@ -37,28 +37,28 @@ export const fieldRegistry: Record<
   DeclarativeFieldType,
   DeclarativeFieldRenderer
 > = {
-  address: renderer(AddressField),
-  address_country: renderer(AddressField),
-  address_locality: renderer(AddressField),
-  address_region: renderer(AddressField),
-  camera: renderer(CameraField),
-  date: renderer(DateField),
-  date_month: renderer(DateField),
-  dropdown: renderer(DropdownField),
-  email: renderer(EmailField),
-  file_upload: renderer(FileUploadField),
-  geolocation: renderer(GeolocationField),
-  hidden: renderer(HiddenField),
-  long_text: renderer(LongTextField),
-  mobile_number: renderer(TextField),
-  multiple_select: renderer(MultipleSelectField),
-  number: renderer(NumberField),
-  rating: renderer(RatingField),
-  short_text: renderer(TextField),
-  signature: renderer(SignatureField),
-  single_select: renderer(SingleSelectField),
-  text_block: renderer(TextBlockField),
-  time: renderer(DateField),
-  turnstile: renderer(TurnstileField),
-  url: renderer(TextField),
+  address: toFieldRenderer(AddressField),
+  address_country: toFieldRenderer(AddressField),
+  address_locality: toFieldRenderer(AddressField),
+  address_region: toFieldRenderer(AddressField),
+  camera: toFieldRenderer(CameraField),
+  date: toFieldRenderer(DateField),
+  date_month: toFieldRenderer(DateField),
+  dropdown: toFieldRenderer(DropdownField),
+  email: toFieldRenderer(EmailField),
+  file_upload: toFieldRenderer(FileUploadField),
+  geolocation: toFieldRenderer(GeolocationField),
+  hidden: toFieldRenderer(HiddenField),
+  long_text: toFieldRenderer(LongTextField),
+  mobile_number: toFieldRenderer(TextField),
+  multiple_select: toFieldRenderer(MultipleSelectField),
+  number: toFieldRenderer(NumberField),
+  rating: toFieldRenderer(RatingField),
+  short_text: toFieldRenderer(TextField),
+  signature: toFieldRenderer(SignatureField),
+  single_select: toFieldRenderer(SingleSelectField),
+  text_block: toFieldRenderer(TextBlockField),
+  time: toFieldRenderer(DateField),
+  turnstile: toFieldRenderer(TurnstileField),
+  url: toFieldRenderer(TextField),
 };
