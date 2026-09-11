@@ -70,6 +70,7 @@ export class FormMessageService {
     );
 
     let form = existing;
+    let responseMessage = generated.message;
 
     if (!form) {
       if (!generated.definition) {
@@ -82,6 +83,12 @@ export class FormMessageService {
         generated.definition,
         this.readName(generated.name),
       );
+      const previewUrl = this.buildPreviewUrl(form);
+      responseMessage = `${generated.message}\n\n${
+        previewUrl
+          ? `Preview your form: ${previewUrl}`
+          : 'Your form was created, but its preview link is currently unavailable.'
+      }`;
     } else if (generated.definition) {
       const applied = await this.internalFormService.applyGeneratedDefinition(
         organizationId,
@@ -109,7 +116,7 @@ export class FormMessageService {
         form,
         first + 1,
         'assistant',
-        generated.message,
+        responseMessage,
       ),
     ];
 
@@ -142,6 +149,8 @@ export class FormMessageService {
       currentDefinition,
       history,
       null,
+      form?.branch ?? 'main',
+      form ? this.buildPreviewUrl(form) : null,
     );
 
     if (candidate.definition === null) {
@@ -166,6 +175,8 @@ export class FormMessageService {
       history,
       candidate.definition,
       definition,
+      form?.branch ?? 'main',
+      form ? this.buildPreviewUrl(form) : null,
     );
 
     return {
@@ -181,6 +192,8 @@ export class FormMessageService {
     history: Array<IFormMessage>,
     invalidDefinition: string,
     issues: Array<IValidationIssue>,
+    branch: string,
+    previewUrl: string | null,
   ): Promise<IDeclarativeForm> {
     const repaired = await this.openAiGateway.generate(
       prompt,
@@ -192,6 +205,8 @@ export class FormMessageService {
           issues.map((issue) => [issue.path, issue.message]),
         ),
       },
+      branch,
+      previewUrl,
     );
     const definition = this.internalFormService.validateDefinition(
       repaired.definition,
@@ -202,6 +217,30 @@ export class FormMessageService {
     }
 
     return definition;
+  }
+
+  private buildPreviewUrl(form: IInternalForm): string | null {
+    const base = (process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
+
+    if (!base) {
+      return null;
+    }
+
+    try {
+      const url = new URL(`${base}/${encodeURIComponent(form.form_id)}`);
+
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+        return null;
+      }
+
+      if (form.branch !== 'main') {
+        url.searchParams.set('branch', form.branch);
+      }
+
+      return url.toString();
+    } catch {
+      return null;
+    }
   }
 
   private buildMessage(

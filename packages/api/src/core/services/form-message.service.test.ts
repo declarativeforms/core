@@ -69,6 +69,10 @@ describe('FormMessageService', () => {
           name: null,
         }),
     } as unknown as OpenAiGateway;
+    const replacedEnv = jest.replaceProperty(process, 'env', {
+      ...process.env,
+      PUBLIC_BASE_URL: 'https://forms.example.com',
+    });
     const service = new FormMessageService(
       formMessageRepository,
       internalFormService,
@@ -101,7 +105,9 @@ describe('FormMessageService', () => {
       'user',
       'assistant',
     ]);
-    expect(created?.[1]?.content).toBe('Created');
+    expect(created?.[1]?.content).toBe(
+      'Created\n\nPreview your form: https://forms.example.com/i1',
+    );
     expect(internalFormService.create).toHaveBeenCalledWith(
       'o1',
       'owner@example.com',
@@ -115,6 +121,16 @@ describe('FormMessageService', () => {
       1,
     );
     expect(openAiGateway.generate).toHaveBeenCalledTimes(4);
+    expect(openAiGateway.generate).toHaveBeenNthCalledWith(
+      3,
+      'Update it',
+      'current',
+      expect.any(Array),
+      null,
+      'main',
+      'https://forms.example.com/i1',
+    );
     expect(stored).toHaveLength(6);
+    replacedEnv.restore();
   });
 });
