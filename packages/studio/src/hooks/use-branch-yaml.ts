@@ -8,7 +8,6 @@ export function useBranchYaml(
   organizationId: string,
   formId: string,
   branch: string,
-  revision: number,
   isEnabled: boolean,
 ): UseQueryResult<ApiBranchYaml, Error> {
   return useQuery({
@@ -18,7 +17,7 @@ export function useBranchYaml(
         method: 'GET',
         path: branchYamlPath(organizationId, formId, branch),
       }),
-    queryKey: branchYamlQueryKey(organizationId, formId, branch, revision),
+    queryKey: branchYamlQueryKey(organizationId, formId, branch),
     staleTime: Number.POSITIVE_INFINITY,
   });
 }

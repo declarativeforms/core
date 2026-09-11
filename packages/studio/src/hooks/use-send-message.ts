@@ -5,34 +5,36 @@ import {
 } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
 import type { ApiMessage } from '@/lib/api.types';
-import { messagesPath } from '@/lib/api-paths';
-import { formsQueryKey, messagesQueryKey } from '@/lib/query-keys';
+import { generatePath } from '@/lib/api-paths';
+import {
+  branchYamlQueryKey,
+  formsQueryKey,
+  messagesQueryKey,
+} from '@/lib/query-keys';
 
 const GENERATION_TIMEOUT_MS = 120_000;
-
-export type SendMessageInput = {
-  content: string;
-  idempotencyKey: string;
-};
 
 export function useSendMessage(
   organizationId: string,
   formId: string,
   branch: string,
-): UseMutationResult<Array<ApiMessage>, Error, SendMessageInput> {
+): UseMutationResult<Array<ApiMessage>, Error, string> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: SendMessageInput) =>
+    mutationFn: (prompt: string) =>
       apiRequest<Array<ApiMessage>>({
-        body: { content: input.content, idempotency_key: input.idempotencyKey },
+        body: { branch, form_id: formId, prompt },
         method: 'POST',
-        path: messagesPath(organizationId, formId, branch),
+        path: generatePath(organizationId),
         timeoutMs: GENERATION_TIMEOUT_MS,
       }),
-    onSettled: () => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: messagesQueryKey(organizationId, formId, branch),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: branchYamlQueryKey(organizationId, formId, branch),
       });
       void queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),

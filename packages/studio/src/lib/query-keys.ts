@@ -21,9 +21,8 @@ export function branchYamlQueryKey(
   organizationId: string,
   formId: string,
   branch: string,
-  revision: number,
 ): Array<string> {
-  return ['branch-yaml', organizationId, formId, branch, String(revision)];
+  return ['branch-yaml', organizationId, formId, branch];
 }
 
 export function messagesQueryKey(

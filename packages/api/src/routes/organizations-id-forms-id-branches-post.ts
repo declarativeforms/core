@@ -43,7 +43,7 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST: RouteOptions<
       return;
     }
 
-    const form = await internalFormService.createBranch(
+    const created = await internalFormService.createBranch(
       request.organization!.id,
       request.email!,
       request.params.id,
@@ -51,17 +51,13 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST: RouteOptions<
       from,
     );
 
-    if (!form) {
+    if (!created) {
       reply.status(404).send();
 
       return;
     }
 
-    reply.status(200).send({
-      branch: form.branch,
-      id: form.form_id,
-      revision: form.revision,
-    });
+    reply.status(200).send();
   },
   method: 'POST',
   preHandler: [authenticate, authorizeOrganization],

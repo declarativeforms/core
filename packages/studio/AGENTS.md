@@ -498,14 +498,10 @@ trailing period, a colon before an interpolated value:
 throw new Error(`Form not found: ${response.status}`);
 ```
 
-**`api-client.ts` decorates a plain `Error` rather than subclassing it.** A
-failed request needs a status, an error slug and a field-error map so the UI can
-choose copy and offer Retry, and `ApiFailure` is `Error & {...}` built with
-`Object.assign`, narrowed by the `isApiFailure` type predicate. That keeps "no
-custom error classes" literally true and copies the idiom
-`packages/api/src/server.ts` already uses for its rate-limit error. A
-`status` of `0` means the request never got an answer, which is the checkable
-"we do not know whether the server committed anything" case.
+**`api-client.ts` deliberately throws one generic request error.** Studio does
+not inspect response bodies, status codes or transport causes. Authentication
+still clears the bearer token centrally after a `401`; every visible failure
+uses the shared generic copy from `error-messages.ts`.
 
 **`console.error` and `console.warn` are permitted inside a `catch` that
 recovers**, matching core and api. Do not add a logging library, and do not log
@@ -636,8 +632,12 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   Confirmations are inline instead, where a Retry can actually live.
 - **No markdown renderer and no `dangerouslySetInnerHTML` anywhere.** Assistant
   prose stays escaped with `whitespace-pre-wrap`; validated HTTP(S) URLs render
-  as links that open in a new tab with `noopener noreferrer`. User, system, and
-  failed messages remain plain text. Model and API text is untrusted.
+  as links that open in a new tab with `noopener noreferrer`. User and legacy
+  system messages remain plain text. Model and API text is untrusted.
+- **Conversation history is one branch-local query.** Studio loads the complete
+  ordered history with no cursor, polling, pending server record or idempotency
+  key. New branches start with empty history, and publishing changes only the
+  `main` definition; conversations are never copied or merged.
 - **Responsive layout is Tailwind breakpoints only.** There is no
   `useMediaQuery`, so both the desktop rail and the mobile `Sheet` render and CSS
   picks, and there is no first-paint jump.
@@ -655,8 +655,7 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   user-defined Docker network: under Compose that is always true, but a bare
   `docker run` on the default bridge will `502`. A variable upstream also stops
   nginx forwarding the URI implicitly, hence the explicit `$request_uri`, which
-  is the raw client URI and therefore keeps opaque cursors and encoded branch
-  names byte-for-byte.
+  is the raw client URI and therefore keeps encoded branch names byte-for-byte.
 - **lucide-react 1.x ships no brand icons**, so there is no `Github` export. The
   GitHub mark on the sign-in button is a hand-written JSX `<svg>` helper inside
   `src/views/signed-out.page.tsx`. Do not "fix" it to a lucide import, and do not

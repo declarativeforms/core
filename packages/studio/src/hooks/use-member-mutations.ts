@@ -4,7 +4,7 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
-import type { ApiOrganization, ApiOrganizationRole } from '@/lib/api.types';
+import type { ApiOrganizationRole } from '@/lib/api.types';
 import { memberPath, membersPath } from '@/lib/api-paths';
 import { sessionQueryKey } from '@/lib/query-keys';
 
@@ -15,12 +15,12 @@ export type SaveMemberInput = {
 
 export function useSaveMember(
   organizationId: string,
-): UseMutationResult<ApiOrganization, Error, SaveMemberInput> {
+): UseMutationResult<unknown, Error, SaveMemberInput> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: SaveMemberInput) =>
-      apiRequest<ApiOrganization>({
+      apiRequest<unknown>({
         body: { email: input.email, role: input.role },
         method: 'POST',
         path: membersPath(organizationId),
@@ -33,12 +33,12 @@ export function useSaveMember(
 
 export function useRemoveMember(
   organizationId: string,
-): UseMutationResult<ApiOrganization, Error, string> {
+): UseMutationResult<unknown, Error, string> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (email: string) =>
-      apiRequest<ApiOrganization>({
+      apiRequest<unknown>({
         method: 'DELETE',
         path: memberPath(organizationId, email),
       }),

@@ -50,20 +50,6 @@ export function messagesPath(
   return `${branchPath(organizationId, formId, branch)}/messages`;
 }
 
-export function messagesPageQuery(
-  limit: number,
-  cursor: string | null,
-): string {
-  const query = new URLSearchParams();
-  query.set('limit', String(limit));
-
-  if (cursor !== null) {
-    query.set('cursor', cursor);
-  }
-
-  return query.toString();
-}
-
 export function membersPath(organizationId: string): string {
   return `${organizationPath(organizationId)}/members`;
 }

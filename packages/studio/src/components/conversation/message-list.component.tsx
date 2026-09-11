@@ -1,12 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ApiMessage } from '@/lib/api.types';
-import { Button } from '@/components/ui';
-import {
-  EmptyState,
-  ErrorState,
-  SkeletonRows,
-  StaleNotice,
-} from '@/components/feedback';
+import { EmptyState, ErrorState, SkeletonRows } from '@/components/feedback';
 import { MessageItem } from '@/components/conversation/message-item.component';
 import { minutesBetween } from '@/lib/time';
 
@@ -37,13 +31,8 @@ function shouldShowTimestamp(
 export function MessageList(props: {
   messages: Array<ApiMessage>;
   isLoading: boolean;
-  isStale: boolean;
-  hasOlder: boolean;
-  isLoadingOlder: boolean;
   errorMessage: string | null;
-  onLoadOlder: () => void;
   onRetryLoad: () => void;
-  onRetryMessage: ((message: ApiMessage) => void) | null;
   children?: React.ReactNode;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -84,18 +73,6 @@ export function MessageList(props: {
   return (
     <div className="flex-1 overflow-y-auto" ref={scrollRef}>
       <div className="mx-auto flex max-w-4xl flex-col gap-3 p-4">
-        {props.isStale ? <StaleNotice onRetry={props.onRetryLoad} /> : null}
-        {props.hasOlder ? (
-          <Button
-            className="self-center"
-            disabled={props.isLoadingOlder}
-            onClick={props.onLoadOlder}
-            size="sm"
-            variant="ghost"
-          >
-            {props.isLoadingOlder ? 'Loading…' : 'Load earlier messages'}
-          </Button>
-        ) : null}
         {count === 0 && !props.children ? (
           <EmptyState
             description="Ask a question, explore an improvement, or describe a change to this form."
@@ -106,15 +83,6 @@ export function MessageList(props: {
           <MessageItem
             key={message.id}
             message={message}
-            onRetry={
-              props.onRetryMessage
-                ? () => {
-                    if (props.onRetryMessage) {
-                      props.onRetryMessage(message);
-                    }
-                  }
-                : null
-            }
             showTimestamp={shouldShowTimestamp(props.messages, index)}
           />
         ))}

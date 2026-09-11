@@ -117,7 +117,6 @@ export async function getContainer(): Promise<Container> {
   const organizationService = new OrganizationService(organizationRepository);
   const internalFormService = new InternalFormService(
     formRepository,
-    formMessageRepository,
     formDefinitionValidator,
   );
   const formService = new FormService(

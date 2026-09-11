@@ -29,12 +29,12 @@ export const ORGANIZATIONS_ID_FORMS_ID_DELETE: RouteOptions<
       return;
     }
 
-    const form = await internalFormService.delete(
+    const deleted = await internalFormService.delete(
       request.organization!.id,
       request.params.id,
     );
 
-    if (!form) {
+    if (!deleted) {
       reply.status(404).send();
 
       return;

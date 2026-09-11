@@ -21,18 +21,23 @@ export const ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE: RouteOptions<
     }>,
     reply: FastifyReply,
   ): Promise<void> => {
-    const { internalFormService } = await getContainer();
-    const form = await internalFormService.deleteBranch(
+    const { formMessageService, internalFormService } = await getContainer();
+    const deleted = await internalFormService.deleteBranch(
       request.organization!.id,
       request.params.id,
       request.params.branch,
     );
 
-    if (!form) {
+    if (!deleted) {
       reply.status(404).send();
 
       return;
     }
+
+    await formMessageService.deleteBranchHistory(
+      request.params.id,
+      request.params.branch,
+    );
 
     reply.status(200).send();
   },

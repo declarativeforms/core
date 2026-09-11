@@ -33,9 +33,8 @@ export function PublishDialog(props: {
           </AlertDialogTitle>
           <AlertDialogDescription>
             This updates the form hosted in Studio. {DEFAULT_BRANCH} is replaced
-            by {props.branch}, and messages added since the branch was made are
-            copied across. {props.branch} stays available, and the published
-            form is live for anyone with the link.
+            by {props.branch}. The branch and both conversation histories stay
+            separate, and the published form is live for anyone with the link.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {publish.isError ? (

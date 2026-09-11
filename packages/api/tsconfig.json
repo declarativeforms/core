@@ -17,5 +17,6 @@
     "ignoreDeprecations": "6.0"
   },
   "references": [{ "path": "../engine" }],
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
 }

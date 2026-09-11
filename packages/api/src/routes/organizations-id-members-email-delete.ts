@@ -30,19 +30,19 @@ export const ORGANIZATIONS_ID_MEMBERS_EMAIL_DELETE: RouteOptions<
       return;
     }
 
-    const organization = await organizationService.removeMember(
+    const removed = await organizationService.removeMember(
       request.organization!,
       request.email!,
       email,
     );
 
-    if (!organization) {
+    if (!removed) {
       reply.status(403).send();
 
       return;
     }
 
-    reply.status(200).send(organization);
+    reply.status(200).send();
   },
   method: 'DELETE',
   preHandler: [authenticate, authorizeOrganization],

@@ -94,9 +94,9 @@ export class OrganizationService {
     actorEmailAddress: string,
     emailAddress: string,
     role: IOrganizationRole,
-  ): Promise<IOrganization | null> {
+  ): Promise<boolean> {
     if (!this.isAdmin(organization, actorEmailAddress)) {
-      return null;
+      return false;
     }
 
     const added = await this.organizationRepository.insertMember(
@@ -115,16 +115,16 @@ export class OrganizationService {
       );
     }
 
-    return this.getOrganizationAfterWrite(organization.id);
+    return true;
   }
 
   public async removeMember(
     organization: IOrganization,
     actorEmailAddress: string,
     emailAddress: string,
-  ): Promise<IOrganization | null> {
+  ): Promise<boolean> {
     if (!this.isAdmin(organization, actorEmailAddress)) {
-      return null;
+      return false;
     }
 
     const remaining = organization.members.filter(
@@ -132,7 +132,7 @@ export class OrganizationService {
     );
 
     if (!remaining.some((member) => member.role === 'admin')) {
-      return null;
+      return false;
     }
 
     await this.organizationRepository.deleteMember(
@@ -140,7 +140,7 @@ export class OrganizationService {
       emailAddress,
     );
 
-    return this.getOrganizationAfterWrite(organization.id);
+    return true;
   }
 
   public findMember(
@@ -155,16 +155,6 @@ export class OrganizationService {
 
   public isAdmin(organization: IOrganization, emailAddress: string): boolean {
     return this.findMember(organization, emailAddress)?.role === 'admin';
-  }
-
-  private async getOrganizationAfterWrite(id: string): Promise<IOrganization> {
-    const organization = await this.organizationRepository.findById(id);
-
-    if (!organization) {
-      throw new Error(`Organization ${id} disappeared during a write`);
-    }
-
-    return organization;
   }
 
   private buildSlug(name: string, attempt: number): string {

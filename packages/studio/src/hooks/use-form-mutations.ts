@@ -4,7 +4,6 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
-import type { ApiBranchWrite, ApiForm } from '@/lib/api.types';
 import {
   branchPath,
   branchesPath,
@@ -12,6 +11,7 @@ import {
   publishPath,
 } from '@/lib/api-paths';
 import {
+  branchYamlQueryKey,
   branchesQueryKey,
   formsQueryKey,
   messagesQueryKey,
@@ -25,12 +25,12 @@ export type CreateBranchInput = {
 export function useRenameForm(
   organizationId: string,
   formId: string,
-): UseMutationResult<ApiForm, Error, string> {
+): UseMutationResult<unknown, Error, string> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (name: string) =>
-      apiRequest<ApiForm>({
+      apiRequest<unknown>({
         body: { name },
         method: 'PATCH',
         path: formPath(organizationId, formId),
@@ -66,22 +66,24 @@ export function useDeleteForm(
 export function useCreateBranch(
   organizationId: string,
   formId: string,
-): UseMutationResult<ApiBranchWrite, Error, CreateBranchInput> {
+): UseMutationResult<unknown, Error, CreateBranchInput> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: CreateBranchInput) =>
-      apiRequest<ApiBranchWrite>({
+      apiRequest<unknown>({
         body: { from: input.from, name: input.name },
         method: 'POST',
         path: branchesPath(organizationId, formId),
       }),
-    onSuccess: (write: ApiBranchWrite) => {
+    onSuccess: (result: unknown, input: CreateBranchInput) => {
+      void result;
+
       void queryClient.invalidateQueries({
-        queryKey: formsQueryKey(organizationId),
+        queryKey: branchYamlQueryKey(organizationId, formId, input.name),
       });
       void queryClient.invalidateQueries({
-        queryKey: messagesQueryKey(organizationId, formId, write.branch),
+        queryKey: messagesQueryKey(organizationId, formId, input.name),
       });
 
       return queryClient.invalidateQueries({
@@ -94,28 +96,21 @@ export function useCreateBranch(
 export function usePublishBranch(
   organizationId: string,
   formId: string,
-): UseMutationResult<ApiBranchWrite, Error, string> {
+): UseMutationResult<unknown, Error, string> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (branch: string) =>
-      apiRequest<ApiBranchWrite>({
-        body: { delete_branch: false },
+      apiRequest<unknown>({
         method: 'POST',
         path: publishPath(organizationId, formId, branch),
       }),
-    onSuccess: (write: ApiBranchWrite, branch: string) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: branchesQueryKey(organizationId, formId),
+        queryKey: branchYamlQueryKey(organizationId, formId, 'main'),
       });
       void queryClient.invalidateQueries({
         queryKey: formsQueryKey(organizationId),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: messagesQueryKey(organizationId, formId, write.branch),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: messagesQueryKey(organizationId, formId, branch),
       });
     },
   });

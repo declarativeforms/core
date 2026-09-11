@@ -1,6 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
 import type { ApiMessage } from '@/lib/api.types';
-import { Badge, Button } from '@/components/ui';
 import { formatAbsolute, formatMessageTime } from '@/lib/time';
 
 function renderAssistantMessage(content: string): ReactNode {
@@ -36,7 +35,6 @@ function renderAssistantMessage(content: string): ReactNode {
 export function MessageItem(props: {
   message: ApiMessage;
   showTimestamp: boolean;
-  onRetry: (() => void) | null;
 }) {
   if (props.message.role === 'system') {
     return (
@@ -52,7 +50,6 @@ export function MessageItem(props: {
   }
 
   const isUser = props.message.role === 'user';
-  const isFailed = props.message.status === 'failed';
 
   return (
     <div
@@ -70,24 +67,12 @@ export function MessageItem(props: {
         className={`max-w-[46rem] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words ${
           isUser
             ? 'bg-primary text-primary-foreground'
-            : isFailed
-              ? 'border-l-2 border-destructive/60 bg-muted text-foreground'
-              : 'bg-muted text-foreground'
+            : 'bg-muted text-foreground'
         }`}
       >
-        {isUser || isFailed
+        {isUser
           ? props.message.content
           : renderAssistantMessage(props.message.content)}
-      </div>
-      <div className="flex items-center gap-2 px-1">
-        {props.message.origin_branch ? (
-          <Badge variant="secondary">from {props.message.origin_branch}</Badge>
-        ) : null}
-        {isFailed && props.onRetry ? (
-          <Button onClick={props.onRetry} size="sm" variant="outline">
-            Retry
-          </Button>
-        ) : null}
       </div>
     </div>
   );

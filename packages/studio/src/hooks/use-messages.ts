@@ -1,20 +1,14 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api-client';
-import type { ApiMessage, ApiMessagePage } from '@/lib/api.types';
-import { messagesPath, messagesPageQuery } from '@/lib/api-paths';
+import type { ApiMessage } from '@/lib/api.types';
+import { messagesPath } from '@/lib/api-paths';
 import { describeError } from '@/lib/error-messages';
 import { messagesQueryKey } from '@/lib/query-keys';
-
-const PAGE_SIZE = 50;
 
 export type MessageHistory = {
   messages: Array<ApiMessage>;
   isLoading: boolean;
-  isStale: boolean;
-  hasOlder: boolean;
-  isLoadingOlder: boolean;
   errorMessage: string | null;
-  loadOlder: () => void;
   retry: () => void;
 };
 
@@ -23,53 +17,24 @@ export function useMessages(
   formId: string | null,
   branch: string,
 ): MessageHistory {
-  const query = useInfiniteQuery({
+  const query = useQuery({
     enabled: organizationId !== null && formId !== null,
-    getNextPageParam: (lastPage: ApiMessagePage) => lastPage.next_cursor,
-    initialPageParam: null as string | null,
-    queryFn: (context) =>
-      apiRequest<ApiMessagePage>({
+    queryFn: () =>
+      apiRequest<Array<ApiMessage>>({
         method: 'GET',
-        path: `${messagesPath(
-          organizationId as string,
-          formId as string,
-          branch,
-        )}?${messagesPageQuery(PAGE_SIZE, context.pageParam)}`,
+        path: messagesPath(organizationId as string, formId as string, branch),
       }),
     queryKey: messagesQueryKey(
       organizationId ?? 'none',
       formId ?? 'none',
       branch,
     ),
-    refetchInterval: 30_000,
-    refetchIntervalInBackground: false,
   });
 
-  const unique = new Map<string, ApiMessage>();
-
-  for (const page of query.data?.pages ?? []) {
-    for (const message of page.messages) {
-      unique.set(message.id, message);
-    }
-  }
-
-  const messages = Array.from(unique.values()).sort(
-    (left, right) => left.sequence - right.sequence,
-  );
-
   return {
-    errorMessage:
-      query.isError && messages.length === 0
-        ? describeError(query.error)
-        : null,
-    hasOlder: query.hasNextPage,
+    errorMessage: query.isError ? describeError(query.error) : null,
     isLoading: query.isPending,
-    isLoadingOlder: query.isFetchingNextPage,
-    isStale: query.isError && messages.length > 0,
-    loadOlder: () => {
-      void query.fetchNextPage();
-    },
-    messages,
+    messages: query.data ?? [],
     retry: () => {
       void query.refetch();
     },

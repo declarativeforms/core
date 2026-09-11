@@ -31,20 +31,20 @@ export const ORGANIZATIONS_ID_FORMS_ID_PATCH: RouteOptions<any, any, any, any> =
         return;
       }
 
-      const form = await internalFormService.rename(
+      const renamed = await internalFormService.rename(
         request.organization!.id,
         request.email!,
         request.params.id,
         name,
       );
 
-      if (!form) {
+      if (!renamed) {
         reply.status(404).send();
 
         return;
       }
 
-      reply.status(200).send(form);
+      reply.status(200).send();
     },
     method: 'PATCH',
     preHandler: [authenticate, authorizeOrganization],

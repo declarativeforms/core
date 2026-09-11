@@ -21,7 +21,7 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
   },
   handler: async (
     request: FastifyRequest<{
-      Body: { prompt?: unknown };
+      Body: { branch?: unknown; form_id?: unknown; prompt?: unknown };
       Params: { organizationId: string };
     }>,
     reply: FastifyReply,
@@ -33,7 +33,15 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
         ? request.body.prompt
         : '';
 
-    if (!prompt.trim() || prompt.length > MAX_PROMPT_CHARS) {
+    if (
+      !prompt.trim() ||
+      prompt.length > MAX_PROMPT_CHARS ||
+      (request.body?.form_id !== undefined &&
+        (typeof request.body.form_id !== 'string' || !request.body.form_id)) ||
+      (request.body?.branch !== undefined &&
+        (typeof request.body.branch !== 'string' || !request.body.branch)) ||
+      (request.body?.branch !== undefined && request.body.form_id === undefined)
+    ) {
       reply.status(400).send();
 
       return;
@@ -42,8 +50,16 @@ export const ORGANIZATIONS_ID_FORMS_GENERATE_POST: RouteOptions<
     const messages = await formMessageService.generate(
       request.organization!.id,
       request.email!,
+      typeof request.body?.form_id === 'string' ? request.body.form_id : null,
+      typeof request.body?.branch === 'string' ? request.body.branch : 'main',
       prompt,
     );
+
+    if (messages === null) {
+      reply.status(404).send();
+
+      return;
+    }
 
     reply.status(200).send(messages);
   },

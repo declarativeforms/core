@@ -40,20 +40,12 @@ export type ApiForm = {
   updated_at: string;
 };
 
-export type ApiBranchWrite = {
-  branch: string;
-  id: string;
-  revision: number;
-};
-
 export type ApiBranchYaml = {
   revision: number;
   yaml: string;
 };
 
 export type ApiMessageRole = 'assistant' | 'system' | 'user';
-
-export type ApiMessageStatus = 'complete' | 'failed' | 'pending';
 
 export type ApiMessage = {
   id: string;
@@ -63,16 +55,5 @@ export type ApiMessage = {
   sequence: number;
   role: ApiMessageRole;
   content: string;
-  status: ApiMessageStatus;
   created_at: string;
-  created_by: string;
-  schema_revision: number | null;
-  origin_branch: string | null;
-  origin_message_id: string | null;
-  generation_id: string | null;
-};
-
-export type ApiMessagePage = {
-  messages: Array<ApiMessage>;
-  next_cursor: string | null;
 };

@@ -9,14 +9,12 @@ export function SchemaPanel(props: {
   organizationId: string;
   formId: string;
   branch: string;
-  revision: number;
   isOpen: boolean;
 }) {
   const yamlQuery = useBranchYaml(
     props.organizationId,
     props.formId,
     props.branch,
-    props.revision,
     props.isOpen,
   );
   const clipboard = useCopyToClipboard();
@@ -26,7 +24,9 @@ export function SchemaPanel(props: {
       <CollapsibleContent>
         <div className="flex items-center justify-between gap-2 px-4 pt-3">
           <p className="text-xs font-medium text-muted-foreground">
-            YAML on {props.branch} · Revision {props.revision} · read-only
+            YAML on {props.branch}
+            {yamlQuery.data ? ` · Revision ${yamlQuery.data.revision}` : ''} ·
+            read-only
           </p>
           <Button
             disabled={!yamlQuery.data}
