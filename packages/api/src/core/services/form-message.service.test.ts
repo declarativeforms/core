@@ -6,7 +6,7 @@ import { FormMessageService } from './form-message.service';
 import type { InternalFormService } from './internal-form.service';
 
 describe('FormMessageService', () => {
-  it('creates, updates, and records replies without a definition', async () => {
+  it('creates, repairs, updates, and records replies without a definition', async () => {
     const definition = { sections: [] } as unknown as IDeclarativeForm;
     const form = {
       branch: 'main',
@@ -34,7 +34,15 @@ describe('FormMessageService', () => {
       }),
       findByBranch: jest.fn(() => Promise.resolve(existing)),
       toYamlDefinition: jest.fn(() => 'current'),
-      validateDefinition: jest.fn(() => definition),
+      validateDefinition: jest
+        .fn()
+        .mockReturnValueOnce([
+          {
+            message: 'Unsupported field property',
+            path: '/sections/0/fields/0/property',
+          },
+        ])
+        .mockReturnValue(definition),
     } as unknown as InternalFormService;
     const openAiGateway = {
       generate: jest
@@ -43,6 +51,12 @@ describe('FormMessageService', () => {
           definition: 'created',
           message: 'Created',
           name: 'Test',
+        })
+        .mockResolvedValueOnce({
+          definition: 'repaired',
+          message:
+            'Removed the unsupported field property so the form validates.',
+          name: null,
         })
         .mockResolvedValueOnce({
           definition: 'updated',
@@ -87,12 +101,20 @@ describe('FormMessageService', () => {
       'user',
       'assistant',
     ]);
+    expect(created?.[1]?.content).toBe('Created');
+    expect(internalFormService.create).toHaveBeenCalledWith(
+      'o1',
+      'owner@example.com',
+      definition,
+      'Test',
+    );
     expect(updated?.[1]?.content).toBe('Updated');
     expect(answered?.[1]?.content).toBe('Answered');
     expect(internalFormService.create).toHaveBeenCalledTimes(1);
     expect(internalFormService.applyGeneratedDefinition).toHaveBeenCalledTimes(
       1,
     );
+    expect(openAiGateway.generate).toHaveBeenCalledTimes(4);
     expect(stored).toHaveLength(6);
   });
 });

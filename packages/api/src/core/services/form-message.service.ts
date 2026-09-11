@@ -160,13 +160,19 @@ export class FormMessageService {
       };
     }
 
-    return this.repairGeneratedDefinition(
+    const repairedDefinition = await this.repairGeneratedDefinition(
       prompt,
       currentDefinition,
       history,
       candidate.definition,
       definition,
     );
+
+    return {
+      definition: repairedDefinition,
+      message: candidate.message,
+      name: candidate.name,
+    };
   }
 
   private async repairGeneratedDefinition(
@@ -175,11 +181,7 @@ export class FormMessageService {
     history: Array<IFormMessage>,
     invalidDefinition: string,
     issues: Array<IValidationIssue>,
-  ): Promise<{
-    definition: IDeclarativeForm;
-    message: string;
-    name: string | null;
-  }> {
+  ): Promise<IDeclarativeForm> {
     const repaired = await this.openAiGateway.generate(
       prompt,
       currentDefinition,
@@ -199,11 +201,7 @@ export class FormMessageService {
       throw new Error('Generated form is invalid');
     }
 
-    return {
-      definition,
-      message: repaired.message,
-      name: repaired.name,
-    };
+    return definition;
   }
 
   private buildMessage(
