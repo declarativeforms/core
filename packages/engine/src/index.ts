@@ -37,6 +37,7 @@ export function toRenderableForm(
   const schema = parse(yaml);
   const resolved = resolve(schema, options.locale);
   const compiled = compile(resolved, data);
+
   return render(compiled, data, {
     sectionId: options.sectionId,
   });

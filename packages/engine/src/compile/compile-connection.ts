@@ -9,9 +9,11 @@ export function compileConnection(
   if (connection.when && !evaluateExpression(connection.when, data)) {
     return null;
   }
+
   if (connection.type === 'email') {
     return compileFormEmailConnection(connection, data);
   }
+
   return {
     type: 'webhook',
     ...(connection.url !== undefined && { url: connection.url }),

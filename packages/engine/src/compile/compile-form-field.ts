@@ -71,7 +71,9 @@ export function compileFormField(
         ...base,
         type: 'dropdown',
         ...(field.searchable !== undefined && { searchable: field.searchable }),
-        options: (field.options ?? []).map((o) => compileFormOption(o, data)),
+        options: (field.options ?? []).map((option) =>
+          compileFormOption(option, data),
+        ),
       };
     case 'rating':
       return {
@@ -100,7 +102,9 @@ export function compileFormField(
       return {
         ...base,
         type: field.type,
-        options: (field.options ?? []).map((o) => compileFormOption(o, data)),
+        options: (field.options ?? []).map((option) =>
+          compileFormOption(option, data),
+        ),
         ...(field.allow_other !== undefined && {
           allow_other: field.allow_other,
         }),

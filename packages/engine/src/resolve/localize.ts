@@ -4,7 +4,7 @@ function normalizeLocaleKey(locale: string): string {
   return locale.trim().toLowerCase().replace(/_/g, '-');
 }
 
-function getObjectLocalizedValue(
+function findLocalizedValue(
   input: Record<string, string>,
   locale: string,
 ): string | undefined {
@@ -49,5 +49,5 @@ export function resolveLocalizedText(
     return '';
   }
 
-  return getObjectLocalizedValue(input, locale) ?? '';
+  return findLocalizedValue(input, locale) ?? '';
 }

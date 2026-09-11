@@ -1,15 +1,15 @@
 import type { IRenderableNavigation } from '../types';
 
 export function renderNavigation(
-  next: string | undefined,
+  nextTarget: string | undefined,
 ): IRenderableNavigation {
-  if (!next || next === 'done') {
+  if (!nextTarget || nextTarget === 'done') {
     return { type: 'complete' };
   }
 
-  if (next.startsWith('https://')) {
-    return { type: 'redirect', url: next };
+  if (nextTarget.startsWith('https://')) {
+    return { type: 'redirect', url: nextTarget };
   }
 
-  return { type: 'section', sectionId: next };
+  return { type: 'section', sectionId: nextTarget };
 }

@@ -7,7 +7,7 @@ import { compileFormButton } from './compile-form-button';
 import { evaluateExpression } from './expression';
 import { interpolateTemplate } from './template';
 
-function selectCompletion(
+function findMatchingCompletion(
   completion:
     IResolvedFormCompletion | Array<IResolvedFormCompletionRule> | undefined,
   data: Record<string, unknown>,
@@ -15,17 +15,21 @@ function selectCompletion(
   if (!completion) {
     return undefined;
   }
+
   if (!Array.isArray(completion)) {
     return completion;
   }
+
   for (const rule of completion) {
     if (!rule.when) {
       return rule;
     }
+
     if (evaluateExpression(rule.when, data)) {
       return rule;
     }
   }
+
   return undefined;
 }
 
@@ -34,19 +38,21 @@ export function compileFormCompletion(
     IResolvedFormCompletion | Array<IResolvedFormCompletionRule> | undefined,
   data: Record<string, unknown>,
 ): ICompiledFormCompletion | undefined {
-  const matching = selectCompletion(completion, data);
-  if (!matching) {
+  const matchingCompletion = findMatchingCompletion(completion, data);
+
+  if (!matchingCompletion) {
     return undefined;
   }
+
   return {
-    ...(matching.title !== undefined && {
-      title: interpolateTemplate(matching.title, data),
+    ...(matchingCompletion.title !== undefined && {
+      title: interpolateTemplate(matchingCompletion.title, data),
     }),
-    ...(matching.message !== undefined && {
-      message: interpolateTemplate(matching.message, data),
+    ...(matchingCompletion.message !== undefined && {
+      message: interpolateTemplate(matchingCompletion.message, data),
     }),
-    ...(matching.button !== undefined && {
-      button: compileFormButton(matching.button, data),
+    ...(matchingCompletion.button !== undefined && {
+      button: compileFormButton(matchingCompletion.button, data),
     }),
   };
 }

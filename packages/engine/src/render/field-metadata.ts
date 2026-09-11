@@ -10,14 +10,14 @@ export function findValidationRule<T extends ICompiledValidationRule['type']>(
   );
 }
 
-export function getCharLimit(
+export function findCharacterLimit(
   rules: Array<ICompiledValidationRule>,
   type: 'min_length' | 'max_length',
 ): number | undefined {
   return findValidationRule(rules, type)?.value;
 }
 
-export function getNumericBound(
+export function findNumericBound(
   rules: Array<ICompiledValidationRule>,
   type: 'min' | 'max',
 ): number | undefined {
@@ -29,10 +29,12 @@ export function getRatingRange(rules: Array<ICompiledValidationRule>): {
   min: number;
   max: number;
 } {
-  const min = Math.trunc(getNumericBound(rules, 'min') ?? 1);
-  const max = Math.trunc(getNumericBound(rules, 'max') ?? 5);
+  const min = Math.trunc(findNumericBound(rules, 'min') ?? 1);
+  const max = Math.trunc(findNumericBound(rules, 'max') ?? 5);
+
   if (!Number.isFinite(min) || !Number.isFinite(max) || max < min) {
     return { min: 1, max: 5 };
   }
+
   return { min, max };
 }

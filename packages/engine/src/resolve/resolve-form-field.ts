@@ -7,9 +7,9 @@ import { resolveFormValidator } from './resolve-form-validator';
 export function resolveFormField(
   field: IDeclarativeFormField,
   locale: string,
-): IResolvedFormField | null {
+): IResolvedFormField | undefined {
   if (!isDeclarativeFieldType(field.type)) {
-    return null;
+    return undefined;
   }
 
   const base = {
@@ -21,7 +21,9 @@ export function resolveFormField(
       placeholder: resolveLocalizedText(field.placeholder, locale),
     }),
     ...(field.validators !== undefined && {
-      validators: field.validators.map((v) => resolveFormValidator(v, locale)),
+      validators: field.validators.map((validator) =>
+        resolveFormValidator(validator, locale),
+      ),
     }),
     ...(field.visible_when !== undefined && {
       visible_when: field.visible_when,
@@ -49,7 +51,9 @@ export function resolveFormField(
         type: 'dropdown',
         ...(field.searchable !== undefined && { searchable: field.searchable }),
         ...(field.options !== undefined && {
-          options: field.options.map((o) => resolveFormOption(o, locale)),
+          options: field.options.map((option) =>
+            resolveFormOption(option, locale),
+          ),
         }),
       };
     case 'rating':
@@ -80,7 +84,9 @@ export function resolveFormField(
         ...base,
         type: field.type,
         ...(field.options !== undefined && {
-          options: field.options.map((o) => resolveFormOption(o, locale)),
+          options: field.options.map((option) =>
+            resolveFormOption(option, locale),
+          ),
         }),
         ...(field.allow_other !== undefined && {
           allow_other: field.allow_other,

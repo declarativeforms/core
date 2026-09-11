@@ -1,8 +1,8 @@
 import type { ICompiledFormField, IRenderableField } from '../types';
 import {
+  findCharacterLimit,
+  findNumericBound,
   findValidationRule,
-  getCharLimit,
-  getNumericBound,
   getRatingRange,
 } from './field-metadata';
 
@@ -25,8 +25,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
     case 'short_text':
     case 'url':
     case 'mobile_number': {
-      const min = getCharLimit(field.validation, 'min_length');
-      const max = getCharLimit(field.validation, 'max_length');
+      const min = findCharacterLimit(field.validation, 'min_length');
+      const max = findCharacterLimit(field.validation, 'max_length');
       const inputType =
         field.type === 'url'
           ? 'url'
@@ -42,8 +42,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
       };
     }
     case 'number': {
-      const min = getNumericBound(field.validation, 'min');
-      const max = getNumericBound(field.validation, 'max');
+      const min = findNumericBound(field.validation, 'min');
+      const max = findNumericBound(field.validation, 'max');
       const integer = field.validation.some(
         (rule) => rule.type === 'pattern' && rule.regex === '^\\d+$',
       );
@@ -75,8 +75,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
       };
     }
     case 'long_text': {
-      const min = getCharLimit(field.validation, 'min_length');
-      const max = getCharLimit(field.validation, 'max_length');
+      const min = findCharacterLimit(field.validation, 'min_length');
+      const max = findCharacterLimit(field.validation, 'max_length');
       return {
         ...base,
         type: 'long_text',
@@ -85,8 +85,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
       };
     }
     case 'email': {
-      const min = getCharLimit(field.validation, 'min_length');
-      const max = getCharLimit(field.validation, 'max_length');
+      const min = findCharacterLimit(field.validation, 'min_length');
+      const max = findCharacterLimit(field.validation, 'max_length');
       return {
         ...base,
         type: 'email',
@@ -110,8 +110,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
         allowOther: field.allow_other === true,
       };
     case 'multiple_select': {
-      const min = getNumericBound(field.validation, 'min');
-      const max = getNumericBound(field.validation, 'max');
+      const min = findNumericBound(field.validation, 'min');
+      const max = findNumericBound(field.validation, 'max');
       return {
         ...base,
         type: 'multiple_select',
@@ -142,8 +142,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
         outputFormat: field.outputFormat ?? 'string',
       };
     case 'file_upload': {
-      const min = getNumericBound(field.validation, 'min');
-      const max = getNumericBound(field.validation, 'max');
+      const min = findNumericBound(field.validation, 'min');
+      const max = findNumericBound(field.validation, 'max');
       return {
         ...base,
         type: 'file_upload',

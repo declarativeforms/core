@@ -12,7 +12,7 @@ type BoundValidator = {
   message?: string;
 };
 
-function getBoundValidator(
+function findBoundValidator(
   validators: Array<IResolvedFormValidator>,
   type: 'min' | 'max',
 ): BoundValidator | undefined {
@@ -24,7 +24,7 @@ function getBoundValidator(
   );
 }
 
-function hasValidator(
+function hasValidatorOfType(
   validators: Array<IResolvedFormValidator>,
   type: string,
 ): boolean {
@@ -37,16 +37,21 @@ function getRatingRange(validators: Array<IResolvedFormValidator>): {
   min: number;
   max: number;
 } {
-  const minVal = getBoundValidator(validators, 'min');
-  const maxVal = getBoundValidator(validators, 'max');
+  const minValidator = findBoundValidator(validators, 'min');
+  const maxValidator = findBoundValidator(validators, 'max');
   const min =
-    minVal && typeof minVal.value === 'number' && minVal.value >= 1
-      ? minVal.value
+    minValidator &&
+    typeof minValidator.value === 'number' &&
+    minValidator.value >= 1
+      ? minValidator.value
       : 1;
   const max =
-    maxVal && typeof maxVal.value === 'number' && maxVal.value >= min
-      ? maxVal.value
+    maxValidator &&
+    typeof maxValidator.value === 'number' &&
+    maxValidator.value >= min
+      ? maxValidator.value
       : 5;
+
   return { min, max };
 }
 
@@ -139,73 +144,75 @@ export function buildValidationRules(
     }
   }
 
-  const minVal = getBoundValidator(validators, 'min');
-  const maxVal = getBoundValidator(validators, 'max');
+  const minValidator = findBoundValidator(validators, 'min');
+  const maxValidator = findBoundValidator(validators, 'max');
 
   if (
     fieldType === 'date' ||
     fieldType === 'date_month' ||
     fieldType === 'time'
   ) {
-    if (minVal) {
+    if (minValidator) {
       rules.push({
         type: 'min',
-        value: minVal.value,
+        value: minValidator.value,
         message:
-          minVal.message ||
+          minValidator.message ||
           interpolateTemplate(
             messages.date_min,
             {},
-            { label, min: String(minVal.value) },
+            { label, min: String(minValidator.value) },
           ),
       });
     }
-    if (maxVal) {
+
+    if (maxValidator) {
       rules.push({
         type: 'max',
-        value: maxVal.value,
+        value: maxValidator.value,
         message:
-          maxVal.message ||
+          maxValidator.message ||
           interpolateTemplate(
             messages.date_max,
             {},
-            { label, max: String(maxVal.value) },
+            { label, max: String(maxValidator.value) },
           ),
       });
     }
   }
 
   if (fieldType === 'number') {
-    if (!hasValidator(validators, 'pattern')) {
+    if (!hasValidatorOfType(validators, 'pattern')) {
       rules.push({
         type: 'pattern',
         regex: '^\\d+$',
         message: interpolateTemplate(messages.whole_number, {}, { label }),
       });
     }
-    if (minVal && typeof minVal.value === 'number') {
+    if (minValidator && typeof minValidator.value === 'number') {
       rules.push({
         type: 'min',
-        value: minVal.value,
+        value: minValidator.value,
         message:
-          minVal.message ||
+          minValidator.message ||
           interpolateTemplate(
             messages.number_min,
             {},
-            { label, min: minVal.value },
+            { label, min: minValidator.value },
           ),
       });
     }
-    if (maxVal && typeof maxVal.value === 'number') {
+
+    if (maxValidator && typeof maxValidator.value === 'number') {
       rules.push({
         type: 'max',
-        value: maxVal.value,
+        value: maxValidator.value,
         message:
-          maxVal.message ||
+          maxValidator.message ||
           interpolateTemplate(
             messages.number_max,
             {},
-            { label, max: maxVal.value },
+            { label, max: maxValidator.value },
           ),
       });
     }
@@ -217,71 +224,73 @@ export function buildValidationRules(
       type: 'min',
       value: range.min,
       message:
-        minVal?.message ||
+        minValidator?.message ||
         interpolateTemplate(messages.number_min, {}, { label, min: range.min }),
     });
     rules.push({
       type: 'max',
       value: range.max,
       message:
-        maxVal?.message ||
+        maxValidator?.message ||
         interpolateTemplate(messages.number_max, {}, { label, max: range.max }),
     });
   }
 
   if (fieldType === 'file_upload') {
-    if (minVal && typeof minVal.value === 'number') {
+    if (minValidator && typeof minValidator.value === 'number') {
       rules.push({
         type: 'min',
-        value: minVal.value,
+        value: minValidator.value,
         message:
-          minVal.message ||
+          minValidator.message ||
           interpolateTemplate(
             messages.file_min,
             {},
-            { label, min: minVal.value },
+            { label, min: minValidator.value },
           ),
       });
     }
-    if (maxVal && typeof maxVal.value === 'number') {
+
+    if (maxValidator && typeof maxValidator.value === 'number') {
       rules.push({
         type: 'max',
-        value: maxVal.value,
+        value: maxValidator.value,
         message:
-          maxVal.message ||
+          maxValidator.message ||
           interpolateTemplate(
             messages.file_max,
             {},
-            { label, max: maxVal.value },
+            { label, max: maxValidator.value },
           ),
       });
     }
   }
 
   if (fieldType === 'multiple_select') {
-    if (minVal && typeof minVal.value === 'number') {
+    if (minValidator && typeof minValidator.value === 'number') {
       rules.push({
         type: 'min',
-        value: minVal.value,
+        value: minValidator.value,
         message:
-          minVal.message ||
+          minValidator.message ||
           interpolateTemplate(
             messages.selection_min,
             {},
-            { label, min: minVal.value },
+            { label, min: minValidator.value },
           ),
       });
     }
-    if (maxVal && typeof maxVal.value === 'number') {
+
+    if (maxValidator && typeof maxValidator.value === 'number') {
       rules.push({
         type: 'max',
-        value: maxVal.value,
+        value: maxValidator.value,
         message:
-          maxVal.message ||
+          maxValidator.message ||
           interpolateTemplate(
             messages.selection_max,
             {},
-            { label, max: maxVal.value },
+            { label, max: maxValidator.value },
           ),
       });
     }
