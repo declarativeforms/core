@@ -1,11 +1,23 @@
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useElapsedSeconds } from '@/hooks/use-elapsed-seconds';
 
 export function GenerationProgress(props: {
   startedAt: number;
   prompt: string;
 }) {
-  const elapsed = useElapsedSeconds(props.startedAt);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const elapsed = Math.max(0, Math.floor((now - props.startedAt) / 1000));
 
   return (
     <div className="flex flex-col gap-3">

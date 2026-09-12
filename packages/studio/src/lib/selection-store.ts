@@ -1,3 +1,5 @@
+import { DEFAULT_BRANCH } from '@/lib/preview-url';
+
 const SELECTION_KEY = 'declarativeforms.studio.selection';
 
 export type PersistedSelection = {
@@ -11,13 +13,13 @@ export function readPersistedSelection(): PersistedSelection {
     const raw = window.localStorage.getItem(SELECTION_KEY);
 
     if (!raw) {
-      return { branch: 'main', formId: null, organizationId: null };
+      return { branch: DEFAULT_BRANCH, formId: null, organizationId: null };
     }
 
     const parsed: unknown = JSON.parse(raw);
 
     if (!parsed || typeof parsed !== 'object') {
-      return { branch: 'main', formId: null, organizationId: null };
+      return { branch: DEFAULT_BRANCH, formId: null, organizationId: null };
     }
 
     const source = parsed as Record<string, unknown>;
@@ -26,7 +28,7 @@ export function readPersistedSelection(): PersistedSelection {
       branch:
         typeof source.branch === 'string' && source.branch
           ? source.branch
-          : 'main',
+          : DEFAULT_BRANCH,
       formId: typeof source.formId === 'string' ? source.formId : null,
       organizationId:
         typeof source.organizationId === 'string'
@@ -34,7 +36,7 @@ export function readPersistedSelection(): PersistedSelection {
           : null,
     };
   } catch {
-    return { branch: 'main', formId: null, organizationId: null };
+    return { branch: DEFAULT_BRANCH, formId: null, organizationId: null };
   }
 }
 
@@ -52,4 +54,19 @@ export function clearPersistedSelection(): void {
   } catch {
     return;
   }
+}
+
+export function restoreSelectionPath(): string | null {
+  const persisted = readPersistedSelection();
+
+  if (!persisted.formId) {
+    return null;
+  }
+
+  const search =
+    persisted.branch === DEFAULT_BRANCH
+      ? ''
+      : `?branch=${encodeURIComponent(persisted.branch)}`;
+
+  return `/forms/${encodeURIComponent(persisted.formId)}${search}`;
 }

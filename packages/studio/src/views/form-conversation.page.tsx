@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { ApiForm } from '@/lib/api.types';
+import { useMutation } from '@tanstack/react-query';
+import type { ApiBranchYaml, ApiForm, ApiMessage } from '@/lib/api.types';
 import {
   GenerationProgress,
   MessageList,
@@ -7,31 +8,40 @@ import {
   SchemaPanel,
 } from '@/components';
 import { ErrorState } from '@/components/feedback';
-import { useMessages } from '@/hooks/use-messages';
-import { useSendMessage } from '@/hooks/use-send-message';
+import { apiRequest } from '@/lib/api-client';
+import { generatePath } from '@/lib/api-paths';
 import { describeError } from '@/lib/error-messages';
 import { isExpiringSoon } from '@/lib/auth-store';
 import { isDraftBranch } from '@/lib/preview-url';
+
+const GENERATION_TIMEOUT_MS = 120_000;
 
 export function FormConversation(props: {
   organizationId: string;
   form: ApiForm;
   branch: string;
   isSchemaOpen: boolean;
+  messages: Array<ApiMessage>;
+  onRefresh: () => void;
+  yaml: ApiBranchYaml | null;
 }) {
   const [draft, setDraft] = useState('');
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const history = useMessages(
-    props.organizationId,
-    props.form.form_id,
-    props.branch,
-  );
-  const send = useSendMessage(
-    props.organizationId,
-    props.form.form_id,
-    props.branch,
-  );
+  const send = useMutation({
+    mutationFn: (prompt: string) =>
+      apiRequest<Array<ApiMessage>>({
+        body: {
+          branch: props.branch,
+          form_id: props.form.form_id,
+          prompt,
+        },
+        method: 'POST',
+        path: generatePath(props.organizationId),
+        timeoutMs: GENERATION_TIMEOUT_MS,
+      }),
+    onSuccess: props.onRefresh,
+  });
 
   const submit = (content: string): void => {
     if (!content.trim()) {
@@ -62,12 +72,7 @@ export function FormConversation(props: {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <MessageList
-        errorMessage={history.errorMessage}
-        isLoading={history.isLoading}
-        messages={history.messages}
-        onRetryLoad={history.retry}
-      >
+      <MessageList messages={props.messages}>
         {pendingPrompt !== null ? (
           <GenerationProgress
             prompt={pendingPrompt}
@@ -77,9 +82,8 @@ export function FormConversation(props: {
       </MessageList>
       <SchemaPanel
         branch={props.branch}
-        formId={props.form.form_id}
         isOpen={props.isSchemaOpen}
-        organizationId={props.organizationId}
+        yaml={props.yaml}
       />
       <div className="border-t border-border p-3">
         <div className="mx-auto flex max-w-4xl flex-col gap-2">

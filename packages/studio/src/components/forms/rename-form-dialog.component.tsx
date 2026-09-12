@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import type { ApiForm } from '@/lib/api.types';
 import {
   Button,
@@ -13,7 +14,8 @@ import {
   FieldLabel,
   Input,
 } from '@/components/ui';
-import { useRenameForm } from '@/hooks/use-form-mutations';
+import { apiRequest } from '@/lib/api-client';
+import { formPath } from '@/lib/api-paths';
 import { describeError } from '@/lib/error-messages';
 
 export function RenameFormDialog(props: {
@@ -21,9 +23,18 @@ export function RenameFormDialog(props: {
   form: ApiForm;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  onRefresh: () => void;
 }) {
   const [name, setName] = useState(props.form.name);
-  const rename = useRenameForm(props.organizationId, props.form.form_id);
+  const rename = useMutation({
+    mutationFn: (name: string) =>
+      apiRequest<unknown>({
+        body: { name },
+        method: 'PATCH',
+        path: formPath(props.organizationId, props.form.form_id),
+      }),
+    onSuccess: props.onRefresh,
+  });
   const trimmed = name.trim();
 
   const handleSave = (): void => {

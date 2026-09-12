@@ -8,8 +8,8 @@ If this file and the code disagree, the code is wrong. Fix the code, then keep
 this file accurate.
 
 Studio is the form management interface: React 19 on Vite 8, a client-rendered
-SPA. It holds 71 hand-written modules, one type-declaration file and 15
-generated shadcn primitives: five views, 14 hooks, 15 `lib/` modules and six
+SPA. It holds 48 hand-written modules, one type-declaration file and 15
+generated shadcn primitives: six views, two hooks, 14 `lib/` modules and six
 `components/` subtrees.
 
 Its standards are `packages/core`'s, because both are React and because the two
@@ -64,7 +64,7 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-70 hand-written modules, one declaration file, 15 generated primitives.
+48 hand-written modules, one declaration file, 15 generated primitives.
 
 | Path | Holds |
 | ---- | ----- |
@@ -73,8 +73,8 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 | `src/views/` | Page-level views, `*.page.tsx`. No barrel; a consumer imports the one view it renders |
 | `src/components/<subtree>/` | Hand-written components, one `index.ts` barrel each: `conversation/`, `feedback/`, `forms/`, `organization/`, `shell/` |
 | `src/components/ui/` | Generated shadcn primitives. See [Generated code](#generated-code) |
-| `src/hooks/` | Hooks shared across views and components, `use-*.ts`. No barrel, so `@/hooks/use-session` is the correct form |
-| `src/lib/` | Framework-agnostic helpers: the api client and paths, wire types, analytics and runtime config, the auth/selection/draft stores, query keys, error copy, preview URLs, time |
+| `src/hooks/` | Hooks shared across visual boundaries: session lifecycle and clipboard feedback. No barrel, so `@/hooks/use-session` is the correct form |
+| `src/lib/` | Framework-agnostic helpers: the api client and paths, wire types, analytics and runtime config, the auth/selection/draft stores, error copy, preview URLs, time |
 | `src/styles/globals.css` | Tailwind 4 entry and the shadcn design tokens |
 | `src/vite-env.d.ts` | The `vite/client` type reference. One line, no exports |
 | `public/` | Static files Vite copies to `dist/` verbatim and nginx serves at the site root: the favicon set, the apple-touch icon and `og-image.png`. Referenced from `index.html` by absolute path, never imported |
@@ -83,7 +83,10 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 **Dependency direction, one way only:**
 
 ```
-main  ->  app  ->  views  ->  components  ->  hooks  ->  lib
+main  ->  app  ->  views  ->  components
+                  |            |
+                  +--> hooks <-+
+                  +----> lib <-+
 ```
 
 - **`main.tsx` bootstraps, it does not implement.** It creates the root, wraps in
@@ -95,6 +98,10 @@ main  ->  app  ->  views  ->  components  ->  hooks  ->  lib
   imports a component, a view or `app.component.tsx`. A hook needed by exactly
   one component is colocated with that component instead, matching core's
   `fields/use-upload-blob.ts`.
+- **Views own their TanStack operations directly.** `Workspace` uses one query
+  for the active organization, form and branch. Components colocate mutations
+  with the dialog or visual region that presents their pending and error state,
+  then ask the owning view to refresh.
 - **`src/components/ui/` has an `index.ts` and is imported through it.** A
   primitive added by the shadcn CLI is added to that barrel, or it is unreachable
   by the rule in [Imports](#imports).
@@ -257,7 +264,7 @@ export because Next requires it. Vite requires it nowhere: `index.html` points a
 them.**
 
 **Hooks live in a `use-*.ts` file whose name matches the export**, so
-`use-form-draft.ts` exports `useFormDraft`. There are none yet.
+`use-session.ts` exports `useSession`.
 
 ## Destructuring
 
@@ -634,10 +641,11 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   prose stays escaped with `whitespace-pre-wrap`; validated HTTP(S) URLs render
   as links that open in a new tab with `noopener noreferrer`. User and legacy
   system messages remain plain text. Model and API text is untrusted.
-- **Conversation history is one branch-local query.** Studio loads the complete
-  ordered history with no cursor, polling, pending server record or idempotency
-  key. New branches start with empty history, and publishing changes only the
-  `main` definition; conversations are never copied or merged.
+- **Conversation history belongs to the workspace snapshot query.** Studio
+  loads the complete ordered history with no cursor, polling, pending server
+  record or idempotency key. New branches start with empty history, and
+  publishing changes only the `main` definition; conversations are never copied
+  or merged.
 - **Responsive layout is Tailwind breakpoints only.** There is no
   `useMediaQuery`, so both the desktop rail and the mobile `Sheet` render and CSS
   picks, and there is no first-paint jump.

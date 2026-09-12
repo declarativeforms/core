@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import type { ApiForm } from '@/lib/api.types';
 import {
   Button,
@@ -19,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui';
-import { useCreateBranch } from '@/hooks/use-form-mutations';
+import { apiRequest } from '@/lib/api-client';
+import { branchesPath } from '@/lib/api-paths';
 import { BRANCH_NAME_HINT, validateBranchName } from '@/lib/branch-name';
 import { describeError } from '@/lib/error-messages';
 
@@ -31,11 +33,20 @@ export function CreateBranchDialog(props: {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onCreated: (branch: string) => void;
+  onRefresh: () => void;
 }) {
   const [name, setName] = useState('');
   const [from, setFrom] = useState(props.branch);
   const [localError, setLocalError] = useState<string | null>(null);
-  const create = useCreateBranch(props.organizationId, props.form.form_id);
+  const create = useMutation({
+    mutationFn: (branch: { name: string; from: string }) =>
+      apiRequest<unknown>({
+        body: { from: branch.from, name: branch.name },
+        method: 'POST',
+        path: branchesPath(props.organizationId, props.form.form_id),
+      }),
+    onSuccess: props.onRefresh,
+  });
 
   const handleCreate = (): void => {
     const trimmed = name.trim();

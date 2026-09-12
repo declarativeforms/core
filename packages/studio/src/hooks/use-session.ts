@@ -19,7 +19,6 @@ import {
 import { clearDrafts } from '@/lib/draft-store';
 import { describeError } from '@/lib/error-messages';
 import { clearPersistedSelection } from '@/lib/selection-store';
-import { sessionQueryKey } from '@/lib/query-keys';
 
 export type SessionStatus =
   'authenticating' | 'loading' | 'signed-in' | 'signed-out';
@@ -68,7 +67,7 @@ export function useSession(): Session {
   const sessionQuery = useQuery({
     enabled: auth.accessToken !== null,
     queryFn: () => apiRequest<ApiSession>({ method: 'GET', path: 'auth/me' }),
-    queryKey: sessionQueryKey(),
+    queryKey: ['session'],
     retry: false,
     staleTime: Number.POSITIVE_INFINITY,
   });

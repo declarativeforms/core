@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import type { ApiForm } from '@/lib/api.types';
 import {
   AlertDialog,
@@ -10,7 +11,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui';
 import { ErrorState } from '@/components/feedback';
-import { usePublishBranch } from '@/hooks/use-form-mutations';
+import { apiRequest } from '@/lib/api-client';
+import { publishPath } from '@/lib/api-paths';
 import { describeError } from '@/lib/error-messages';
 import { DEFAULT_BRANCH } from '@/lib/preview-url';
 
@@ -21,8 +23,16 @@ export function PublishDialog(props: {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onPublished: () => void;
+  onRefresh: () => void;
 }) {
-  const publish = usePublishBranch(props.organizationId, props.form.form_id);
+  const publish = useMutation({
+    mutationFn: (branch: string) =>
+      apiRequest<unknown>({
+        method: 'POST',
+        path: publishPath(props.organizationId, props.form.form_id, branch),
+      }),
+    onSuccess: props.onRefresh,
+  });
 
   return (
     <AlertDialog onOpenChange={props.onOpenChange} open={props.isOpen}>

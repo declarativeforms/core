@@ -1,7 +1,7 @@
-import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import type { ApiForm, ApiOrganization } from '@/lib/api.types';
+import { useQuery } from '@tanstack/react-query';
+import { Menu } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import {
   AppSidebar,
   BrandMark,
@@ -10,6 +10,7 @@ import {
   DeleteBranchDialog,
   DeleteFormDialog,
   EmptyState,
+  ErrorState,
   FormHeader,
   OrganizationSettingsDialog,
   PublishDialog,
@@ -17,21 +18,94 @@ import {
   Sheet,
   SheetContent,
   SheetTitle,
+  SkeletonRows,
 } from '@/components';
-import { useBranches } from '@/hooks/use-branches';
-import { useForms } from '@/hooks/use-forms';
-import { useRole } from '@/hooks/use-role';
-import { useRuntimeConfig } from '@/hooks/use-runtime-config';
-import { useSelection } from '@/hooks/use-selection';
+import { apiPublicRequest, apiRequest } from '@/lib/api-client';
+import {
+  branchesPath,
+  branchYamlPath,
+  formsPath,
+  messagesPath,
+} from '@/lib/api-paths';
+import type {
+  ApiBranchYaml,
+  ApiForm,
+  ApiMessage,
+  ApiOrganization,
+  ApiRuntimeConfig,
+} from '@/lib/api.types';
 import { describeError } from '@/lib/error-messages';
 import { buildFormUrl, DEFAULT_BRANCH } from '@/lib/preview-url';
-import { readPersistedSelection } from '@/lib/selection-store';
+import {
+  readPersistedSelection,
+  writePersistedSelection,
+} from '@/lib/selection-store';
 import { FormConversation } from '@/views/form-conversation.page';
 import { NewForm } from '@/views/new-form.page';
+
+type WorkspaceSnapshot = {
+  branches: Array<string>;
+  formBaseUrl: string | null;
+  forms: Array<ApiForm>;
+  messages: Array<ApiMessage>;
+  yaml: ApiBranchYaml | null;
+};
+
+const EMPTY_BRANCHES: Array<string> = [];
+
+async function loadWorkspace(
+  organizationId: string,
+  formId: string | null,
+  branch: string,
+): Promise<WorkspaceSnapshot> {
+  const [forms, formBaseUrl] = await Promise.all([
+    apiRequest<Array<ApiForm>>({
+      method: 'GET',
+      path: formsPath(organizationId),
+    }),
+    apiPublicRequest<ApiRuntimeConfig>({ method: 'GET', path: 'config' })
+      .then((config) => config.form_base_url || null)
+      .catch(() => null),
+  ]);
+  const snapshot: WorkspaceSnapshot = {
+    branches: [],
+    formBaseUrl,
+    forms,
+    messages: [],
+    yaml: null,
+  };
+
+  if (!formId || !forms.some((form) => form.form_id === formId)) {
+    return snapshot;
+  }
+
+  snapshot.branches = await apiRequest<Array<string>>({
+    method: 'GET',
+    path: branchesPath(organizationId, formId),
+  });
+
+  if (!snapshot.branches.includes(branch)) {
+    return snapshot;
+  }
+
+  [snapshot.messages, snapshot.yaml] = await Promise.all([
+    apiRequest<Array<ApiMessage>>({
+      method: 'GET',
+      path: messagesPath(organizationId, formId, branch),
+    }),
+    apiRequest<ApiBranchYaml>({
+      method: 'GET',
+      path: branchYamlPath(organizationId, formId, branch),
+    }),
+  ]);
+
+  return snapshot;
+}
 
 export function Workspace(props: {
   organizations: Array<ApiOrganization>;
   email: string;
+  onRefreshSession: () => void;
   onSignOut: () => void;
 }) {
   const [preferredOrganizationId, setPreferredOrganizationId] = useState<
@@ -45,49 +119,64 @@ export function Workspace(props: {
   const [isBranchOpen, setIsBranchOpen] = useState(false);
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isDeleteBranchOpen, setIsDeleteBranchOpen] = useState(false);
-
   const navigate = useNavigate();
+  const params = useParams();
+  const [searchParams] = useSearchParams();
   const organization =
     props.organizations.find((entry) => entry.id === preferredOrganizationId) ??
     props.organizations[0] ??
     null;
   const organizationId = organization ? organization.id : null;
-  const selection = useSelection(organizationId);
-  const formsQuery = useForms(organizationId);
-  const formBaseUrl = useRuntimeConfig();
-  const role = useRole(organization, props.email);
-  const forms = formsQuery.data ?? [];
-  const form =
-    forms.find((entry) => entry.form_id === selection.formId) ?? null;
-  const formId = selection.formId;
-  const branch = selection.branch;
-  const branchesQuery = useBranches(organizationId, formId);
-  const branches = branchesQuery.data ?? [];
+  const formId = params.formId ?? null;
+  const branch = searchParams.get('branch') ?? DEFAULT_BRANCH;
+  const workspaceQuery = useQuery({
+    enabled: organization !== null,
+    queryFn: () =>
+      organization
+        ? loadWorkspace(organization.id, formId, branch)
+        : Promise.resolve(null),
+    queryKey: ['workspace', organizationId, formId, branch],
+    staleTime: 0,
+  });
+  const forms = workspaceQuery.data?.forms ?? [];
+  const form = forms.find((entry) => entry.form_id === formId) ?? null;
+  const branches = workspaceQuery.data?.branches ?? EMPTY_BRANCHES;
+  const role =
+    organization?.members.find((member) => member.email === props.email)
+      ?.role ?? null;
 
   useEffect(() => {
-    if (formId === null || !formsQuery.isSuccess || formsQuery.isFetching) {
+    writePersistedSelection({ branch, formId, organizationId });
+  }, [branch, formId, organizationId]);
+
+  useEffect(() => {
+    if (
+      formId === null ||
+      !workspaceQuery.isSuccess ||
+      workspaceQuery.isFetching
+    ) {
       return;
     }
 
-    if (formsQuery.data.some((entry) => entry.form_id === formId)) {
+    if (form) {
       return;
     }
 
     void navigate('/', { replace: true });
   }, [
+    form,
     formId,
-    formsQuery.data,
-    formsQuery.isFetching,
-    formsQuery.isSuccess,
     navigate,
+    workspaceQuery.isFetching,
+    workspaceQuery.isSuccess,
   ]);
 
   useEffect(() => {
-    if (!form || !branchesQuery.isSuccess || branchesQuery.isFetching) {
+    if (!form || !workspaceQuery.isSuccess || workspaceQuery.isFetching) {
       return;
     }
 
-    if (branchesQuery.data.includes(branch)) {
+    if (branches.includes(branch)) {
       return;
     }
 
@@ -96,12 +185,28 @@ export function Workspace(props: {
     });
   }, [
     branch,
-    branchesQuery.data,
-    branchesQuery.isFetching,
-    branchesQuery.isSuccess,
+    branches,
     form,
     navigate,
+    workspaceQuery.isFetching,
+    workspaceQuery.isSuccess,
   ]);
+
+  const selectForm = (nextFormId: string, nextBranch: string): void => {
+    const search =
+      nextBranch === DEFAULT_BRANCH
+        ? ''
+        : `?branch=${encodeURIComponent(nextBranch)}`;
+    void navigate(`/forms/${encodeURIComponent(nextFormId)}${search}`);
+  };
+
+  const clearForm = (): void => {
+    void navigate('/');
+  };
+
+  const refreshWorkspace = (): void => {
+    void workspaceQuery.refetch();
+  };
 
   if (!organization || organizationId === null) {
     return (
@@ -124,22 +229,28 @@ export function Workspace(props: {
     );
   }
 
+  if (workspaceQuery.isError && !workspaceQuery.data) {
+    return (
+      <main className="flex min-h-svh items-center justify-center p-6">
+        <ErrorState
+          message={describeError(workspaceQuery.error)}
+          onRetry={refreshWorkspace}
+        />
+      </main>
+    );
+  }
+
   const sidebar = (
     <AppSidebar
-      activeFormId={selection.formId}
+      activeFormId={formId}
       email={props.email}
-      errorMessage={
-        formsQuery.isError && forms.length === 0
-          ? describeError(formsQuery.error)
-          : null
-      }
       forms={forms}
       isAdmin={role === 'admin'}
-      isLoading={formsQuery.isPending}
-      isStale={formsQuery.isError && forms.length > 0}
+      isLoading={workspaceQuery.isPending}
+      isStale={workspaceQuery.isError && !!workspaceQuery.data}
       onDeleteForm={setDeleteTarget}
       onNewForm={() => {
-        selection.clearForm();
+        clearForm();
         setIsSidebarOpen(false);
       }}
       onOpenSettings={() => {
@@ -147,16 +258,19 @@ export function Workspace(props: {
         setIsSidebarOpen(false);
       }}
       onRenameForm={setRenameTarget}
-      onRetry={() => {
-        void formsQuery.refetch();
-      }}
-      onSelectForm={(formId: string) => {
-        selection.selectForm(formId, DEFAULT_BRANCH);
+      onRetry={refreshWorkspace}
+      onSelectForm={(nextFormId: string) => {
+        selectForm(nextFormId, DEFAULT_BRANCH);
         setIsSidebarOpen(false);
       }}
-      onSelectOrganization={(next: string) => {
-        setPreferredOrganizationId(next);
-        selection.selectOrganization(next);
+      onSelectOrganization={(nextOrganizationId: string) => {
+        setPreferredOrganizationId(nextOrganizationId);
+        writePersistedSelection({
+          branch: DEFAULT_BRANCH,
+          formId: null,
+          organizationId: nextOrganizationId,
+        });
+        clearForm();
         setIsSidebarOpen(false);
       }}
       onSignOut={props.onSignOut}
@@ -180,12 +294,16 @@ export function Workspace(props: {
         {form ? (
           <>
             <FormHeader
-              branch={selection.branch}
+              branch={branch}
               branches={branches}
               form={form}
               formUrl={
-                formBaseUrl
-                  ? buildFormUrl(formBaseUrl, form.form_id, selection.branch)
+                workspaceQuery.data?.formBaseUrl
+                  ? buildFormUrl(
+                      workspaceQuery.data.formBaseUrl,
+                      form.form_id,
+                      branch,
+                    )
                   : null
               }
               isAdmin={role === 'admin'}
@@ -208,18 +326,27 @@ export function Workspace(props: {
               onRename={() => {
                 setRenameTarget(form);
               }}
-              onSelectBranch={selection.selectBranch}
+              onSelectBranch={(nextBranch: string) => {
+                selectForm(form.form_id, nextBranch);
+              }}
               onToggleSchema={() => {
                 setIsSchemaOpen(!isSchemaOpen);
               }}
             />
             <FormConversation
-              branch={selection.branch}
+              branch={branch}
               form={form}
               isSchemaOpen={isSchemaOpen}
+              messages={workspaceQuery.data?.messages ?? []}
+              onRefresh={refreshWorkspace}
               organizationId={organizationId}
+              yaml={workspaceQuery.data?.yaml ?? null}
             />
           </>
+        ) : formId && workspaceQuery.isPending ? (
+          <div className="p-4">
+            <SkeletonRows count={5} />
+          </div>
         ) : (
           <>
             <div className="flex items-center gap-2 border-b border-border px-3 py-2 md:hidden">
@@ -236,7 +363,8 @@ export function Workspace(props: {
               <BrandMark showWordmark />
             </div>
             <NewForm
-              onCreated={selection.selectForm}
+              onCreated={selectForm}
+              onRefresh={refreshWorkspace}
               organizationId={organizationId}
             />
           </>
@@ -248,6 +376,7 @@ export function Workspace(props: {
           isAdmin={role === 'admin'}
           isOpen
           onOpenChange={setIsSettingsOpen}
+          onRefresh={props.onRefreshSession}
           organization={organization}
         />
       ) : null}
@@ -260,6 +389,7 @@ export function Workspace(props: {
               setRenameTarget(null);
             }
           }}
+          onRefresh={refreshWorkspace}
           organizationId={organizationId}
         />
       ) : null}
@@ -267,49 +397,53 @@ export function Workspace(props: {
         <DeleteFormDialog
           form={deleteTarget}
           isOpen
-          onDeleted={selection.clearForm}
+          onDeleted={clearForm}
           onOpenChange={(isOpen: boolean) => {
             if (!isOpen) {
               setDeleteTarget(null);
             }
           }}
+          onRefresh={refreshWorkspace}
           organizationId={organizationId}
         />
       ) : null}
       {form && isBranchOpen ? (
         <CreateBranchDialog
-          branch={selection.branch}
+          branch={branch}
           branches={branches}
           form={form}
           isOpen
-          onCreated={(branch: string) => {
-            selection.selectForm(form.form_id, branch);
+          onCreated={(nextBranch: string) => {
+            selectForm(form.form_id, nextBranch);
           }}
           onOpenChange={setIsBranchOpen}
+          onRefresh={refreshWorkspace}
           organizationId={organizationId}
         />
       ) : null}
       {form && isPublishOpen ? (
         <PublishDialog
-          branch={selection.branch}
+          branch={branch}
           form={form}
           isOpen
           onOpenChange={setIsPublishOpen}
           onPublished={() => {
-            selection.selectForm(form.form_id, DEFAULT_BRANCH);
+            selectForm(form.form_id, DEFAULT_BRANCH);
           }}
+          onRefresh={refreshWorkspace}
           organizationId={organizationId}
         />
       ) : null}
       {form && isDeleteBranchOpen ? (
         <DeleteBranchDialog
-          branch={selection.branch}
+          branch={branch}
           form={form}
           isOpen
           onDeleted={() => {
-            selection.selectForm(form.form_id, DEFAULT_BRANCH);
+            selectForm(form.form_id, DEFAULT_BRANCH);
           }}
           onOpenChange={setIsDeleteBranchOpen}
+          onRefresh={refreshWorkspace}
           organizationId={organizationId}
         />
       ) : null}

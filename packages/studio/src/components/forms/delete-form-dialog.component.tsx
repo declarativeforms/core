@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import type { ApiForm } from '@/lib/api.types';
 import {
   AlertDialog,
@@ -10,7 +11,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui';
 import { ErrorState } from '@/components/feedback';
-import { useDeleteForm } from '@/hooks/use-form-mutations';
+import { apiRequest } from '@/lib/api-client';
+import { formPath } from '@/lib/api-paths';
 import { describeError } from '@/lib/error-messages';
 
 export function DeleteFormDialog(props: {
@@ -19,8 +21,16 @@ export function DeleteFormDialog(props: {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onDeleted: () => void;
+  onRefresh: () => void;
 }) {
-  const remove = useDeleteForm(props.organizationId, props.form.form_id);
+  const remove = useMutation({
+    mutationFn: () =>
+      apiRequest<unknown>({
+        method: 'DELETE',
+        path: formPath(props.organizationId, props.form.form_id),
+      }),
+    onSuccess: props.onRefresh,
+  });
 
   return (
     <AlertDialog onOpenChange={props.onOpenChange} open={props.isOpen}>

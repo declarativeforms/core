@@ -1,9 +1,12 @@
 import {
+  Check,
   Code2,
   ExternalLink,
+  GitBranch,
   GitBranchPlus,
   Menu,
   MoreHorizontal,
+  Share2,
   Trash2,
   UploadCloud,
 } from 'lucide-react';
@@ -16,9 +19,14 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui';
-import { BranchSelector } from '@/components/shell/branch-selector.component';
-import { ShareAction } from '@/components/forms/share-action.component';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { isDraftBranch } from '@/lib/preview-url';
 
 export function FormHeader(props: {
@@ -37,6 +45,8 @@ export function FormHeader(props: {
   onToggleSchema: () => void;
   onOpenSidebar: () => void;
 }) {
+  const clipboard = useCopyToClipboard();
+
   const handlePreview = (): void => {
     if (!props.formUrl) {
       return;
@@ -68,11 +78,25 @@ export function FormHeader(props: {
         Revision {props.form.revision}
       </span>
       <div className="ml-auto flex items-center gap-2">
-        <BranchSelector
-          branch={props.branch}
-          branches={props.branches}
-          onSelect={props.onSelectBranch}
-        />
+        <Select onValueChange={props.onSelectBranch} value={props.branch}>
+          <SelectTrigger
+            aria-label="Branch"
+            className="w-[11rem] shrink-0"
+            size="sm"
+          >
+            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+              <GitBranch className="size-4 shrink-0 opacity-70" />
+              <SelectValue className="truncate" />
+            </span>
+          </SelectTrigger>
+          <SelectContent align="start" position="popper">
+            {props.branches.map((branch) => (
+              <SelectItem key={branch} value={branch}>
+                {branch}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {isDraftBranch(props.branch) ? (
           <Badge variant="secondary">Draft branch</Badge>
         ) : null}
@@ -96,7 +120,38 @@ export function FormHeader(props: {
             <ExternalLink />
             Preview
           </Button>
-          <ShareAction branch={props.branch} formUrl={props.formUrl} />
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              disabled={props.formUrl === null}
+              onClick={() => {
+                if (props.formUrl) {
+                  clipboard.copy(props.formUrl);
+                }
+              }}
+              size="sm"
+              variant="outline"
+            >
+              {clipboard.isCopied ? <Check /> : <Share2 />}
+              {clipboard.isCopied ? 'Link copied' : 'Share'}
+            </Button>
+            <span aria-live="polite" className="sr-only">
+              {clipboard.isCopied
+                ? isDraftBranch(props.branch)
+                  ? `Draft branch link copied. It points at the ${props.branch} branch, not main.`
+                  : 'Link copied. Anyone with this link can fill in the form.'
+                : ''}
+            </span>
+            {clipboard.hasFailed && props.formUrl ? (
+              <Input
+                className="w-72"
+                onFocus={(event) => {
+                  event.currentTarget.select();
+                }}
+                readOnly
+                value={props.formUrl}
+              />
+            ) : null}
+          </div>
           <Button
             onClick={props.onToggleSchema}
             size="sm"

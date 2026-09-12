@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +10,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui';
 import { ErrorState } from '@/components/feedback';
-import { useRemoveMember } from '@/hooks/use-member-mutations';
+import { apiRequest } from '@/lib/api-client';
+import { memberPath } from '@/lib/api-paths';
 import { describeError } from '@/lib/error-messages';
 
 export function RemoveMemberDialog(props: {
@@ -18,8 +20,16 @@ export function RemoveMemberDialog(props: {
   email: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  onRefresh: () => void;
 }) {
-  const remove = useRemoveMember(props.organizationId);
+  const remove = useMutation({
+    mutationFn: (email: string) =>
+      apiRequest<unknown>({
+        method: 'DELETE',
+        path: memberPath(props.organizationId, email),
+      }),
+    onSuccess: props.onRefresh,
+  });
 
   return (
     <AlertDialog onOpenChange={props.onOpenChange} open={props.isOpen}>

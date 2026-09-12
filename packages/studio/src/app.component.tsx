@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router';
 import { watchAuthStorage } from '@/lib/auth-store';
 import {
@@ -7,7 +7,7 @@ import {
   syncWebAnalyticsIdentity,
 } from '@/lib/web-analytics';
 import { useSession } from '@/hooks/use-session';
-import { restoreSelectionPath } from '@/hooks/use-selection';
+import { restoreSelectionPath } from '@/lib/selection-store';
 import { Authenticating } from '@/views/authenticating.page';
 import { Demo } from '@/views/demo.page';
 import { SignedOut } from '@/views/signed-out.page';
@@ -20,14 +20,6 @@ function buildQueryClient(): QueryClient {
       queries: { gcTime: 300_000, retry: 1, staleTime: 30_000 },
     },
   });
-}
-
-function WebAnalytics() {
-  useEffect(() => {
-    initializeWebAnalytics();
-  }, []);
-
-  return null;
 }
 
 function SessionGate() {
@@ -82,38 +74,20 @@ function SessionGate() {
     );
   }
 
+  const workspace = (
+    <Workspace
+      email={session.email ?? ''}
+      onRefreshSession={session.retry}
+      onSignOut={session.signOut}
+      organizations={session.organizations}
+    />
+  );
+
   return (
     <Routes>
-      <Route
-        element={
-          <Workspace
-            email={session.email ?? ''}
-            onSignOut={session.signOut}
-            organizations={session.organizations}
-          />
-        }
-        path="/"
-      />
-      <Route
-        element={
-          <Workspace
-            email={session.email ?? ''}
-            onSignOut={session.signOut}
-            organizations={session.organizations}
-          />
-        }
-        path="/forms/:formId"
-      />
-      <Route
-        element={
-          <Workspace
-            email={session.email ?? ''}
-            onSignOut={session.signOut}
-            organizations={session.organizations}
-          />
-        }
-        path="*"
-      />
+      <Route element={workspace} path="/" />
+      <Route element={workspace} path="/forms/:formId" />
+      <Route element={workspace} path="*" />
     </Routes>
   );
 }
@@ -123,11 +97,11 @@ export function App() {
 
   useEffect(() => {
     watchAuthStorage();
+    initializeWebAnalytics();
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <WebAnalytics />
       <BrowserRouter>
         <Routes>
           <Route element={<Demo />} path="/demo" />

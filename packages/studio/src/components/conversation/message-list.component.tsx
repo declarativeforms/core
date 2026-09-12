@@ -1,11 +1,40 @@
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import type { ApiMessage } from '@/lib/api.types';
-import { EmptyState, ErrorState, SkeletonRows } from '@/components/feedback';
-import { MessageItem } from '@/components/conversation/message-item.component';
-import { minutesBetween } from '@/lib/time';
+import { EmptyState } from '@/components/feedback';
+import { formatAbsolute, formatMessageTime, minutesBetween } from '@/lib/time';
 
 const TIMESTAMP_GAP_MINUTES = 5;
 const STICK_THRESHOLD_PX = 80;
+
+function renderAssistantMessage(content: string): ReactNode {
+  return content.split(/(https?:\/\/[^\s<>"'`]+)/gi).map((part, index) => {
+    if (!/^https?:\/\//i.test(part)) {
+      return part;
+    }
+
+    const href = part.replace(/[.,!?;:)\]}]+$/, '');
+
+    try {
+      new URL(href);
+    } catch {
+      return part;
+    }
+
+    return (
+      <Fragment key={index}>
+        <a
+          className="underline underline-offset-2 hover:text-muted-foreground"
+          href={href}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {href}
+        </a>
+        {part.slice(href.length)}
+      </Fragment>
+    );
+  });
+}
 
 function shouldShowTimestamp(
   messages: Array<ApiMessage>,
@@ -30,10 +59,7 @@ function shouldShowTimestamp(
 
 export function MessageList(props: {
   messages: Array<ApiMessage>;
-  isLoading: boolean;
-  errorMessage: string | null;
-  onRetryLoad: () => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const count = props.messages.length;
@@ -54,22 +80,6 @@ export function MessageList(props: {
     node.scrollTop = node.scrollHeight;
   }, [count, props.children]);
 
-  if (props.isLoading) {
-    return (
-      <div className="flex-1 overflow-y-auto p-4">
-        <SkeletonRows count={4} />
-      </div>
-    );
-  }
-
-  if (props.errorMessage) {
-    return (
-      <div className="flex-1 overflow-y-auto p-4">
-        <ErrorState message={props.errorMessage} onRetry={props.onRetryLoad} />
-      </div>
-    );
-  }
-
   return (
     <div className="flex-1 overflow-y-auto" ref={scrollRef}>
       <div className="mx-auto flex max-w-4xl flex-col gap-3 p-4">
@@ -79,13 +89,52 @@ export function MessageList(props: {
             title="No messages on this branch yet"
           />
         ) : null}
-        {props.messages.map((message, index) => (
-          <MessageItem
-            key={message.id}
-            message={message}
-            showTimestamp={shouldShowTimestamp(props.messages, index)}
-          />
-        ))}
+        {props.messages.map((message, index) => {
+          if (message.role === 'system') {
+            return (
+              <div
+                className="flex flex-col items-center gap-1 py-2"
+                key={message.id}
+              >
+                <p
+                  className="text-xs text-muted-foreground"
+                  title={formatAbsolute(message.created_at)}
+                >
+                  {message.content}
+                </p>
+              </div>
+            );
+          }
+
+          const isUser = message.role === 'user';
+
+          return (
+            <div
+              className={`flex flex-col gap-1 ${isUser ? 'items-end' : 'items-start'}`}
+              key={message.id}
+            >
+              {shouldShowTimestamp(props.messages, index) ? (
+                <span
+                  className="px-1 text-[0.6875rem] text-muted-foreground"
+                  title={formatAbsolute(message.created_at)}
+                >
+                  {formatMessageTime(message.created_at)}
+                </span>
+              ) : null}
+              <div
+                className={`max-w-[46rem] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+                  isUser
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-foreground'
+                }`}
+              >
+                {isUser
+                  ? message.content
+                  : renderAssistantMessage(message.content)}
+              </div>
+            </div>
+          );
+        })}
         {props.children}
       </div>
     </div>

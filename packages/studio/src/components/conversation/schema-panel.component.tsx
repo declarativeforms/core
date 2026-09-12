@@ -1,22 +1,13 @@
 import { Check, Copy } from 'lucide-react';
 import { Button, Collapsible, CollapsibleContent } from '@/components/ui';
-import { ErrorState, SkeletonRows } from '@/components/feedback';
-import { useBranchYaml } from '@/hooks/use-branch-yaml';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { describeError } from '@/lib/error-messages';
+import type { ApiBranchYaml } from '@/lib/api.types';
 
 export function SchemaPanel(props: {
-  organizationId: string;
-  formId: string;
   branch: string;
   isOpen: boolean;
+  yaml: ApiBranchYaml | null;
 }) {
-  const yamlQuery = useBranchYaml(
-    props.organizationId,
-    props.formId,
-    props.branch,
-    props.isOpen,
-  );
   const clipboard = useCopyToClipboard();
 
   return (
@@ -25,14 +16,13 @@ export function SchemaPanel(props: {
         <div className="flex items-center justify-between gap-2 px-4 pt-3">
           <p className="text-xs font-medium text-muted-foreground">
             YAML on {props.branch}
-            {yamlQuery.data ? ` · Revision ${yamlQuery.data.revision}` : ''} ·
-            read-only
+            {props.yaml ? ` · Revision ${props.yaml.revision}` : ''} · read-only
           </p>
           <Button
-            disabled={!yamlQuery.data}
+            disabled={!props.yaml}
             onClick={() => {
-              if (yamlQuery.data) {
-                clipboard.copy(yamlQuery.data.yaml);
+              if (props.yaml) {
+                clipboard.copy(props.yaml.yaml);
               }
             }}
             size="sm"
@@ -57,18 +47,9 @@ export function SchemaPanel(props: {
           .
         </p>
         <div className="max-h-72 overflow-auto px-4 py-3">
-          {yamlQuery.isPending ? <SkeletonRows count={5} /> : null}
-          {yamlQuery.isError ? (
-            <ErrorState
-              message={describeError(yamlQuery.error)}
-              onRetry={() => {
-                void yamlQuery.refetch();
-              }}
-            />
-          ) : null}
-          {yamlQuery.data ? (
+          {props.yaml ? (
             <pre className="overflow-x-auto font-mono text-xs whitespace-pre text-foreground">
-              {yamlQuery.data.yaml}
+              {props.yaml.yaml}
             </pre>
           ) : null}
         </div>
