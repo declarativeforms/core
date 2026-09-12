@@ -42,9 +42,8 @@ does not generate a competing file of this name.
 
 Break any of these and the change is wrong, regardless of whether it compiles.
 
-1. **No comments in `src`.** The package has three, and all three are compiler
-   or bundler directives.
-2. **No test files.** This package ships without tests.
+1. **No comments in `src`.** The package has one compiler directive.
+2. **No test files under `src`.** Package-level checks use Node's test runner.
 3. **No object destructuring.** Not in a signature, not in a body. Array and
    tuple destructuring is fine.
 4. **`Array<T>`, never `T[]`.**
@@ -58,11 +57,11 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-88 hand-written modules, plus 16 generated ones under `src/components/ui`.
+84 hand-written modules, plus 16 generated ones under `src/components/ui`.
 
 | Path | Holds |
 | ---- | ----- |
-| `app/` | App Router routing, metadata and the request-time shell. Routing only |
+| `app/` | App Router routing, metadata and route-local integrations |
 | `views/` | Page-level composition, framework-agnostic |
 | `components/declarative-form/` | The form renderer, split into `core`, `fields`, `supporting`, `scaffolding` |
 | `components/ui/` | Generated shadcn primitives. See [Generated code](#generated-code) |
@@ -75,8 +74,8 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 app  ->  views  ->  components  ->  lib, i18n
 ```
 
-- **`app/` composes, it does not implement.** A route file resolves params,
-  awaits data and renders a view. `app/[slug]/page.tsx` is the model.
+- **`app/` owns framework entrypoints and route-local integrations.** Shared
+  page composition stays in `views/`; single-route logic stays with its route.
 - **Nothing imports upward.** A component never imports from `views/` or `app/`.
 - **`components/declarative-form/fields/*` depend on `supporting/`, never on each
   other.** The shared contract is `supporting/field.types.ts`, reached through
@@ -118,22 +117,16 @@ import { Button } from '@/components/ui/button';       // wrong
 
 ## Comments
 
-**Write no comments in `src`.** The package contains exactly three, and all
-three are directives that the compiler or the bundler reads:
+**Write no comments in `src`.** The package contains exactly one compiler
+directive:
 
 ```ts
 // components/declarative-form/fields/address/google-places.ts:1
 /// <reference types="google.maps" />
-
-// lib/form-schema.ts, twice
-path.resolve(/*turbopackIgnore: true*/ packageDirectory, AGENT_INSTRUCTIONS)
 ```
 
-**Those three must survive any cleanup.** A regex for `^\s*//` matches the
-triple-slash reference, and a regex for `^\s*/\*` matches the line the
-`turbopackIgnore` directives sit on, which also carries a function argument.
-Deleting either breaks the build: `turbopackIgnore` is what stops Turbopack
-tracing the whole repository into the standalone output.
+**That directive must survive any cleanup.** It supplies the Google Maps types
+for the browser SDK wrapper.
 
 If you feel the need to explain something, change the code instead: rename the
 variable, extract a named helper, or introduce a named constant.
@@ -156,14 +149,9 @@ because a config file is read by a person deciding whether to change a setting.
 
 ## Tests
 
-**This package has no tests, and you should not add any.** Do not create
-`*.test.ts`/`*.test.tsx` files, do not add a test framework, do not add
-fixtures.
-
-Core has never had a test script or a jest config. `packages/api/jest.config.cjs`
-is rooted at `packages/api` and cannot pick anything here up. Verification is
-`typecheck`, `lint`, `format` and the build. See
-[Before you hand work back](#before-you-hand-work-back).
+**Keep tests at the package root and use the built-in Node test runner.** Do not
+put tests under `src`, add a test framework, or add fixtures. Existing checks
+cover analytics lifecycle behavior and Google Places failure propagation.
 
 ## Module style
 
@@ -590,7 +578,7 @@ make the first render disagree and throw away the tree.
 
 ## Errors
 
-**Throw a plain `Error`.** There are six sites and no custom error classes.
+**Throw a plain `Error`.** There are ten sites and no custom error classes.
 Sentence case, no trailing period, a colon before an interpolated value:
 
 ```ts
@@ -599,9 +587,10 @@ throw new Error('useI18n must be used within I18nProvider');
 ```
 
 **`console.error` and `console.warn` are permitted inside a `catch` that
-recovers**, matching api. All ten sites qualify, in `google-places.ts`,
-`address-field.component.tsx` and `lib/analytics.ts`. Do not add a logging
-library, and do not log outside a `catch`.
+recovers**, matching api. All nine sites qualify, in `google-places.ts`,
+`address-field.component.tsx`, `app/web-analytics.client.tsx` and
+`lib/analytics.ts`. Do not add a logging library, and do not log outside a
+`catch`.
 
 **A caught error is rethrown unchanged when the caller must see it.**
 `views/form-route.tsx` resets its completion ref and rethrows.
@@ -637,26 +626,19 @@ plugin only for `js,jsx,mjs,ts,tsx,mts,cts`, so an unscoped object referencing a
 `react-hooks` rule is a hard config error the moment a `.cjs` file exists in the
 package. It does now: `prettier.config.cjs`.
 
-**Six ESLint warnings are expected and are not yours to fix** unless you are
+**Seven ESLint warnings are expected and are not yours to fix** unless you are
 changing that code anyway. See [Known inconsistencies](#known-inconsistencies).
-
-**`npm run lint` currently crashes before it reports anything.** It dies with
-`TypeError: Error while loading rule 'react/display-name'` from
-`eslint-plugin-react`, which is not compatible with the eslint 10 that
-`eslint-config-next` pulls in. This predates the landing page and is not caused
-by your change. Until it is fixed, the warning counts below cannot be confirmed
-by running the linter.
 
 ## Known inconsistencies
 
 Recorded so you neither copy them nor "fix" them as a drive-by.
 
-- **Six standing ESLint warnings, zero errors.** A custom font in
+- **Seven standing ESLint warnings, zero errors.** A custom font in
   `app/layout.tsx`, three `<img>` elements: two in the camera and signature
   fields, and one in the brand mark in `views/landing.page.tsx`. Plus an
   unsupported `aria-required` on a `role="group"` in the multiple-select field,
-  and one `set-state-in-effect` in the address autocomplete effect. The last is
-  downgraded to `warn` on purpose, with the reason recorded in
+  and two `set-state-in-effect` warnings in the address autocomplete and
+  Turnstile effects. They are downgraded to `warn` on purpose in
   `eslint.config.mjs`: reworking it would change autocomplete behaviour.
 - **`components/ui` is linted and typechecked like hand-written code**, because
   nothing excludes it. Its 68 unannotated functions are therefore visible to any
@@ -671,10 +653,6 @@ Recorded so you neither copy them nor "fix" them as a drive-by.
   a restart is always enough.
 - **`supporting/html-text.tsx` is the only file with a rest element.** See
   [Destructuring](#destructuring).
-- **`lib/form-schema.ts` reads two files from the repository examples
-  directory** (`examples/contact.yaml`, `examples/kitchen-sink.yaml`) during the
-  build. The Dockerfile must copy them in before `next build`, and the
-  `turbopackIgnore` directives must stay.
 - **`views/index.ts` is imported by nothing.** Route files pull the one view they
   render, which is the right call for per-route bundling. The barrel is harmless
   but currently dead.
@@ -691,16 +669,15 @@ Run these, in this order:
 
 ```bash
 npm run format -w @declarativeforms/core     # must list nothing on a second run
+npm run test -w @declarativeforms/core       # node:test checks must pass clean
 npm run typecheck -w @declarativeforms/core  # tsc --noEmit, must pass clean
 npm run lint -w @declarativeforms/core       # eslint, 0 errors
 npm run build -w @declarativeforms/core      # the only thing that runs the assertions
 ```
 
 **The build is not optional.** It prerenders `/schema.json`, which runs
-`assertJsonSchemaCoverage()` from the engine, `assertFieldTypesDocumented()`
-against `public/AGENTS.md`, and `assertExampleFormsValid()` against
-`examples/contact.yaml` and `examples/kitchen-sink.yaml`. A type change in the
-engine, or a new field type, fails here rather than in the engine's own build.
+`assertJsonSchemaCoverage()` from the engine. A type change in the engine, or a
+new field type, fails here rather than in the engine's own build.
 
 If you changed anything the other packages consume, also run `npx tsc -b` from
 the repository root.
@@ -719,8 +696,8 @@ grep -rn "from '\.\./" $C
 
 Expected results, and nothing else:
 
-- **Comments: 3.** The `/// <reference>` and the two `/*turbopackIgnore*/` lines.
-- **`[]`: 3.** All three are empty-array literals in `google-places.ts`, not
+- **Comments: 1.** The `/// <reference>` directive.
+- **`[]`: 2.** Both are empty-array literals in `google-places.ts`, not
   types.
 - **Destructuring: 1.** The rest element in `supporting/html-text.tsx`. **Pipe
   through `grep -v components/ui`**, or the 68 destructured parameters in the

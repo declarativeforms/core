@@ -16,8 +16,6 @@ RUN npm ci \
 COPY packages/engine ./packages/engine
 COPY packages/core ./packages/core
 
-COPY examples/contact.yaml examples/kitchen-sink.yaml ./examples/
-
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build --workspace=@declarativeforms/engine \

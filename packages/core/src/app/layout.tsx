@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import type { ReactNode } from 'react';
-import { buildMetadataBase, SITE_NAME } from '@/lib/form-metadata';
+import { SITE_NAME } from '@/lib/form-metadata';
 import { resolveRequestLocale } from '@/i18n/server';
 import { GoogleMapsLoader } from './google-maps-loader.client';
 import { Providers } from './providers';
@@ -14,8 +15,19 @@ const SITE_DESCRIPTION =
   'Forms that live in your Git repo. Write a form as a YAML file, commit it, and it renders as a live, hosted form.';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const host =
+    requestHeaders.get('x-forwarded-host') ??
+    requestHeaders.get('host') ??
+    'localhost';
+  const protocol =
+    requestHeaders.get('x-forwarded-proto') ??
+    (host.startsWith('localhost') || host.startsWith('127.0.0.1')
+      ? 'http'
+      : 'https');
+
   return {
-    metadataBase: await buildMetadataBase(),
+    metadataBase: new URL(`${protocol}://${host}`),
     title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
     description: SITE_DESCRIPTION,
     icons: { icon: '/favicon-32x32.png' },

@@ -11,7 +11,7 @@ import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
 import { useI18n, useSyncLangParam } from '@/i18n';
 import { createAnalytics, type Analytics } from '@/lib/analytics';
 import { buildApiUrl } from '@/lib/api';
-import { replacePath, replaceSearchParams } from '@/lib/url-state';
+import { replaceSearchParams } from '@/lib/url-state';
 import { BasePage } from './base.page';
 
 const RESERVED_QUERY_KEYS = new Set([
@@ -104,7 +104,9 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     hasRewrittenSlugRef.current = true;
 
     const nextSearch = new URLSearchParams(searchParams).toString();
-    replacePath(
+    window.history.replaceState(
+      null,
+      '',
       nextSearch
         ? `/${formQuery.data.id}?${nextSearch}`
         : `/${formQuery.data.id}`,

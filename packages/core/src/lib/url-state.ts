@@ -9,7 +9,3 @@ export function replaceSearchParams(searchParams: URLSearchParams): void {
     query ? `${window.location.pathname}?${query}` : window.location.pathname,
   );
 }
-
-export function replacePath(pathWithQuery: string): void {
-  window.history.replaceState(null, '', pathWithQuery);
-}

@@ -1,6 +1,5 @@
 import 'server-only';
 import { cache } from 'react';
-import { headers } from 'next/headers';
 import type { Metadata } from 'next';
 import {
   interpolateTemplate,
@@ -24,26 +23,13 @@ export type FormRouteTarget =
   | { owner: string; repository: string; path: string; branch?: string };
 
 function buildFormUrl(target: FormRouteTarget): string {
-  if ('id' in target) {
-    const idUrl = new URL(
-      `/api/v1/forms/${encodeURIComponent(target.id)}`,
-      getApiOrigin(),
-    );
-
-    if (target.branch) {
-      idUrl.searchParams.set('branch', target.branch);
-    }
-
-    return idUrl.toString();
-  }
-
-  const path = target.path.split('/').map(encodeURIComponent).join('/');
-  const url = new URL(
-    `/api/v1/forms/${encodeURIComponent(target.owner)}/${encodeURIComponent(
-      target.repository,
-    )}/${path}`,
-    getApiOrigin(),
-  );
+  const formPath =
+    'id' in target
+      ? encodeURIComponent(target.id)
+      : `${encodeURIComponent(target.owner)}/${encodeURIComponent(
+          target.repository,
+        )}/${target.path.split('/').map(encodeURIComponent).join('/')}`;
+  const url = new URL(`/api/v1/forms/${formPath}`, getApiOrigin());
 
   if (target.branch) {
     url.searchParams.set('branch', target.branch);
@@ -117,23 +103,6 @@ export async function resolveFormLocale(
   lang?: string,
 ): Promise<string> {
   return lang || form?.locale || (await resolveRequestLocale());
-}
-
-export async function buildMetadataBase(): Promise<URL> {
-  const requestHeaders = await headers();
-
-  const host =
-    requestHeaders.get('x-forwarded-host') ??
-    requestHeaders.get('host') ??
-    'localhost';
-
-  const protocol =
-    requestHeaders.get('x-forwarded-proto') ??
-    (host.startsWith('localhost') || host.startsWith('127.0.0.1')
-      ? 'http'
-      : 'https');
-
-  return new URL(`${protocol}://${host}`);
 }
 
 export async function buildFormMetadata(

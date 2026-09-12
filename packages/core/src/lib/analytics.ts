@@ -15,11 +15,6 @@ type AnalyticsProvider = {
   shutdown: () => void;
 };
 
-type QueuedEvent = {
-  event: string;
-  properties: AnalyticsProperties;
-};
-
 type AnalyticsEventProperties = {
   page_view: {
     form_id?: string;
@@ -123,125 +118,65 @@ async function createPostHogProvider(
   };
 }
 
-async function initializeProvider(
-  providerName: string,
-  createProvider: () => Promise<AnalyticsProvider | null>,
-): Promise<AnalyticsProvider | null> {
-  try {
-    return await createProvider();
-  } catch (error) {
-    console.warn(`Unable to initialize ${providerName} analytics.`, error);
-
-    return null;
-  }
-}
-
-function createDeferredProvider(
-  providerName: string,
-  createProvider: () => Promise<AnalyticsProvider | null>,
-): AnalyticsProvider {
-  let provider: AnalyticsProvider | null = null;
-  let isShutDown = false;
-  const queuedEvents: Array<QueuedEvent> = [];
-
-  void initializeProvider(providerName, createProvider).then(
-    (initializedProvider) => {
-      if (!initializedProvider) {
-        queuedEvents.length = 0;
-
-        return;
-      }
-
-      for (const queuedEvent of queuedEvents) {
-        try {
-          initializedProvider.capture(
-            queuedEvent.event,
-            queuedEvent.properties,
-          );
-        } catch (error) {
-          console.warn(
-            `Unable to capture ${providerName} analytics event "${queuedEvent.event}".`,
-            error,
-          );
-        }
-      }
-      queuedEvents.length = 0;
-
-      if (isShutDown) {
-        try {
-          initializedProvider.shutdown();
-        } catch (error) {
-          console.warn(`Unable to shut down ${providerName} analytics.`, error);
-        }
-
-        return;
-      }
-
-      provider = initializedProvider;
-    },
-  );
-
-  return {
-    capture: (event, properties) => {
-      if (isShutDown) {
-        return;
-      }
-
-      if (!provider) {
-        queuedEvents.push({ event, properties });
-
-        return;
-      }
-
-      provider.capture(event, properties);
-    },
-    shutdown: () => {
-      isShutDown = true;
-      provider?.shutdown();
-    },
-  };
-}
-
 export function createAnalytics(
   measurements?: IDeclarativeFormMeasurements,
 ): Analytics {
-  const providers: Array<AnalyticsProvider> = [];
+  const providers: Array<Promise<AnalyticsProvider | null>> = [];
+  let isShutDown = false;
 
   if (measurements?.mixpanel) {
-    const configuration = measurements.mixpanel;
     providers.push(
-      createDeferredProvider('Mixpanel', () =>
-        createMixpanelProvider(configuration),
-      ),
+      createMixpanelProvider(measurements.mixpanel).catch((error) => {
+        console.warn('Unable to initialize Mixpanel analytics.', error);
+
+        return null;
+      }),
     );
   }
 
   if (measurements?.posthog) {
-    const configuration = measurements.posthog;
     providers.push(
-      createDeferredProvider('PostHog', () =>
-        createPostHogProvider(configuration),
-      ),
+      createPostHogProvider(measurements.posthog).catch((error) => {
+        console.warn('Unable to initialize PostHog analytics.', error);
+
+        return null;
+      }),
     );
   }
 
   return {
     capture: (event, properties) => {
+      if (isShutDown) {
+        return;
+      }
+
       for (const provider of providers) {
-        try {
-          provider.capture(event, properties);
-        } catch (error) {
-          console.warn(`Unable to capture analytics event "${event}".`, error);
-        }
+        void provider.then((initializedProvider) => {
+          try {
+            initializedProvider?.capture(event, properties);
+          } catch (error) {
+            console.warn(
+              `Unable to capture analytics event "${event}".`,
+              error,
+            );
+          }
+        });
       }
     },
     shutdown: () => {
+      if (isShutDown) {
+        return;
+      }
+
+      isShutDown = true;
       for (const provider of providers) {
-        try {
-          provider.shutdown();
-        } catch (error) {
-          console.warn('Unable to shut down an analytics provider.', error);
-        }
+        void provider.then((initializedProvider) => {
+          try {
+            initializedProvider?.shutdown();
+          } catch (error) {
+            console.warn('Unable to shut down an analytics provider.', error);
+          }
+        });
       }
     },
   };

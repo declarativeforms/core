@@ -22,7 +22,5 @@ export async function uploadFile(
     throw new Error(`Upload failed: ${response.status}`);
   }
 
-  const uploadResponse = await response.json();
-
-  return uploadResponse as IUploadedFile;
+  return (await response.json()) as IUploadedFile;
 }

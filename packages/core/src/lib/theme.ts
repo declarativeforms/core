@@ -3,25 +3,21 @@ type ThemeOverrides = {
 };
 
 function toRgb(hex: string): { r: number; g: number; b: number } | null {
-  const cleaned = hex.replace('#', '');
+  const cleaned = hex.replace(/^#/, '');
 
-  if (cleaned.length === 3) {
-    return {
-      r: parseInt(cleaned[0] + cleaned[0], 16),
-      g: parseInt(cleaned[1] + cleaned[1], 16),
-      b: parseInt(cleaned[2] + cleaned[2], 16),
-    };
+  if (!/^(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(cleaned)) {
+    return null;
   }
 
-  if (cleaned.length === 6) {
-    return {
-      r: parseInt(cleaned.slice(0, 2), 16),
-      g: parseInt(cleaned.slice(2, 4), 16),
-      b: parseInt(cleaned.slice(4, 6), 16),
-    };
-  }
+  const normalized =
+    cleaned.length === 3 ? cleaned.replace(/./g, '$&$&') : cleaned;
+  const value = Number.parseInt(normalized, 16);
 
-  return null;
+  return {
+    r: value >> 16,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  };
 }
 
 function calculateRelativeLuminance(
