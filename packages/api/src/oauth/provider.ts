@@ -97,15 +97,13 @@ async function forwardProviderRequest(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const originalUrl = request.raw.url;
-  request.raw.url = providerPath;
-  reply.hijack();
+  const providerRequest = Object.assign(Object.create(request.raw), {
+    originalUrl: `${OAUTH_PREFIX}${providerPath}`,
+    url: providerPath,
+  }) as typeof request.raw;
 
-  try {
-    await callback(request.raw, reply.raw);
-  } finally {
-    request.raw.url = originalUrl;
-  }
+  reply.hijack();
+  await callback(providerRequest, reply.raw);
 }
 
 function escapeHtml(value: string): string {
