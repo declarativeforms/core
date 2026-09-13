@@ -12,8 +12,9 @@ depend on it and neither is allowed to depend on the other, so a change here
 reaches every surface. It is also the strictest package in the repo: no classes,
 no `any`, no comments, no tests, no I/O.
 
-This is an internal engineering document. Form-authoring documentation lives at
-`/docs`, with the detailed format reference in the root `SCHEMA.md`.
+This is an internal engineering document. Get Started lives in the root
+`README.md`; `SCHEMA.md` is the human reference and `/schema.json` is the
+machine-readable authoring contract.
 
 ## Contents
 

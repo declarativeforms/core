@@ -9,7 +9,7 @@ ready-to-copy examples ship in this repo:
 [`contact.yaml`](./examples/contact.yaml) (minimal) and
 [`kitchen-sink.yaml`](./examples/kitchen-sink.yaml) (every feature).
 
-For authoring and publishing, see [the Declarative Forms guide](https://frms.dev/docs).
+For authoring and publishing, see [Get Started in the README](./README.md#get-started).
 This readable reference explains the format for manual authors. Coding agents
 and editors can use the [maintained JSON Schema](https://frms.dev/schema.json),
 which includes constraints, descriptions, and examples. Both references follow

@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { mergeClassNames } from '@/lib/utils';
 
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
-const DOCS_URL = '/docs';
-const QUICK_START_URL = '/docs#create-from-yaml';
+const GET_STARTED_URL = `${GITHUB_URL}#get-started`;
+const QUICK_START_URL = `${GITHUB_URL}#create-manually`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
 const FONT_HREF =
@@ -71,7 +71,7 @@ const FOOTER_COLUMNS: Array<{
   {
     title: 'Product',
     links: [
-      { href: DOCS_URL, label: 'Documentation' },
+      { href: `${GITHUB_URL}/blob/main/SCHEMA.md`, label: 'YAML reference' },
       { href: QUICK_START_URL, label: 'Create from YAML' },
       { href: GITHUB_URL, label: 'Source' },
     ],
@@ -193,7 +193,7 @@ function SiteNav(): React.JSX.Element {
           >
             GitHub
           </a>
-          <ActionButton href={DOCS_URL}>Get started</ActionButton>
+          <ActionButton href={GET_STARTED_URL}>Get started</ActionButton>
         </div>
       </nav>
     </header>
@@ -217,7 +217,7 @@ function Hero(): React.JSX.Element {
             Forms handles rendering, validation, and submissions.
           </p>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <ActionButton href={DOCS_URL} size="lg">
+            <ActionButton href={GET_STARTED_URL} size="lg">
               Get started
               <ArrowRight className="size-4" />
             </ActionButton>
@@ -431,7 +431,7 @@ function FinalCta(): React.JSX.Element {
           Define it in YAML. Keep it with your code. Share a hosted form without
           building the form infrastructure yourself.
         </p>
-        <ActionButton href={DOCS_URL} size="lg">
+        <ActionButton href={GET_STARTED_URL} size="lg">
           Get started
           <ArrowRight className="size-4" />
         </ActionButton>

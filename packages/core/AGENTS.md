@@ -14,7 +14,8 @@ only one with a real ESLint config. Both facts change the rules, so read
 tool over this package.
 
 This is an internal engineering document. Public form-authoring documentation
-lives at `/docs`, with the detailed format reference in the root `SCHEMA.md`.
+lives in the root `README.md` Get Started section. `SCHEMA.md` is the human
+reference, and `/schema.json` provides the machine-readable authoring contract.
 `next.config.ts` sets `agentRules: false` so Next does not replace these
 maintained package instructions.
 

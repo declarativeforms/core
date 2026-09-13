@@ -19,88 +19,42 @@ support:
 - **Less infrastructure to build.** Declarative Forms handles rendering,
   validation, and submissions from the definition you commit.
 
-## Create your first form
+## Get Started
 
-Start with the [YAML guide](https://frms.dev/docs).
+### Create manually
 
-The hosted instance at [frms.dev](https://frms.dev) reads `.yaml` form files
-from public GitHub repositories.
+1. Copy [`contact.yaml`](./examples/contact.yaml) into your public GitHub
+   repository as `forms/contact.yaml`. Use [`SCHEMA.md`](./SCHEMA.md) as the
+   reference when changing fields, validation, or navigation.
+2. Review, commit, and push the file, then open its repository path on
+   [frms.dev](https://frms.dev) without the `.yaml` extension:
+
+   ```text
+   https://frms.dev/your-org/your-repo/forms/contact
+   ```
+
+Forms use the literal `main` branch by default. For another pushed branch,
+append `?branch=my-form` to the URL. Walk the form and check its completion
+screen and any configured delivery before sharing it.
 
 ### Use your coding agent
 
-Open the repository where the form should live in your preferred coding agent,
-then paste a request that links to the ordinary documentation:
+Open your repository in your preferred coding agent and paste:
 
 ```text
-Read https://frms.dev/docs and https://frms.dev/schema.json. Create an RSVP form
-for a team lunch at forms/lunch-rsvp.yaml in this repository. Collect name,
-email, attendance, and optional dietary requirements. Include a completion
-message. If you cannot edit files, return the complete YAML. Validate against
-the schema using available tooling, and report any checks you could not run.
-Report the expected Declarative Forms URL if the GitHub repository is known.
-Do not commit or push.
+Use Declarative Forms. Read https://frms.dev/schema.json and create
+forms/lunch-rsvp.yaml for a team lunch RSVP. If you cannot edit files, return
+complete YAML. Validate against the schema if tooling is available and report
+any checks you could not run. Do not commit or push.
 ```
 
-Review the YAML diff, then commit and push when ready. The guide covers the
-same format for human authors and coding agents. If your agent cannot access
-the documentation, paste the relevant reference and example into its context.
-
-### Or create it manually
-
-Add `forms/beta-access.yaml` to a public GitHub repository:
-
-```yaml
-# yaml-language-server: $schema=https://frms.dev/schema.json
-version: 1
-title: "Request beta access"
-
-sections:
-  - id: application
-    title: "Tell us what you're building"
-    fields:
-      - id: email
-        type: email
-        label: "Email address"
-        validators: [required]
-
-      - id: project
-        type: long_text
-        label: "What are you building?"
-        validators: [required]
-
-    next: done
-
-completion:
-  title: "Request received"
-  message: "Thanks. We'll be in touch."
-```
-
-The schema comment enables completion and validation in compatible YAML editors.
-See the [YAML reference](./SCHEMA.md) for explanations and examples.
-
-### Open the live form
-
-Commit the file, then open its repository path on `frms.dev` without the
-`.yaml` extension:
-
-```text
-https://frms.dev/your-org/your-repo/forms/beta-access
-```
-
-Forms resolve from the literal `main` branch by default. Preview another branch
-before merging with:
-
-```text
-https://frms.dev/your-org/your-repo/forms/beta-access?branch=my-form
-```
+Review the result, then publish it using the steps above. If your agent cannot
+fetch the schema, provide its contents rather than asking it to guess the format.
 
 ## Go further
 
-- [Documentation](https://frms.dev/docs) explains YAML authoring, the optional
-  coding-agent workflow, publishing, and preview checks.
 - [JSON Schema](https://frms.dev/schema.json) provides the maintained draft-07
   authoring contract for editors, validators, and coding agents.
-- [Discovery index](https://frms.dev/llms.txt) links the shared references and examples.
 - [SCHEMA.md](./SCHEMA.md) is the human-readable reference for every field,
   validator, condition, and connection.
 - [`contact.yaml`](./examples/contact.yaml) is a compact example;
