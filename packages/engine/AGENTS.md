@@ -12,9 +12,8 @@ depend on it and neither is allowed to depend on the other, so a change here
 reaches every surface. It is also the strictest package in the repo: no classes,
 no `any`, no comments, no tests, no I/O.
 
-This is an internal engineering document. It has nothing to do with
-`packages/core/public/AGENTS.md`, which is a published product asset that teaches
-external agents to author YAML forms.
+This is an internal engineering document. Form-authoring documentation lives at
+`/docs`, with the detailed format reference in the root `SCHEMA.md`.
 
 ## Contents
 
@@ -49,7 +48,7 @@ Break any of these and the change is wrong, regardless of whether it compiles.
 
 ## Layout
 
-Seven folders under `src`, plus two root files. Treat this as a naming and import
+Seven folders under `src`, plus the root barrel and maintained JSON Schema. Treat this as a naming and import
 map:
 
 | Path            | Holds                                                    |
@@ -62,17 +61,16 @@ map:
 | `validate/`     | field validation                                         |
 | `types/`        | every type, in four families: `schema`, `resolved`, `compiled`, `render` |
 | `index.ts`      | the package's entire public surface                      |
-| `json-schema.ts` | the published JSON Schema, at the root and unfoldered   |
+| `json-schema.ts` | maintained draft-07 authoring schema and type coverage assertion |
 
 **Barrels.** `compile/`, `resolve/`, `render/`, `validate/`, `types/`,
-`types/schema/` and `types/render/` each have an `index.ts`. Three deliberate
+`types/schema/` and `types/render/` each have an `index.ts`. Two deliberate
 exceptions, none of which is an oversight to correct:
 
 - **`parse/index.ts` is the implementation of `parse()`**, not a barrel. It is
   the only file in its folder.
 - **`serialize/index.ts` is the implementation of `serialize()`**, for the same
   reason and in the same shape as `parse/`.
-- **`json-schema.ts` sits at the root** rather than in a folder of its own.
 
 `index.ts` is the only file that may name the whole public surface. Everything a
 consumer can reach is listed there explicitly.
@@ -109,7 +107,7 @@ If you feel the need to explain something, change the code instead:
 
 Unlike `packages/api`, engine has never had a `test` script or a jest config, so
 there is no dormant tooling here to trip over. Verification is the type checker
-plus the build-time assertions that already exist downstream. See
+plus downstream builds, core schema checks, and API regression checks. See
 [Before you hand work back](#before-you-hand-work-back).
 
 ## Module style
@@ -128,8 +126,8 @@ any syntax a type-stripping transpiler cannot erase:
   a compile error here. Do not copy api's class idioms into this package.
 
 **Declare functions with the `function` keyword.** There are zero
-arrow-function exports. All four `export const`s are data, never functions:
-`FORM_JSON_SCHEMA`, `DECLARATIVE_FIELD_TYPES`, `DECLARATIVE_CONNECTION_TYPES`,
+arrow-function exports. Exported constants are data, never functions:
+`DECLARATIVE_FIELD_TYPES`, `DECLARATIVE_CONNECTION_TYPES`,
 `DEFAULT_MESSAGES`.
 
 **One exported function per file**, with two accepted exceptions: `compile/next.ts`
@@ -172,8 +170,7 @@ break from the 1:1 rule. Do not rename them:
 
 **`SCREAMING_SNAKE_CASE` for exported constant tuples and records.**
 
-**Acronyms capitalise as words**: `Html`, `Url`, `Id`, `Yaml`, `Json`, `Api`. So
-`FORM_JSON_SCHEMA` and `assertJsonSchemaCoverage`, not `JSONSchema`.
+**Acronyms capitalise as words**: `Html`, `Url`, `Id`, `Yaml`, `Json`, `Api`.
 
 ## Types
 
@@ -266,9 +263,8 @@ import { resolveFormOption } from './resolve-form-option'; // correct, sibling
 
 A file in `compile/` never writes `from '.'`. It names its sibling file.
 
-**Two deliberate barrel bypasses exist. Leave them:** `json-schema.ts` imports
-the two canonical tuples from their deep paths because it needs only those, and
-`evaluateExpression` is imported from `'../compile/expression'` because
+**A deliberate barrel bypass exists. Leave it:** `evaluateExpression` is imported
+from `'../compile/expression'` because
 `compile/index.ts` does not re-export it.
 
 ## Function signatures
@@ -356,10 +352,9 @@ sites. Use it rather than building an object and deleting keys.**
 The `!== undefined` form is the default. The plain-truthy form is for the handful
 of fields where an empty string should also be omitted. Pick deliberately.
 
-**Throwing is for invariant violations only.** There are exactly two `throw`
-sites, both plain `new Error`: `render/render-form.ts` rejects a form with no
-sections, and `json-schema.ts` carries a coverage assertion that runs at build
-time. No custom error classes.
+**Throwing is for invariant violations only.** Use plain `new Error`, as when
+rendering rejects a form without sections or resolution rejects reserved token
+field IDs. No custom error classes.
 
 **There is exactly one `try/catch`**, in `compile/expression.ts`. Do not add
 another to paper over a failure.
@@ -380,8 +375,7 @@ inherited. The config file is the fix. Do not delete it.
 
 **Single quotes, with one legitimate exception that Prettier handles for you.** A
 string whose content contains an apostrophe stays double-quoted, because
-switching it would mean escaping. `json-schema.ts` has several, such as
-`"The field's label. Supports templating."`. This is correct output, not drift.
+switching it would mean escaping. This is correct output, not drift.
 **Never audit quote style with a bare `grep '"'`. Use `prettier --check`.**
 
 What Prettier does not decide, and you must get right by hand:
@@ -437,18 +431,16 @@ npx tsc -b                                  # from the repo root
 `.d.ts`, so a type change here breaks api rather than engine, and engine's own
 build will not tell you.
 
-**If you touched `json-schema.ts` or `types/schema/`, also build the web app:**
+**If you touched `json-schema.ts` or `types/schema/`, also check the schema and build the web app:**
 
 ```bash
+npm run test -w @declarativeforms/core
 npm run build -w @declarativeforms/core
 ```
 
-That is the only thing that runs the schema assertions. They execute when Next
-prerenders the static `/schema.json` route, and they fail the build if a field or
-connection type has no schema branch, if a field type is undocumented in
-`packages/core/public/AGENTS.md`, or if `examples/contact.yaml` or
-`examples/kitchen-sink.yaml` no
-longer validates.
+The renderer registry must cover all engine field types. Update `SCHEMA.md`
+when the authored format changes. Core schema checks validate the shipped examples,
+and the static `/schema.json` route runs the type coverage assertion during builds.
 
 Then check the diff by hand:
 

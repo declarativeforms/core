@@ -21,10 +21,7 @@ const nextConfig: NextConfig = {
   // localhost blocks its asset requests and the page renders blank.
   allowedDevOrigins: ['127.0.0.1'],
 
-  // Next regenerates its own AGENTS.md/CLAUDE.md at the package root on every
-  // build. This package already publishes `public/AGENTS.md`, the form-authoring
-  // instruction pack served at /AGENTS.md and asserted on by the build, so a
-  // second file of the same name here is a trap.
+  // Preserve this package's maintained coding instructions during builds.
   agentRules: false,
 
   // The engine is consumed as its built CJS `dist`, the same way `packages/api`
@@ -49,38 +46,18 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/.well-known/:path*',
-        destination: `${process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080'}/.well-known/:path*`,
-      },
-      {
         source: '/api/:path*',
         destination: `${process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080'}/api/:path*`,
       },
     ];
   },
-
-  // Agent-facing documents. nginx set these; Next has to as well, and `.md`
-  // needs an explicit type or it downloads instead of rendering.
   async headers() {
-    const agentFacing = [
-      { key: 'Access-Control-Allow-Origin', value: '*' },
-      { key: 'Cache-Control', value: 'public, max-age=300' },
-    ];
-
     return [
-      { source: '/schema.json', headers: agentFacing },
-      {
-        source: '/AGENTS.md',
-        headers: [
-          ...agentFacing,
-          { key: 'Content-Type', value: 'text/markdown; charset=utf-8' },
-        ],
-      },
       {
         source: '/llms.txt',
         headers: [
-          ...agentFacing,
           { key: 'Content-Type', value: 'text/plain; charset=utf-8' },
+          { key: 'Cache-Control', value: 'public, max-age=300' },
         ],
       },
     ];

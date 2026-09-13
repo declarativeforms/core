@@ -20,7 +20,6 @@ export { resolveLocalizedText } from './resolve/localize';
 export { interpolateTemplate } from './compile/template';
 export { evaluateExpression } from './compile/expression';
 export { validateField } from './validate';
-
 export { FORM_JSON_SCHEMA, assertJsonSchemaCoverage } from './json-schema';
 
 export type ToRenderableFormOptions = {

@@ -1,6 +1,5 @@
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
-import fastifyMiddie from '@fastify/middie';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastify, { type FastifyError } from 'fastify';
 import * as qs from 'qs';
@@ -43,8 +42,8 @@ export async function startServer(): Promise<void> {
   });
 
   await server.register(fastifyCors, {
-    allowedHeaders: ['authorization', 'content-type', 'mcp-protocol-version'],
-    methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['content-type'],
+    methods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
     origin: '*',
   });
 
@@ -63,21 +62,6 @@ export async function startServer(): Promise<void> {
     },
   });
 
-  await server.register(fastifyMiddie);
-
-  server.addContentTypeParser(
-    'application/x-www-form-urlencoded',
-    { parseAs: 'string' },
-    (_request, payload, done) => {
-      done(
-        null,
-        qs.parse(
-          typeof payload === 'string' ? payload : payload.toString('utf8'),
-        ),
-      );
-    },
-  );
-
   await server.addContentTypeParser(
     '*',
     { parseAs: 'buffer' },
@@ -91,25 +75,8 @@ export async function startServer(): Promise<void> {
   );
 
   const container = await getContainer();
-  const {
-    formRepository,
-    gitHubFileRepository,
-    organizationRepository,
-    oauthAccountRepository,
-    submissionRepository,
-  } = container;
-
-  await formRepository.ensureIndexes();
-  await gitHubFileRepository.ensureIndexes();
-  await organizationRepository.ensureIndexes();
-  await oauthAccountRepository.ensureIndexes();
-  await submissionRepository.ensureIndexes();
-
-  const oauth = await import('./oauth/provider.js');
-  const mcp = await import('./mcp/server.js');
-
-  await oauth.registerOAuth(server, container);
-  await mcp.registerMcp(server, container);
+  await container.gitHubFileRepository.ensureIndexes();
+  await container.submissionRepository.ensureIndexes();
 
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);

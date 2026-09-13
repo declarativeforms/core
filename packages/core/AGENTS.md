@@ -13,10 +13,10 @@ only one with a real ESLint config. Both facts change the rules, so read
 [Generated code](#generated-code) and [Formatting](#formatting) before you run a
 tool over this package.
 
-This is an internal engineering document. It has nothing to do with
-`public/AGENTS.md`, which is a published product asset that teaches external
-agents to author YAML forms. `next.config.ts` sets `agentRules: false` so Next
-does not generate a competing file of this name.
+This is an internal engineering document. Public form-authoring documentation
+lives at `/docs`, with the detailed format reference in the root `SCHEMA.md`.
+`next.config.ts` sets `agentRules: false` so Next does not replace these
+maintained package instructions.
 
 ## Contents
 
@@ -151,7 +151,8 @@ because a config file is read by a person deciding whether to change a setting.
 
 **Keep tests at the package root and use the built-in Node test runner.** Do not
 put tests under `src`, add a test framework, or add fixtures. Existing checks
-cover analytics lifecycle behavior and Google Places failure propagation.
+cover analytics lifecycle behavior, Google Places failure propagation, and JSON Schema
+coverage and example validation. Build the engine before running these checks.
 
 ## Module style
 
@@ -561,9 +562,8 @@ new module that reads request state or the filesystem.
 
 **Set `export const dynamic` when a route's rendering mode matters.**
 `force-dynamic` in `app/layout.tsx`, because every page reads request-time state.
-`force-static` in `app/healthz/route.ts` and `app/schema.json/route.ts`, and for
-the latter it is load-bearing: being prerendered is what turns the schema
-assertions into build failures.
+`force-static` in `app/healthz/route.ts` keeps the health response independent
+of request-time state.
 
 **Read `process.env` at request time in a server component, never at module scope
 in anything the client can reach.** This is the whole reason
@@ -672,12 +672,12 @@ npm run format -w @declarativeforms/core     # must list nothing on a second run
 npm run test -w @declarativeforms/core       # node:test checks must pass clean
 npm run typecheck -w @declarativeforms/core  # tsc --noEmit, must pass clean
 npm run lint -w @declarativeforms/core       # eslint, 0 errors
-npm run build -w @declarativeforms/core      # the only thing that runs the assertions
+npm run build -w @declarativeforms/core      # verifies the production application
 ```
 
-**The build is not optional.** It prerenders `/schema.json`, which runs
-`assertJsonSchemaCoverage()` from the engine. A type change in the engine, or a
-new field type, fails here rather than in the engine's own build.
+**The build is not optional.** It verifies production bundling and the renderer's
+coverage of engine field types. The static `/schema.json` route also runs the
+engine authoring-schema coverage assertion during prerendering.
 
 If you changed anything the other packages consume, also run `npx tsc -b` from
 the repository root.

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
 # Comprehensive test form. Exercises every field type, validator, conditional
 # navigation, visibility expression, cross-field expression, templating,
 # localization, a conditional completion screen, and a gated webhook connection.

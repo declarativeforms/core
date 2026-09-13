@@ -1,6 +1,5 @@
 const enMessageSource = {
   'base.powered_by': 'Powered by',
-  'base.privacy_policy': 'Privacy Policy',
   'hero.continue': 'Continue',
   'main.form_not_found.title': 'Form Not Found',
   'main.form_not_found.description':
@@ -49,8 +48,6 @@ const enMessageSource = {
   'cookie.learn_more': 'Learn more',
   'cookie.decline': 'Decline',
   'cookie.accept': 'Accept',
-  'privacy_policy.title': 'Privacy Policy',
-  'privacy_policy.back_home': 'Back to Home',
   'geolocation.use_my_location': 'Use my location',
   'geolocation.loading': 'Getting location...',
   'geolocation.clear': 'Clear',

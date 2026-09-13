@@ -1,29 +1,16 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { FORM_JSON_SCHEMA } from '@declarativeforms/engine';
-import Ajv from 'ajv';
 import { Db, MongoClient } from 'mongodb';
+import { EmailGateway, GitHubGateway, TurnstileGateway } from './gateways';
 import {
-  EmailGateway,
-  GitHubGateway,
-  GitHubOAuthGateway,
-  TurnstileGateway,
-} from './gateways';
-import {
-  FormRepository,
   GitHubFileRepository,
   JobRepository,
-  OAuthAccountRepository,
-  OrganizationRepository,
   SubmissionRepository,
 } from './repositories';
 import {
   EmailVerificationService,
   FileService,
   FormService,
-  InternalFormService,
   JobService,
-  OAuthAccountService,
-  OrganizationService,
   SubmissionService,
   TokenService,
   TurnstileVerificationService,
@@ -38,30 +25,17 @@ export type Container = {
   db: Db;
   mongoClient: MongoClient;
   gitHubGateway: GitHubGateway;
-  gitHubOAuthGateway: GitHubOAuthGateway;
   turnstileGateway: TurnstileGateway;
-  formRepository: FormRepository;
   gitHubFileRepository: GitHubFileRepository;
-  organizationRepository: OrganizationRepository;
-  oauthAccountRepository: OAuthAccountRepository;
   submissionRepository: SubmissionRepository;
   jobRepository: JobRepository;
   fileService: FileService;
-  organizationService: OrganizationService;
-  oauthAccountService: OAuthAccountService;
-  internalFormService: InternalFormService;
   formService: FormService;
   emailVerificationService: EmailVerificationService;
   turnstileVerificationService: TurnstileVerificationService;
   submissionService: SubmissionService;
   jobService: JobService;
 };
-
-const formDefinitionValidator = new Ajv({
-  allErrors: true,
-  logger: false,
-  strict: false,
-}).compile(FORM_JSON_SCHEMA);
 
 const s3Client = new S3Client({
   endpoint: process.env.AWS_S3_ENDPOINT,
@@ -85,12 +59,8 @@ export async function getContainer(): Promise<Container> {
   );
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
-  const gitHubOAuthGateway = new GitHubOAuthGateway();
   const turnstileGateway = new TurnstileGateway();
-  const formRepository = new FormRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
-  const organizationRepository = new OrganizationRepository(db);
-  const oauthAccountRepository = new OAuthAccountRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const jobRepository = new JobRepository(db);
   const verificationTokenService = new TokenService(
@@ -99,20 +69,7 @@ export async function getContainer(): Promise<Container> {
   );
   const emailGateway = new EmailGateway();
   const fileService = new FileService(s3Client);
-  const organizationService = new OrganizationService(organizationRepository);
-  const oauthAccountService = new OAuthAccountService(
-    oauthAccountRepository,
-    organizationService,
-  );
-  const internalFormService = new InternalFormService(
-    formRepository,
-    formDefinitionValidator,
-  );
-  const formService = new FormService(
-    gitHubFileRepository,
-    gitHubGateway,
-    internalFormService,
-  );
+  const formService = new FormService(gitHubFileRepository, gitHubGateway);
   const emailVerificationService = new EmailVerificationService(
     verificationTokenService,
     emailGateway,
@@ -150,19 +107,12 @@ export async function getContainer(): Promise<Container> {
     db,
     emailVerificationService,
     fileService,
-    formRepository,
     formService,
     gitHubFileRepository,
     gitHubGateway,
-    gitHubOAuthGateway,
-    internalFormService,
     jobRepository,
     jobService,
     mongoClient,
-    oauthAccountRepository,
-    oauthAccountService,
-    organizationRepository,
-    organizationService,
     submissionRepository,
     submissionService,
     turnstileGateway,

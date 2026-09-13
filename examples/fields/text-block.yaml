@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
 version: 1
 title: "Text block field"
 description: "This form demonstrates a single field type."

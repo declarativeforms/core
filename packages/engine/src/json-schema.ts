@@ -332,7 +332,7 @@ const connectionBranches: Array<JsonSchemaNode> = [
         type: 'boolean',
         default: false,
         description:
-          'Append a table of every answer to the email. `hidden` fields are left out.',
+          'Append a table of answers to the email. `hidden` and `text_block` fields are left out.',
       },
       when: { $ref: '#/definitions/connectionWhen' },
       trigger_on: { $ref: '#/definitions/triggerOn' },
@@ -352,7 +352,7 @@ export const FORM_JSON_SCHEMA = {
   $id: 'https://frms.dev/schema.json',
   title: 'Declarative Forms',
   description:
-    'A form definition. One YAML file describes the whole form: its sections, its fields, how it branches, what the respondent sees when they finish, and what happens to the submission. Commit it to a repository and it is served at https://frms.dev/<owner>/<repo>/<path-without-.yaml>.',
+    'A form definition. One YAML file describes the whole form: its sections, its fields, how it branches, what the respondent sees when they finish, and what happens to the submission. Commit and push it to a public GitHub repository and it is served at https://frms.dev/<owner>/<repo>/<path-without-.yaml>. The branch defaults to main; use ?branch=<name> for another pushed branch. This maintained authoring schema describes structure and supported keys; it does not execute expressions, verify navigation targets or cycles, or test delivery connections.',
   type: 'object',
   additionalProperties: false,
   required: ['sections'],

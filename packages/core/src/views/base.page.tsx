@@ -48,13 +48,6 @@ export function BasePage(props: {
             Declarative Forms
           </a>
         </span>
-        <span>•</span>
-        <a
-          href={i18n.withLang('/privacy-policy')}
-          className="font-medium text-gray-600 underline-offset-4 hover:text-gray-900 hover:underline transition-colors"
-        >
-          {i18n.t('base.privacy_policy')}
-        </a>
       </div>
     </div>
   );

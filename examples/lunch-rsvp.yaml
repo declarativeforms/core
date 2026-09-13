@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Team lunch RSVP"
+description: "Let us know if you can join and what you can eat."
+
+sections:
+  - id: rsvp
+    title: "Your RSVP"
+    fields:
+      - id: full_name
+        type: short_text
+        label: "Name"
+        validators: [required]
+      - id: email
+        type: email
+        label: "Email address"
+        validators: [required]
+      - id: attendance
+        type: single_select
+        label: "Will you join us?"
+        options:
+          - label: "Yes, I'll be there"
+            value: "yes"
+          - label: "No, I can't make it"
+            value: "no"
+        validators: [required]
+      - id: dietary_requirements
+        type: long_text
+        label: "Dietary requirements (optional)"
+        visible_when: "data.attendance === 'yes'"
+    next: done
+
+completion:
+  title: "RSVP received"
+  message: "Thanks for letting us know."

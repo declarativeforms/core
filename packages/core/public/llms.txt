@@ -1,41 +1,33 @@
 # Declarative Forms
 
-> Forms that live in your Git repository. A form is a YAML file you commit to GitHub, served as a live, hosted form. Open source under AGPL-3.0, self-hostable, with no visual builder and no vendor lock-in.
+> Forms as Code: keep a YAML form definition in your GitHub repository; Declarative Forms renders it and handles submissions.
 
-Commit a YAML file to a public GitHub repository and it renders at
-`https://frms.dev/<owner>/<repo>/<path-without-.yaml>`. A commit is a deploy.
-Add `?branch=<name>` to preview a branch, which is also required whenever the
-repository's default branch is not `main`.
+Create or edit the YAML in the user's repository, or return complete YAML when
+file editing is unavailable. The hosted service reads public GitHub repositories.
+After the file is committed and pushed, open
+`https://frms.dev/<owner>/<repo>/<path-without-.yaml>`. The branch defaults to
+literal `main`; use `?branch=<URL-encoded-name>` for another pushed branch.
 
-A form file needs one key: `sections`. Each section is a page of `fields`, and
-each field has an `id` and a `type`; fields can add `label`, `validators`, and a
-`visible_when` condition, while `text_block` fields also carry Markdown content.
-There are 24 field types, 7 validators, conditional
-branching between sections, multi-language text, and webhook and email
-connections. Template calculations can render estimates and scores without
-storing derived values. Responses are stored in your own MongoDB, and uploaded
-files in your own S3-compatible bucket.
+## References
 
-Alternatives people compare it to: Tally, Jotform, Youform, Typeform, Google
-Forms. The difference is that forms are diffable files under code review rather
-than rows in someone else's database.
-
-## Agent instructions
-
-- [AGENTS.md](https://frms.dev/AGENTS.md): Complete instructions for creating and updating forms. The URL contract, the full schema, engine behaviour the schema cannot express, form design guidance, how to change a form without breaking stored responses, and a validation checklist. Start here.
-
-## Schema
-
-- [schema.json](https://frms.dev/schema.json): The authoritative JSON Schema (draft-07), generated from the engine. Strict: it rejects unknown keys. Use it with `check-jsonschema`, or as a `# yaml-language-server: $schema=` modeline for editor validation.
-- [SCHEMA.md](https://raw.githubusercontent.com/declarativeforms/core/main/SCHEMA.md): The same schema as prose. Every top-level key, field type, validator, the expression language, templating, completion screens, and connections.
+- [Create and publish a form](https://frms.dev/docs): Shared quick start for manual authoring and coding agents, URL conventions, validation, and preview checks.
+- [JSON Schema](https://frms.dev/schema.json): Maintained draft-07 authoring schema with supported keys, constraints, descriptions, and examples. Validate parsed YAML with an available JSON Schema validator; syntax checking alone is insufficient.
+- [YAML reference](https://raw.githubusercontent.com/declarativeforms/core/main/SCHEMA.md): Human-readable field and validator explanations, examples, and runtime caveats. Also useful for behavior the schema cannot check.
 
 ## Examples
 
-- [contact.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/examples/contact.yaml): A minimal single-section form with validation and a templated completion screen.
-- [calculator.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/examples/calculator.yaml): A two-page property estimate calculated from respondent answers.
-- [kitchen-sink.yaml](https://raw.githubusercontent.com/declarativeforms/core/main/examples/kitchen-sink.yaml): Every field type, every validator, conditional navigation, visibility conditions, a cross-field expression, localization, a conditional completion screen, and a gated webhook.
+- [Contact](https://raw.githubusercontent.com/declarativeforms/core/main/examples/contact.yaml): A compact single-section form.
+- [Team lunch RSVP](https://raw.githubusercontent.com/declarativeforms/core/main/examples/lunch-rsvp.yaml): Choices, conditional visibility, and a completion message.
+- [Kitchen sink](https://raw.githubusercontent.com/declarativeforms/core/main/examples/kitchen-sink.yaml): All supported field types and advanced features.
 
-## Optional
+## Authoring checks
 
-- [README.md](https://raw.githubusercontent.com/declarativeforms/core/main/README.md): A quick start for creating a Git-native form with Codex, Claude Code, or YAML.
-- [Source repository](https://github.com/declarativeforms/core): The monorepo. Engine, web app, and API.
+Use unique field and section identifiers, check navigation targets and cycles,
+and verify expression and template references. Keep secrets out of definitions;
+only configure delivery destinations supplied by the user. Schema validation
+does not execute expressions or test delivery. Preview the pushed form and
+report checks that could not be performed. Do not claim a local file is live.
+
+## Project
+
+- [Source](https://github.com/declarativeforms/core): Open source under AGPL-3.0; self-hosting is an optional deployment choice.

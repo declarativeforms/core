@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { mergeClassNames } from '@/lib/utils';
 
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
-const MCP_DOCS_URL = '/docs/mcp';
-const QUICK_START_URL = `${GITHUB_URL}#create-your-first-form`;
+const DOCS_URL = '/docs';
+const QUICK_START_URL = '/docs#create-from-yaml';
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
 const FONT_HREF =
@@ -40,7 +40,7 @@ const STEPS: Array<{ index: string; title: string; body: string }> = [
   {
     index: '01',
     title: 'Define the form',
-    body: 'Write the YAML yourself, or ask your AI client to create it through the Declarative Forms MCP server.',
+    body: 'Write the YAML yourself, or ask your coding agent to create the file in your repository.',
   },
   {
     index: '02',
@@ -71,8 +71,7 @@ const FOOTER_COLUMNS: Array<{
   {
     title: 'Product',
     links: [
-      { href: MCP_DOCS_URL, label: 'MCP documentation' },
-      { href: '#pricing', label: 'Pricing' },
+      { href: DOCS_URL, label: 'Documentation' },
       { href: QUICK_START_URL, label: 'Create from YAML' },
       { href: GITHUB_URL, label: 'Source' },
     ],
@@ -81,7 +80,6 @@ const FOOTER_COLUMNS: Array<{
     title: 'Project',
     links: [
       { href: `${GITHUB_URL}/blob/main/LICENSE`, label: 'AGPL-3.0 licence' },
-      { href: '/privacy-policy', label: 'Privacy' },
       { href: `${GITHUB_URL}/issues`, label: 'Issues' },
     ],
   },
@@ -189,19 +187,13 @@ function SiteNav(): React.JSX.Element {
         </Link>
         <div className="flex items-center gap-6">
           <a
-            className="text-sm font-semibold text-ink underline-offset-4 hover:underline"
-            href="#pricing"
-          >
-            Pricing
-          </a>
-          <a
             className="hidden text-sm font-semibold text-ink underline-offset-4 hover:underline md:inline"
             href={GITHUB_URL}
             rel="noreferrer"
           >
             GitHub
           </a>
-          <ActionButton href={MCP_DOCS_URL}>Get started</ActionButton>
+          <ActionButton href={DOCS_URL}>Get started</ActionButton>
         </div>
       </nav>
     </header>
@@ -225,7 +217,7 @@ function Hero(): React.JSX.Element {
             Forms handles rendering, validation, and submissions.
           </p>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <ActionButton href={MCP_DOCS_URL} size="lg">
+            <ActionButton href={DOCS_URL} size="lg">
               Get started
               <ArrowRight className="size-4" />
             </ActionButton>
@@ -428,39 +420,6 @@ function FeatureRequests(): React.JSX.Element {
   );
 }
 
-function Pricing(): React.JSX.Element {
-  return (
-    <section
-      className="border-t-2 border-ink bg-paper px-6 py-20 md:px-10 md:py-24 lg:px-16"
-      id="pricing"
-    >
-      <div className="mx-auto w-full max-w-6xl">
-        <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-          Cloud hosting, free.
-        </h2>
-        <div className="mt-12 max-w-xl">
-          <div className="flex flex-col items-start gap-6 rounded-lg border-2 border-ink bg-brand-yellow-soft p-6 shadow-hard md:p-8">
-            <h3 className="font-display text-xl font-semibold">Cloud</h3>
-            <p className="font-display text-4xl font-semibold tracking-[-0.025em]">
-              Free
-            </p>
-            <p className="max-w-[44ch] text-base leading-relaxed text-ink-muted">
-              Host YAML forms from public GitHub repositories, or create a
-              hosted form with your AI client. Cloud hosting is included.
-            </p>
-            <p className="text-sm leading-relaxed text-ink-muted">
-              Your AI client may require a separate subscription.
-            </p>
-            <div className="mt-auto pt-2">
-              <ActionButton href={MCP_DOCS_URL}>Get started</ActionButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function FinalCta(): React.JSX.Element {
   return (
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
@@ -472,7 +431,7 @@ function FinalCta(): React.JSX.Element {
           Define it in YAML. Keep it with your code. Share a hosted form without
           building the form infrastructure yourself.
         </p>
-        <ActionButton href={MCP_DOCS_URL} size="lg">
+        <ActionButton href={DOCS_URL} size="lg">
           Get started
           <ArrowRight className="size-4" />
         </ActionButton>
@@ -531,7 +490,6 @@ export function LandingPage(): React.JSX.Element {
         <HowItWorks />
         <Tradeoff />
         <FeatureRequests />
-        <Pricing />
         <FinalCta />
       </main>
       <SiteFooter />

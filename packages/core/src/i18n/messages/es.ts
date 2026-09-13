@@ -2,7 +2,6 @@ import type { TranslationMessages } from './en';
 
 export const esMessages: TranslationMessages = {
   'base.powered_by': 'Desarrollado por',
-  'base.privacy_policy': 'Política de privacidad',
   'hero.continue': 'Continuar',
   'main.form_not_found.title': 'Formulario no encontrado',
   'main.form_not_found.description':
@@ -52,8 +51,6 @@ export const esMessages: TranslationMessages = {
   'cookie.learn_more': 'Más información',
   'cookie.decline': 'Rechazar',
   'cookie.accept': 'Aceptar',
-  'privacy_policy.title': 'Política de privacidad',
-  'privacy_policy.back_home': 'Volver al inicio',
   'geolocation.use_my_location': 'Usar mi ubicación',
   'geolocation.loading': 'Obteniendo ubicación...',
   'geolocation.clear': 'Borrar',

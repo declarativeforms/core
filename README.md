@@ -21,26 +21,29 @@ support:
 
 ## Create your first form
 
+Start with the [YAML guide](https://frms.dev/docs).
+
 The hosted instance at [frms.dev](https://frms.dev) reads `.yaml` form files
 from public GitHub repositories.
 
-### Use Codex or Claude Code
+### Use your coding agent
 
-Open the repository where you want the form to live in Codex or Claude Code,
-then paste this prompt:
+Open the repository where the form should live in your preferred coding agent,
+then paste a request that links to the ordinary documentation:
 
 ```text
-Read https://frms.dev/AGENTS.md, then create forms/beta-access.yaml in this
-repository. It should collect a required email address and a required
-description of what the applicant is building. Add a clear completion message
-and validate the form against https://frms.dev/schema.json.
-
-Do not commit or push. When finished, report the form path and its frms.dev URL.
+Read https://frms.dev/docs and https://frms.dev/schema.json. Create an RSVP form
+for a team lunch at forms/lunch-rsvp.yaml in this repository. Collect name,
+email, attendance, and optional dietary requirements. Include a completion
+message. If you cannot edit files, return the complete YAML. Validate against
+the schema using available tooling, and report any checks you could not run.
+Report the expected Declarative Forms URL if the GitHub repository is known.
+Do not commit or push.
 ```
 
-The agent will use the published authoring rules, create the YAML in your
-repository, and validate it. Review the diff, then commit the form when you are
-happy with it.
+Review the YAML diff, then commit and push when ready. The guide covers the
+same format for human authors and coding agents. If your agent cannot access
+the documentation, paste the relevant reference and example into its context.
 
 ### Or create it manually
 
@@ -72,7 +75,8 @@ completion:
   message: "Thanks. We'll be in touch."
 ```
 
-The schema modeline gives compatible editors inline validation and completion.
+The schema comment enables completion and validation in compatible YAML editors.
+See the [YAML reference](./SCHEMA.md) for explanations and examples.
 
 ### Open the live form
 
@@ -92,14 +96,11 @@ https://frms.dev/your-org/your-repo/forms/beta-access?branch=my-form
 
 ## Go further
 
-- [MCP documentation](https://frms.dev/docs/mcp) explains how to connect ChatGPT
-  web, Codex CLI, Claude web, and Claude Code to create and manage hosted forms.
-  MCP-managed forms are stored in Declarative Forms; copy their YAML into GitHub
-  to use the repository-backed workflow.
-- [AGENTS.md](https://frms.dev/AGENTS.md) contains the complete form-authoring
-  workflow and runtime rules for coding agents.
-- [schema.json](https://frms.dev/schema.json) is the authoritative,
-  machine-readable schema.
+- [Documentation](https://frms.dev/docs) explains YAML authoring, the optional
+  coding-agent workflow, publishing, and preview checks.
+- [JSON Schema](https://frms.dev/schema.json) provides the maintained draft-07
+  authoring contract for editors, validators, and coding agents.
+- [Discovery index](https://frms.dev/llms.txt) links the shared references and examples.
 - [SCHEMA.md](./SCHEMA.md) is the human-readable reference for every field,
   validator, condition, and connection.
 - [`contact.yaml`](./examples/contact.yaml) is a compact example;

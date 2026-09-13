@@ -9,14 +9,31 @@ ready-to-copy examples ship in this repo:
 [`contact.yaml`](./examples/contact.yaml) (minimal) and
 [`kitchen-sink.yaml`](./examples/kitchen-sink.yaml) (every feature).
 
-Everything below is also published as a machine-readable JSON Schema at
-**<https://frms.dev/schema.json>**, generated from the engine itself. Add
-this modeline to the top of your form and your editor will validate it as you
-type:
+For authoring and publishing, see [the Declarative Forms guide](https://frms.dev/docs).
+This readable reference explains the format for manual authors. Coding agents
+and editors can use the [maintained JSON Schema](https://frms.dev/schema.json),
+which includes constraints, descriptions, and examples. Both references follow
+the engine types and runtime; the JSON Schema is maintained alongside them,
+not generated automatically.
+
+Add this comment to your YAML for completion and validation in compatible editors:
 
 ```yaml
 # yaml-language-server: $schema=https://frms.dev/schema.json
 ```
+
+YAML syntax checking alone does not validate a form definition. An available
+JSON Schema validator can check parsed YAML against the schema. For example,
+if `check-jsonschema` is available:
+
+```bash
+check-jsonschema --schemafile https://frms.dev/schema.json forms/contact.yaml
+```
+
+Optionally install it with `pipx install check-jsonschema` outside the repository,
+or use your existing draft-07 validator. Validation does not execute expressions,
+check navigation targets or cycles, or test delivery. Preview the pushed form
+and report any checks you could not perform.
 
 ## Contents
 
@@ -35,6 +52,7 @@ type:
 - [Connections](#connections)
 - [Prefilling fields from the URL](#prefilling-fields-from-the-url)
 - [Theming and analytics](#theming-and-analytics)
+- [Authoring checks and runtime behavior](#authoring-checks-and-runtime-behavior)
 
 ## Top-level keys
 
@@ -687,3 +705,64 @@ person-profile collection remains disabled.
 | `$pageview` | PostHog | Standard PostHog pageview properties | On the initial load and browser-history changes. |
 | `$pageleave` | PostHog | Standard PostHog pageleave and scroll properties | When the respondent navigates away. |
 | `section_completed` | Both | `form_id`, `section_id`, `is_final` | After a section passes validation and the respondent continues, completes, or redirects. |
+
+
+## Authoring checks and runtime behavior
+
+Before handing over a definition, validate parsed YAML against the JSON Schema
+with available tooling, check the runtime behavior below, and preview the pushed form. Report
+which checks actually ran. A local file is not live until it is pushed to a GitHub
+repository the deployment can read.
+
+### Identifiers and navigation
+
+- Use unique field IDs across the whole form and unique section IDs. Prefer
+  `snake_case` matching `^[A-Za-z_][A-Za-z0-9_]*$` so expressions can use `data.id`.
+  Filenames may use hyphens.
+- Do not author the top-level `id`; the server supplies it.
+- Reserve the `_token` suffix for verification proofs. Email OTP and Turnstile
+  reserve a companion `<field_id>_token` field.
+- Check that every expression or template references an existing answer with the
+  expected shape and that the answer is available at that point in the flow.
+- Every `next` target must be `done`, an existing section ID, or an `https://` URL.
+  Keep navigation acyclic and put a final `else` in conditional navigation.
+  An unmatched rule otherwise finishes the form.
+- Hiding a field excludes it from that section's submitted answers. An answer
+  saved in an earlier section can remain in stored partial submissions; do not
+  depend on a value whose field the same answer path hides.
+
+### Check behavior, not just syntax
+
+- Parsing loads YAML without validating its structure. Unsupported field and
+  connection types can be dropped by resolution, and unsupported keys ignored.
+  Confirm that every intended field appears in the rendered form.
+- Broken conditions evaluate to `false`; broken calculations produce an empty
+  string. Walk each branch and check computed text with representative answers.
+- Match validators to the field type. Use `min_length`/`max_length` for text.
+  `min`/`max` on selections and uploads count items; on ratings they set the scale.
+- A `number` field expects whole numbers unless you supply a suitable `pattern`.
+  An `email` field without OTP has no implicit format validation; add a pattern
+  if format checking is required.
+- Patterns are not automatically anchored. Escape backslashes when using
+  double-quoted YAML strings. Empty values generally pass rules other than
+  `required` and count bounds.
+- Test the completion screen and delivery separately. A rendered form or accepted
+  submission does not prove an email or webhook reached its destination.
+
+### Public configuration and submitted data
+
+- The definition is visible to people loading the form. Never put secrets or
+  credentials in YAML, including webhook URLs. Use only delivery destinations
+  provided by the form owner.
+- Webhook requests have no configured custom headers or signatures. Handlebars
+  escaping is disabled, and email bodies are HTML; treat interpolated respondent
+  answers as untrusted content.
+- `start_date`, `end_date`, and `accepted_mime_types` are browser checks; direct
+  API calls bypass them. The server separately limits uploaded file size.
+- File uploads hold one uploaded-file object when `max` is absent or `1`, and
+  an array when `max` is larger. Camera and signature answers hold one file
+  object. Choice answers are a string for `single_select` and an array for
+  `multiple_select`.
+- When editing a form that already has responses, preserve field IDs and option
+  values unless intentionally changing the stored-data contract. Recheck both
+  existing respondent paths and the changed path.

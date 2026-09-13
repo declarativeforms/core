@@ -2,27 +2,17 @@ import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
 import md5 from 'md5';
 import type { GitHubGateway } from '../gateways';
 import type { GitHubFileRepository } from '../repositories';
-import type { InternalFormService } from './internal-form.service';
 
 const GITHUB_FORM_PREFIX = process.env.GITHUB_FORM_PREFIX || 'a';
 const DEFAULT_BRANCH = process.env.GITHUB_DEFAULT_BRANCH || 'main';
-const INTERNAL_SLUG_PREFIX = 'forms/declarativeforms/internal/';
 
 export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
     private gitHubGateway: GitHubGateway,
-    private internalFormService: InternalFormService,
   ) {}
 
-  public async findById(
-    id: string,
-    branch?: string,
-  ): Promise<IDeclarativeForm | null> {
-    if (this.internalFormService.isInternalId(id)) {
-      return this.internalFormService.find(id, branch);
-    }
-
+  public async findById(id: string): Promise<IDeclarativeForm | null> {
     if (!id.startsWith(GITHUB_FORM_PREFIX)) {
       return null;
     }
@@ -54,10 +44,6 @@ export class FormService {
     slug: string,
     branch?: string,
   ): Promise<IDeclarativeForm | null> {
-    if (slug.toLowerCase().startsWith(INTERNAL_SLUG_PREFIX)) {
-      return this.findById(slug.slice(INTERNAL_SLUG_PREFIX.length), branch);
-    }
-
     const parts = slug.split('/');
 
     if (parts.length < 4) {
