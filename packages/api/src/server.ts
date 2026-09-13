@@ -1,18 +1,11 @@
 import fastifyCors from '@fastify/cors';
-import fastifyJwt from '@fastify/jwt';
 import fastifyMultipart from '@fastify/multipart';
+import fastifyMiddie from '@fastify/middie';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastify, { type FastifyError } from 'fastify';
-import { randomBytes } from 'node:crypto';
 import * as qs from 'qs';
 import { getContainer } from './core';
 import {
-  AUTH_DEMO_POST,
-  AUTH_ME_GET,
-  AUTH_PROVIDER_AUTHORIZE_GET,
-  AUTH_PROVIDER_CALLBACK_GET,
-  AUTH_TOKEN_POST,
-  CONFIG_GET,
   FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_EMAIL_CHALLENGES_POST,
@@ -22,23 +15,7 @@ import {
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_ID_TURNSTILE_VERIFY_POST,
   FORMS_OWNER_REPOSITORY_SLUG_GET,
-  ORGANIZATIONS_ID_FORMS_GENERATE_POST,
-  ORGANIZATIONS_ID_FORMS_GET,
-  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET,
-  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE,
-  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET,
-  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST,
-  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_YAML_GET,
-  ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST,
-  ORGANIZATIONS_ID_FORMS_ID_DELETE,
-  ORGANIZATIONS_ID_FORMS_ID_PATCH,
-  ORGANIZATIONS_ID_MEMBERS_EMAIL_DELETE,
-  ORGANIZATIONS_ID_MEMBERS_POST,
 } from './routes';
-
-const JWT_AUDIENCE = 'declarativeforms-api';
-const JWT_ISSUER = 'declarativeforms';
-const STRICT_CORS_PREFIXES = ['/api/v1/auth/', '/api/v1/organizations'];
 
 export async function startServer(): Promise<void> {
   const server = fastify({
@@ -65,36 +42,10 @@ export async function startServer(): Promise<void> {
     reply.status(500).send();
   });
 
-  const allowedOrigins = (process.env.AUTH_ALLOWED_ORIGINS || '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-
-  await server.register(fastifyCors, () => (request: any, callback: any) => {
-    const path = String(request.url || '').split('?')[0];
-    const isStrict = STRICT_CORS_PREFIXES.some((prefix) =>
-      path.startsWith(prefix),
-    );
-
-    callback(null, {
-      allowedHeaders: ['authorization', 'content-type'],
-      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      origin: isStrict ? allowedOrigins : '*',
-    });
-  });
-
-  await server.register(fastifyJwt, {
-    secret: process.env.AUTH_JWT_SECRET || randomBytes(32).toString('hex'),
-    sign: {
-      algorithm: 'HS256',
-      aud: JWT_AUDIENCE,
-      iss: JWT_ISSUER,
-    },
-    verify: {
-      algorithms: ['HS256'],
-      allowedAud: JWT_AUDIENCE,
-      allowedIss: JWT_ISSUER,
-    },
+  await server.register(fastifyCors, {
+    allowedHeaders: ['authorization', 'content-type', 'mcp-protocol-version'],
+    methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
+    origin: '*',
   });
 
   await server.register(fastifyRateLimit, {
@@ -112,6 +63,21 @@ export async function startServer(): Promise<void> {
     },
   });
 
+  await server.register(fastifyMiddie);
+
+  server.addContentTypeParser(
+    'application/x-www-form-urlencoded',
+    { parseAs: 'string' },
+    (_request, payload, done) => {
+      done(
+        null,
+        qs.parse(
+          typeof payload === 'string' ? payload : payload.toString('utf8'),
+        ),
+      );
+    },
+  );
+
   await server.addContentTypeParser(
     '*',
     { parseAs: 'buffer' },
@@ -124,31 +90,27 @@ export async function startServer(): Promise<void> {
     },
   );
 
-  server.decorateRequest('email', null);
-  server.decorateRequest('organization', null);
-
+  const container = await getContainer();
   const {
-    authCodeRepository,
-    formMessageRepository,
     formRepository,
     gitHubFileRepository,
     organizationRepository,
+    oauthAccountRepository,
     submissionRepository,
-  } = await getContainer();
+  } = container;
 
-  await authCodeRepository.ensureIndexes();
-  await formMessageRepository.ensureIndexes();
   await formRepository.ensureIndexes();
   await gitHubFileRepository.ensureIndexes();
   await organizationRepository.ensureIndexes();
+  await oauthAccountRepository.ensureIndexes();
   await submissionRepository.ensureIndexes();
 
-  server.route(AUTH_DEMO_POST);
-  server.route(AUTH_ME_GET);
-  server.route(AUTH_PROVIDER_AUTHORIZE_GET);
-  server.route(AUTH_PROVIDER_CALLBACK_GET);
-  server.route(AUTH_TOKEN_POST);
-  server.route(CONFIG_GET);
+  const oauth = await import('./oauth/provider.js');
+  const mcp = await import('./mcp/server.js');
+
+  await oauth.registerOAuth(server, container);
+  await mcp.registerMcp(server, container);
+
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_EMAIL_CHALLENGES_POST);
@@ -158,18 +120,6 @@ export async function startServer(): Promise<void> {
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_ID_TURNSTILE_VERIFY_POST);
   server.route(FORMS_OWNER_REPOSITORY_SLUG_GET);
-  server.route(ORGANIZATIONS_ID_FORMS_GENERATE_POST);
-  server.route(ORGANIZATIONS_ID_FORMS_GET);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_GET);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_DELETE);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_MESSAGES_GET);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_PUBLISH_POST);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_NAME_YAML_GET);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_BRANCHES_POST);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_DELETE);
-  server.route(ORGANIZATIONS_ID_FORMS_ID_PATCH);
-  server.route(ORGANIZATIONS_ID_MEMBERS_EMAIL_DELETE);
-  server.route(ORGANIZATIONS_ID_MEMBERS_POST);
 
   server.route({
     handler: async (_request, reply) => {

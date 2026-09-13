@@ -49,6 +49,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: '/.well-known/:path*',
+        destination: `${process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080'}/.well-known/:path*`,
+      },
+      {
         source: '/api/:path*',
         destination: `${process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080'}/api/:path*`,
       },

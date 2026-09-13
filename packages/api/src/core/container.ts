@@ -6,26 +6,23 @@ import {
   EmailGateway,
   GitHubGateway,
   GitHubOAuthGateway,
-  OpenAiGateway,
   TurnstileGateway,
 } from './gateways';
 import {
-  AuthCodeRepository,
-  FormMessageRepository,
   FormRepository,
   GitHubFileRepository,
   JobRepository,
+  OAuthAccountRepository,
   OrganizationRepository,
   SubmissionRepository,
 } from './repositories';
 import {
-  AuthenticationService,
   EmailVerificationService,
   FileService,
-  FormMessageService,
   FormService,
   InternalFormService,
   JobService,
+  OAuthAccountService,
   OrganizationService,
   SubmissionService,
   TokenService,
@@ -33,10 +30,8 @@ import {
 } from './services';
 import {
   EmailConnectionStrategy,
-  GitHubOAuthStrategy,
   WebhookConnectionStrategy,
   type IConnectionStrategy,
-  type IOAuthProviderStrategy,
 } from './strategies';
 
 export type Container = {
@@ -44,22 +39,18 @@ export type Container = {
   mongoClient: MongoClient;
   gitHubGateway: GitHubGateway;
   gitHubOAuthGateway: GitHubOAuthGateway;
-  openAiGateway: OpenAiGateway;
   turnstileGateway: TurnstileGateway;
-  authCodeRepository: AuthCodeRepository;
-  formMessageRepository: FormMessageRepository;
   formRepository: FormRepository;
   gitHubFileRepository: GitHubFileRepository;
   organizationRepository: OrganizationRepository;
+  oauthAccountRepository: OAuthAccountRepository;
   submissionRepository: SubmissionRepository;
   jobRepository: JobRepository;
-  tokenService: TokenService;
   fileService: FileService;
   organizationService: OrganizationService;
+  oauthAccountService: OAuthAccountService;
   internalFormService: InternalFormService;
   formService: FormService;
-  formMessageService: FormMessageService;
-  authenticationService: AuthenticationService;
   emailVerificationService: EmailVerificationService;
   turnstileVerificationService: TurnstileVerificationService;
   submissionService: SubmissionService;
@@ -95,19 +86,13 @@ export async function getContainer(): Promise<Container> {
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
   const gitHubOAuthGateway = new GitHubOAuthGateway();
-  const openAiGateway = new OpenAiGateway();
   const turnstileGateway = new TurnstileGateway();
-  const authCodeRepository = new AuthCodeRepository(db);
-  const formMessageRepository = new FormMessageRepository(db);
   const formRepository = new FormRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
   const organizationRepository = new OrganizationRepository(db);
+  const oauthAccountRepository = new OAuthAccountRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const jobRepository = new JobRepository(db);
-  const tokenService = new TokenService(
-    process.env.AUTH_STATE_SECRET || '',
-    'oauth',
-  );
   const verificationTokenService = new TokenService(
     process.env.VERIFICATION_SECRET || '',
     'verification',
@@ -115,6 +100,10 @@ export async function getContainer(): Promise<Container> {
   const emailGateway = new EmailGateway();
   const fileService = new FileService(s3Client);
   const organizationService = new OrganizationService(organizationRepository);
+  const oauthAccountService = new OAuthAccountService(
+    oauthAccountRepository,
+    organizationService,
+  );
   const internalFormService = new InternalFormService(
     formRepository,
     formDefinitionValidator,
@@ -132,23 +121,10 @@ export async function getContainer(): Promise<Container> {
     verificationTokenService,
     turnstileGateway,
   );
-  const formMessageService = new FormMessageService(
-    formMessageRepository,
-    internalFormService,
-    openAiGateway,
-  );
   const connectionStrategies: Array<IConnectionStrategy> = [
     new EmailConnectionStrategy(),
     new WebhookConnectionStrategy(),
   ];
-  const oauthProviderStrategies: Array<IOAuthProviderStrategy> = [
-    new GitHubOAuthStrategy(gitHubOAuthGateway),
-  ];
-  const authenticationService = new AuthenticationService(
-    authCodeRepository,
-    tokenService,
-    oauthProviderStrategies,
-  );
   const jobService = new JobService(jobRepository, {
     submission: async (data) => {
       const { connection, form, submission } = data as any;
@@ -171,13 +147,9 @@ export async function getContainer(): Promise<Container> {
   );
 
   container = {
-    authCodeRepository,
-    authenticationService,
     db,
     emailVerificationService,
     fileService,
-    formMessageRepository,
-    formMessageService,
     formRepository,
     formService,
     gitHubFileRepository,
@@ -187,12 +159,12 @@ export async function getContainer(): Promise<Container> {
     jobRepository,
     jobService,
     mongoClient,
-    openAiGateway,
+    oauthAccountRepository,
+    oauthAccountService,
     organizationRepository,
     organizationService,
     submissionRepository,
     submissionService,
-    tokenService,
     turnstileGateway,
     turnstileVerificationService,
   };

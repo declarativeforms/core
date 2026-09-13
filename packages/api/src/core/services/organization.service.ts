@@ -1,10 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { OrganizationRepository } from '../repositories';
-import type {
-  IOrganization,
-  IOrganizationMember,
-  IOrganizationRole,
-} from '../types';
+import type { IOrganization } from '../types';
 
 const ORGANIZATION_ID_PREFIX = 'o';
 const PERSONAL_TAG = 'personal';
@@ -14,17 +10,7 @@ const SLUG_ATTEMPTS = 5;
 export class OrganizationService {
   constructor(private organizationRepository: OrganizationRepository) {}
 
-  public find(id: string): Promise<IOrganization | null> {
-    return this.organizationRepository.findById(id);
-  }
-
-  public listByMember(emailAddress: string): Promise<Array<IOrganization>> {
-    return this.organizationRepository.findAllByMemberEmailAddress(
-      emailAddress,
-    );
-  }
-
-  public async create(
+  private async create(
     emailAddress: string,
     name: string,
     tags: Array<string>,
@@ -63,14 +49,14 @@ export class OrganizationService {
 
   public async ensurePersonalWorkspace(
     emailAddress: string,
-  ): Promise<IOrganization | null> {
-    const existing =
-      await this.organizationRepository.findAllByMemberEmailAddress(
-        emailAddress,
-      );
+  ): Promise<IOrganization> {
+    const existing = await this.organizationRepository.findByCreatedByAndTag(
+      emailAddress,
+      PERSONAL_TAG,
+    );
 
-    if (existing.length > 0) {
-      return null;
+    if (existing) {
+      return existing;
     }
 
     try {
@@ -82,79 +68,17 @@ export class OrganizationService {
         throw error;
       }
 
-      return this.organizationRepository.findByCreatedByAndTag(
+      const created = await this.organizationRepository.findByCreatedByAndTag(
         emailAddress,
         PERSONAL_TAG,
       );
+
+      if (!created) {
+        throw new Error('Could not load the personal workspace');
+      }
+
+      return created;
     }
-  }
-
-  public async addMember(
-    organization: IOrganization,
-    actorEmailAddress: string,
-    emailAddress: string,
-    role: IOrganizationRole,
-  ): Promise<boolean> {
-    if (!this.isAdmin(organization, actorEmailAddress)) {
-      return false;
-    }
-
-    const added = await this.organizationRepository.insertMember(
-      organization.id,
-      {
-        email: emailAddress,
-        role,
-      },
-    );
-
-    if (!added) {
-      await this.organizationRepository.setMemberRole(
-        organization.id,
-        emailAddress,
-        role,
-      );
-    }
-
-    return true;
-  }
-
-  public async removeMember(
-    organization: IOrganization,
-    actorEmailAddress: string,
-    emailAddress: string,
-  ): Promise<boolean> {
-    if (!this.isAdmin(organization, actorEmailAddress)) {
-      return false;
-    }
-
-    const remaining = organization.members.filter(
-      (member) => member.email !== emailAddress,
-    );
-
-    if (!remaining.some((member) => member.role === 'admin')) {
-      return false;
-    }
-
-    await this.organizationRepository.deleteMember(
-      organization.id,
-      emailAddress,
-    );
-
-    return true;
-  }
-
-  public findMember(
-    organization: IOrganization,
-    emailAddress: string,
-  ): IOrganizationMember | null {
-    return (
-      organization.members.find((member) => member.email === emailAddress) ??
-      null
-    );
-  }
-
-  public isAdmin(organization: IOrganization, emailAddress: string): boolean {
-    return this.findMember(organization, emailAddress)?.role === 'admin';
   }
 
   private buildSlug(name: string, attempt: number): string {

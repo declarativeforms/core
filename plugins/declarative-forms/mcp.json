@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "declarative-forms": {
+      "type": "streamable-http",
+      "url": "https://frms.dev/api/v1/mcp"
+    }
+  }
+}

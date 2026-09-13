@@ -16,7 +16,7 @@ export class GitHubOAuthGateway {
     url.searchParams.set('redirect_uri', redirectUri);
     url.searchParams.set(
       'scope',
-      process.env.GITHUB_OAUTH_SCOPE || 'read:user user:email',
+      process.env.GITHUB_OAUTH_SCOPE || 'user:email',
     );
     url.searchParams.set('state', state);
 
@@ -70,29 +70,43 @@ export class GitHubOAuthGateway {
   }
 
   public async findUser(accessToken: string): Promise<IOAuthUser | null> {
-    const response = await fetch(`${API_URL}/user/emails`, {
-      cache: 'no-store',
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${accessToken}`,
-        'User-Agent': 'declarativeforms',
-      },
-    });
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${accessToken}`,
+      'User-Agent': 'declarativeforms',
+    };
+    const [accountResponse, emailResponse] = await Promise.all([
+      fetch(`${API_URL}/user`, {
+        cache: 'no-store',
+        headers,
+      }),
+      fetch(`${API_URL}/user/emails`, {
+        cache: 'no-store',
+        headers,
+      }),
+    ]);
 
-    if (!response.ok) {
+    if (!accountResponse.ok || !emailResponse.ok) {
       return null;
     }
 
-    const value = (await response.json()) as Array<{
+    const account = (await accountResponse.json()) as { id?: number };
+    const emails = (await emailResponse.json()) as Array<{
       email?: string;
       primary?: boolean;
       verified?: boolean;
     }>;
-
-    const primary = value.find(
+    const primary = emails.find(
       (entry) => entry.primary && entry.verified && entry.email,
     );
 
-    return primary?.email ? { email_address: primary.email } : null;
+    if (!account.id || !primary?.email) {
+      return null;
+    }
+
+    return {
+      email_address: primary.email.trim().toLowerCase(),
+      subject: String(account.id),
+    };
   }
 }

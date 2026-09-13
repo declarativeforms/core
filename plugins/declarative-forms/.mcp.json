@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "declarative-forms": {
+      "type": "http",
+      "url": "https://frms.dev/api/v1/mcp"
+    }
+  }
+}

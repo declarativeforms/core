@@ -118,17 +118,17 @@ export class InternalFormService {
     return true;
   }
 
-  public async listBranchNamesById(
+  public async listBranchesById(
     organizationId: string,
     id: string,
-  ): Promise<Array<string> | null> {
+  ): Promise<Array<IInternalForm> | null> {
     const existing = await this.formRepository.findById(id);
 
     if (!existing || existing.organization_id !== organizationId) {
       return null;
     }
 
-    return this.formRepository.findAllBranchNamesById(id);
+    return this.formRepository.findAllById(id);
   }
 
   public findByBranch(
@@ -145,19 +145,19 @@ export class InternalFormService {
     id: string,
     name: string,
     from: string,
-  ): Promise<boolean> {
+  ): Promise<IInternalForm | null> {
     if (!BRANCH_PATTERN.test(name) || !BRANCH_PATTERN.test(from)) {
-      return false;
+      return null;
     }
 
     if (name === DEFAULT_BRANCH) {
-      return false;
+      return null;
     }
 
     const source = await this.findOwnedBranch(organizationId, id, from);
 
     if (!source) {
-      return false;
+      return null;
     }
 
     const now = new Date();
@@ -179,13 +179,13 @@ export class InternalFormService {
       await this.formRepository.insert(form);
     } catch (error: any) {
       if (error?.code === 11000) {
-        return false;
+        return null;
       }
 
       throw error;
     }
 
-    return true;
+    return form;
   }
 
   public async deleteBranch(
@@ -213,7 +213,7 @@ export class InternalFormService {
     emailAddress: string,
     id: string,
     source: string,
-  ): Promise<boolean> {
+  ): Promise<IInternalForm | null> {
     if (source === DEFAULT_BRANCH) {
       throw new Error('Source and target branches must differ');
     }
@@ -222,7 +222,7 @@ export class InternalFormService {
     const to = await this.findOwnedBranch(organizationId, id, DEFAULT_BRANCH);
 
     if (!from || !to) {
-      return false;
+      return null;
     }
 
     const form = this.carryMetadata(
@@ -237,21 +237,21 @@ export class InternalFormService {
       throw new Error('Target branch changed during publish');
     }
 
-    return true;
+    return form;
   }
 
-  public async applyGeneratedDefinition(
+  public async update(
     organizationId: string,
     emailAddress: string,
     id: string,
     branch: string,
     definition: IDeclarativeForm,
     name: string | null,
-  ): Promise<boolean> {
+  ): Promise<IInternalForm | null> {
     const fresh = await this.findOwnedBranch(organizationId, id, branch);
 
     if (!fresh) {
-      return false;
+      return null;
     }
 
     const form = this.carryMetadata(
@@ -263,10 +263,10 @@ export class InternalFormService {
     const replaced = await this.formRepository.replace(form, null);
 
     if (!replaced) {
-      return false;
+      return null;
     }
 
-    return true;
+    return form;
   }
 
   public toDefinition(form: IInternalForm): IDeclarativeForm {

@@ -3,8 +3,8 @@ import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { mergeClassNames } from '@/lib/utils';
 
-const STUDIO_URL = 'https://studio.frms.dev';
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
+const PLUGIN_URL = `${GITHUB_URL}/tree/main/plugins/declarative-forms`;
 const QUICK_START_URL = `${GITHUB_URL}#create-your-first-form`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
@@ -40,7 +40,7 @@ const STEPS: Array<{ index: string; title: string; body: string }> = [
   {
     index: '01',
     title: 'Define the form',
-    body: 'Write the YAML yourself, or describe your form in Studio and copy the generated YAML.',
+    body: 'Write the YAML yourself, or ask your AI client to create it through the Declarative Forms MCP server.',
   },
   {
     index: '02',
@@ -71,7 +71,7 @@ const FOOTER_COLUMNS: Array<{
   {
     title: 'Product',
     links: [
-      { href: STUDIO_URL, label: 'Studio' },
+      { href: PLUGIN_URL, label: 'MCP plugin' },
       { href: '#pricing', label: 'Pricing' },
       { href: QUICK_START_URL, label: 'Create from YAML' },
       { href: GITHUB_URL, label: 'Source' },
@@ -81,6 +81,7 @@ const FOOTER_COLUMNS: Array<{
     title: 'Project',
     links: [
       { href: `${GITHUB_URL}/blob/main/LICENSE`, label: 'AGPL-3.0 licence' },
+      { href: '/privacy-policy', label: 'Privacy' },
       { href: `${GITHUB_URL}/issues`, label: 'Issues' },
     ],
   },
@@ -200,7 +201,7 @@ function SiteNav(): React.JSX.Element {
           >
             GitHub
           </a>
-          <ActionButton href={STUDIO_URL}>Open Studio</ActionButton>
+          <ActionButton href={PLUGIN_URL}>Get MCP plugin</ActionButton>
         </div>
       </nav>
     </header>
@@ -220,12 +221,12 @@ function Hero(): React.JSX.Element {
           </p>
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
             Define a form in YAML, commit it to a public GitHub repository, and
-            share a live, hosted form. Start with a file or let Studio create
-            the YAML from a description.
+            share a live, hosted form. Start with a file or let your AI client
+            create and update it through MCP.
           </p>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <ActionButton href={STUDIO_URL} size="lg">
-              Open Studio
+            <ActionButton href={PLUGIN_URL} size="lg">
+              Get MCP plugin
               <ArrowRight className="size-4" />
             </ActionButton>
             <a
@@ -237,8 +238,8 @@ function Hero(): React.JSX.Element {
             </a>
           </div>
           <p className="max-w-[52ch] text-sm leading-relaxed text-ink-muted">
-            Cloud hosting and Studio are free. GitHub is used for sign-in;
-            Studio does not write to your repositories.
+            Cloud hosting and MCP authoring are free. GitHub is used for
+            sign-in; managed forms stay in Declarative Forms.
           </p>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
             {HERO_TICKS.map((tick) => (
@@ -357,16 +358,15 @@ function Tradeoff(): React.JSX.Element {
             The source of truth
           </span>
           <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-            Start in Studio. Move to Git when you’re ready.
+            Draft safely. Publish when you’re ready.
           </h2>
           <p className="text-lg leading-relaxed text-white/85">
-            Start in Studio and share your hosted form. When you want Git to own
-            the definition, copy the YAML and commit it to your repository.
+            Ask your AI client to create a draft branch, preview the hosted
+            form, and publish that branch to main after review.
           </p>
           <p className="text-lg leading-relaxed text-white/85">
-            Your repository-backed form gets its own URL. Make future changes in
-            Git, with pull-request reviews and branch previews. Changes do not
-            sync with Studio, and you can keep using your Studio form too.
+            Prefer Git as the source of truth? Copy the YAML into a public
+            repository and keep using pull-request reviews and branch previews.
           </p>
         </div>
       </div>
@@ -452,11 +452,11 @@ function Pricing(): React.JSX.Element {
               Free
             </p>
             <p className="max-w-[44ch] text-base leading-relaxed text-ink-muted">
-              Create forms in Studio or host YAML forms from public GitHub
-              repositories. Cloud hosting and Studio are both included.
+              Create forms through the MCP plugin or host YAML forms from public
+              GitHub repositories. Cloud hosting is included.
             </p>
             <div className="mt-auto pt-2">
-              <ActionButton href={STUDIO_URL}>Open Studio</ActionButton>
+              <ActionButton href={PLUGIN_URL}>Get MCP plugin</ActionButton>
             </div>
           </div>
           <div className="flex flex-col items-start gap-6 rounded-lg border-2 border-ink bg-white p-6 shadow-hard md:p-8">
@@ -490,11 +490,11 @@ function FinalCta(): React.JSX.Element {
           Your next form starts here.
         </h2>
         <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
-          Create and host your form in Studio for free, or keep its YAML in
+          Create and host your form through MCP for free, or keep its YAML in
           GitHub. Choose the workflow that fits your project.
         </p>
-        <ActionButton href={STUDIO_URL} size="lg">
-          Open Studio
+        <ActionButton href={PLUGIN_URL} size="lg">
+          Get MCP plugin
           <ArrowRight className="size-4" />
         </ActionButton>
       </div>

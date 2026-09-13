@@ -32,15 +32,14 @@ export class FormRepository {
       }) as Promise<IInternalForm | null>;
   }
 
-  public async findAllBranchNamesById(id: string): Promise<Array<string>> {
-    const documents = await this.db
+  public findAllById(id: string): Promise<Array<IInternalForm>> {
+    return this.db
       .collection<IInternalForm>('forms')
       .find({ deleted_at: null, form_id: id } as any, {
-        projection: { _id: 0, branch: 1 },
+        projection: { _id: 0 },
       })
-      .toArray();
-
-    return documents.map((document) => document.branch).sort();
+      .sort({ branch: 1 })
+      .toArray() as Promise<Array<IInternalForm>>;
   }
 
   public findAllByOrganizationIdAndBranch(
@@ -54,7 +53,6 @@ export class FormRepository {
         { projection: { _id: 0 } },
       )
       .sort({ updated_at: -1 })
-      .limit(200)
       .toArray() as Promise<Array<IInternalForm>>;
   }
 

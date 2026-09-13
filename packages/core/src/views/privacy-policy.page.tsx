@@ -11,6 +11,8 @@ export function PrivacyPolicyPage(): React.JSX.Element {
       </h1>
 
       <div className="space-y-6 text-gray-600 leading-relaxed">
+        <p className="text-sm">Last updated: 12 September 2026</p>
+
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
             Introduction
@@ -23,42 +25,81 @@ export function PrivacyPolicyPage(): React.JSX.Element {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Information We Collect
+            Information we collect
           </h2>
           <p>
-            We collect information you provide directly through forms, including
-            names, email addresses, and any other data you choose to submit.
+            When you sign in to the Declarative Forms MCP service, we receive
+            your stable GitHub account identifier and primary verified email
+            address. We store the forms and draft branches you author, OAuth
+            grants and tokens needed to keep your client connected, and
+            operational logs. When you complete a hosted form, we process the
+            answers and files that form requests.
           </p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            How We Use Information
+            How we use information
           </h2>
           <p>
-            We use the information collected to process form submissions and
-            provide our services. We do not sell your personal information to
-            third parties.
+            We use account information to authenticate you and keep your forms
+            in the correct personal workspace. We use form definitions to
+            preview and publish forms, and submission data to deliver responses
+            through the connections configured by the form author. We do not
+            sell personal information.
           </p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Third-Party Services
+            Sharing and service providers
           </h2>
           <p>
-            We may use third-party services like Google or GitHub for
-            authentication. These services have their own privacy policies.
+            GitHub provides sign-in. Our hosting, storage, email-delivery, abuse
+            prevention, and optional analytics providers process only the data
+            needed to provide those services. A form author may also configure
+            an email or webhook connection that sends submissions to the named
+            recipient. Those providers and recipients apply their own privacy
+            terms.
           </p>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Contact Us
+            Retention and security
           </h2>
           <p>
-            If you have any questions about this Privacy Policy, please contact
-            us.
+            We retain account and authored-form data while the account is in
+            use, OAuth artifacts until they expire or are revoked, and
+            submission data for as long as needed to operate the service and
+            meet legal obligations. We use access controls, encryption in
+            transit, and limited-scope tokens, but no online service can promise
+            absolute security.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            Your choices
+          </h2>
+          <p>
+            You can revoke the Declarative Forms connection in your AI client or
+            GitHub account. You may ask to access, correct, export, or delete
+            your account data, subject to applicable law and records we must
+            retain.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            Contact us
+          </h2>
+          <p>
+            For privacy questions or requests, email{' '}
+            <a className="underline" href="mailto:info@frms.dev">
+              info@frms.dev
+            </a>
+            .
           </p>
         </section>
 
