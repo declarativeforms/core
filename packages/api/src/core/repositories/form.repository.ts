@@ -57,7 +57,7 @@ export class FormRepository {
   }
 
   public async insert(form: IInternalForm): Promise<void> {
-    await this.db.collection<IInternalForm>('forms').insertOne(form as any);
+    await this.db.collection<IInternalForm>('forms').insertOne({ ...form });
   }
 
   public async replace(
