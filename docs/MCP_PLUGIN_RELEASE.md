@@ -32,6 +32,27 @@ code flow. An unauthenticated MCP request must return `401` with a
 
 ## 3. Acceptance-test the authoring journey
 
+Run the automated MCP check before deployment:
+
+```sh
+npm test -w @declarativeforms/api -- --runInBand
+MCP_TEST_MONGODB_URL=mongodb://127.0.0.1:27017 npm run test:mcp -w @declarativeforms/api
+```
+
+The MCP check requires a running MongoDB instance. It uses real repositories,
+signed test tokens, and the Fastify MCP endpoint; it creates a randomly named
+`mcp_check_*` database and drops only that database on completion. It covers
+discovery, the schema-valid RSVP example, form/branch lifecycles, personal
+defaults, shared organization access, role checks, email validation, concurrent
+member additions, and denial after membership removal.
+
+Local browser checks of the RSVP example passed at desktop (1440×900) and mobile
+(390×844) sizes for visible copy, no horizontal overflow, required/email
+validation, and personalized completion. An existing renderer accessibility
+follow-up remains: field labels render separately from their inputs without
+`htmlFor`/`id` or `aria-labelledby` associations. Address that in the renderer
+separately; this iteration changes MCP authoring and organization support.
+
 Connect `https://frms.dev/api/v1/mcp` from a clean MCP client and record the
 result of each test:
 
@@ -45,6 +66,22 @@ result of each test:
 6. Attempt invalid YAML, a duplicate branch, deletion of `main`, and access to
    a form owned by another account; each operation must fail without data loss.
 7. Revoke the OAuth grant and confirm the old token can no longer call MCP.
+8. Run the original prompt: "Use the frms.dev plugin to create a form that
+   captures a name and email address for lunch RSVP." Confirm exactly those two
+   fields, visible lunch-specific copy, required and email-format validation,
+   and a useful completion message. Check the preview on desktop and mobile.
+   The response must identify the destination and returned URL, offer focused
+   follow-up questions, and avoid inventing event details or promising email.
+9. Repeat with an explicit request for a plain, minimal form; confirm the client
+   honors that constraint. Read `declarativeforms://authoring-guide` from a
+   client without the bundled skill and repeat the authoring journey.
+10. Use `list_organizations`, create a form in a named organization, and verify
+    the client carries its ID through subsequent form and branch calls. Confirm
+    that omitting `organization_id` defaults to the personal workspace.
+11. As an admin, add a member with `add_organization_member`. Confirm immediate
+    access without any invitation email or acceptance step. Sign in as that
+    member and edit/publish/delete a test form; attempts to add other members
+    must fail. Re-adding someone must preserve their existing role.
 
 Run the same journey in ChatGPT developer mode and one non-OpenAI MCP client
 before public submission.

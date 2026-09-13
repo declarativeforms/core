@@ -14,7 +14,8 @@
     "start": "node dist/main.js",
     "scheduler": "node dist/scheduler.js",
     "test": "jest",
-    "test:oauth": "npm run build && node scripts/check-oauth-discovery.cjs"
+    "test:oauth": "npm run build && node scripts/check-oauth-discovery.cjs",
+    "test:mcp": "npm run build && node scripts/check-mcp.cjs"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.4",
