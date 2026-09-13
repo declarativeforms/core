@@ -92,6 +92,10 @@ https://frms.dev/your-org/your-repo/forms/beta-access?branch=my-form
 
 ## Go further
 
+- [MCP documentation](https://frms.dev/docs/mcp) explains how to connect ChatGPT
+  web, Codex CLI, Claude web, and Claude Code to create and manage hosted forms.
+  MCP-managed forms are stored in Declarative Forms; copy their YAML into GitHub
+  to use the repository-backed workflow.
 - [AGENTS.md](https://frms.dev/AGENTS.md) contains the complete form-authoring
   workflow and runtime rules for coding agents.
 - [schema.json](https://frms.dev/schema.json) is the authoritative,

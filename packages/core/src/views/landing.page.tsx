@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { mergeClassNames } from '@/lib/utils';
 
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
-const PLUGIN_URL = `${GITHUB_URL}/tree/main/plugins/declarative-forms`;
+const MCP_DOCS_URL = '/docs/mcp';
 const QUICK_START_URL = `${GITHUB_URL}#create-your-first-form`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
@@ -12,9 +12,9 @@ const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap';
 
 const HERO_TICKS: Array<string> = [
-  'Versioned in Git',
-  'Reviewable by pull request',
-  'Portable by design',
+  'Hosted forms',
+  'Built-in validation',
+  'Email and webhook delivery',
 ];
 
 const HERO_YAML = `# beta-access.yaml, committed to your repo
@@ -71,7 +71,7 @@ const FOOTER_COLUMNS: Array<{
   {
     title: 'Product',
     links: [
-      { href: PLUGIN_URL, label: 'MCP plugin' },
+      { href: MCP_DOCS_URL, label: 'MCP documentation' },
       { href: '#pricing', label: 'Pricing' },
       { href: QUICK_START_URL, label: 'Create from YAML' },
       { href: GITHUB_URL, label: 'Source' },
@@ -201,7 +201,7 @@ function SiteNav(): React.JSX.Element {
           >
             GitHub
           </a>
-          <ActionButton href={PLUGIN_URL}>Get MCP plugin</ActionButton>
+          <ActionButton href={MCP_DOCS_URL}>Get started</ActionButton>
         </div>
       </nav>
     </header>
@@ -220,13 +220,13 @@ function Hero(): React.JSX.Element {
             Forms that live in your Git repo.
           </p>
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
-            Define a form in YAML, commit it to a public GitHub repository, and
-            share a live, hosted form. Start with a file or let your AI client
-            create and update it through MCP.
+            Keep your form alongside the product or workflow it supports. Define
+            it in YAML, commit it to GitHub, and share a live form. Declarative
+            Forms handles rendering, validation, and submissions.
           </p>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <ActionButton href={PLUGIN_URL} size="lg">
-              Get MCP plugin
+            <ActionButton href={MCP_DOCS_URL} size="lg">
+              Get started
               <ArrowRight className="size-4" />
             </ActionButton>
             <a
@@ -238,8 +238,7 @@ function Hero(): React.JSX.Element {
             </a>
           </div>
           <p className="max-w-[52ch] text-sm leading-relaxed text-ink-muted">
-            Cloud hosting and MCP authoring are free. GitHub is used for
-            sign-in; managed forms stay in Declarative Forms.
+            Free cloud hosting for forms in public GitHub repositories.
           </p>
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
             {HERO_TICKS.map((tick) => (
@@ -334,15 +333,8 @@ function HowItWorks(): React.JSX.Element {
           </div>
         </div>
         <p className="mt-8 max-w-[64ch] text-base leading-relaxed text-ink-muted">
-          Add an email connection to receive completed responses in your inbox,
-          or a webhook to send them to your application.{' '}
-          <a
-            className="font-medium text-ink underline underline-offset-4"
-            href={`${GITHUB_URL}/blob/main/SCHEMA.md#connections`}
-          >
-            Set up response delivery
-          </a>
-          .
+          Receive completed responses by email, or send them to your application
+          with a webhook. Configure either connection in your form definition.
         </p>
       </div>
     </section>
@@ -355,18 +347,19 @@ function Tradeoff(): React.JSX.Element {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex max-w-[58ch] flex-col gap-6">
           <span className="inline-block w-fit -rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            The source of truth
+            Your definition. Our infrastructure.
           </span>
           <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-            Draft safely. Publish when you’re ready.
+            Keep the form with your code.
           </h2>
           <p className="text-lg leading-relaxed text-white/85">
-            Ask your AI client to create a draft branch, preview the hosted
-            form, and publish that branch to main after review.
+            When a form supports your product or engineering workflow, its
+            definition belongs alongside it. Review changes in a pull request
+            and preview the branch before merging.
           </p>
           <p className="text-lg leading-relaxed text-white/85">
-            Prefer Git as the source of truth? Copy the YAML into a public
-            repository and keep using pull-request reviews and branch previews.
+            You maintain the definition. Declarative Forms handles the live
+            form, validation, and submissions.
           </p>
         </div>
       </div>
@@ -443,37 +436,23 @@ function Pricing(): React.JSX.Element {
     >
       <div className="mx-auto w-full max-w-6xl">
         <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-          Free to get started. Free to keep using.
+          Cloud hosting, free.
         </h2>
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="mt-12 max-w-xl">
           <div className="flex flex-col items-start gap-6 rounded-lg border-2 border-ink bg-brand-yellow-soft p-6 shadow-hard md:p-8">
             <h3 className="font-display text-xl font-semibold">Cloud</h3>
             <p className="font-display text-4xl font-semibold tracking-[-0.025em]">
               Free
             </p>
             <p className="max-w-[44ch] text-base leading-relaxed text-ink-muted">
-              Create forms through the MCP plugin or host YAML forms from public
-              GitHub repositories. Cloud hosting is included.
+              Host YAML forms from public GitHub repositories, or create a
+              hosted form with your AI client. Cloud hosting is included.
+            </p>
+            <p className="text-sm leading-relaxed text-ink-muted">
+              Your AI client may require a separate subscription.
             </p>
             <div className="mt-auto pt-2">
-              <ActionButton href={PLUGIN_URL}>Get MCP plugin</ActionButton>
-            </div>
-          </div>
-          <div className="flex flex-col items-start gap-6 rounded-lg border-2 border-ink bg-white p-6 shadow-hard md:p-8">
-            <h3 className="font-display text-xl font-semibold">Enterprise</h3>
-            <p className="font-display text-4xl font-semibold tracking-[-0.025em]">
-              Custom pricing
-            </p>
-            <p className="max-w-[44ch] text-base leading-relaxed text-ink-muted">
-              Contact us to discuss your requirements.
-            </p>
-            <div className="mt-auto pt-2">
-              <ActionButton
-                href="mailto:info@frms.dev?subject=Enterprise%20enquiry"
-                variant="secondary"
-              >
-                Contact us
-              </ActionButton>
+              <ActionButton href={MCP_DOCS_URL}>Get started</ActionButton>
             </div>
           </div>
         </div>
@@ -487,14 +466,14 @@ function FinalCta(): React.JSX.Element {
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
         <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
-          Your next form starts here.
+          Put your next form in the repo.
         </h2>
         <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
-          Create and host your form through MCP for free, or keep its YAML in
-          GitHub. Choose the workflow that fits your project.
+          Define it in YAML. Keep it with your code. Share a hosted form without
+          building the form infrastructure yourself.
         </p>
-        <ActionButton href={PLUGIN_URL} size="lg">
-          Get MCP plugin
+        <ActionButton href={MCP_DOCS_URL} size="lg">
+          Get started
           <ArrowRight className="size-4" />
         </ActionButton>
       </div>

@@ -1,5 +1,10 @@
 # Declarative Forms plugin
 
+See the [MCP connection guide](https://frms.dev/docs/mcp) for ChatGPT web,
+Codex CLI, Claude web, and Claude Code setup, authentication, and examples.
+MCP-managed forms are stored in Declarative Forms, not committed to GitHub.
+Copy the YAML into a public repository to use Git as the source of truth.
+
 Connects an MCP-capable client to `https://frms.dev/api/v1/mcp`. GitHub OAuth
 creates or reconnects the user's personal workspace. `list_organizations`
 discovers accessible organizations and roles. Every form and branch tool accepts

@@ -12,11 +12,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   title: 'Git-native Forms as Code — Declarative Forms',
   description:
-    'Define forms in YAML, keep them in GitHub, and turn them into live, hosted forms with a versioned, reviewable source of truth.',
+    'Keep your form with your code. Define it in YAML, commit it to GitHub, and share a hosted form with rendering, validation, and submissions handled for you.',
   openGraph: {
     title: 'Forms that live in your Git repo.',
     description:
-      'Define forms in YAML, keep them in GitHub, and turn them into live, hosted forms with a versioned, reviewable source of truth.',
+      'Keep your form with your code. Define it in YAML, commit it to GitHub, and share a hosted form with rendering, validation, and submissions handled for you.',
     images: [LANDING_OG_IMAGE],
     type: 'website',
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Forms that live in your Git repo.',
     description:
-      'Define forms in YAML, keep them in GitHub, and turn them into live, hosted forms with a versioned, reviewable source of truth.',
+      'Keep your form with your code. Define it in YAML, commit it to GitHub, and share a hosted form with rendering, validation, and submissions handled for you.',
     images: [LANDING_OG_IMAGE],
   },
 };
