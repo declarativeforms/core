@@ -2,10 +2,10 @@
 
 **Live forms, maintained in GitHub.**
 
-Declarative Forms (FRMS) is a forms-as-code platform for engineers who maintain
-forms for products, open-source projects, and technical workflows. Define a
-form in YAML, push it to GitHub, and open it as a live, hosted form. FRMS renders
-the questions, validates answers, and stores submissions.
+Declarative Forms is a forms-as-code platform for engineers who maintain forms
+for products, open-source projects, and technical workflows. Define a form in
+YAML, push it to GitHub, and open it as a live, hosted form. Declarative Forms
+renders the questions, validates answers, and stores submissions.
 
 ## Why keep forms in Git?
 
@@ -14,25 +14,26 @@ same lifecycle as that system:
 
 - **Reviewable definitions.** Keep the YAML beside your code, review changes in
   pull requests, and use Git history to inspect or revert them.
-- **A working form without a custom backend.** FRMS provides the renderer,
-  answer validation, and submission storage.
+- **A working form without a custom backend.** Declarative Forms provides
+  the renderer, answer validation, and submission storage.
 - **Responses that fit your workflow.** Configure email or webhook connections
   to deliver submissions, and a completion screen to explain the next step.
 
 ## How it works
 
 The YAML form definition describes fields, sections, navigation, validation,
-and optional completion screens and connections. FRMS reads the definition
-from GitHub and renders the form. As a respondent completes sections, FRMS saves
-partial submissions; final submission validates the answers and marks the
-submission completed. Configured connections queue email or webhook delivery.
+and optional completion screens and connections. Declarative Forms reads the
+definition from GitHub and renders the form. As a respondent completes
+sections, it saves partial submissions; final submission validates the answers
+and marks the submission completed. Configured connections queue email or
+webhook delivery.
 
-The definition lives in GitHub. Submissions are stored by FRMS, not committed to
-your repository. Email and webhook delivery require configured connections;
-the starter [`contact.yaml`](./examples/contact.yaml) stores submissions but
-has no delivery connection. See [Connections](./SCHEMA.md#connections) to add
-one, or inspect the email connection in
-[`feature-request.yaml`](./examples/feature-request.yaml).
+The definition lives in GitHub. Submissions are stored by Declarative Forms,
+not committed to your repository. Email and webhook delivery require
+configured connections; the starter [`contact.yaml`](./examples/contact.yaml)
+stores submissions but has no delivery connection. See
+[Connections](./SCHEMA.md#connections) to add one, or inspect the email
+connection in [`feature-request.yaml`](./examples/feature-request.yaml).
 
 ## Get Started
 

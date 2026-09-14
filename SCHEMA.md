@@ -1,9 +1,10 @@
 # Form schema reference
 
-A Declarative Forms (FRMS) form definition is a single YAML file maintained in
-GitHub. It describes the form FRMS renders: fields, sections, navigation,
-validation, completion screens, and connections. Submissions contain the
-respondent's answers and are stored separately by FRMS, not in the repository.
+A Declarative Forms form definition is a single YAML file maintained in
+GitHub. It describes the form Declarative Forms renders: fields, sections,
+navigation, validation, completion screens, and connections. Submissions
+contain the respondent's answers and are stored separately by Declarative
+Forms, not in the repository.
 
 This document is the reference for the form definition: top-level keys, field
 types, validators, and the expressions used for logic and templating.

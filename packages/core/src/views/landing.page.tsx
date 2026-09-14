@@ -202,7 +202,7 @@ function Hero(): React.JSX.Element {
           <h1 className="-rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
             Forms as Code
           </h1>
-          <p className="font-display text-5xl leading-[0.95] font-semibold tracking-[-0.03em] text-balance sm:text-6xl lg:text-7xl">
+          <p className="font-display text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance sm:text-5xl lg:text-6xl">
             Live forms. Maintained in GitHub.
           </p>
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
@@ -252,7 +252,7 @@ function HowItWorks(): React.JSX.Element {
     <section className="bg-paper px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex flex-col gap-4">
-          <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
+          <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
             From a repository file to a working form.
           </h2>
           <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
@@ -309,20 +309,20 @@ function Tradeoff(): React.JSX.Element {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex max-w-[58ch] flex-col gap-6">
           <span className="inline-block w-fit -rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            You own the definition. FRMS runs the form.
+            Your definition. Declarative Forms handles the rest.
           </span>
-          <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
+          <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
             Ship the form without building its backend.
           </h2>
           <p className="text-lg leading-relaxed text-white/85">
             Define multiple steps, conditional questions, validation rules, and
-            file uploads in the same YAML file. FRMS turns that definition into
-            a form people can complete.
+            file uploads in one YAML file. Declarative Forms turns it into a
+            form people can complete.
           </p>
           <p className="text-lg leading-relaxed text-white/85">
-            Submissions are stored by FRMS. Add email or webhook connections to
-            send responses into your workflow, and customize the completion
-            screen to tell respondents what happens next.
+            Declarative Forms stores submissions. Add email or webhook
+            connections to send responses into your workflow, and customize the
+            completion screen to tell respondents what happens next.
           </p>
         </div>
       </div>
@@ -338,7 +338,7 @@ function FeatureRequests(): React.JSX.Element {
     >
       <div className="mx-auto grid w-full max-w-6xl items-start gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col items-start gap-6">
-          <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
+          <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
             Need something for your workflow?
           </h2>
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
@@ -389,7 +389,7 @@ function FinalCta(): React.JSX.Element {
   return (
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
-        <h2 className="font-display text-4xl leading-[0.95] font-semibold tracking-[-0.025em] text-balance sm:text-5xl">
+        <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
           Put your next form in GitHub.
         </h2>
         <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
