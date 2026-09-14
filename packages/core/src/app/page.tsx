@@ -5,26 +5,28 @@ const LANDING_OG_IMAGE = {
   url: '/og-image.png',
   width: 1200,
   height: 630,
-  alt: 'Declarative Forms landing page shown in a macOS-style window',
+  alt: 'Declarative Forms hero showing a GitHub-maintained form definition and its YAML example.',
 };
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
-  title: 'Forms as Code for engineering workflows — Declarative Forms',
+  title: { absolute: 'Forms as Code — Declarative Forms' },
   description:
-    'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.',
+    'Keep your form definition in GitHub. Publish a live form with validation and submission storage.',
   openGraph: {
-    title: 'Live forms. Maintained in GitHub.',
+    siteName: 'Declarative Forms',
+    url: '/',
+    title: 'Declarative Forms — Live forms, maintained in GitHub',
     description:
-      'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.',
+      'Keep your form definition in GitHub. Publish a live form with validation and submission storage.',
     images: [LANDING_OG_IMAGE],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Live forms. Maintained in GitHub.',
+    title: 'Declarative Forms — Live forms, maintained in GitHub',
     description:
-      'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.',
+      'Keep your form definition in GitHub. Publish a live form with validation and submission storage.',
     images: [LANDING_OG_IMAGE],
   },
 };

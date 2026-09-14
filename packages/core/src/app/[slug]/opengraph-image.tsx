@@ -10,7 +10,7 @@ export const alt = SITE_NAME;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-const FALLBACK_DESCRIPTION = 'Forms that live in your Git repo.';
+const FALLBACK_DESCRIPTION = 'Live forms. Maintained in GitHub.';
 const DEFAULT_ACCENT = '#171717';
 const TITLE_LIMIT = 110;
 const DESCRIPTION_LIMIT = 120;

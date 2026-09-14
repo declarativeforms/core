@@ -12,7 +12,7 @@ import './globals.css';
 export const dynamic = 'force-dynamic';
 
 const SITE_DESCRIPTION =
-  'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.';
+  'Keep your form definition in GitHub. Publish a live form with validation and submission storage.';
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
