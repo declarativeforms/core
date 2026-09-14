@@ -1,21 +1,14 @@
 import type { ReactNode } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { mergeClassNames } from '@/lib/utils';
 
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
 const GET_STARTED_URL = `${GITHUB_URL}#get-started`;
-const QUICK_START_URL = `${GITHUB_URL}#create-manually`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
 const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap';
-
-const HERO_TICKS: Array<string> = [
-  'Hosted forms',
-  'Built-in validation',
-  'Email and webhook delivery',
-];
 
 const HERO_YAML = `# beta-access.yaml, committed to your repo
 version: 1
@@ -72,7 +65,6 @@ const FOOTER_COLUMNS: Array<{
     title: 'Product',
     links: [
       { href: `${GITHUB_URL}/blob/main/SCHEMA.md`, label: 'YAML reference' },
-      { href: QUICK_START_URL, label: 'Create from YAML' },
       { href: GITHUB_URL, label: 'Source' },
     ],
   },
@@ -193,7 +185,7 @@ function SiteNav(): React.JSX.Element {
           >
             GitHub
           </a>
-          <ActionButton href={GET_STARTED_URL}>Get started</ActionButton>
+          <ActionButton href={GET_STARTED_URL}>Get Started</ActionButton>
         </div>
       </nav>
     </header>
@@ -216,30 +208,10 @@ function Hero(): React.JSX.Element {
             it in YAML, commit it to GitHub, and share a live form. Declarative
             Forms handles rendering, validation, and submissions.
           </p>
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <ActionButton href={GET_STARTED_URL} size="lg">
-              Get started
-              <ArrowRight className="size-4" />
-            </ActionButton>
-            <a
-              className="text-sm font-medium text-ink-muted underline underline-offset-4 hover:text-ink"
-              href={QUICK_START_URL}
-              rel="noreferrer"
-            >
-              Create from YAML
-            </a>
-          </div>
-          <p className="max-w-[52ch] text-sm leading-relaxed text-ink-muted">
-            Free cloud hosting for forms in public GitHub repositories.
-          </p>
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
-            {HERO_TICKS.map((tick) => (
-              <li className="flex items-center gap-2" key={tick}>
-                <Check className="size-4 text-brand-purple" strokeWidth={3} />
-                <span className="text-sm font-medium text-ink">{tick}</span>
-              </li>
-            ))}
-          </ul>
+          <ActionButton href={GET_STARTED_URL} size="lg">
+            Get Started
+            <ArrowRight className="size-4" />
+          </ActionButton>
         </div>
         <div className="overflow-hidden rounded-lg border-2 border-ink bg-white shadow-hard-lg rotate-[0.6deg]">
           <div className="flex items-center gap-2 border-b-2 border-ink bg-paper-alt px-4 py-2.5">
@@ -324,10 +296,6 @@ function HowItWorks(): React.JSX.Element {
             ))}
           </div>
         </div>
-        <p className="mt-8 max-w-[64ch] text-base leading-relaxed text-ink-muted">
-          Receive completed responses by email, or send them to your application
-          with a webhook. Configure either connection in your form definition.
-        </p>
       </div>
     </section>
   );
@@ -399,12 +367,6 @@ function FeatureRequests(): React.JSX.Element {
             >
               View YAML
             </a>
-            <a
-              className="underline underline-offset-4 hover:text-brand-purple"
-              href={`mailto:?subject=${encodeURIComponent('Missing a feature in Declarative Forms?')}&body=${encodeURIComponent(`Request a feature. If accepted, they’ll build it within 72 hours.\n\n${FEATURE_REQUEST_URL}`)}`}
-            >
-              Share this form
-            </a>
           </div>
         </div>
         <div className="overflow-hidden rounded-lg border-2 border-ink bg-white shadow-hard-lg">
@@ -432,7 +394,7 @@ function FinalCta(): React.JSX.Element {
           building the form infrastructure yourself.
         </p>
         <ActionButton href={GET_STARTED_URL} size="lg">
-          Get started
+          Get Started
           <ArrowRight className="size-4" />
         </ActionButton>
       </div>
