@@ -1,8 +1,12 @@
 # Form schema reference
 
-Every form is a single YAML file. This document is the complete reference for
-that file: every top-level key, every field type, every validator, and the small
-expression language used for logic and templating.
+A Declarative Forms (FRMS) form definition is a single YAML file maintained in
+GitHub. It describes the form FRMS renders: fields, sections, navigation,
+validation, completion screens, and connections. Submissions contain the
+respondent's answers and are stored separately by FRMS, not in the repository.
+
+This document is the reference for the form definition: top-level keys, field
+types, validators, and the expressions used for logic and templating.
 
 If you are just getting started, read the [README](./README.md) first. Two
 ready-to-copy examples ship in this repo:
@@ -297,7 +301,7 @@ across submissions; rotating `VERIFICATION_SECRET` invalidates them.
 | --- | --- | --- |
 | `short_text` | Single-line text input | none |
 | `long_text` | Multi-line text area | none |
-| `email` | Email input | none |
+| `email` | Email input | `otp` (enable email verification) |
 | `url` | URL input | none |
 | `mobile_number` | Phone number input | none |
 | `number` | Numeric input | none |
@@ -371,8 +375,8 @@ value passed in the URL, for example a campaign source. See
       message: "Upload at most two files."
 ```
 
-Uploaded media is stored in your S3-compatible bucket. Each `file_upload`,
-`camera`, and `signature` answer contains an object with the file's `url`,
+Uploaded media is stored in the deployment's S3-compatible object storage. Each
+`file_upload`, `camera`, and `signature` answer contains an object with the file's `url`,
 original or generated `name`, byte `size`, and MIME `type`. A `file_upload`
 stores one object with no `max` or with `max: 1`, and an array of objects with a
 larger `max`. Camera and signature fields store one object.

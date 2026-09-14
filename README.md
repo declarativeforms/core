@@ -1,23 +1,38 @@
 # Declarative Forms
 
-**Forms as Code for GitHub-native teams.**
+**Live forms, maintained in GitHub.**
 
-Define a form in YAML, keep it in GitHub, and turn it into a live, hosted form.
-The definition stays in your repository, so every change is versioned,
-reviewable, and portable. Declarative Forms handles the form experience without
-moving its source of truth into another dashboard.
+Declarative Forms (FRMS) is a forms-as-code platform for engineers who maintain
+forms for products, open-source projects, and technical workflows. Define a
+form in YAML, push it to GitHub, and open it as a live, hosted form. FRMS renders
+the questions, validates answers, and stores submissions.
 
 ## Why keep forms in Git?
 
-Some forms are part of a product, engineering workflow, open-source project, or
-technical process. Those forms benefit from living beside the systems they
-support:
+When a form supports a system your team owns, its definition can follow the
+same lifecycle as that system:
 
-- **One source of truth.** The form is a file your team owns.
-- **Your existing workflow.** Review changes in pull requests, preview a branch,
-  and revert when needed.
-- **Less infrastructure to build.** Declarative Forms handles rendering,
-  validation, and submissions from the definition you commit.
+- **Reviewable definitions.** Keep the YAML beside your code, review changes in
+  pull requests, and use Git history to inspect or revert them.
+- **A working form without a custom backend.** FRMS provides the renderer,
+  answer validation, and submission storage.
+- **Responses that fit your workflow.** Configure email or webhook connections
+  to deliver submissions, and a completion screen to explain the next step.
+
+## How it works
+
+The YAML form definition describes fields, sections, navigation, validation,
+and optional completion screens and connections. FRMS reads the definition
+from GitHub and renders the form. As a respondent completes sections, FRMS saves
+partial submissions; final submission validates the answers and marks the
+submission completed. Configured connections queue email or webhook delivery.
+
+The definition lives in GitHub. Submissions are stored by FRMS, not committed to
+your repository. Email and webhook delivery require configured connections;
+the starter [`contact.yaml`](./examples/contact.yaml) stores submissions but
+has no delivery connection. See [Connections](./SCHEMA.md#connections) to add
+one, or inspect the email connection in
+[`feature-request.yaml`](./examples/feature-request.yaml).
 
 ## Get Started
 
@@ -33,9 +48,11 @@ support:
    https://frms.dev/your-org/your-repo/forms/contact
    ```
 
-Forms use the literal `main` branch by default. For another pushed branch,
+Hosted forms use the literal `main` branch by default. For another pushed branch,
 append `?branch=my-form` to the URL. Walk the form and check its completion
-screen and any configured delivery before sharing it.
+screen and any configured delivery before sharing it. Branch previews are live
+forms: they can store submissions and trigger configured connections. They are
+not isolated test environments.
 
 ### Use your coding agent
 
@@ -68,4 +85,10 @@ localization, templated completion screens, email connections, and webhooks.
 ## Project
 
 Declarative Forms is open source under the [AGPL-3.0 license](./LICENSE) and can
-be self-hosted.
+be self-hosted. The repository includes
+[Docker Compose configuration](./compose.yaml) for the web app, API, scheduler,
+MongoDB, and S3-compatible object storage.
+Self-hosted deployments can configure `GITHUB_DEFAULT_BRANCH` and use
+`GITHUB_TOKEN` to read repositories the token can access. A private repository
+does not make a form definition private: people loading the form can see its
+configuration. Keep secrets out of YAML.

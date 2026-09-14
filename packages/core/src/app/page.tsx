@@ -10,21 +10,21 @@ const LANDING_OG_IMAGE = {
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
-  title: 'Git-native Forms as Code — Declarative Forms',
+  title: 'Forms as Code for engineering workflows — Declarative Forms',
   description:
-    'Keep your form with your code. Define it in YAML, commit it to GitHub, and share a hosted form with rendering, validation, and submissions handled for you.',
+    'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.',
   openGraph: {
-    title: 'Forms that live in your Git repo.',
+    title: 'Live forms. Maintained in GitHub.',
     description:
-      'Keep your form with your code. Define it in YAML, commit it to GitHub, and share a hosted form with rendering, validation, and submissions handled for you.',
+      'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.',
     images: [LANDING_OG_IMAGE],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Forms that live in your Git repo.',
+    title: 'Live forms. Maintained in GitHub.',
     description:
-      'Keep your form with your code. Define it in YAML, commit it to GitHub, and share a hosted form with rendering, validation, and submissions handled for you.',
+      'Forms as Code for engineering workflows. Keep your YAML definition in GitHub; Declarative Forms renders the form, validates answers, and stores submissions.',
     images: [LANDING_OG_IMAGE],
   },
 };
