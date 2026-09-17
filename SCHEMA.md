@@ -326,7 +326,7 @@ value passed in the URL, for example a campaign source. See
 | --- | --- | --- |
 | `single_select` | One-of-many (radio style) | `options`, `allow_other` |
 | `multiple_select` | Many-of-many (checkbox style) | `options`, `allow_other` |
-| `dropdown` | Select menu | `options`, `searchable` |
+| `dropdown` | Select menu | `options`, `searchable`, `depends_on`, `options_by_parent` |
 | `rating` | 1 to 5 scale | `min_label`, `max_label` |
 
 ```yaml
@@ -354,6 +354,38 @@ value passed in the URL, for example a campaign source. See
   min_label: "Novice"
   max_label: "Expert"
 ```
+
+Dropdowns can depend on an earlier dropdown. The child stays disabled until
+its parent has a value, uses the matching option group, and clears when its
+selection is no longer available:
+
+```yaml
+- id: province
+  type: dropdown
+  label: "Province"
+  options:
+    - label: "Gauteng"
+      value: gauteng
+    - label: "Western Cape"
+      value: western_cape
+  validators: [required]
+
+- id: city
+  type: dropdown
+  label: "City"
+  depends_on: province
+  options_by_parent:
+    gauteng: ["Johannesburg", "Pretoria"]
+    western_cape: ["Cape Town"]
+  validators: [required]
+```
+
+Each dropdown remains an ordinary answer, so this example stores
+`data.province` and `data.city` as separate strings. Dependency keys match the
+stored parent values, not their displayed labels. A dependent dropdown uses
+`options_by_parent` instead of `options`, and its dependency should be an
+earlier dropdown in the same section. Chain more fields in the same way for
+province, city, and suburb selection.
 
 ### Media and files
 

@@ -37,6 +37,8 @@ export type ICompiledFormDropdownField = ICompiledFormFieldBase & {
   type: 'dropdown';
   searchable?: boolean;
   options: Array<ICompiledFormOption>;
+  depends_on?: string;
+  options_by_parent?: Record<string, Array<ICompiledFormOption>>;
 };
 export type ICompiledFormSelectField = ICompiledFormFieldBase & {
   type: 'single_select' | 'multiple_select';

@@ -50,9 +50,20 @@ export function resolveFormField(
         ...base,
         type: 'dropdown',
         ...(field.searchable !== undefined && { searchable: field.searchable }),
+        ...(field.depends_on !== undefined && { depends_on: field.depends_on }),
         ...(field.options !== undefined && {
           options: field.options.map((option) =>
             resolveFormOption(option, locale),
+          ),
+        }),
+        ...(field.options_by_parent !== undefined && {
+          options_by_parent: Object.fromEntries(
+            Object.entries(field.options_by_parent).map(
+              ([parentValue, options]) => [
+                parentValue,
+                options.map((option) => resolveFormOption(option, locale)),
+              ],
+            ),
           ),
         }),
       };

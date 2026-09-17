@@ -115,14 +115,40 @@ const fieldBranches: Array<JsonSchemaNode> = [
       },
     },
   ),
-  fieldBranch(FIELD_TYPE_GROUPS.dropdown, 'A select menu.', {
-    options: optionsProperty,
-    searchable: {
-      type: 'boolean',
-      default: false,
-      description: 'Adds a search box to the menu. Useful past ~10 options.',
+  {
+    ...fieldBranch(
+      FIELD_TYPE_GROUPS.dropdown,
+      'A select menu. It can depend on an earlier dropdown in the same section while keeping both answers as ordinary top-level strings.',
+      {
+        options: optionsProperty,
+        searchable: {
+          type: 'boolean',
+          default: false,
+          description:
+            'Adds a search box to the menu. Useful past ~10 options.',
+        },
+        depends_on: ref(
+          'identifier',
+          'Id of an earlier dropdown in the same section. The field stays disabled until that dropdown has a value and clears when its selected option is no longer available.',
+        ),
+        options_by_parent: {
+          type: 'object',
+          minProperties: 1,
+          description:
+            'Options grouped by the stored value of `depends_on`. Group values use the same option format as `options` and support localization and templating.',
+          additionalProperties: {
+            type: 'array',
+            items: { $ref: '#/definitions/option' },
+          },
+        },
+      },
+    ),
+    dependencies: {
+      depends_on: ['options_by_parent'],
+      options_by_parent: ['depends_on'],
     },
-  }),
+    not: { required: ['options', 'options_by_parent'] },
+  },
   fieldBranch(
     FIELD_TYPE_GROUPS.select,
     'A choice field. `single_select` renders radio-style and stores a string; `multiple_select` renders checkbox-style and stores an array. On `multiple_select`, `min`/`max` validators bound the number of selections, not a value.',

@@ -100,6 +100,10 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
         ...base,
         type: 'dropdown',
         options: field.options ?? [],
+        ...(field.depends_on !== undefined && {
+          dependsOn: field.depends_on,
+        }),
+        optionsByParent: field.options_by_parent ?? {},
         searchable: field.searchable === true,
       };
     case 'single_select':

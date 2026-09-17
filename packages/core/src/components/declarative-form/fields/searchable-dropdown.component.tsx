@@ -1,7 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import type { IRenderableDropdownField } from '@declarativeforms/engine';
+import type {
+  ICompiledFormOption,
+  IRenderableDropdownField,
+} from '@declarativeforms/engine';
 import {
   HtmlText,
   type FieldProps,
@@ -21,12 +24,17 @@ import {
 import { useI18n } from '@/i18n';
 import { mergeClassNames } from '@/lib/utils';
 
+type SearchableDropdownProps = FieldProps<IRenderableDropdownField, string> & {
+  disabled: boolean;
+  options: Array<ICompiledFormOption>;
+};
+
 export function SearchableDropdown(
-  props: FieldProps<IRenderableDropdownField, string>,
+  props: SearchableDropdownProps,
 ): React.JSX.Element {
   const i18n = useI18n();
   const [open, setOpen] = useState(false);
-  const selectedOption = props.field.options?.find(
+  const selectedOption = props.options.find(
     (option) => option.value === props.control.value,
   );
 
@@ -38,6 +46,7 @@ export function SearchableDropdown(
           role="combobox"
           aria-expanded={open}
           aria-required={props.field.required}
+          disabled={props.disabled}
           className={mergeClassNames(
             'w-full justify-between text-sm/4 font-normal',
             !props.control.value && 'text-muted-foreground',
@@ -61,7 +70,7 @@ export function SearchableDropdown(
           <CommandList>
             <CommandEmpty>{i18n.t('dropdown.no_results')}</CommandEmpty>
             <CommandGroup>
-              {props.field.options?.map((option) => (
+              {props.options.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}

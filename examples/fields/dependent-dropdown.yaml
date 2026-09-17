@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: "Dependent dropdowns"
+description: "Choose a province, city, and suburb."
+
+sections:
+  - id: example
+    title: "Where do you live?"
+    fields:
+      - id: province
+        type: dropdown
+        label: "Province"
+        options:
+          - label: "Gauteng"
+            value: gauteng
+          - label: "Western Cape"
+            value: western_cape
+        validators: [required]
+
+      - id: city
+        type: dropdown
+        label: "City"
+        depends_on: province
+        searchable: true
+        options_by_parent:
+          gauteng:
+            - label: "Johannesburg"
+              value: johannesburg
+            - label: "Pretoria"
+              value: pretoria
+          western_cape:
+            - label: "Cape Town"
+              value: cape_town
+        validators: [required]
+
+      - id: suburb
+        type: dropdown
+        label: "Suburb"
+        depends_on: city
+        searchable: true
+        options_by_parent:
+          johannesburg:
+            - "Sandton"
+            - "Soweto"
+          pretoria:
+            - "Arcadia"
+          cape_town:
+            - "Gardens"
+            - "Sea Point"
+        validators: [required]
+
+completion:
+  title: "Complete"
+  message: "The response was submitted."

@@ -71,9 +71,20 @@ export function compileFormField(
         ...base,
         type: 'dropdown',
         ...(field.searchable !== undefined && { searchable: field.searchable }),
+        ...(field.depends_on !== undefined && { depends_on: field.depends_on }),
         options: (field.options ?? []).map((option) =>
           compileFormOption(option, data),
         ),
+        ...(field.options_by_parent !== undefined && {
+          options_by_parent: Object.fromEntries(
+            Object.entries(field.options_by_parent).map(
+              ([parentValue, options]) => [
+                parentValue,
+                options.map((option) => compileFormOption(option, data)),
+              ],
+            ),
+          ),
+        }),
       };
     case 'rating':
       return {

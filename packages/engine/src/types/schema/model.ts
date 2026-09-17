@@ -41,6 +41,8 @@ export type FormDropdownField<Text> = FormFieldBase<Text> & {
   type: 'dropdown';
   searchable?: boolean;
   options?: Array<FormOption<Text>>;
+  depends_on?: string;
+  options_by_parent?: Record<string, Array<FormOption<Text>>>;
 };
 
 export type FormSelectField<Text> = FormFieldBase<Text> & {
