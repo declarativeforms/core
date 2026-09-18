@@ -42,7 +42,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
       request.body,
       request.query.partial === 'true',
       {
-        ipAddress: String(request.headers['do-connecting-ip'] || ''),
+        ipAddress: request.ip,
         userAgent: String(request.headers['user-agent'] || ''),
       },
       submissionId,
