@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://frms.dev/schema.json
 version: 1
-title: "Missing a feature?"
-description: "Tell us what you need. If we accept your request, we’ll build it within 72 hours. We’ll confirm acceptance and scope by email. The 72 hours starts when we accept."
+title: "Request a feature in Declarative Forms"
+description: "Tell us what your workflow needs. If we accept the request, we’ll build it within 72 hours. We’ll confirm acceptance and scope by email. The 72-hour window starts when we accept."
 
 start:
   button: "Request a feature"

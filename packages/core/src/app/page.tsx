@@ -5,28 +5,28 @@ const LANDING_OG_IMAGE = {
   url: '/og-image.png',
   width: 1200,
   height: 630,
-  alt: 'Declarative Forms hero showing a GitHub-maintained form definition and its YAML example.',
+  alt: 'Declarative Forms preview showing “A live form from a file you own.” beside a YAML form definition.',
 };
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
-  title: { absolute: 'Forms as Code — Declarative Forms' },
+  title: { absolute: 'A live form from a file you own — Declarative Forms' },
   description:
-    'Keep your form definition in GitHub. Publish a live form with validation and submission storage.',
+    'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form—rendering questions, validating answers, and storing submissions.',
   openGraph: {
     siteName: 'Declarative Forms',
     url: '/',
-    title: 'Declarative Forms — Live forms, maintained in GitHub',
+    title: 'A live form from a file you own — Declarative Forms',
     description:
-      'Keep your form definition in GitHub. Publish a live form with validation and submission storage.',
+      'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form—rendering questions, validating answers, and storing submissions.',
     images: [LANDING_OG_IMAGE],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Declarative Forms — Live forms, maintained in GitHub',
+    title: 'A live form from a file you own — Declarative Forms',
     description:
-      'Keep your form definition in GitHub. Publish a live form with validation and submission storage.',
+      'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form—rendering questions, validating answers, and storing submissions.',
     images: [LANDING_OG_IMAGE],
   },
 };

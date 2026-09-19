@@ -1,11 +1,14 @@
 # Declarative Forms
 
-**Live forms, maintained in GitHub.**
+**Open-source Forms as Code.**
 
-Declarative Forms is a forms-as-code platform for engineers who maintain forms
-for products, open-source projects, and technical workflows. Define a form in
-YAML, push it to GitHub, and open it as a live, hosted form. Declarative Forms
-renders the questions, validates answers, and stores submissions.
+Define your form in YAML and keep it in GitHub. Declarative Forms turns that
+definition into the working form—rendering questions, validating answers, and
+storing submissions.
+
+Edit it yourself or with an AI agent. The source stays readable, versioned, and
+under your control. Use the hosted service on frms.dev or self-host the
+open-source stack.
 
 ## Why keep forms in Git?
 

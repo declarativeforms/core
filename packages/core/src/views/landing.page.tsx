@@ -10,7 +10,7 @@ const FEATURE_REQUEST_URL =
 const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap';
 
-const HERO_YAML = `# forms/beta-access.yaml, committed to GitHub
+const HERO_YAML = `# forms/beta-access.yaml
 version: 1
 title: "Request beta access"
 
@@ -24,26 +24,27 @@ sections:
 
       - id: project
         type: long_text
-        label: "What are you building?"
+        label: "What are you working on?"
         validators: [required]
+
     next: done
 `;
 
 const STEPS: Array<{ index: string; title: string; body: string }> = [
   {
     index: '01',
-    title: 'Define your form',
-    body: 'Start from an example and edit the YAML, or ask your coding agent to draft it using the published JSON Schema.',
+    title: 'Describe the form',
+    body: 'Start from an example, write the YAML yourself, or ask your coding agent to draft it against the published JSON Schema. Define the questions, validation, logic, and what should happen when the form is complete.',
   },
   {
     index: '02',
-    title: 'Push it to GitHub',
-    body: 'Commit the definition to a public GitHub repository. Keep its history and review changes through your existing pull request workflow.',
+    title: 'Push the definition',
+    body: 'Commit the file to GitHub. Form changes become ordinary versioned changes you can inspect, review, compare, and revert alongside the work they support.',
   },
   {
     index: '03',
-    title: 'Open and share it',
-    body: 'Open the matching path on frms.dev without .yaml. Use ?branch=draft to preview another pushed branch.',
+    title: 'Open the form',
+    body: 'Open the matching path on frms.dev and share it. Want to review a change first? Point the URL at another pushed branch and walk through the working form before you merge.',
   },
 ];
 
@@ -51,9 +52,9 @@ const URL_PARTS: Array<{ text: string; label: string | null }> = [
   { text: 'https://frms.dev/', label: null },
   { text: 'your-org', label: 'owner' },
   { text: '/', label: null },
-  { text: 'your-repo', label: 'repo' },
+  { text: 'your-repo', label: 'repository' },
   { text: '/', label: null },
-  { text: 'forms/beta-access', label: 'file path' },
+  { text: 'forms/beta-access', label: 'definition' },
   { text: '?branch=draft', label: 'branch' },
 ];
 
@@ -65,13 +66,13 @@ const FOOTER_COLUMNS: Array<{
     title: 'Product',
     links: [
       { href: `${GITHUB_URL}/blob/main/SCHEMA.md`, label: 'YAML reference' },
-      { href: GITHUB_URL, label: 'Source' },
+      { href: GITHUB_URL, label: 'Source code' },
     ],
   },
   {
     title: 'Project',
     links: [
-      { href: `${GITHUB_URL}/blob/main/LICENSE`, label: 'AGPL-3.0 licence' },
+      { href: `${GITHUB_URL}/blob/main/LICENSE`, label: 'AGPL-3.0 license' },
       { href: `${GITHUB_URL}/issues`, label: 'Issues' },
     ],
   },
@@ -183,7 +184,7 @@ function SiteNav(): React.JSX.Element {
             href={GITHUB_URL}
             rel="noreferrer"
           >
-            GitHub
+            View source
           </a>
           <ActionButton href={GET_STARTED_URL}>
             Create your first form
@@ -199,17 +200,23 @@ function Hero(): React.JSX.Element {
     <section className="border-b-2 border-ink bg-paper-alt px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-16">
         <div className="flex flex-col items-start gap-7">
-          <h1 className="-rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            Forms as Code
+          <span className="-rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
+            Open-source Forms as Code
+          </span>
+          <h1 className="font-display text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance sm:text-5xl lg:text-6xl">
+            A live form from a file you own.
           </h1>
-          <p className="font-display text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance sm:text-5xl lg:text-6xl">
-            Live forms. Maintained in GitHub.
-          </p>
-          <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
-            For engineers who own product and technical workflows. Define your
-            form in YAML and commit it to GitHub. Declarative Forms renders the
-            questions, validates answers, and stores submissions.
-          </p>
+          <div className="flex max-w-[52ch] flex-col gap-4 text-lg leading-relaxed text-ink-muted">
+            <p>
+              Define your form in YAML and keep it in GitHub. Declarative Forms
+              turns that definition into the working form—rendering questions,
+              validating answers, and storing submissions.
+            </p>
+            <p>
+              Edit it yourself or with an AI agent. The source stays readable,
+              versioned, and under your control.
+            </p>
+          </div>
           <ActionButton href={GET_STARTED_URL} size="lg">
             Create your first form
             <ArrowRight className="size-4" />
@@ -253,11 +260,11 @@ function HowItWorks(): React.JSX.Element {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex flex-col gap-4">
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            From a repository file to a working form.
+            One file. Three steps. A working form.
           </h2>
           <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
-            Keep the form definition beside the system it supports. Review
-            changes in pull requests and preview a pushed branch before merging.
+            You define what the form should do. Declarative Forms supplies the
+            runtime that makes it work.
           </p>
         </div>
         <ol className="mt-12 grid gap-6 md:grid-cols-3">
@@ -309,20 +316,28 @@ function Tradeoff(): React.JSX.Element {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex max-w-[58ch] flex-col gap-6">
           <span className="inline-block w-fit -rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            Your definition. Declarative Forms handles the rest.
+            You own the definition. Declarative Forms runs it.
           </span>
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            Ship the form without building its backend.
+            Keep the control. Skip building the form system.
           </h2>
           <p className="text-lg leading-relaxed text-white/85">
-            Define multiple steps, conditional questions, validation rules, and
-            file uploads in one YAML file. Declarative Forms turns it into a
-            form people can complete.
+            Your definition can describe multi-step flows, conditional
+            questions, validation, uploads, localized content, completion
+            screens, and email or webhook connections.
           </p>
           <p className="text-lg leading-relaxed text-white/85">
-            Declarative Forms stores submissions. Add email or webhook
-            connections to send responses into your workflow, and customize the
-            completion screen to tell respondents what happens next.
+            Declarative Forms turns it into the experience respondents use,
+            validates their answers, and stores submissions separately from your
+            repository.
+          </p>
+          <p className="text-lg leading-relaxed text-white/85">
+            Use frms.dev when you want the hosted service. Self-host the
+            open-source stack when control over the infrastructure matters.
+          </p>
+          <p className="text-lg leading-relaxed text-white/85">
+            Either way, the form remains an explicit artifact you can inspect,
+            version, reuse, and automate.
           </p>
         </div>
       </div>
@@ -339,19 +354,18 @@ function FeatureRequests(): React.JSX.Element {
       <div className="mx-auto grid w-full max-w-6xl items-start gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col items-start gap-6">
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            Need something for your workflow?
+            This form is running on Declarative Forms.
           </h2>
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
-            Describe the feature and what it would help you do. If we accept
-            your request, we’ll build it within 72 hours.
+            The feature-request form beside this copy is not a mockup.
           </p>
-          <p className="max-w-[52ch] text-sm leading-relaxed text-ink-muted">
-            We’ll confirm acceptance and scope by email. The 72-hour window
-            starts when we accept.
+          <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
+            Its YAML definition lives in the public repository. Declarative
+            Forms renders it here, stores its submissions, and a configured
+            email connection sends requests to our inbox.
           </p>
-          <p className="max-w-[52ch] text-sm leading-relaxed text-ink-muted">
-            Try the form here. Its YAML definition lives in this repository,
-            with an email connection configured to send requests to our inbox.
+          <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
+            Open the form or inspect the definition that powers it.
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium">
             <a
@@ -360,7 +374,7 @@ function FeatureRequests(): React.JSX.Element {
               target="_blank"
               rel="noreferrer"
             >
-              Open the request form
+              Open the live form
             </a>
             <a
               className="underline underline-offset-4 hover:text-brand-purple"
@@ -368,8 +382,21 @@ function FeatureRequests(): React.JSX.Element {
               target="_blank"
               rel="noreferrer"
             >
-              View its YAML definition
+              Inspect its YAML
             </a>
+          </div>
+          <div className="mt-4 flex max-w-[52ch] flex-col gap-3 border-t-2 border-ink pt-6">
+            <h3 className="font-display text-xl font-semibold tracking-[-0.02em]">
+              Need something the product does not support yet?
+            </h3>
+            <p className="text-base leading-relaxed text-ink-muted">
+              Tell us what your workflow needs. If we accept the request, we’ll
+              build it within 72 hours.
+            </p>
+            <p className="text-sm leading-relaxed text-ink-muted">
+              We’ll confirm acceptance and scope by email. The 72-hour window
+              starts when we accept.
+            </p>
           </div>
         </div>
         <div className="overflow-hidden rounded-lg border-2 border-ink bg-white shadow-hard-lg">
@@ -390,11 +417,16 @@ function FinalCta(): React.JSX.Element {
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
         <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-          Put your next form in GitHub.
+          Your next form can start as a file.
         </h2>
         <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
-          Start with an example, push your YAML, and open the form on frms.dev.
-          Keep future changes in the same review workflow as your code.
+          Copy an example or ask your AI agent to draft the definition. Push it
+          to GitHub, open the matching frms.dev URL, and you have a form you can
+          continue to review, reuse, and automate.
+        </p>
+        <p className="max-w-[48ch] text-base leading-relaxed text-ink-muted">
+          No separate form-building workflow. No custom form application to
+          maintain.
         </p>
         <ActionButton href={GET_STARTED_URL} size="lg">
           Create your first form
@@ -413,7 +445,7 @@ function SiteFooter(): React.JSX.Element {
           <div className="flex flex-col gap-3">
             <BrandMark />
             <p className="max-w-[32ch] text-sm leading-relaxed text-ink-muted">
-              Forms as Code for engineering workflows.
+              Open-source Forms as Code. Hosted on frms.dev or self-hosted.
             </p>
           </div>
           {FOOTER_COLUMNS.map((column) => (
