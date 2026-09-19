@@ -108,7 +108,7 @@ async function createPostHogProvider(
         return;
       }
 
-      instance.capture(event, properties);
+      instance.capture(event, properties, { send_instantly: true });
     },
     shutdown: () => {
       void instance.shutdown().catch((error) => {

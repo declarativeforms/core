@@ -25,7 +25,7 @@ const modules = new Map([
     toModule(`export class PostHog { init(token) {
       if (token === 'fail') throw new Error('PostHog unavailable');
       return {
-        capture(event) { globalThis.__analyticsTestEvents.push('posthog:' + event); },
+        capture(event, properties, options) { globalThis.__analyticsTestEvents.push('posthog:' + event + ':' + options.send_instantly); },
         shutdown() { globalThis.__analyticsTestEvents.push('posthog:shutdown'); return Promise.resolve(); }
       };
     }}`),
@@ -69,7 +69,7 @@ test('queues analytics until providers load and isolates failures', async (t) =>
   );
   assert.deepEqual(
     events.filter((event) => event.startsWith('posthog:')),
-    ['posthog:section_completed', 'posthog:shutdown'],
+    ['posthog:section_completed:true', 'posthog:shutdown'],
   );
 
   const failedAnalytics = analyticsModule.createAnalytics({
