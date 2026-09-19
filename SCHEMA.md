@@ -55,6 +55,7 @@ and report any checks you could not perform.
 - [Templating](#templating)
 - [Completion screen](#completion-screen)
 - [Connections](#connections)
+- [Authentication](#authentication)
 - [Prefilling fields from the URL](#prefilling-fields-from-the-url)
 - [Theming and analytics](#theming-and-analytics)
 - [Authoring checks and runtime behavior](#authoring-checks-and-runtime-behavior)
@@ -80,6 +81,8 @@ measurements:
 sections: []       # required
 completion: {}     # optional
 connections: []    # optional
+authentication:    # optional
+  verifier: "publishable-hmac-verifier"
 ```
 
 | Key | Type | Required | Description |
@@ -91,6 +94,7 @@ connections: []    # optional
 | `sections` | array of [Section](#sections) | Yes | The body of the form. At least one. |
 | `completion` | [Completion](#completion-screen) | No | The screen shown after submission. |
 | `connections` | array of [Connection](#connections) | No | Webhooks or emails fired on submit. |
+| `authentication` | [Authentication](#authentication) | No | Publishable verifier for an Access Key that can read completed submissions. |
 | `start_date` | string (`YYYY-MM-DD`) | No | Before this date the form is closed. |
 | `end_date` | string (`YYYY-MM-DD`) | No | After this date the form is closed. |
 | `locale` | string | No | Default language code, for example `en`. |
@@ -684,6 +688,44 @@ on the scheduler's next polling cycle. The connection, form, and submission are
 stored in the job's `data` payload, so later form edits do not change queued
 work. Failed jobs are moved one minute forward and retried.
 
+## Authentication
+
+Authentication lets a form owner retrieve completed submissions without an
+account. Generate an Access Key and its publishable verifier locally:
+
+```bash
+ACCESS_KEY="$(openssl rand -base64 32)"
+VERIFIER="$(printf 'frms.dev authentication' | openssl dgst -sha256 -hmac "$ACCESS_KEY" -r | awk '{print $1}')"
+printf 'Access Key (keep private): %s\nVerifier (safe to publish): %s\n' "$ACCESS_KEY" "$VERIFIER"
+```
+
+Store the Access Key like an API credential and put only its verifier in the
+form:
+
+```yaml
+authentication:
+  verifier: "replace-with-generated-verifier"
+```
+
+Use the Access Key in the authorization header, never in the URL:
+
+```bash
+curl \
+  -H "Authorization: Bearer $ACCESS_KEY" \
+  "https://api.example.com/api/v1/forms/a12345678/submissions?page=1&limit=100"
+```
+
+The endpoint returns a JSON array containing full completed submission records,
+ordered by update time, oldest first. `page` defaults to `1`; `limit` defaults
+to `100` and may not exceed `500`. Increment `page` until the endpoint returns
+an empty array.
+
+Anyone possessing the Access Key is authorized. Losing or rotating it requires
+generating a replacement and updating the verifier. Removing `authentication`
+revokes access without deleting submissions. Authorization uses the definition
+belonging to the requested form ID, so a preview branch cannot grant access to
+the canonical form's submissions.
+
 ## Prefilling fields from the URL
 
 Any query parameter that is not reserved prefills the field whose `id` matches.
@@ -791,6 +833,8 @@ repository the deployment can read.
 - The definition is visible to people loading the form. Never put secrets or
   credentials in YAML, including webhook URLs. Use only delivery destinations
   provided by the form owner.
+- An authentication verifier is safe to publish. Its matching Access Key is
+  not and must never be added to YAML.
 - Webhook requests have no configured custom headers or signatures. Handlebars
   escaping is disabled, and email bodies are HTML; treat interpolated respondent
   answers as untrusted content.

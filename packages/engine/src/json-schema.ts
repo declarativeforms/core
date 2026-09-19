@@ -433,6 +433,7 @@ export const FORM_JSON_SCHEMA = {
     ),
     theme: { $ref: '#/definitions/theme' },
     measurements: { $ref: '#/definitions/measurements' },
+    authentication: { $ref: '#/definitions/authentication' },
     sections: {
       type: 'array',
       minItems: 1,
@@ -691,6 +692,21 @@ export const FORM_JSON_SCHEMA = {
     connection: {
       description: 'Something that happens when a submission is saved.',
       oneOf: connectionBranches,
+    },
+    authentication: {
+      type: 'object',
+      description:
+        'Enables accountless access to protected form operations. Contains only a publishable verifier, never the private Access Key.',
+      additionalProperties: false,
+      required: ['verifier'],
+      properties: {
+        verifier: {
+          type: 'string',
+          pattern: '^[a-f0-9]{64}$',
+          description:
+            'The lowercase HMAC-SHA256 verifier generated from a private Access Key. Safe to commit; the Access Key is not.',
+        },
+      },
     },
     theme: {
       type: 'object',

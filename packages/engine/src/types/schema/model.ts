@@ -157,5 +157,8 @@ export type Form<Text> = {
   end_date?: string;
   locale?: string;
   measurements?: IDeclarativeFormMeasurements;
+  authentication?: {
+    verifier: string;
+  };
   theme?: IDeclarativeFormTheme;
 };

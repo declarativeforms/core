@@ -106,6 +106,19 @@ export class SubmissionService {
     );
   }
 
+  public list(
+    formId: string,
+    page: number,
+    limit: number,
+  ): Promise<Array<ISubmission>> {
+    return this.submissionRepository.findAllByFormIdAndStatus(
+      formId,
+      'completed',
+      page,
+      limit,
+    );
+  }
+
   private isValid(
     form: IDeclarativeForm,
     data: Record<string, unknown>,

@@ -33,10 +33,33 @@ test('authoring schema covers the engine, accepts examples, and rejects mistakes
   const form = parse(
     await readFile(new URL('lunch-rsvp.yaml', examples), 'utf8'),
   );
+  assert.equal(
+    validate({
+      ...form,
+      authentication: {
+        verifier: 'a'.repeat(64),
+      },
+    }),
+    true,
+    JSON.stringify(validate.errors),
+  );
   for (const invalid of [
     { ...form, unsupported: true },
     { ...form, sections: [] },
     { ...form, id: 'authored_id' },
+    {
+      ...form,
+      authentication: {
+        verifier: 'not-a-verifier',
+      },
+    },
+    {
+      ...form,
+      authentication: {
+        access_key: 'must-not-be-published',
+        verifier: 'a'.repeat(64),
+      },
+    },
     {
       sections: [
         { id: 'rsvp', fields: [{ id: 'answer', type: 'unsupported' }] },

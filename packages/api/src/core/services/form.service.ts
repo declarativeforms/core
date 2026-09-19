@@ -1,10 +1,41 @@
 import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
 import md5 from 'md5';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { GitHubGateway } from '../gateways';
 import type { GitHubFileRepository } from '../repositories';
 
 const GITHUB_FORM_PREFIX = process.env.GITHUB_FORM_PREFIX || 'a';
 const DEFAULT_BRANCH = process.env.GITHUB_DEFAULT_BRANCH || 'main';
+const AUTHENTICATION_MESSAGE = 'frms.dev authentication';
+
+function isAuthenticationValid(
+  authentication: unknown,
+  accessKey: string,
+): boolean {
+  if (
+    typeof authentication !== 'object' ||
+    authentication === null ||
+    !('verifier' in authentication) ||
+    typeof authentication.verifier !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(authentication.verifier) ||
+    !/^[A-Za-z0-9+/]{43}=$/.test(accessKey)
+  ) {
+    return false;
+  }
+
+  const decoded = Buffer.from(accessKey, 'base64');
+
+  if (decoded.length !== 32 || decoded.toString('base64') !== accessKey) {
+    return false;
+  }
+
+  const expected = createHmac('sha256', accessKey)
+    .update(AUTHENTICATION_MESSAGE)
+    .digest();
+  const configured = Buffer.from(authentication.verifier, 'hex');
+
+  return timingSafeEqual(expected, configured);
+}
 
 export class FormService {
   constructor(
@@ -38,6 +69,19 @@ export class FormService {
       ...parse(text),
       id,
     };
+  }
+
+  public async isAuthenticated(
+    id: string,
+    accessKey: string,
+  ): Promise<boolean> {
+    const form = await this.findById(id);
+
+    if (!form) {
+      return false;
+    }
+
+    return isAuthenticationValid(form.authentication, accessKey);
   }
 
   public async findBySlug(

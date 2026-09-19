@@ -10,6 +10,7 @@ import {
   FORMS_ID_EMAIL_CHALLENGES_POST,
   FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST,
   FORMS_ID_GET,
+  FORMS_ID_SUBMISSIONS_GET,
   FORMS_ID_SUBMISSIONS_ID_GET,
   FORMS_ID_SUBMISSIONS_POST,
   FORMS_ID_TURNSTILE_VERIFY_POST,
@@ -42,7 +43,7 @@ export async function startServer(): Promise<void> {
   });
 
   await server.register(fastifyCors, {
-    allowedHeaders: ['content-type'],
+    allowedHeaders: ['authorization', 'content-type'],
     methods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
     origin: '*',
   });
@@ -83,6 +84,7 @@ export async function startServer(): Promise<void> {
   server.route(FORMS_ID_EMAIL_CHALLENGES_POST);
   server.route(FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST);
   server.route(FORMS_ID_GET);
+  server.route(FORMS_ID_SUBMISSIONS_GET);
   server.route(FORMS_ID_SUBMISSIONS_ID_GET);
   server.route(FORMS_ID_SUBMISSIONS_POST);
   server.route(FORMS_ID_TURNSTILE_VERIFY_POST);
