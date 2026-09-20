@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
-import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa6';
 import { mergeClassNames } from '@/lib/utils';
 
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
+const LINKEDIN_URL = 'https://www.linkedin.com/company/declarativeforms';
 const GET_STARTED_URL = `${GITHUB_URL}#get-started`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
@@ -447,6 +449,24 @@ function SiteFooter(): React.JSX.Element {
             <p className="max-w-[32ch] text-sm leading-relaxed text-ink-muted">
               Open-source Forms as Code. Hosted on frms.dev or self-hosted.
             </p>
+            <div className="flex items-center gap-3">
+              <a
+                aria-label="Declarative Forms on LinkedIn"
+                className="inline-flex size-11 items-center justify-center rounded-md border-2 border-ink bg-paper text-ink transition-colors duration-150 hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                href={LINKEDIN_URL}
+                rel="noreferrer"
+              >
+                <FaLinkedin aria-hidden="true" className="size-5" />
+              </a>
+              <a
+                aria-label="Declarative Forms on GitHub"
+                className="inline-flex size-11 items-center justify-center rounded-md border-2 border-ink bg-paper text-ink transition-colors duration-150 hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                href={GITHUB_URL}
+                rel="noreferrer"
+              >
+                <FaGithub aria-hidden="true" className="size-5" />
+              </a>
+            </div>
           </div>
           {FOOTER_COLUMNS.map((column) => (
             <div className="flex flex-col gap-3" key={column.title}>
