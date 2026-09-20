@@ -1,98 +1,103 @@
 # Declarative Forms
 
-**Open-source Forms as Code.**
+**A live form from a file you own.**
 
-Define your form in YAML and keep it in GitHub. Declarative Forms turns that
-definition into the working form—rendering questions, validating answers, and
-storing submissions.
+Declarative Forms is an open-source Forms-as-Code platform. Describe your form
+in YAML, keep the definition in GitHub, and let Declarative Forms turn it into
+a working form—with rendering, validation, and submission handling.
 
-Edit it yourself or with an AI agent. The source stays readable, versioned, and
-under your control. Use the hosted service on frms.dev or self-host the
-open-source stack.
+Edit the definition yourself or with an AI agent. Use the hosted service at
+[frms.dev](https://frms.dev), or run the platform on your own infrastructure.
 
-## Why keep forms in Git?
+**[Get started](#get-started)** ·
+[Live example](https://frms.dev/declarativeforms/core/examples/contact) ·
+[Form reference](./SCHEMA.md) ·
+[Self-hosting](#self-hosting)
 
-When a form supports a system your team owns, its definition can follow the
-same lifecycle as that system:
+## Keep the definition. Skip building the form system.
 
-- **Reviewable definitions.** Keep the YAML beside your code, review changes in
-  pull requests, and use Git history to inspect or revert them.
-- **A working form without a custom backend.** Declarative Forms provides
-  the renderer, answer validation, and submission storage.
-- **Responses that fit your workflow.** Configure email or webhook connections
-  to deliver submissions, and a completion screen to explain the next step.
+A form should fit into your workflow—not require a separate application
+to build and maintain.
 
-## How it works
+**Keep changes visible.** Questions, rules, and connections live in a readable
+file. Use Git to track changes, compare versions, and review updates.
 
-The YAML form definition describes fields, sections, navigation, validation,
-and optional completion screens and connections. Declarative Forms reads the
-definition from GitHub and renders the form. As a respondent completes
-sections, it saves partial submissions; final submission validates the answers
-and marks the submission completed. Configured connections queue email or
-webhook delivery.
+**Work with your tools.** Edit a definition directly, adapt an example, generate
+it with a script, or ask an AI agent to help. The underlying artifact stays
+the same.
 
-The definition lives in GitHub. Submissions are stored by Declarative Forms,
-not committed to your repository. Email and webhook delivery require
-configured connections; the starter [`contact.yaml`](./examples/contact.yaml)
-stores submissions but has no delivery connection. See
-[Connections](./SCHEMA.md#connections) to add one, or inspect the email
-connection in [`feature-request.yaml`](./examples/feature-request.yaml).
+**Let Declarative Forms run it.** The platform renders the form, validates
+answers, and stores submissions. Configure connections to send responses into
+the systems you already use.
+
+This approach is for people who build and maintain workflows—not only people
+who write application code.
+
+**The definition lives in GitHub. Submissions are stored separately by the
+Declarative Forms deployment.**
 
 ## Get Started
 
-### Create manually
+Start with the [contact form example](./examples/contact.yaml), or describe
+your own form:
 
-1. Copy [`contact.yaml`](./examples/contact.yaml) into your public GitHub
-   repository as `forms/contact.yaml`. Use [`SCHEMA.md`](./SCHEMA.md) as the
-   reference when changing fields, validation, or navigation.
-2. Review, commit, and push the file, then open its repository path on
-   [frms.dev](https://frms.dev) without the `.yaml` extension:
+```yaml
+title: "Tell us about your project"
 
-   ```text
-   https://frms.dev/your-org/your-repo/forms/contact
-   ```
-
-Hosted forms use the literal `main` branch by default. For another pushed branch,
-append `?branch=my-form` to the URL. Walk the form and check its completion
-screen and any configured delivery before sharing it. Branch previews are live
-forms: they can store submissions and trigger configured connections. They are
-not isolated test environments.
-
-### Use your coding agent
-
-Open your repository in your preferred coding agent and paste:
-
-```text
-Use Declarative Forms. Read https://frms.dev/schema.json and create
-forms/lunch-rsvp.yaml for a team lunch RSVP. If you cannot edit files, return
-complete YAML. Validate against the schema if tooling is available and report
-any checks you could not run. Do not commit or push.
+sections:
+  - id: request
+    title: "Your project"
+    fields:
+      - id: project
+        type: long_text
+        label: "What are you working on?"
+        validators: [required]
+    next: done
 ```
 
-Review the result, then publish it using the steps above. If your agent cannot
-fetch the schema, provide its contents rather than asking it to guess the format.
+The definition describes what to ask and how the form should behave.
+Declarative Forms provides the working experience.
 
-## Go further
+Explore the [examples](./examples/) for complete definitions and compare the
+[live contact form](https://frms.dev/declarativeforms/core/examples/contact)
+with [its YAML](./examples/contact.yaml) to see the model in action.
 
-- [JSON Schema](https://frms.dev/schema.json) provides the maintained draft-07
-  authoring contract for editors, validators, and coding agents.
-- [SCHEMA.md](./SCHEMA.md) is the human-readable reference for every field,
-  validator, condition, and connection.
-- [`contact.yaml`](./examples/contact.yaml) is a compact example;
-  [`calculator.yaml`](./examples/calculator.yaml) demonstrates derived estimates;
-  [`kitchen-sink.yaml`](./examples/kitchen-sink.yaml) demonstrates the full
-  feature set.
+### Write the form, not the application
 
-Forms can include multiple sections, conditional logic, file uploads,
-localization, templated completion screens, email connections, and webhooks.
+The [form reference](./SCHEMA.md) explains fields, multi-step flows, conditional
+logic, validation, completion screens, and connections.
 
-## Project
+Compatible editors and AI agents can use the
+[published JSON Schema](https://frms.dev/schema.json) to help create and check
+definitions. Review generated definitions and test the resulting form before
+sharing it.
 
-Declarative Forms is open source under the [AGPL-3.0 license](./LICENSE) and can
-be self-hosted. The repository includes
-[Docker Compose configuration](./compose.yaml) for the web app, API, scheduler,
-MongoDB, and S3-compatible object storage.
-Self-hosted deployments can configure `GITHUB_DEFAULT_BRANCH` and use
-`GITHUB_TOKEN` to read repositories the token can access. A private repository
-does not make a form definition private: people loading the form can see its
-configuration. Keep secrets out of YAML.
+Form definitions are visible to people loading the form. Keep secrets and
+credentials out of the YAML.
+
+## Self-hosting
+
+Use [frms.dev](https://frms.dev) to publish forms without operating the platform.
+Self-host when you need control over the application and its infrastructure.
+
+The [deployment configuration](./compose.yaml) and
+[configuration reference](./.env.example) describe the current setup.
+Self-hosting means taking responsibility for operating, updating, and backing
+up your deployment.
+
+The model stays the same: definitions in GitHub, working forms served by
+Declarative Forms, and submissions stored separately.
+
+## Feedback
+
+Found a bug, have a question, or need something for your workflow?
+[Open an issue](https://github.com/declarativeforms/core/issues).
+
+You can also use our
+[feature-request form](https://frms.dev/declarativeforms/core/examples/feature-request)
+and inspect [the definition behind it](./examples/feature-request.yaml).
+
+## License
+
+Open source under the
+[GNU Affero General Public License v3.0](./LICENSE).
