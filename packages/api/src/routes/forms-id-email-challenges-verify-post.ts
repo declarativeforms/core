@@ -16,10 +16,10 @@ export const FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST: RouteOptions<
   handler: async (
     request: FastifyRequest<{
       Body: {
-        challenge?: unknown;
-        code?: unknown;
-        email_address?: unknown;
-        field_id?: unknown;
+        challenge: string;
+        code: string;
+        email_address: string;
+        field_id: string;
       };
       Params: { id: string };
     }>,
@@ -31,22 +31,6 @@ export const FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST: RouteOptions<
 
     if (!emailVerificationService.isConfigured()) {
       reply.status(503).send();
-
-      return;
-    }
-
-    if (
-      typeof request.body?.challenge !== 'string' ||
-      typeof request.body?.code !== 'string' ||
-      typeof request.body?.email_address !== 'string' ||
-      typeof request.body?.field_id !== 'string' ||
-      request.body.challenge.length === 0 ||
-      !/^\d{6}$/.test(request.body.code) ||
-      !/^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(request.body.field_id) ||
-      request.body.email_address.length > 320 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(request.body.email_address.trim())
-    ) {
-      reply.status(400).send();
 
       return;
     }
@@ -68,5 +52,24 @@ export const FORMS_ID_EMAIL_CHALLENGES_VERIFY_POST: RouteOptions<
     reply.status(200).send({ token });
   },
   method: 'POST',
+  schema: {
+    body: {
+      properties: {
+        challenge: { minLength: 1, type: 'string' },
+        code: { pattern: '^\\d{6}$', type: 'string' },
+        email_address: {
+          maxLength: 320,
+          pattern: '^\\s*[^\\s@]+@[^\\s@]+\\.[^\\s@]+\\s*$',
+          type: 'string',
+        },
+        field_id: {
+          pattern: '^[A-Za-z_][A-Za-z0-9_]{0,127}$',
+          type: 'string',
+        },
+      },
+      required: ['challenge', 'code', 'email_address', 'field_id'],
+      type: 'object',
+    },
+  },
   url: '/api/v1/forms/:id/email-challenges/verify',
 };

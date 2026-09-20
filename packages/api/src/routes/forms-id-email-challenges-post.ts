@@ -11,7 +11,7 @@ export const FORMS_ID_EMAIL_CHALLENGES_POST: RouteOptions<any, any, any, any> =
     },
     handler: async (
       request: FastifyRequest<{
-        Body: { email_address?: unknown; field_id?: unknown };
+        Body: { email_address: string; field_id: string };
         Params: { id: string };
       }>,
       reply: FastifyReply,
@@ -22,18 +22,6 @@ export const FORMS_ID_EMAIL_CHALLENGES_POST: RouteOptions<any, any, any, any> =
 
       if (!emailVerificationService.isConfigured()) {
         reply.status(503).send();
-
-        return;
-      }
-
-      if (
-        typeof request.body?.email_address !== 'string' ||
-        typeof request.body?.field_id !== 'string' ||
-        !/^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(request.body.field_id) ||
-        request.body.email_address.length > 320 ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(request.body.email_address.trim())
-      ) {
-        reply.status(400).send();
 
         return;
       }
@@ -56,5 +44,22 @@ export const FORMS_ID_EMAIL_CHALLENGES_POST: RouteOptions<any, any, any, any> =
       });
     },
     method: 'POST',
+    schema: {
+      body: {
+        properties: {
+          email_address: {
+            maxLength: 320,
+            pattern: '^\\s*[^\\s@]+@[^\\s@]+\\.[^\\s@]+\\s*$',
+            type: 'string',
+          },
+          field_id: {
+            pattern: '^[A-Za-z_][A-Za-z0-9_]{0,127}$',
+            type: 'string',
+          },
+        },
+        required: ['email_address', 'field_id'],
+        type: 'object',
+      },
+    },
     url: '/api/v1/forms/:id/email-challenges',
   };

@@ -11,7 +11,7 @@ export const FORMS_ID_TURNSTILE_VERIFY_POST: RouteOptions<any, any, any, any> =
     },
     handler: async (
       request: FastifyRequest<{
-        Body: { field_id?: unknown; response?: unknown };
+        Body: { field_id: string; response: string };
         Params: { id: string };
       }>,
       reply: FastifyReply,
@@ -23,18 +23,6 @@ export const FORMS_ID_TURNSTILE_VERIFY_POST: RouteOptions<any, any, any, any> =
 
       if (!turnstileVerificationService.isConfigured()) {
         reply.status(503).send();
-
-        return;
-      }
-
-      if (
-        typeof request.body?.field_id !== 'string' ||
-        typeof request.body?.response !== 'string' ||
-        !/^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(request.body.field_id) ||
-        request.body.response.length === 0 ||
-        request.body.response.length > 2048
-      ) {
-        reply.status(400).send();
 
         return;
       }
@@ -70,5 +58,22 @@ export const FORMS_ID_TURNSTILE_VERIFY_POST: RouteOptions<any, any, any, any> =
       reply.status(200).send({ token });
     },
     method: 'POST',
+    schema: {
+      body: {
+        properties: {
+          field_id: {
+            pattern: '^[A-Za-z_][A-Za-z0-9_]{0,127}$',
+            type: 'string',
+          },
+          response: {
+            maxLength: 2048,
+            minLength: 1,
+            type: 'string',
+          },
+        },
+        required: ['field_id', 'response'],
+        type: 'object',
+      },
+    },
     url: '/api/v1/forms/:id/turnstile/verify',
   };

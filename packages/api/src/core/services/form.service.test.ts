@@ -1,4 +1,3 @@
-import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { toRenderableForm } from '@declarativeforms/engine';
@@ -7,20 +6,6 @@ import { GitHubGateway } from '../gateways';
 import { GitHubFileRepository } from '../repositories';
 import type { IGitHubFile } from '../types';
 import { FormService } from './form.service';
-
-const AUTHENTICATION_MESSAGE = 'frms.dev authentication';
-
-function toVerifier(accessKey: string): string {
-  return createHmac('sha256', accessKey)
-    .update(AUTHENTICATION_MESSAGE)
-    .digest('hex');
-}
-
-function withAuthentication(yaml: string, verifier: string | null): string {
-  return verifier
-    ? `${yaml}\nauthentication:\n  verifier: "${verifier}"\n`
-    : yaml;
-}
 
 test('resolves GitHub YAML and preserves branch identity through ID lookup', async () => {
   const yaml = readFileSync(
@@ -114,47 +99,4 @@ test('resolves GitHub YAML and preserves branch identity through ID lookup', asy
       .filter((field) => field.visible)
       .map((field) => field.id),
   ).toEqual(['full_name', 'email', 'attendance']);
-});
-
-test('authenticates an access key against the current form definition', async () => {
-  const yaml = readFileSync(
-    resolvePath(__dirname, '../../../../../examples/lunch-rsvp.yaml'),
-    'utf8',
-  );
-  const repository = new GitHubFileRepository({} as Db);
-  const gateway = new GitHubGateway();
-  jest.spyOn(repository, 'findById').mockResolvedValue({
-    branch: 'main',
-    file: 'forms/events/lunch-rsvp',
-    id: 'a12345678',
-    owner: 'team',
-    repository: 'project',
-  });
-
-  const accessKey = Buffer.alloc(32, 1).toString('base64');
-  const replacementKey = Buffer.alloc(32, 2).toString('base64');
-  let verifier: string | null = toVerifier(accessKey);
-
-  jest
-    .spyOn(gateway, 'findYamlFile')
-    .mockImplementation(async () => withAuthentication(yaml, verifier));
-
-  const service = new FormService(repository, gateway);
-
-  expect(await service.isAuthenticated('a12345678', accessKey)).toBe(true);
-  expect(await service.isAuthenticated('a12345678', replacementKey)).toBe(
-    false,
-  );
-  expect(await service.isAuthenticated('a12345678', 'human-password')).toBe(
-    false,
-  );
-
-  verifier = toVerifier(replacementKey);
-  expect(await service.isAuthenticated('a12345678', accessKey)).toBe(false);
-  expect(await service.isAuthenticated('a12345678', replacementKey)).toBe(true);
-
-  verifier = null;
-  expect(await service.isAuthenticated('a12345678', replacementKey)).toBe(
-    false,
-  );
 });

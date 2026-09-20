@@ -12,23 +12,10 @@ export const FORMS_OWNER_REPOSITORY_SLUG_GET: RouteOptions<any, any, any, any> =
       reply: FastifyReply,
     ): Promise<void> => {
       const { formService } = await getContainer();
-      const file = request.params['*'];
-
-      if (!file) {
-        reply.status(400).send();
-
-        return;
-      }
-
-      const slug = `forms/${request.params.owner}/${request.params.repository}/${file}`;
-      const branch =
-        typeof request.query.branch === 'string'
-          ? request.query.branch
-          : undefined;
 
       const form: IDeclarativeForm | null = await formService.findBySlug(
-        slug,
-        branch,
+        `forms/${request.params.owner}/${request.params.repository}/${request.params['*']}`,
+        request.query.branch,
       );
 
       if (!form) {
@@ -40,5 +27,16 @@ export const FORMS_OWNER_REPOSITORY_SLUG_GET: RouteOptions<any, any, any, any> =
       reply.status(200).send(form);
     },
     method: 'GET',
+    schema: {
+      params: {
+        properties: { '*': { minLength: 1, type: 'string' } },
+        required: ['*'],
+        type: 'object',
+      },
+      querystring: {
+        properties: { branch: { type: 'string' } },
+        type: 'object',
+      },
+    },
     url: '/api/v1/forms/:owner/:repository/*',
   };

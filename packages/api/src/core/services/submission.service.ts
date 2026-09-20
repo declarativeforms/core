@@ -7,11 +7,13 @@ import {
   validateField,
 } from '@declarativeforms/engine';
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
-import { randomBytes } from 'node:crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { SubmissionRepository } from '../repositories';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
 import type { TokenService } from './token.service';
+
+const AUTHENTICATION_MESSAGE = 'frms.dev authentication';
 
 export class SubmissionService {
   constructor(
@@ -106,17 +108,53 @@ export class SubmissionService {
     );
   }
 
-  public list(
+  public async list(
     formId: string,
+    accessKey: string,
     page: number,
     limit: number,
-  ): Promise<Array<ISubmission>> {
-    return this.submissionRepository.findAllByFormIdAndStatus(
+  ): Promise<Array<ISubmission> | null> {
+    const form = await this.formService.findById(formId);
+
+    if (!form || !this.isAccessKeyValid(form.authentication, accessKey)) {
+      return null;
+    }
+
+    return this.submissionRepository.findPageByFormIdAndStatus(
       formId,
       'completed',
       page,
       limit,
     );
+  }
+
+  private isAccessKeyValid(
+    authentication: unknown,
+    accessKey: string,
+  ): boolean {
+    if (
+      typeof authentication !== 'object' ||
+      authentication === null ||
+      !('verifier' in authentication) ||
+      typeof authentication.verifier !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(authentication.verifier) ||
+      !/^[A-Za-z0-9+/]{43}=$/.test(accessKey)
+    ) {
+      return false;
+    }
+
+    const decoded = Buffer.from(accessKey, 'base64');
+
+    if (decoded.length !== 32 || decoded.toString('base64') !== accessKey) {
+      return false;
+    }
+
+    const expected = createHmac('sha256', accessKey)
+      .update(AUTHENTICATION_MESSAGE)
+      .digest();
+    const configured = Buffer.from(authentication.verifier, 'hex');
+
+    return timingSafeEqual(expected, configured);
   }
 
   private isValid(

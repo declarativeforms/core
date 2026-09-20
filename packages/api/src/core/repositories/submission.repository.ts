@@ -25,7 +25,7 @@ export class SubmissionRepository {
       );
   }
 
-  public findAllByFormIdAndStatus(
+  public findPageByFormIdAndStatus(
     formId: string,
     status: ISubmission['status'],
     page: number,

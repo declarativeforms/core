@@ -1,19 +1,20 @@
-# RFC: Method and Function Coding Standards
+# RFC: TypeScript Callable and Fastify Route Standards
 
-| Field      | Value                                                  |
-| ---------- | ------------------------------------------------------ |
-| Status     | Active                                                 |
-| Applies to | `packages/api`, `packages/core`, and `packages/engine` |
-| Subject    | Named TypeScript methods and functions                 |
-| Audience   | Engineers, reviewers, and coding agents                |
+| Field      | Value                                                   |
+| ---------- | ------------------------------------------------------- |
+| Status     | Active                                                  |
+| Applies to | `packages/api`, `packages/core`, and `packages/engine`  |
+| Subject    | Named TypeScript callables and Fastify route validation |
+| Audience   | Engineers, reviewers, and coding agents                 |
 
 ## 1. Abstract
 
 This RFC defines how named methods and functions are declared, named,
 parameterized, implemented, and consumed in the API, core, and engine packages.
-Its purpose is to make a callable's contract understandable from its name,
-signature, and return type without reading its implementation or relying on
-comments.
+It also defines where Fastify routes validate request input. Its purpose is to
+make a callable's contract understandable from its name, signature, and return
+type without reading its implementation or relying on comments, and to keep
+transport validation declarative.
 
 The packages use different module styles. The API primarily uses classes, the
 core uses React components, hooks, and browser or server functions, and the
@@ -26,18 +27,18 @@ because TypeScript functions and interface method signatures cannot declare
 
 This RFC is active and normative.
 
-When this RFC conflicts with method- or function-definition guidance in an
-`AGENTS.md` file under an applicable package, this RFC takes precedence for
+When this RFC conflicts with callable or Fastify request-validation guidance in
+an `AGENTS.md` file under an applicable package, this RFC takes precedence for
 that subject. More specific package rules continue to apply when they do not
 conflict with this RFC. Compiler constraints, public API contracts, security
 requirements, and data-integrity requirements are never weakened by this
 precedence rule.
 
 Existing code that does not conform is legacy code. It MUST NOT be treated as a
-pattern to copy. A new named callable MUST conform. An existing named callable
-MUST conform when its declaration or behavior is materially changed. Unrelated
-legacy callables MUST NOT be refactored solely to satisfy this RFC unless a task
-explicitly requests repository-wide alignment.
+pattern to copy. A new named callable or Fastify route MUST conform. An existing
+named callable or route MUST conform when its declaration or behavior is
+materially changed. Unrelated legacy code MUST NOT be refactored solely to
+satisfy this RFC unless a task explicitly requests repository-wide alignment.
 
 ## 3. Normative language
 
@@ -78,6 +79,13 @@ This RFC does not require access modifiers or explicit return annotations on:
 An excluded callback MAY declare a return type when inference is insufficient
 or the annotation prevents a real mistake. It MUST NOT be annotated merely for
 visual consistency.
+
+### 4.3 Fastify route validation
+
+The request schemas and handler request types of Fastify routes in
+`packages/api` are in scope. The rules in
+[Fastify request schemas](#107-fastify-request-schemas) apply whether a route
+handler is declared inline or by a named callable.
 
 ## 5. Declaration form
 
@@ -912,6 +920,37 @@ The declaration MUST remain readable after Prettier formats it. A multi-line
 signature SHOULD place one parameter per line and retain the trailing comma
 produced by the project formatter.
 
+### 10.7 Fastify request schemas
+
+A Fastify route MUST use its `schema` to validate request shape whenever JSON
+Schema can express the rule. This includes required fields, primitive types,
+patterns, enums, lengths, numeric bounds, coercion, and defaults for `params`,
+`querystring`, `headers`, and JSON `body` values.
+
+The handler's `FastifyRequest` type MUST describe values after schema validation
+and coercion. A handler MUST NOT repeat schema-expressible checks with `typeof`,
+regular expressions, array tests, length comparisons, or manual defaulting.
+Fastify validation failures use the shared error handler's `400` response; a
+route MUST NOT add an equivalent guard solely to select that status.
+
+Handlers and services retain checks that require application meaning or runtime
+state, including authorization, dependency configuration, loaded entity state,
+relationships between resources, remote verification, and multipart streams
+read through APIs such as `request.file()`. Runtime values from custom content
+parsers also remain in code when JSON Schema cannot distinguish them, such as a
+`Buffer` accepted by an object type check. A schema MUST NOT pretend to validate
+data that it cannot represent accurately.
+
+Authorization credential extraction MAY remain in the handler when missing and
+malformed credentials deliberately use the same unauthorized or not-found
+response instead of Fastify's `400` validation response.
+
+Route schemas SHOULD remain inline. A shared schema fragment is justified only
+when multiple routes already consume the same complete contract and sharing it
+does not obscure the accepted request shape. Adding a schema MUST preserve the
+route's established treatment of unknown properties unless the current task
+explicitly changes that public contract.
+
 ## 11. Error and outcome policy
 
 ### 11.1 Errors do not drive expected logic
@@ -1178,8 +1217,8 @@ and hides every dependency failure as an ordinary negative result.
 
 ## 13. Review checklist
 
-Before accepting a new or changed named method or function, verify all of the
-following:
+Before accepting a new or changed named callable or Fastify route, verify all of
+the following:
 
 ### Declaration
 
@@ -1241,12 +1280,22 @@ following:
 - The declaration and body contain no comments.
 - Prettier owns mechanical formatting.
 
+### Fastify routes
+
+- Schema-expressible request validation lives in the route schema.
+- The handler request type matches the validated and coerced values.
+- The handler does not repeat type, pattern, enum, length, bound, or default
+  checks owned by the schema.
+- Domain, authorization, dependency, and multipart checks remain at their
+  appropriate runtime boundary.
+- Unknown-property behavior remains compatible unless explicitly changed.
+
 ## 14. Conformance boundary
 
-Conformance is evaluated on each new or materially changed named callable. A
-change is conforming only when its declaration, name, parameters, return
-contract, body structure, and error behavior satisfy every applicable MUST or
-MUST NOT rule in this RFC.
+Conformance is evaluated on each new or materially changed named callable and
+Fastify route. A change is conforming only when its callable contracts, route
+schemas, handler request types, body structure, and error behavior satisfy every
+applicable MUST or MUST NOT rule in this RFC.
 
 When modifying the API, verification MUST include:
 
@@ -1275,18 +1324,18 @@ npx tsc -b
 
 The API and engine lint commands and the core format command format files in
 place. A second formatting run MUST report no changed source files. Reviewers
-MUST additionally inspect the changed callable against the checklist because
-naming quality, expected-versus-terminal outcomes, unnecessary locals, and
-comment-free clarity cannot be established by the type checker or formatter
-alone.
+MUST additionally inspect changed callables and routes against the checklist
+because naming quality, expected-versus-terminal outcomes, unnecessary locals,
+request-validation placement, and comment-free clarity cannot be established by
+the type checker or formatter alone.
 
 This RFC does not authorize compatibility aliases, migrations, broad cleanup,
 or unrelated refactoring. When a requested change exposes a legacy
 non-conforming callable, make the smallest safe alignment necessary for the
 requested behavior. Leave unrelated legacy code unchanged.
 
-This RFC defines method and function standards only. It does not redefine route
-URLs, HTTP response shapes, package architecture, persistence schemas, public
-engine types, test policy, or dependency policy except where those subjects
-directly determine a callable's name, signature, return contract, or error
-behavior.
+This RFC defines callable standards and Fastify request-validation placement. It
+does not redefine route URLs, HTTP response shapes, package architecture,
+persistence schemas, public engine types, test policy, or dependency policy
+except where those subjects directly determine a callable contract or route
+request schema.

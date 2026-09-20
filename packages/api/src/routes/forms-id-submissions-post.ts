@@ -12,40 +12,27 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     request: FastifyRequest<{
       Body: Record<string, unknown>;
       Params: { id: string };
-      Querystring: { id?: string; partial?: string };
+      Querystring: { id?: string; partial: boolean };
     }>,
     reply: FastifyReply,
   ): Promise<void> => {
-    const { submissionService } = await getContainer();
-
-    if (
-      !request.body ||
-      typeof request.body !== 'object' ||
-      Array.isArray(request.body) ||
-      Buffer.isBuffer(request.body) ||
-      (request.query.id !== undefined &&
-        (typeof request.query.id !== 'string' || !request.query.id)) ||
-      (request.query.partial !== undefined &&
-        request.query.partial !== 'true' &&
-        request.query.partial !== 'false')
-    ) {
+    if (Buffer.isBuffer(request.body)) {
       reply.status(400).send();
 
       return;
     }
 
-    const submissionId =
-      typeof request.query.id === 'string' ? request.query.id : undefined;
+    const { submissionService } = await getContainer();
 
     const submission = await submissionService.submit(
       request.params.id,
       request.body,
-      request.query.partial === 'true',
+      request.query.partial,
       {
         ipAddress: request.ip,
         userAgent: String(request.headers['user-agent'] || ''),
       },
-      submissionId,
+      request.query.id,
     );
 
     if (!submission) {
@@ -57,5 +44,15 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     reply.status(200).send(submission);
   },
   method: 'POST',
+  schema: {
+    body: { type: 'object' },
+    querystring: {
+      properties: {
+        id: { minLength: 1, type: 'string' },
+        partial: { default: false, type: 'boolean' },
+      },
+      type: 'object',
+    },
+  },
   url: '/api/v1/forms/:id/submissions',
 };

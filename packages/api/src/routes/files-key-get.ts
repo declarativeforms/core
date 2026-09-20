@@ -9,15 +9,8 @@ export const FILES_KEY_GET: RouteOptions<any, any, any, any> = {
     reply: FastifyReply,
   ): Promise<void> => {
     const { fileService } = await getContainer();
-    const key = request.params['*'];
 
-    if (!key) {
-      reply.status(404).send();
-
-      return;
-    }
-
-    const file = await fileService.download(key);
+    const file = await fileService.download(request.params['*']);
 
     if (!file) {
       reply.status(404).send();
@@ -32,5 +25,12 @@ export const FILES_KEY_GET: RouteOptions<any, any, any, any> = {
     reply.status(200).send(file.body);
   },
   method: 'GET',
+  schema: {
+    params: {
+      properties: { '*': { minLength: 1, type: 'string' } },
+      required: ['*'],
+      type: 'object',
+    },
+  },
   url: '/api/v1/files/*',
 };
