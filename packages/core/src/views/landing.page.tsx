@@ -449,22 +449,22 @@ function SiteFooter(): React.JSX.Element {
             <p className="max-w-[32ch] text-sm leading-relaxed text-ink-muted">
               Open-source Forms as Code. Hosted on frms.dev or self-hosted.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <a
                 aria-label="Declarative Forms on LinkedIn"
-                className="inline-flex size-11 items-center justify-center rounded-md border-2 border-ink bg-paper text-ink transition-colors duration-150 hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="inline-flex size-8 items-center justify-center rounded-md border-2 border-ink bg-paper text-ink transition-colors duration-150 hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                 href={LINKEDIN_URL}
                 rel="noreferrer"
               >
-                <FaLinkedin aria-hidden="true" className="size-5" />
+                <FaLinkedin aria-hidden="true" className="size-4" />
               </a>
               <a
                 aria-label="Declarative Forms on GitHub"
-                className="inline-flex size-11 items-center justify-center rounded-md border-2 border-ink bg-paper text-ink transition-colors duration-150 hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="inline-flex size-8 items-center justify-center rounded-md border-2 border-ink bg-paper text-ink transition-colors duration-150 hover:bg-brand-yellow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                 href={GITHUB_URL}
                 rel="noreferrer"
               >
-                <FaGithub aria-hidden="true" className="size-5" />
+                <FaGithub aria-hidden="true" className="size-4" />
               </a>
             </div>
           </div>
