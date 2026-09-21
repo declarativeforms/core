@@ -12,13 +12,13 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   title: { absolute: 'A live form from a file you own — Declarative Forms' },
   description:
-    'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form—rendering questions, validating answers, and storing submissions.',
+    'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form — rendering questions, validating answers, and storing submissions.',
   openGraph: {
     siteName: 'Declarative Forms',
     url: '/',
     title: 'A live form from a file you own — Declarative Forms',
     description:
-      'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form—rendering questions, validating answers, and storing submissions.',
+      'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form — rendering questions, validating answers, and storing submissions.',
     images: [LANDING_OG_IMAGE],
     type: 'website',
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'A live form from a file you own — Declarative Forms',
     description:
-      'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form—rendering questions, validating answers, and storing submissions.',
+      'Define your form in YAML and keep it in GitHub. Declarative Forms turns that definition into the working form — rendering questions, validating answers, and storing submissions.',
     images: [LANDING_OG_IMAGE],
   },
 };

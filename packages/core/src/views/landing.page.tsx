@@ -211,7 +211,7 @@ function Hero(): React.JSX.Element {
           <div className="flex max-w-[52ch] flex-col gap-4 text-lg leading-relaxed text-ink-muted">
             <p>
               Define your form in YAML and keep it in GitHub. Declarative Forms
-              turns that definition into the working form—rendering questions,
+              turns that definition into the working form — rendering questions,
               validating answers, and storing submissions.
             </p>
             <p>
