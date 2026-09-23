@@ -19,6 +19,7 @@ export type ICompiledFormOption = {
 export type ICompiledFormFieldBase = {
   id: string;
   label: string;
+  helper_text?: string;
   placeholder?: string;
   required: boolean;
   visible: boolean;

@@ -229,6 +229,7 @@ effect.
 - id: email
   type: email
   label: "Email address"
+  helper_text: "We will only use this to reply to you."
   placeholder: "jane@example.com"
   visible_when: "data.subscribe === 'Yes'"
   validators:
@@ -240,6 +241,7 @@ effect.
 | `id` | string | Stable field identifier and the key the field value is stored under. |
 | `type` | string | One of the [field types](#field-types) below. Required. |
 | `label` | [localized text](#localized-text) | The field's label. |
+| `helper_text` | [localized text](#localized-text) | Supporting text shown beneath the input. Not displayed on `hidden` or `text_block` fields. |
 | `placeholder` | [localized text](#localized-text) | Placeholder text, where applicable. |
 | `validators` | array of [Validator](#validators) | Validation rules. |
 | `visible_when` | [expression](#expressions) | The field is shown only while this is truthy. |
@@ -550,7 +552,7 @@ They are supported in:
 - the form `title` and `description`
 - the `start` `title`, `description`, and `button`
 - a section `title` and `description`
-- a field `label` and `placeholder`
+- a field `label`, `helper_text`, and `placeholder`
 - option labels, and a rating's `min_label` and `max_label`
 - a text block's `content`
 - the completion `title`, `message`, and the button's `label` and `url`

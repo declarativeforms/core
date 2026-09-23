@@ -10,6 +10,9 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
   const base = {
     id: field.id,
     label: field.label,
+    ...(field.helper_text !== undefined && {
+      helperText: field.helper_text,
+    }),
     ...(field.placeholder !== undefined && { placeholder: field.placeholder }),
     required: field.required,
     visible: field.visible,

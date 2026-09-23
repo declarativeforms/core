@@ -23,6 +23,7 @@ export type FormValidator<Text> =
 export type FormFieldBase<Text> = {
   id?: string;
   label?: Text;
+  helper_text?: Text;
   placeholder?: Text;
   validators?: Array<FormValidator<Text>>;
   visible_when?: string;

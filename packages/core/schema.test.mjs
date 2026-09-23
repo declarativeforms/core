@@ -6,6 +6,7 @@ import {
   FORM_JSON_SCHEMA,
   assertJsonSchemaCoverage,
   parse,
+  toRenderableForm,
 } from '@declarativeforms/engine';
 import { GET } from './src/app/schema.json/route.ts';
 
@@ -97,4 +98,28 @@ test('authoring schema covers the engine, accepts examples, and rejects mistakes
   ]) {
     assert.equal(validate(invalid), false, JSON.stringify(invalid));
   }
+});
+
+test('field helper text is localized and templated', () => {
+  const form = toRenderableForm(
+    `
+version: 1
+sections:
+  - id: details
+    fields:
+      - id: name
+        type: short_text
+        label: Name
+        helper_text:
+          en: Help for {{data.audience}}.
+          de: Hilfe für {{data.audience}}.
+      - id: plain
+        type: short_text
+        label: Plain
+`,
+    { locale: 'de', data: { audience: 'Ada' } },
+  );
+
+  assert.equal(form.section.fields[0].helperText, 'Hilfe für Ada.');
+  assert.equal(form.section.fields[1].helperText, undefined);
 });

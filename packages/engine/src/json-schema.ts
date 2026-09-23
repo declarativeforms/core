@@ -41,6 +41,10 @@ const fieldBaseProperties: Record<string, JsonSchemaNode> = {
     'Key the answer is stored under. Referenced in expressions as `data.<id>` and in templates as `{{data.<id>}}`. Also the query-parameter name used to prefill this field from the URL.',
   ),
   label: ref('localizedText', "The field's label. Supports templating."),
+  helper_text: ref(
+    'localizedText',
+    'Supporting text shown beneath visible input fields. Supports templating. Accepted but not displayed on `hidden` or `text_block` fields.',
+  ),
   placeholder: ref(
     'localizedText',
     'Placeholder text, where the input supports one. Supports templating.',

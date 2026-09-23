@@ -17,6 +17,9 @@ export function resolveFormField(
     ...(field.label !== undefined && {
       label: resolveLocalizedText(field.label, locale),
     }),
+    ...(field.helper_text !== undefined && {
+      helper_text: resolveLocalizedText(field.helper_text, locale),
+    }),
     ...(field.placeholder !== undefined && {
       placeholder: resolveLocalizedText(field.placeholder, locale),
     }),

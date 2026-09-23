@@ -10,6 +10,7 @@ sections:
       - id: response
         type: short_text
         label: "Response"
+        helper_text: "Use letters and spaces."
         placeholder: "Enter a response"
         visible_when: "data.response !== 'Hide'"
         validators:

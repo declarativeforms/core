@@ -37,6 +37,9 @@ export function compileFormField(
   const base = {
     id: field.id ?? '',
     label,
+    ...(field.helper_text !== undefined && {
+      helper_text: interpolateTemplate(field.helper_text, data),
+    }),
     ...(field.placeholder !== undefined && {
       placeholder: interpolateTemplate(field.placeholder, data),
     }),
