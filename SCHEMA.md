@@ -634,10 +634,11 @@ they run only for completed submissions. Use `trigger_on` to include partial
 submissions, `delay_minutes` to delay delivery, and `when` to add an
 [expression](#expressions) condition.
 
-**Webhook.** POSTs the submission as JSON to a URL. New partial and completed
-deliveries include a top-level `section_id` naming the section just completed.
-The remaining fields have the same shape for both statuses. Jobs queued before
-this field was introduced may omit it.
+**Webhook.** POSTs the submission as JSON to a URL. Partial and completed
+deliveries include the supplied `section_id` at the top level. The API does not
+check whether it names a section in the form. The remaining fields have the
+same shape for both statuses. Jobs queued before this field was introduced may
+omit it.
 
 ```yaml
 connections:

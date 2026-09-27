@@ -1,7 +1,7 @@
 import type { ISubmission } from '@declarativeforms/engine';
 import { WebhookConnectionStrategy } from './webhook-connection.strategy';
 
-test('delivers the same section field for partial and completed webhooks', async () => {
+test('delivers supplied section IDs for partial and completed webhooks', async () => {
   const fetchRequest = jest
     .spyOn(global, 'fetch')
     .mockResolvedValue({} as Response);
@@ -21,21 +21,21 @@ test('delivers the same section field for partial and completed webhooks', async
   };
 
   try {
-    await strategy.deliver(connection, submission, {}, 'contact');
+    await strategy.deliver(connection, submission, {}, 'external_section');
     await strategy.deliver(
       connection,
       { ...submission, status: 'completed' },
       {},
-      'details',
+      'final_section',
     );
 
     expect(JSON.parse(String(fetchRequest.mock.calls[0][1]?.body))).toEqual({
       ...submission,
-      section_id: 'contact',
+      section_id: 'external_section',
     });
     expect(JSON.parse(String(fetchRequest.mock.calls[1][1]?.body))).toEqual({
       ...submission,
-      section_id: 'details',
+      section_id: 'final_section',
       status: 'completed',
     });
 

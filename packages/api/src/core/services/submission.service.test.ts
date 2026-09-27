@@ -92,7 +92,7 @@ test('lists completed submissions only with a valid access key', async () => {
   expect(await service.list('a12345678', replacementKey, 1, 100)).toEqual([]);
 });
 
-test('schedules each save with its completed section without changing stored submissions', async () => {
+test('schedules each save with its supplied section without changing stored submissions', async () => {
   const db = {} as Db;
   const formService = new FormService(
     new GitHubFileRepository(db),
@@ -136,12 +136,6 @@ test('schedules each save with its completed section without changing stored sub
   );
   const metadata = { ipAddress: '127.0.0.1', userAgent: 'test' };
 
-  expect(
-    await service.submit('a12345678', 'unknown', {}, true, metadata),
-  ).toBeNull();
-  expect(schedule).not.toHaveBeenCalled();
-  expect(stored.size).toBe(0);
-
   const first = await service.submit(
     'a12345678',
     'contact',
@@ -153,7 +147,7 @@ test('schedules each save with its completed section without changing stored sub
 
   const second = await service.submit(
     'a12345678',
-    'details',
+    'external_section',
     { age: 37 },
     true,
     metadata,
@@ -163,7 +157,7 @@ test('schedules each save with its completed section without changing stored sub
 
   const completed = await service.submit(
     'a12345678',
-    'details',
+    'final_section',
     { age: 38 },
     false,
     metadata,
@@ -187,7 +181,7 @@ test('schedules each save with its completed section without changing stored sub
     2,
     'submission',
     expect.objectContaining({
-      sectionId: 'details',
+      sectionId: 'external_section',
       submission: expect.objectContaining({ data: { name: 'Ada', age: 37 } }),
     }),
     expect.any(Date),
@@ -196,7 +190,7 @@ test('schedules each save with its completed section without changing stored sub
     3,
     'submission',
     expect.objectContaining({
-      sectionId: 'details',
+      sectionId: 'final_section',
       submission: expect.objectContaining({ status: 'completed' }),
     }),
     expect.any(Date),

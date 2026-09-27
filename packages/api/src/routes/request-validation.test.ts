@@ -50,17 +50,17 @@ test('validates route inputs before invoking application services', async () => 
     {
       method: 'POST' as const,
       payload: { answer: 'yes' },
-      url: '/api/v1/forms/a12345678/submissions?partial=true',
-    },
-    {
-      method: 'POST' as const,
-      payload: { answer: 'yes' },
       url: '/api/v1/forms/a12345678/submissions',
     },
     {
       method: 'POST' as const,
       payload: { answer: 'yes' },
-      url: '/api/v1/forms/a12345678/submissions?section_id=invalid-id',
+      url: '/api/v1/forms/a12345678/submissions?partial=true',
+    },
+    {
+      method: 'POST' as const,
+      payload: { answer: 'yes' },
+      url: '/api/v1/forms/a12345678/submissions?section_id=external-section',
     },
     {
       headers: { 'content-type': 'application/octet-stream' },
@@ -160,6 +160,20 @@ test('validates route inputs before invoking application services', async () => 
     true,
     expect.any(Object),
     'submission',
+  );
+
+  await server.inject({
+    method: 'POST',
+    payload: { answer: 'yes' },
+    url: '/api/v1/forms/a12345678/submissions?section_id=external_section',
+  });
+  expect(submit).toHaveBeenLastCalledWith(
+    'a12345678',
+    'external_section',
+    { answer: 'yes' },
+    false,
+    expect.any(Object),
+    undefined,
   );
 
   expect(

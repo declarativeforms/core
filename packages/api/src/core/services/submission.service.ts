@@ -40,10 +40,6 @@ export class SubmissionService {
       return null;
     }
 
-    if (!(form.sections ?? []).some((section) => section.id === sectionId)) {
-      return null;
-    }
-
     if (!isPartial && !this.isValid(form, data)) {
       throw new Error('Submission is invalid');
     }
