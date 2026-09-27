@@ -91,3 +91,114 @@ test('lists completed submissions only with a valid access key', async () => {
   expect(await service.list('a12345678', accessKey, 1, 100)).toBeNull();
   expect(await service.list('a12345678', replacementKey, 1, 100)).toEqual([]);
 });
+
+test('schedules each save with its completed section without changing stored submissions', async () => {
+  const db = {} as Db;
+  const formService = new FormService(
+    new GitHubFileRepository(db),
+    new GitHubGateway(),
+  );
+  const repository = new SubmissionRepository(db);
+  const jobService = new JobService(new JobRepository(db), {});
+  const schedule = jest.spyOn(jobService, 'schedule').mockResolvedValue();
+  const stored = new Map<string, ISubmission>();
+  jest.spyOn(repository, 'insert').mockImplementation(async (submission) => {
+    stored.set(submission.id, submission);
+  });
+  jest.spyOn(repository, 'replace').mockImplementation(async (submission) => {
+    stored.set(submission.id, submission);
+  });
+  jest
+    .spyOn(repository, 'findByFormIdAndSubmissionId')
+    .mockImplementation(
+      async (_formId, submissionId) => stored.get(submissionId) ?? null,
+    );
+  jest.spyOn(formService, 'findById').mockResolvedValue({
+    id: 'a12345678',
+    sections: [
+      { id: 'contact', fields: [], next: 'details' },
+      { id: 'details', fields: [], next: 'done' },
+    ],
+    connections: [
+      {
+        type: 'webhook',
+        url: 'https://example.com/hook',
+        trigger_on: 'any',
+        delay_minutes: 10,
+      },
+    ],
+  });
+  const service = new SubmissionService(
+    formService,
+    repository,
+    jobService,
+    new TokenService('', 'test'),
+  );
+  const metadata = { ipAddress: '127.0.0.1', userAgent: 'test' };
+
+  expect(
+    await service.submit('a12345678', 'unknown', {}, true, metadata),
+  ).toBeNull();
+  expect(schedule).not.toHaveBeenCalled();
+  expect(stored.size).toBe(0);
+
+  const first = await service.submit(
+    'a12345678',
+    'contact',
+    { name: 'Ada' },
+    true,
+    metadata,
+  );
+  expect(first).not.toBeNull();
+
+  const second = await service.submit(
+    'a12345678',
+    'details',
+    { age: 37 },
+    true,
+    metadata,
+    first?.id,
+  );
+  expect(second?.data).toEqual({ name: 'Ada', age: 37 });
+
+  const completed = await service.submit(
+    'a12345678',
+    'details',
+    { age: 38 },
+    false,
+    metadata,
+    first?.id,
+  );
+  expect(completed?.status).toBe('completed');
+  expect(completed?.data).toEqual({ name: 'Ada', age: 38 });
+  expect(stored.get(first?.id ?? '')).not.toHaveProperty('section_id');
+
+  expect(schedule).toHaveBeenCalledTimes(3);
+  expect(schedule).toHaveBeenNthCalledWith(
+    1,
+    'submission',
+    expect.objectContaining({
+      sectionId: 'contact',
+      submission: expect.objectContaining({ data: { name: 'Ada' } }),
+    }),
+    expect.any(Date),
+  );
+  expect(schedule).toHaveBeenNthCalledWith(
+    2,
+    'submission',
+    expect.objectContaining({
+      sectionId: 'details',
+      submission: expect.objectContaining({ data: { name: 'Ada', age: 37 } }),
+    }),
+    expect.any(Date),
+  );
+  expect(schedule).toHaveBeenNthCalledWith(
+    3,
+    'submission',
+    expect.objectContaining({
+      sectionId: 'details',
+      submission: expect.objectContaining({ status: 'completed' }),
+    }),
+    expect.any(Date),
+  );
+});

@@ -12,7 +12,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
     request: FastifyRequest<{
       Body: Record<string, unknown>;
       Params: { id: string };
-      Querystring: { id?: string; partial: boolean };
+      Querystring: { id?: string; partial: boolean; section_id: string };
     }>,
     reply: FastifyReply,
   ): Promise<void> => {
@@ -26,6 +26,7 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
 
     const submission = await submissionService.submit(
       request.params.id,
+      request.query.section_id,
       request.body,
       request.query.partial,
       {
@@ -50,7 +51,12 @@ export const FORMS_ID_SUBMISSIONS_POST: RouteOptions<any, any, any, any> = {
       properties: {
         id: { minLength: 1, type: 'string' },
         partial: { default: false, type: 'boolean' },
+        section_id: {
+          pattern: '^[A-Za-z_][A-Za-z0-9_]*$',
+          type: 'string',
+        },
       },
+      required: ['section_id'],
       type: 'object',
     },
   },

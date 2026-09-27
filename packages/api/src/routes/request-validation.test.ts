@@ -48,6 +48,21 @@ test('validates route inputs before invoking application services', async () => 
       url: '/api/v1/forms/a12345678/submissions',
     },
     {
+      method: 'POST' as const,
+      payload: { answer: 'yes' },
+      url: '/api/v1/forms/a12345678/submissions?partial=true',
+    },
+    {
+      method: 'POST' as const,
+      payload: { answer: 'yes' },
+      url: '/api/v1/forms/a12345678/submissions',
+    },
+    {
+      method: 'POST' as const,
+      payload: { answer: 'yes' },
+      url: '/api/v1/forms/a12345678/submissions?section_id=invalid-id',
+    },
+    {
       headers: { 'content-type': 'application/octet-stream' },
       method: 'POST' as const,
       payload: Buffer.from('not-json'),
@@ -122,10 +137,11 @@ test('validates route inputs before invoking application services', async () => 
   await server.inject({
     method: 'POST',
     payload: { answer: 'yes' },
-    url: '/api/v1/forms/a12345678/submissions',
+    url: '/api/v1/forms/a12345678/submissions?section_id=contact',
   });
   expect(submit).toHaveBeenLastCalledWith(
     'a12345678',
+    'contact',
     { answer: 'yes' },
     false,
     expect.any(Object),
@@ -135,10 +151,11 @@ test('validates route inputs before invoking application services', async () => 
   await server.inject({
     method: 'POST',
     payload: { answer: 'yes' },
-    url: '/api/v1/forms/a12345678/submissions?id=submission&partial=true',
+    url: '/api/v1/forms/a12345678/submissions?id=submission&partial=true&section_id=details',
   });
   expect(submit).toHaveBeenLastCalledWith(
     'a12345678',
+    'details',
     { answer: 'yes' },
     true,
     expect.any(Object),

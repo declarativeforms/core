@@ -25,6 +25,7 @@ export class SubmissionService {
 
   public async submit(
     formId: string,
+    sectionId: string,
     data: Record<string, unknown>,
     isPartial: boolean,
     metadata: {
@@ -36,6 +37,10 @@ export class SubmissionService {
     const form = await this.formService.findById(formId);
 
     if (!form) {
+      return null;
+    }
+
+    if (!(form.sections ?? []).some((section) => section.id === sectionId)) {
       return null;
     }
 
@@ -93,7 +98,7 @@ export class SubmissionService {
       await this.submissionRepository.insert(submission);
     }
 
-    await this.scheduleConnections(form, submission, now);
+    await this.scheduleConnections(form, submission, sectionId, now);
 
     return submission;
   }
@@ -235,6 +240,7 @@ export class SubmissionService {
   private async scheduleConnections(
     form: IDeclarativeForm,
     submission: ISubmission,
+    sectionId: string,
     now: Date,
   ): Promise<void> {
     for (const connection of form.connections ?? []) {
@@ -265,7 +271,7 @@ export class SubmissionService {
 
       await this.jobService.schedule(
         'submission',
-        { connection, form, submission },
+        { connection, form, submission, sectionId },
         new Date(now.getTime() + delayMinutes * 60_000),
       );
     }

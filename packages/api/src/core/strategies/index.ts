@@ -6,6 +6,7 @@ export interface IConnectionStrategy {
     connection: any,
     submission: ISubmission,
     form: IDeclarativeForm,
+    sectionId?: string,
   ): Promise<void>;
 }
 

@@ -163,6 +163,7 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
   }
 
   async function submitForm(
+    completedSectionId: string,
     submissionData: Record<string, unknown>,
     isPartial: boolean,
   ): Promise<string | undefined> {
@@ -184,6 +185,8 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     if (isPartial) {
       url.searchParams.set('partial', 'true');
     }
+
+    url.searchParams.set('section_id', completedSectionId);
 
     const currentSubmissionId = searchParams.get('submission_id');
     if (currentSubmissionId) {
@@ -231,6 +234,7 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     switch (effect.type) {
       case 'submit': {
         const submissionId = await submitForm(
+          runtimeState.completedSectionId,
           runtimeState.data,
           effect.isPartial,
         );
@@ -250,7 +254,11 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
         isCompletingRef.current = true;
 
         try {
-          const submissionId = await submitForm(runtimeState.data, false);
+          const submissionId = await submitForm(
+            runtimeState.completedSectionId,
+            runtimeState.data,
+            false,
+          );
           const finalSubmissionId =
             submissionId ?? searchParams.get('submission_id');
 
@@ -282,7 +290,11 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
         isCompletingRef.current = true;
 
         try {
-          const submissionId = await submitForm(runtimeState.data, false);
+          const submissionId = await submitForm(
+            runtimeState.completedSectionId,
+            runtimeState.data,
+            false,
+          );
 
           replaceProgress({
             submissionId: submissionId ?? searchParams.get('submission_id'),

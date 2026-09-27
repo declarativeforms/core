@@ -84,7 +84,7 @@ export async function getContainer(): Promise<Container> {
   ];
   const jobService = new JobService(jobRepository, {
     submission: async (data) => {
-      const { connection, form, submission } = data as any;
+      const { connection, form, submission, sectionId } = data as any;
       const strategy = connectionStrategies.find(
         (entry) => entry.type === connection.type,
       );
@@ -93,7 +93,7 @@ export async function getContainer(): Promise<Container> {
         return;
       }
 
-      await strategy.deliver(connection, submission, form);
+      await strategy.deliver(connection, submission, form, sectionId);
     },
   });
   const submissionService = new SubmissionService(
