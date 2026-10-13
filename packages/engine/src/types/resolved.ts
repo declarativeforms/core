@@ -49,3 +49,5 @@ export type IResolvedConnection = FormConnection<string>;
 export type IResolvedFormEmailConnection = FormEmailConnection<string>;
 export type IResolvedEmailConnection = FormEmailConnection<string>;
 export type IResolvedWebhookConnection = FormWebhookConnection;
+
+export type IResolvedAdaptive = NonNullable<FormSection<string>['adaptive']>;

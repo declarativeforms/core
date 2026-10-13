@@ -35,11 +35,54 @@ function assertTokenFieldIdsAvailable(schema: IDeclarativeForm): void {
   }
 }
 
+function assertAdaptiveIdentifiersAvailable(schema: IDeclarativeForm): void {
+  const identifiers = new Set(
+    (schema.sections ?? []).flatMap((section) =>
+      (section.fields ?? []).map((field) => field.id),
+    ),
+  );
+
+  for (const section of schema.sections ?? []) {
+    if (!section.adaptive) {
+      continue;
+    }
+
+    if (
+      section.fields !== undefined ||
+      !section.id ||
+      schema.sections?.filter((candidate) => candidate.id === section.id)
+        .length !== 1 ||
+      !/^[A-Za-z_][A-Za-z0-9_]*$/.test(section.id) ||
+      ['__proto__', 'constructor', 'prototype'].includes(section.id)
+    ) {
+      throw new Error(
+        'Adaptive sections require a safe identifier and cannot contain authored fields',
+      );
+    }
+
+    for (const identifier of Object.keys(section.adaptive.properties)) {
+      if (
+        !/^[A-Za-z_][A-Za-z0-9_]*$/.test(identifier) ||
+        identifier.endsWith('_token') ||
+        ['__proto__', 'constructor', 'prototype'].includes(identifier) ||
+        identifiers.has(identifier)
+      ) {
+        throw new Error(
+          'Adaptive output identifiers must be safe and unique across the form',
+        );
+      }
+
+      identifiers.add(identifier);
+    }
+  }
+}
+
 export function resolve(
   schema: IDeclarativeForm,
   locale: string,
 ): IResolvedForm {
   assertTokenFieldIdsAvailable(schema);
+  assertAdaptiveIdentifiersAvailable(schema);
 
   return {
     ...(schema.id !== undefined && { id: schema.id }),

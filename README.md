@@ -65,7 +65,7 @@ with [its YAML](./examples/contact.yaml) to see the model in action.
 ### Write the form, not the application
 
 The [form reference](./SCHEMA.md) explains fields, multi-step flows, conditional
-logic, validation, completion screens, and connections.
+logic, validation, adaptive sections, completion screens, and connections.
 
 Compatible editors and AI agents can use the
 [published JSON Schema](https://frms.dev/schema.json) to help create and check
@@ -75,6 +75,22 @@ sharing it.
 Form definitions are visible to people loading the form. Keep secrets and
 credentials out of the YAML.
 
+### Let questions adapt to the respondent
+
+An adaptive section declares objectives and typed output properties. Its component
+owns the questions and interaction loop, using the full submission as context and
+reusing existing fields and validation. Once every objective is assessed as met and
+the outputs pass validation, it submits those values through the ordinary form
+flow. Outputs feed routing and connections. Edits elsewhere leave accepted outputs
+in place; revisiting the adaptive section starts a new assessment.
+
+See the [adaptive example](./examples/adaptive.yaml) and
+[authoring reference](./SCHEMA.md#adaptive-sections). Completed values use the
+normal submission flow. Unfinished conversations stay in the component and restart
+after refresh or leaving the section. Adaptive sections require server-side OpenAI
+configuration. Intermediate questions and answers are sent for assessment without
+saving submissions or triggering connections.
+
 ## Self-hosting
 
 Use [frms.dev](https://frms.dev) to publish forms without operating the platform.
@@ -82,6 +98,9 @@ Self-host when you need control over the application and its infrastructure.
 
 The [deployment configuration](./compose.yaml) and
 [configuration reference](./.env.example) describe the current setup.
+Set `OPENAI_API_KEY` and `OPENAI_MODEL` to enable adaptive sections; the model
+must support Responses API Structured Outputs. Respondent answers and adaptive
+history are sent to OpenAI for assessment.
 Self-hosting means taking responsibility for operating, updating, and backing
 up your deployment.
 

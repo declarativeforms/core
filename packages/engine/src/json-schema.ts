@@ -576,12 +576,85 @@ export const FORM_JSON_SCHEMA = {
         'Where to go: the `id` of another section, the literal `done` to finish and show the completion screen, or an absolute `https://` URL to redirect the respondent. Only `https://` is treated as external; an `http://` target is looked up as a section id and will not be found.',
       examples: ['preferences', 'done', 'https://example.com/thanks'],
     },
+    adaptiveProperty: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['type'],
+      properties: {
+        type: {
+          enum: ['string', 'number', 'integer', 'boolean', 'array', 'object'],
+        },
+        description: { type: 'string' },
+        enum: {
+          type: 'array',
+          minItems: 1,
+          uniqueItems: true,
+          items: { type: ['string', 'number', 'boolean'] },
+        },
+        minimum: { type: 'number' },
+        maximum: { type: 'number' },
+        minLength: { type: 'integer', minimum: 0 },
+        maxLength: { type: 'integer', minimum: 0 },
+        pattern: { type: 'string' },
+        minItems: { type: 'integer', minimum: 0 },
+        maxItems: { type: 'integer', minimum: 0 },
+        items: { $ref: '#/definitions/adaptiveProperty' },
+        properties: {
+          type: 'object',
+          additionalProperties: { $ref: '#/definitions/adaptiveProperty' },
+          propertyNames: { $ref: '#/definitions/identifier' },
+        },
+        required: {
+          type: 'array',
+          uniqueItems: true,
+          items: { $ref: '#/definitions/identifier' },
+        },
+        additionalProperties: { const: false },
+      },
+      allOf: [
+        {
+          if: { properties: { type: { const: 'array' } } },
+          then: { required: ['items'] },
+        },
+        {
+          if: { properties: { type: { const: 'object' } } },
+          then: { required: ['properties', 'additionalProperties'] },
+        },
+      ],
+    },
+    adaptive: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['objectives', 'properties'],
+      properties: {
+        objectives: {
+          type: 'array',
+          minItems: 1,
+          items: { $ref: '#/definitions/localizedText' },
+        },
+        properties: {
+          type: 'object',
+          minProperties: 1,
+          additionalProperties: { $ref: '#/definitions/adaptiveProperty' },
+          propertyNames: { $ref: '#/definitions/identifier' },
+        },
+        required: {
+          type: 'array',
+          uniqueItems: true,
+          items: { $ref: '#/definitions/identifier' },
+        },
+      },
+    },
     section: {
       type: 'object',
       description:
         'One page of the form, validated and saved as a step. Its `title` and `description` are the heading the respondent sees on that page. Multi-section forms support conditional routing.',
       additionalProperties: false,
-      required: ['id', 'fields'],
+      required: ['id'],
+      oneOf: [
+        { required: ['fields'], not: { required: ['adaptive'] } },
+        { required: ['adaptive'], not: { required: ['fields'] } },
+      ],
       properties: {
         id: ref(
           'identifier',
@@ -595,6 +668,7 @@ export const FORM_JSON_SCHEMA = {
           'localizedText',
           'Text under the section heading, shown at the top of this page. Supports templating.',
         ),
+        adaptive: { $ref: '#/definitions/adaptive' },
         fields: {
           type: 'array',
           description: 'The fields on this page.',

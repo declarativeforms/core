@@ -1,3 +1,4 @@
+import type { IAdaptiveProperty } from './adaptive';
 import type { IDeclarativeFormGenericFieldType } from './form-generic-field-type';
 import type { IDeclarativeFormMeasurements } from './form-measurements';
 import type { IDeclarativeFormNextRule } from './form-next-rule';
@@ -94,7 +95,14 @@ export type FormField<Text> =
   | FormTextBlockField<Text>
   | FormGenericField<Text>;
 
+type FormAdaptive<Text> = {
+  objectives: Array<Text>;
+  properties: Record<string, IAdaptiveProperty>;
+  required?: Array<string>;
+};
+
 export type FormSection<Text> = {
+  adaptive?: FormAdaptive<Text>;
   id?: string;
   title?: Text;
   description?: Text;

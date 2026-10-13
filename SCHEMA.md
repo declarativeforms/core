@@ -46,6 +46,7 @@ and report any checks you could not perform.
 - [Localized text](#localized-text)
 - [Start page](#start-page)
 - [Sections](#sections)
+- [Adaptive sections](#adaptive-sections)
 - [Navigation (`next`)](#navigation-next)
 - [Fields](#fields)
 - [Field types](#field-types)
@@ -190,7 +191,119 @@ sections:
 | `title` | [localized text](#localized-text) | Section heading, shown at the top of the page. |
 | `description` | [localized text](#localized-text) | Text under the section heading. |
 | `fields` | array of [Field](#fields) | The fields on this page. |
+| `adaptive` | object | Objectives and output properties for an adaptive section. Mutually exclusive with `fields`. |
 | `next` | string or array | Where to go after this section. See below. |
+
+## Adaptive sections
+
+Use `adaptive` instead of `fields` when the section should decide what to ask.
+A section can pursue multiple objectives and extract multiple outputs. Questions
+are not tied one-to-one to properties, and a turn can contain several questions.
+
+```yaml
+sections:
+  - id: project
+    title: Your project
+    adaptive:
+      objectives:
+        - Understand the project and the help needed
+        - Establish a realistic budget
+      properties:
+        summary:
+          type: string
+          description: A concise description of the project
+          minLength: 10
+        budget:
+          type: number
+          description: Available budget in euros
+          minimum: 0
+    next:
+      - when: data.budget >= 1000
+        go: consultation
+      - else: done
+  - id: consultation
+    fields:
+      - id: email
+        type: email
+        label: Where can we contact you?
+        validators: [required]
+    next: done
+```
+
+`objectives` is a nonempty array of localized text. `properties` is a nonempty
+map of output names to definitions. Output names must be unique across all
+ordinary fields and adaptive sections. Reserved names (`__proto__`, `constructor`,
+`prototype`, and names ending in `_token`) cannot be used. An adaptive section
+requires an explicit identifier and cannot contain authored `fields`.
+
+Output definitions use this JSON Schema subset:
+
+| Property | Meaning |
+| --- | --- |
+| `type` | Required: `string`, `number`, `integer`, `boolean`, `array`, or `object`. |
+| `description` | Plain-text meaning of the output. |
+| `enum` | Allowed string, number, or boolean values. |
+| `minimum`, `maximum` | Numeric bounds. |
+| `minLength`, `maxLength`, `pattern` | String constraints; `pattern` is an authored regular expression. |
+| `minItems`, `maxItems`, `items` | Array bounds and required item definition. |
+| `properties`, `required`, `additionalProperties` | Object shape; `properties` and `additionalProperties: false` are required for objects. |
+
+Nested arrays and objects use the same definition format. Constraints must match
+the declared type. Remote references, arbitrary schema keywords, and executable
+constraints are unsupported. All top-level outputs are required by default; set
+`adaptive.required` to an explicit list to make the remaining outputs optional.
+Nested object properties are required only when listed in that object's `required`.
+
+The backend assesses every objective and validates outputs without coercing types.
+It completes automatically when all objectives are assessed as met and required
+outputs validate. AI assessment is probabilistic; type validation does not prove
+that an answer is factually correct. Only declared accepted outputs become ordinary
+response properties, available to `next`, templates, and connections.
+
+Generated questions reuse existing fields, including choices and safe Markdown
+text blocks for grouping. They cannot define navigation, expressions, visibility
+rules, templates, HTML, hidden fields, dependent dropdowns, or verification fields.
+Generated regex validators are limited to the standard decimal-number pattern;
+authored output constraints may use patterns. File and image answers are provided
+to the coordinator as references only; their contents are not inspected.
+
+**Conversation state.** Questions and answers stay in the adaptive component while
+it is mounted. Refreshing, changing locale, or leaving and revisiting the section
+starts a new conversation using the current form data. Intermediate API calls do
+not create submissions, change URLs, schedule connections, or emit
+`section_completed`. Completed output values use the ordinary submission lifecycle
+and its existing `submission_id`.
+
+Adaptive sections are self-contained. They receive the full current submission
+as context, including answers and outputs from other sections. Verification tokens
+are excluded from model input. The stateless API loads the authored objectives,
+assesses the supplied conversation with OpenAI, and returns ordinary field
+definitions or completed values. It does not store conversation history.
+
+Editing another section does not invalidate outputs or change navigation. Revisiting
+an adaptive section starts a fresh assessment, so previously submitted outputs can
+be reconsidered in the current context. Submitted outputs are validated against
+their declared types and constraints like ordinary answers; submission does not
+require proof that the respondent completed an adaptive conversation.
+
+Generated questions use existing field components and validation. The coordinator
+returns validated field definitions; only section completion commits declared
+outputs and advances through ordinary routing. If a declared optional output is
+omitted on reassessment, its previous value is removed. A failed completion save
+can be retried without running another assessment.
+
+**Deployment.** Configure `OPENAI_API_KEY` and `OPENAI_MODEL` on the API server.
+The model must support Responses API Structured Outputs. Ordinary sections work
+without these settings. The coordinator sends form question/objective context,
+respondent values, and section history to OpenAI using `store: false`; verification
+tokens, authentication configuration, and integration destinations are excluded.
+This setting does not replace your provider's data-retention terms.
+
+Operational limits are 20 adaptive POST requests per minute per IP, a 1 MiB request
+body, 50 generated fields per response, and a
+60-second provider timeout. These are resource bounds, not a fixed interview length.
+Failures retain the current conversation in the component and offer retry; they
+never force completion.
 
 ## Navigation (`next`)
 

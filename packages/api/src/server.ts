@@ -5,6 +5,7 @@ import fastify, { type FastifyError } from 'fastify';
 import * as qs from 'qs';
 import { getContainer } from './core';
 import {
+  FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST,
   FILES_KEY_GET,
   FILES_UPLOAD_POST,
   FORMS_ID_EMAIL_CHALLENGES_POST,
@@ -79,6 +80,7 @@ export async function startServer(): Promise<void> {
   await container.gitHubFileRepository.ensureIndexes();
   await container.submissionRepository.ensureIndexes();
 
+  server.route(FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST);
   server.route(FILES_KEY_GET);
   server.route(FILES_UPLOAD_POST);
   server.route(FORMS_ID_EMAIL_CHALLENGES_POST);

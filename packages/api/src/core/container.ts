@@ -1,12 +1,18 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
-import { EmailGateway, GitHubGateway, TurnstileGateway } from './gateways';
+import {
+  EmailGateway,
+  GitHubGateway,
+  OpenAiGateway,
+  TurnstileGateway,
+} from './gateways';
 import {
   GitHubFileRepository,
   JobRepository,
   SubmissionRepository,
 } from './repositories';
 import {
+  AdaptiveService,
   EmailVerificationService,
   FileService,
   FormService,
@@ -22,6 +28,7 @@ import {
 } from './strategies';
 
 export type Container = {
+  adaptiveService: AdaptiveService;
   db: Db;
   mongoClient: MongoClient;
   gitHubGateway: GitHubGateway;
@@ -104,6 +111,7 @@ export async function getContainer(): Promise<Container> {
   );
 
   container = {
+    adaptiveService: new AdaptiveService(formService, new OpenAiGateway()),
     db,
     emailVerificationService,
     fileService,

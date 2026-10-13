@@ -1,3 +1,4 @@
+import type { IResolvedAdaptive } from './resolved';
 import type { IDeclarativeFormGenericFieldType } from './schema/form-generic-field-type';
 import type { IDeclarativeFormMeasurements } from './schema/form-measurements';
 import type { IDeclarativeFormTheme } from './schema/form-theme';
@@ -118,6 +119,7 @@ export type ICompiledFormStart = {
 };
 
 export type ICompiledFormSection = {
+  adaptive?: IResolvedAdaptive;
   id: string;
   title: string;
   description?: string;

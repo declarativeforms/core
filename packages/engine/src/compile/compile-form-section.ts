@@ -10,6 +10,7 @@ export function compileFormSection(
   messages: ValidationMessages = DEFAULT_MESSAGES,
 ): ICompiledFormSection {
   return {
+    ...(section.adaptive !== undefined && { adaptive: section.adaptive }),
     id: section.id ?? '',
     title:
       section.title !== undefined

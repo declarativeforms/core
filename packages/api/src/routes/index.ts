@@ -8,3 +8,5 @@ export * from './forms-id-submissions-id-get';
 export * from './forms-id-submissions-post';
 export * from './forms-id-turnstile-verify-post';
 export * from './forms-owner-repository-slug-get';
+
+export { FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST } from './forms-id-sections-section-id-adaptive';

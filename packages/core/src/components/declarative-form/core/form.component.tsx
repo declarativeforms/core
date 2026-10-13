@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import type { IDeclarativeForm } from '@declarativeforms/engine';
+import { AdaptiveSection } from './adaptive-section.component';
 import { DeclarativeFormSection } from './section.component';
 import { DeclarativeFormStart } from './start.component';
 import { useDeclarativeForm } from './use-declarative-form';
@@ -54,6 +55,31 @@ export function DeclarativeForm(props: {
     );
   }
 
+  async function submitSection(sectionData: FieldValues): Promise<void> {
+    const completedSectionId = declarativeForm.section?.id ?? '';
+    const transition = declarativeForm.submitSection(sectionData);
+
+    await props.onEffect(transition, {
+      data: transition.data,
+      activeSectionId: transition.activeSectionId,
+      completedSectionId,
+    });
+  }
+
+  if (declarativeForm.section.adaptive) {
+    return (
+      <AdaptiveSection
+        key={`${declarativeForm.section.id}:${props.locale}`}
+        formId={props.form.id ?? ''}
+        section={declarativeForm.section}
+        locale={props.locale}
+        data={declarativeForm.data}
+        onBack={() => props.onStepChange(declarativeForm.goBack())}
+        onSubmit={submitSection}
+      />
+    );
+  }
+
   return (
     <DeclarativeFormSection
       ref={sectionRef}
@@ -62,20 +88,7 @@ export function DeclarativeForm(props: {
       section={declarativeForm.section}
       data={declarativeForm.data}
       onBack={() => props.onStepChange(declarativeForm.goBack())}
-      onSubmit={async (sectionData: FieldValues) => {
-        const completedSectionId = declarativeForm.section?.id ?? '';
-        const transition = declarativeForm.submitSection(sectionData);
-
-        if (transition.type === 'submit') {
-          props.onStepChange(transition.activeSectionId);
-        }
-
-        await props.onEffect(transition, {
-          data: transition.data,
-          activeSectionId: transition.activeSectionId,
-          completedSectionId,
-        });
-      }}
+      onSubmit={submitSection}
     />
   );
 }

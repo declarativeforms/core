@@ -67,3 +67,8 @@ export type IDeclarativeFormEmailConnection =
 export type IDeclarativeFormWebhookConnection = FormWebhookConnection;
 export type IEmailConnection = FormEmailConnection<ILocalizedText>;
 export type IWebhookConnection = FormWebhookConnection;
+
+export type IDeclarativeAdaptive = NonNullable<
+  FormSection<ILocalizedText>['adaptive']
+>;
+export * from './adaptive';

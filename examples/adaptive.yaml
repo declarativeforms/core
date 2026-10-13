@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://frms.dev/schema.json
+version: 1
+title: Tell us about your project
+description: A few questions to understand your project and the help you need.
+sections:
+  - id: introduction
+    title: Your organization
+    fields:
+      - id: organization
+        type: short_text
+        label: What is your organization called?
+        validators: [required]
+    next: project
+  - id: project
+    title: Your project
+    adaptive:
+      objectives:
+        - Understand the project, who it serves, and the help needed
+        - Establish the budget and timing, clarifying any ambiguity
+      properties:
+        project_summary:
+          type: string
+          description: A concise summary of the project and its audience
+          minLength: 20
+        budget_eur:
+          type: number
+          description: Available budget in euros
+          minimum: 0
+        priorities:
+          type: array
+          description: The most important outcomes in priority order
+          minItems: 1
+          items:
+            type: string
+        target_date:
+          type: string
+          description: Desired completion date or an explicit flexible timeframe
+          minLength: 3
+    next:
+      - when: data.budget_eur >= 1000
+        go: contact
+      - else: done
+  - id: contact
+    title: Stay in touch
+    fields:
+      - id: email
+        type: email
+        label: Where can we contact you?
+        validators: [required]
+    next: done

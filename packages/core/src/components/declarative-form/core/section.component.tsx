@@ -16,6 +16,7 @@ export const DeclarativeFormSection = forwardRef<
     formId: string;
     section: IRenderableSection;
     data: Record<string, unknown>;
+    disabled?: boolean;
     onBack: () => void;
     onSubmit: (sectionData: FieldValues) => void | Promise<void>;
   }
@@ -63,7 +64,7 @@ export const DeclarativeFormSection = forwardRef<
           noValidate
           className="outline-none"
         >
-          <div className="space-y-6">
+          <fieldset disabled={props.disabled} className="space-y-6">
             {fields.map((field) => (
               <DeclarativeFormField
                 key={field.id}
@@ -72,14 +73,14 @@ export const DeclarativeFormSection = forwardRef<
                 formId={props.formId}
               />
             ))}
-          </div>
+          </fieldset>
 
           <div className="mt-8 flex justify-between items-center">
             {props.section.canGoBack ? (
               <Button
                 type="button"
                 variant="outline"
-                disabled={form.formState.isSubmitting}
+                disabled={props.disabled || form.formState.isSubmitting}
                 onClick={props.onBack}
               >
                 {i18n.t('section.back')}
@@ -87,7 +88,10 @@ export const DeclarativeFormSection = forwardRef<
             ) : (
               <div />
             )}
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              disabled={props.disabled || form.formState.isSubmitting}
+            >
               {i18n.t('section.next')}
             </Button>
           </div>

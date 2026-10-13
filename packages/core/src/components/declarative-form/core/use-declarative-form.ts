@@ -41,7 +41,11 @@ export function useDeclarativeForm(
 
   const submitSection = useCallback(
     (sectionData: Record<string, unknown>): FormTransition => {
-      const merged = { ...data, ...sectionData };
+      const merged = Object.fromEntries(
+        Object.entries({ ...data, ...sectionData }).filter(
+          ([, value]) => value !== undefined,
+        ),
+      );
 
       const next = renderableFormFn(merged)?.section.next;
 

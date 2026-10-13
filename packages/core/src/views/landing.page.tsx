@@ -269,6 +269,23 @@ function HowItWorks(): React.JSX.Element {
             runtime that makes it work.
           </p>
         </div>
+        <div className="mt-8 max-w-2xl">
+          <h3 className="font-display text-xl font-semibold">
+            Define the outcome. Let the questions adapt.
+          </h3>
+          <p className="mt-3 text-base leading-relaxed text-ink-muted">
+            Adaptive sections use AI to refine questions around your objectives,
+            reuse earlier answers, and produce validated, structured outputs.
+            Completed outputs flow into the same submissions and connections as
+            any other section.
+          </p>
+          <Link
+            className="mt-3 inline-block underline"
+            href={`${GITHUB_URL}/blob/main/examples/adaptive.yaml`}
+          >
+            Explore an adaptive form definition
+          </Link>
+        </div>
         <ol className="mt-12 grid gap-6 md:grid-cols-3">
           {STEPS.map((step) => (
             <li

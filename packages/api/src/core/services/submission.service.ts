@@ -9,6 +9,7 @@ import {
 import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { SubmissionRepository } from '../repositories';
+import { areAdaptiveOutputsValid } from './adaptive-validation';
 import type { FormService } from './form.service';
 import type { JobService } from './job.service';
 import type { TokenService } from './token.service';
@@ -40,6 +41,24 @@ export class SubmissionService {
       return null;
     }
 
+    const adaptive = form.sections?.find(
+      (section) => section.id === sectionId,
+    )?.adaptive;
+
+    if (
+      adaptive &&
+      !areAdaptiveOutputsValid(
+        adaptive,
+        Object.fromEntries(
+          Object.keys(adaptive.properties)
+            .filter((key) => Object.hasOwn(data, key))
+            .map((key) => [key, data[key]]),
+        ),
+      )
+    ) {
+      throw new Error('Adaptive outputs are invalid');
+    }
+
     if (!isPartial && !this.isValid(form, data)) {
       throw new Error('Submission is invalid');
     }
@@ -69,7 +88,11 @@ export class SubmissionService {
       submission = {
         ...existingSubmission,
         data: {
-          ...existingSubmission.data,
+          ...Object.fromEntries(
+            Object.entries(existingSubmission.data).filter(
+              ([key]) => !adaptive || !Object.hasOwn(adaptive.properties, key),
+            ),
+          ),
           ...data,
         },
         status,
@@ -179,6 +202,20 @@ export class SubmissionService {
 
       if (!section) {
         break;
+      }
+
+      if (
+        section.adaptive &&
+        !areAdaptiveOutputsValid(
+          section.adaptive,
+          Object.fromEntries(
+            Object.keys(section.adaptive.properties)
+              .filter((key) => Object.hasOwn(data, key))
+              .map((key) => [key, data[key]]),
+          ),
+        )
+      ) {
+        return false;
       }
 
       for (const field of section.fields) {

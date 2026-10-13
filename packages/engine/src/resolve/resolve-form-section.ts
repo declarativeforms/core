@@ -8,6 +8,14 @@ export function resolveFormSection(
   locale: string,
 ): IResolvedFormSection {
   return {
+    ...(section.adaptive !== undefined && {
+      adaptive: {
+        ...section.adaptive,
+        objectives: section.adaptive.objectives.map((objective) =>
+          resolveLocalizedText(objective, locale),
+        ),
+      },
+    }),
     ...(section.id !== undefined && { id: section.id }),
     ...(section.title !== undefined && {
       title: resolveLocalizedText(section.title, locale),

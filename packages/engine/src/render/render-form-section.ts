@@ -9,6 +9,7 @@ export function renderFormSection(
   canGoBack: boolean,
 ): IRenderableSection {
   return {
+    ...(section.adaptive !== undefined && { adaptive: section.adaptive }),
     id: section.id,
     ...(section.title && { title: section.title }),
     ...(section.description && { description: section.description }),
