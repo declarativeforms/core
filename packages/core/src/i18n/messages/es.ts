@@ -14,11 +14,11 @@ export const esMessages: TranslationMessages = {
   'thank_you.default_title': '¡Gracias!',
   'thank_you.default_description': 'Hemos recibido tu envío.',
   'start.button': 'Comenzar',
-  'adaptive.loading': 'Preparando las siguientes preguntas…',
   'adaptive.failed':
     'No pudimos continuar. Tus respuestas siguen aquí. Inténtalo de nuevo.',
   'adaptive.retry': 'Reintentar',
   'section.back': 'Atrás',
+  'section.loading': 'Cargando…',
   'section.next': 'Siguiente',
   'dropdown.select_a': 'Selecciona {{label}}',
   'dropdown.search': 'Buscar...',

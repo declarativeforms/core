@@ -4,3 +4,4 @@ export * from './clear-button.component';
 export * from './field.types';
 export * from './html-text';
 export * from './media-frame';
+export * from './section-loading.component';

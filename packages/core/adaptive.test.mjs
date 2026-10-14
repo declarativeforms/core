@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire, registerHooks } from 'node:module';
 import test from 'node:test';
+import { renderToStaticMarkup } from 'react-dom/server';
 import Ajv from 'ajv';
 import { FORM_JSON_SCHEMA, compile, parse, render, resolve, serialize } from '@declarativeforms/engine';
 
@@ -9,7 +10,7 @@ const ts = createRequire(new URL('../api/package.json', import.meta.url))('types
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    const source = context.parentURL?.includes('/declarative-form/core/');
+    const source = context.parentURL?.includes('/declarative-form/');
     if (specifier === 'react' && source) {
       return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(`
         const equal = (a, b) => a && b && a.length === b.length && a.every((value, index) => Object.is(value, b[index]));
@@ -42,13 +43,16 @@ registerHooks({
       `)}` };
     }
     const stubs = {
-      '@/components/ui': "export const Button = 'button';",
+      '@/components/ui': "export const Button = 'button'; export const CardContent = 'div'; export const Skeleton = 'div';",
       '@/i18n': "export function useI18n() { return { t: key => key }; }",
       './section.component': "export const DeclarativeFormSection = 'section';",
       './start.component': "export const DeclarativeFormStart = 'start';",
     };
     if (source && stubs[specifier]) {
       return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(stubs[specifier])}` };
+    }
+    if (source && specifier === '@/components/declarative-form/supporting') {
+      return { shortCircuit: true, url: new URL('./src/components/declarative-form/supporting/section-loading.component.tsx', import.meta.url).href };
     }
     if (specifier.startsWith('@/lib/')) {
       return { shortCircuit: true, url: new URL(`./src/lib/${specifier.slice(6)}.ts`, import.meta.url).href };
@@ -62,7 +66,7 @@ registerHooks({
     return nextResolve(specifier, context);
   },
   load(url, context, nextLoad) {
-    if (url.endsWith('/adaptive-section.component.tsx') || url.endsWith('/form.component.tsx')) {
+    if (url.endsWith('/adaptive-section.component.tsx') || url.endsWith('/form.component.tsx') || url.endsWith('/section-loading.component.tsx')) {
       return { shortCircuit: true, format: 'module', source: ts.transpileModule(readFileSync(new URL(url), 'utf8'), { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText };
     }
     return nextLoad(url, context);
@@ -134,6 +138,19 @@ const definition = {
   }, { id: 'followup', fields: [] }],
 };
 
+test('section skeleton announces loading and keeps decorative placeholders noninteractive', async () => {
+  const { SectionLoading } = await import('./src/components/declarative-form/supporting/section-loading.component.tsx');
+  const skeleton = SectionLoading();
+  assert.equal(skeleton.props.role, 'status');
+  assert.equal(skeleton.props['aria-live'], 'polite');
+  const [announcement, decoration] = skeleton.props.children;
+  assert.equal(announcement.props.children, 'section.loading');
+  assert.equal(announcement.props.className, 'sr-only');
+  assert.equal(decoration.props['aria-hidden'], 'true');
+  const markup = renderToStaticMarkup(skeleton);
+  assert.doesNotMatch(markup, /<(input|button|a)\b|tabindex=/);
+});
+
 test('adaptive authoring survives serialization and rendering with normal output routing', () => {
   const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);
   assert.equal(validate(definition), true, JSON.stringify(validate.errors));
@@ -160,6 +177,7 @@ test('adaptive authoring survives serialization and rendering with normal output
 test('adaptive component owns requests, renders standard fields, and retries handoff without reassessment', async t => {
   browser(t);
   const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');
+  const { SectionLoading } = await import('./src/components/declarative-form/supporting/section-loading.component.tsx');
   const calls = [];
   const submitted = [];
   let failSave = true;
@@ -192,30 +210,56 @@ test('adaptive component owns requests, renders standard fields, and retries han
   await h.flush();
   assert.equal(calls.length, 2);
   assert.deepEqual(submitted[1], submitted[0]);
+  assert.equal(findElement(h.current, SectionLoading), undefined);
 });
 
 test('provider failures retain local answers for retry; remount starts fresh without URL changes', async t => {
   browser(t, '?submission_id=existing&step=adaptive');
   const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');
+  const { SectionLoading } = await import('./src/components/declarative-form/supporting/section-loading.component.tsx');
   const calls = [];
   let fail = false;
+  let finish;
   t.mock.method(globalThis, 'fetch', async (_url, options) => {
     calls.push(JSON.parse(options.body));
-    if (fail) { return { ok: false, status: 500 }; }
+    if (fail) { return new Promise(resolve => { finish = resolve; }); }
     return { ok: true, json: async () => ({ fields: [{ id: 'q', type: 'long_text' }] }) };
   });
   const h = await mount(AdaptiveSection, adaptiveProps());
+  const questions = findElement(h.current, 'section');
+  let focusCount = 0;
+  questions.props.ref.current = { focus() { focusCount++; } };
   fail = true;
-  await findElement(h.current, 'section').props.onSubmit({ q: 'Keep my answer' });
+  const pending = questions.props.onSubmit({ q: 'Keep my answer' });
   await h.flush();
-  fail = false;
+  assert.ok(findElement(h.current, SectionLoading));
+  assert.equal(findElement(h.current, 'div').props.hidden, true);
+  assert.equal(findElement(h.current, 'section').key, questions.key);
+  assert.equal(findElement(h.current, 'section').props.disabled, true);
+  finish({ ok: false, status: 500 });
+  await pending;
+  await h.flush();
+  assert.equal(findElement(h.current, SectionLoading), undefined);
+  assert.equal(h.current.props.children[2].props.hidden, false);
+  assert.equal(findElement(h.current, 'section').key, questions.key);
   findElement(h.current, 'button').props.onClick();
   await h.flush();
+  assert.ok(findElement(h.current, SectionLoading));
+  assert.equal(findElement(h.current, 'div').props.hidden, true);
+  assert.equal(findElement(h.current, 'section').key, questions.key);
+  finish({ ok: true, json: async () => ({ fields: [{ id: 'followup', type: 'short_text' }] }) });
+  await h.flush();
+  assert.equal(findElement(h.current, SectionLoading), undefined);
+  assert.equal(findElement(h.current, 'div').props.hidden, false);
+  assert.notEqual(findElement(h.current, 'section').key, questions.key);
+  assert.equal(findElement(h.current, 'section').props.disabled, false);
+  assert.ok(focusCount > 0);
   assert.deepEqual(calls[1], calls[2]);
   assert.deepEqual(calls[2].history, [{ fields: [{ id: 'q', type: 'long_text' }], answers: { q: 'Keep my answer' } }]);
   assert.ok(findElement(h.current, 'section'));
   assert.equal(window.location.search, '?submission_id=existing&step=adaptive');
   h.unmount();
+  fail = false;
   await mount(AdaptiveSection, adaptiveProps());
   assert.deepEqual(calls[3].history, []);
   assert.equal(calls[3].submissionId, undefined);
@@ -224,10 +268,13 @@ test('provider failures retain local answers for retry; remount starts fresh wit
 test('unmounted adaptive sections ignore late responses', async t => {
   browser(t);
   const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');
+  const { SectionLoading } = await import('./src/components/declarative-form/supporting/section-loading.component.tsx');
   let finish;
   const submitted = [];
   t.mock.method(globalThis, 'fetch', () => new Promise(resolve => { finish = resolve; }));
   const h = await mount(AdaptiveSection, adaptiveProps({ onSubmit: values => submitted.push(values) }));
+  assert.ok(findElement(h.current, SectionLoading));
+  assert.equal(findElement(h.current, 'section'), undefined);
   h.unmount();
   finish({ ok: true, json: async () => ({ fields: [], outputs: { result: 'stale' } }) });
   await h.flush();

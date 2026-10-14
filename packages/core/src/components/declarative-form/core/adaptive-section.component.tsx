@@ -6,6 +6,7 @@ import {
   type IResolvedFormField,
   type IRenderableSection,
 } from '@declarativeforms/engine';
+import { SectionLoading } from '@/components/declarative-form/supporting';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { assessAdaptiveSection } from '@/lib/adaptive';
@@ -131,11 +132,7 @@ export function AdaptiveSection(props: {
 
   return (
     <>
-      {busy ? (
-        <p role="status" aria-live="polite" className="px-6 py-4">
-          {i18n.t('adaptive.loading')}
-        </p>
-      ) : null}
+      {busy ? <SectionLoading /> : null}
       {failed ? (
         <div role="alert" className="px-6 py-4">
           <p>{i18n.t('adaptive.failed')}</p>
@@ -145,20 +142,22 @@ export function AdaptiveSection(props: {
         </div>
       ) : null}
       {generated ? (
-        <DeclarativeFormSection
-          key={turn}
-          ref={sectionRef}
-          formId={props.formId}
-          section={{
-            ...props.section,
-            fields: generated.fields,
-            defaultValues: generated.defaultValues,
-          }}
-          data={{}}
-          disabled={busy || failed}
-          onBack={props.onBack}
-          onSubmit={advance}
-        />
+        <div hidden={busy} className="space-y-6">
+          <DeclarativeFormSection
+            key={turn}
+            ref={sectionRef}
+            formId={props.formId}
+            section={{
+              ...props.section,
+              fields: generated.fields,
+              defaultValues: generated.defaultValues,
+            }}
+            data={{}}
+            disabled={busy || failed}
+            onBack={props.onBack}
+            onSubmit={advance}
+          />
+        </div>
       ) : !busy && props.section.canGoBack ? (
         <Button type="button" onClick={props.onBack}>
           {i18n.t('section.back')}

@@ -14,11 +14,11 @@ const enMessageSource = {
   'thank_you.default_title': 'Thank You!',
   'thank_you.default_description': 'Your submission has been received.',
   'start.button': 'Start',
-  'adaptive.loading': 'Preparing your next questions…',
   'adaptive.failed':
     'We could not continue. Your answers are still here. Please retry.',
   'adaptive.retry': 'Retry',
   'section.back': 'Back',
+  'section.loading': 'Loading…',
   'section.next': 'Next',
   'dropdown.select_a': 'Select a {{label}}',
   'dropdown.search': 'Search...',
