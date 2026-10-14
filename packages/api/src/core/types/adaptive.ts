@@ -1,6 +1,6 @@
-import type { IResolvedFormField } from '@declarativeforms/engine';
+import type { IDeclarativeFormField } from '@declarativeforms/engine';
 
 export type IAdaptiveTurn = {
-  fields: Array<IResolvedFormField>;
+  fields: Array<IDeclarativeFormField>;
   answers: Record<string, unknown>;
 };

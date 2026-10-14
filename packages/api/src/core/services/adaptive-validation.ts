@@ -2,7 +2,7 @@ import {
   FORM_JSON_SCHEMA,
   type IDeclarativeAdaptive,
   type IResolvedAdaptive,
-  type IResolvedFormField,
+  type IDeclarativeFormField,
 } from '@declarativeforms/engine';
 import Ajv, { type ValidateFunction } from 'ajv';
 
@@ -12,12 +12,16 @@ const validateConfiguration = ajv.compile({
   definitions,
   $ref: '#/definitions/adaptive',
 });
-const validateFields = ajv.compile({
+export const ADAPTIVE_FIELDS_SCHEMA = {
+  $id: 'urn:frms:adaptive-fields',
   definitions,
   type: 'array',
   maxItems: 50,
   items: { $ref: '#/definitions/field' },
-});
+};
+const validateFields = ajv.compile<Array<IDeclarativeFormField>>(
+  ADAPTIVE_FIELDS_SCHEMA,
+);
 const DECIMAL_PATTERN = '^-?\\d+(\\.\\d+)?$';
 
 export function assertAdaptiveConfiguration(adaptive: IResolvedAdaptive): void {
@@ -105,7 +109,7 @@ function assertGeneratedContentSafe(content: unknown): void {
 
 export function parseAdaptiveFields(
   content: string,
-): Array<IResolvedFormField> {
+): Array<IDeclarativeFormField> {
   const fields: unknown = JSON.parse(content);
   assertGeneratedContentSafe(fields);
 
@@ -113,10 +117,9 @@ export function parseAdaptiveFields(
     throw new Error('Invalid generated fields');
   }
 
-  const questions = fields as Array<IResolvedFormField>;
   const identifiers = new Set<string>();
 
-  for (const field of questions) {
+  for (const field of fields) {
     if (
       !field.id ||
       identifiers.has(field.id) ||
@@ -143,5 +146,5 @@ export function parseAdaptiveFields(
     identifiers.add(field.id);
   }
 
-  return questions;
+  return fields;
 }

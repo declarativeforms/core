@@ -59,7 +59,7 @@ export class AdaptiveService {
       const fields = parseAdaptiveFields(JSON.stringify(turn.fields));
       const fieldIds = new Set(fields.map((field) => field.id));
       const compiled = compile(
-        { sections: [{ id: sectionId, fields }] },
+        resolve({ sections: [{ id: sectionId, fields }] }, conversation.locale),
         turn.answers,
       );
 
@@ -81,7 +81,18 @@ export class AdaptiveService {
       conversation.history,
     );
     const outputs: unknown = JSON.parse(assessment.outputs_json);
-    const fields = parseAdaptiveFields(assessment.fields_json);
+    const fields =
+      resolve(
+        {
+          sections: [
+            {
+              id: sectionId,
+              fields: parseAdaptiveFields(assessment.fields_json),
+            },
+          ],
+        },
+        conversation.locale,
+      ).sections?.[0].fields ?? [];
 
     if (
       !outputs ||

@@ -1,4 +1,10 @@
-import type { IDeclarativeForm, ISubmission } from '@declarativeforms/engine';
+import {
+  compile,
+  render,
+  validateField,
+  type IDeclarativeForm,
+  type ISubmission,
+} from '@declarativeforms/engine';
 import type { Db } from 'mongodb';
 import { OpenAiGateway } from '../gateways/openai';
 import { GitHubGateway } from '../gateways';
@@ -381,4 +387,75 @@ test('rejects unsafe generated content and enforces declared output constraints'
   expect(areAdaptiveOutputsValid(adaptive, { budget: 2, injected: true })).toBe(
     false,
   );
+});
+
+test('resolves localized generated fields and history before rendering or answer validation', async () => {
+  const h = createHarness();
+  const fields = parseAdaptiveFields(
+    JSON.stringify([
+      {
+        id: 'choice',
+        type: 'dropdown',
+        label: { en: 'Choice', es: 'Opción' },
+        helper_text: { en: 'Pick one', es: 'Elige uno' },
+        placeholder: { en: 'Select', es: 'Selecciona' },
+        options: [{ label: { en: 'One', es: 'Uno' }, value: 'one' }],
+        validators: [
+          { type: 'required', message: { en: 'Choose', es: 'Elige' } },
+        ],
+      },
+      {
+        id: 'instructions',
+        type: 'text_block',
+        content: { en: 'Instructions', es: 'Instrucciones' },
+      },
+      {
+        id: 'rating',
+        type: 'rating',
+        min_label: { en: 'Low', es: 'Bajo' },
+        max_label: { en: 'High', es: 'Alto' },
+      },
+    ]),
+  );
+  const assess = jest.spyOn(h.gateway, 'assess').mockResolvedValue({
+    objectives: [false, false],
+    outputs_json: '{}',
+    fields_json: JSON.stringify(fields),
+  });
+  const conversation = {
+    locale: 'es',
+    data: {},
+    history: [
+      { fields, answers: { choice: 'one', instructions: '', rating: 3 } },
+    ],
+  };
+  const result = await h.service.assess(form.id!, 'adaptive', conversation);
+  expect(result!.fields).toEqual([
+    {
+      ...fields[0],
+      label: 'Opción',
+      helper_text: 'Elige uno',
+      placeholder: 'Selecciona',
+      options: [{ label: 'Uno', value: 'one' }],
+      validators: [{ type: 'required', message: 'Elige' }],
+    },
+    { ...fields[1], content: 'Instrucciones' },
+    { ...fields[2], min_label: 'Bajo', max_label: 'Alto' },
+  ]);
+  const compiled = compile(
+    { sections: [{ id: 'questions', fields: result!.fields }] },
+    {},
+  );
+  expect(
+    render(compiled, {}, { sectionId: 'questions' }).section.fields[0].label,
+  ).toBe('Opción');
+  expect(validateField(compiled.sections[0].fields[0], '', {})).toBe('Elige');
+  await expect(
+    h.service.assess(form.id!, 'adaptive', {
+      ...conversation,
+      history: [{ fields, answers: { choice: '' } }],
+    }),
+  ).rejects.toThrow('Invalid adaptive answers');
+  expect(assess).toHaveBeenCalledTimes(1);
+  expect(fields[0].label).toEqual({ en: 'Choice', es: 'Opción' });
 });

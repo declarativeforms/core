@@ -1,3 +1,4 @@
+import Ajv, { type AnySchema } from 'ajv';
 import type {
   RouteOptions,
   RawServerDefault,
@@ -5,7 +6,12 @@ import type {
   RawReplyDefaultExpression,
 } from 'fastify';
 import { getContainer } from '../core';
+import { ADAPTIVE_FIELDS_SCHEMA } from '../core/services/adaptive-validation';
 import type { IAdaptiveTurn } from '../core/types/adaptive';
+
+const ajv = new Ajv({ strict: false, ownProperties: true }).addSchema(
+  ADAPTIVE_FIELDS_SCHEMA,
+);
 
 export const FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST: RouteOptions<
   RawServerDefault,
@@ -24,6 +30,7 @@ export const FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST: RouteOptions<
   url: '/api/v1/forms/:id/sections/:sectionId/adaptive',
   bodyLimit: 1024 * 1024,
   config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
+  validatorCompiler: (request) => ajv.compile(request.schema as AnySchema),
   schema: {
     params: {
       type: 'object',
@@ -35,7 +42,7 @@ export const FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST: RouteOptions<
     },
     body: {
       type: 'object',
-      additionalProperties: false,
+      additionalProperties: true,
       required: ['locale', 'data', 'history'],
       properties: {
         locale: { type: 'string', minLength: 2, maxLength: 20 },
@@ -44,14 +51,10 @@ export const FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST: RouteOptions<
           type: 'array',
           items: {
             type: 'object',
-            additionalProperties: false,
+            additionalProperties: true,
             required: ['fields', 'answers'],
             properties: {
-              fields: {
-                type: 'array',
-                maxItems: 50,
-                items: { type: 'object' },
-              },
+              fields: { $ref: ADAPTIVE_FIELDS_SCHEMA.$id },
               answers: { type: 'object' },
             },
           },
@@ -64,7 +67,14 @@ export const FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST: RouteOptions<
     const assessment = await container.adaptiveService.assess(
       request.params.id,
       request.params.sectionId,
-      request.body,
+      {
+        locale: request.body.locale,
+        data: request.body.data,
+        history: request.body.history.map((turn) => ({
+          fields: turn.fields,
+          answers: turn.answers,
+        })),
+      },
     );
 
     return reply
