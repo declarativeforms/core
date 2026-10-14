@@ -12,17 +12,24 @@ theme:
 sections:
   - id: request
     title: "Request a feature"
+    adaptive:
+      objectives:
+        - Understand the feature being requested, clarifying incomplete or ambiguous details without repeating questions already answered.
+        - Understand the workflow the feature would help and the desired outcome, reusing information already supplied.
+      properties:
+        feature:
+          type: string
+          description: A concise description of the requested feature
+          minLength: 1
+        use_case:
+          type: string
+          description: The workflow the feature would help and the desired outcome
+          minLength: 1
+    next: contact
+
+  - id: contact
+    title: "Stay in touch"
     fields:
-      - id: feature
-        type: short_text
-        label: "What’s missing?"
-        validators: [required]
-
-      - id: use_case
-        type: long_text
-        label: "What would it help you do?"
-        validators: [required]
-
       - id: email
         type: email
         label: "Your email"
@@ -42,6 +49,9 @@ connections:
   - type: email
     to: "info@frms.dev"
     subject: "New feature request — Declarative Forms"
-    body: "A new feature request has been submitted."
+    body: |
+      <p>A new feature request has been submitted.</p>
+      <p><strong>Feature:</strong> {{data.feature}}</p>
+      <p><strong>Use case:</strong> {{data.use_case}}</p>
     include_responses: true
     trigger_on: completed
