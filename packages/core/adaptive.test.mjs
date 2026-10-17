@@ -21,10 +21,6 @@ registerHooks({
           return [slot.value, value => { slot.value = typeof value === 'function' ? value(slot.value) : value; h.dirty = true; }];
         }
         export function useRef(initial) { return useState({ current: initial })[0]; }
-        export function useTransition() {
-          const h = globalThis.hookHarness;
-          return [!!h.navigationPending, fn => { h.navigationPending = true; h.dirty = true; fn(); }];
-        }
         export function useCallback(fn) { return fn; }
         export function useMemo(fn, deps) {
           const slot = useRef({});
@@ -128,7 +124,7 @@ function browser(t, search = '') {
   let nextFrame = 0;
   let nextTimer = 0;
   globalThis.window = {
-    location: { pathname: '/form', search, hash: '' },
+    location: { pathname: '/form', search, hash: '', origin: 'https://example.com', get href() { return this.origin + this.pathname + this.search + this.hash; } },
     scrollTo() {},
     requestAnimationFrame(callback) { const id = ++nextFrame; frames.set(id, callback); return id; },
     cancelAnimationFrame(id) { frames.delete(id); },
@@ -138,7 +134,7 @@ function browser(t, search = '') {
     removeEventListener: events.removeEventListener.bind(events),
     dispatchEvent: events.dispatchEvent.bind(events),
     visualViewport: new EventTarget(),
-    history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } },
+    history: { replaceState(_data, _title, url) { const next = new URL(url, window.location.origin); window.location.pathname = next.pathname; window.location.search = next.search; window.location.hash = next.hash; } },
   };
   t.after(() => { delete globalThis.window; });
   return (settle = false) => {
@@ -496,10 +492,12 @@ test('new user interaction cancels pending viewport corrections', async t => {
 function routeEnvironment(t, search = '?step=intro') {
   browser(t, search);
   const navigation = [];
+  window.location.replace = url => navigation.push(['document', url]);
+  window.location.reload = () => navigation.push(['reload', window.location.href]);
   globalThis.routeTest = {
     queries: [],
     formQuery: { data: { ...form, id: 'form' } },
-    savedQuery: { isFetchedAfterMount: true, data: { data: { name: 'Saved name' } }, refetch() {} },
+    savedQuery: { isFetchedAfterMount: true, isSuccess: true, data: { data: { name: 'Saved name' } }, refetch() {} },
     router: {
       replace(url, options) { navigation.push(['replace', url, options]); },
       push(url) { navigation.push(['push', url]); },
@@ -529,16 +527,18 @@ test('section navigation waits for saving, preserves parameters, and requests th
   await pending;
   await h.flush();
   const destination = new URL(navigation[0][1], 'https://example.com');
-  assert.deepEqual(navigation[0][2], { scroll: true });
+  assert.equal(navigation[0][0], 'document');
   assert.equal(destination.hash, '#top');
   assert.deepEqual(Object.fromEntries(destination.searchParams), { step: 'after', lang: 'es', embed: 'true', branch: 'preview', name: 'Prefilled', submission_id: 'saved' });
   assert.equal(findElement(h.current, 'form').props.disabled, true);
   findElement(h.current, 'form').props.onStepChange('intro');
   assert.equal(navigation.length, 1);
-  h.navigationPending = false;
+  await current.props.onEffect({ type: 'submit', isPartial: true }, state);
+  assert.equal(requests.length, 1);
+  h.unmount();
   window.location.search = destination.search;
-  h.render();
-  findElement(h.current, 'form').props.onStepChange('intro');
+  const resumed = await mount(FormRoute, { id: 'form' });
+  findElement(resumed.current, 'form').props.onStepChange('intro');
   assert.equal(new URL(navigation[1][1], 'https://example.com').searchParams.get('submission_id'), 'saved');
   assert.equal(new URL(navigation[1][1], 'https://example.com').hash, '#top');
 });
@@ -608,4 +608,54 @@ test('navigation pending disables both ordinary and adaptive section submission'
   assert.equal(h.current.props.disabled, true);
   await h.current.props.onSubmit({ result: 'value' });
   assert.equal(submissions, 0);
+});
+
+
+test('Start navigation locks synchronously and same-section navigation reloads the document', async t => {
+  const navigation = routeEnvironment(t, '?lang=en');
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  const h = await mount(FormRoute, { id: 'form' });
+  const start = findElement(h.current, 'form').props.onStepChange;
+  start('intro');
+  start('intro');
+  assert.deepEqual(navigation, [['document', 'https://example.com/form?lang=en&step=intro#top']]);
+  h.unmount();
+  window.location.search = '?step=intro&lang=en';
+  const same = await mount(FormRoute, { id: 'form' });
+  findElement(same.current, 'form').props.onStepChange('intro');
+  assert.deepEqual(navigation.at(-1), ['reload', 'https://example.com/form?step=intro&lang=en#top']);
+  await same.flush();
+  assert.equal(findElement(same.current, 'form').props.disabled, true);
+});
+
+test('a thrown native navigation releases the lock for retry', async t => {
+  const navigation = routeEnvironment(t);
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  const h = await mount(FormRoute, { id: 'form' });
+  const replace = t.mock.method(window.location, 'replace', () => { throw new Error('Navigation blocked'); });
+  assert.throws(() => findElement(h.current, 'form').props.onStepChange('after'), /Navigation blocked/);
+  await h.flush();
+  assert.equal(findElement(h.current, 'form').props.disabled, false);
+  replace.mock.restore();
+  findElement(h.current, 'form').props.onStepChange('after');
+  assert.equal(navigation.length, 1);
+});
+
+test('a successful save without a usable ID cannot discard answers by navigating', async t => {
+  const navigation = routeEnvironment(t);
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  let id;
+  t.mock.method(globalThis, 'fetch', async () => ({ ok: true, json: async () => ({ id }) }));
+  const h = await mount(FormRoute, { id: 'form' });
+  const state = { data: { name: 'Ada' }, completedSectionId: 'intro', activeSectionId: 'after' };
+  for (id of [undefined, null, '', '   ', 123]) {
+    await assert.rejects(findElement(h.current, 'form').props.onEffect({ type: 'submit', isPartial: true }, state), /no usable ID/);
+  }
+  assert.deepEqual(navigation, []);
+  assert.equal(findElement(h.current, 'form').props.disabled, false);
+  window.location.search = '?step=intro&submission_id=existing';
+  h.render();
+  id = undefined;
+  await findElement(h.current, 'form').props.onEffect({ type: 'submit', isPartial: true }, state);
+  assert.equal(new URL(navigation[0][1]).searchParams.get('submission_id'), 'existing');
 });

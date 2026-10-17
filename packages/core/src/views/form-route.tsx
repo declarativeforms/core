@@ -4,7 +4,7 @@ import {
   type IDeclarativeForm,
 } from '@declarativeforms/engine';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DeclarativeForm, HeroSection, type FormEffect } from '@/components';
@@ -40,7 +40,8 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
   const [resumeSubmissionId] = useState(() =>
     searchParams.get('submission_id'),
   );
-  const [isNavigating, startNavigation] = useTransition();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const isNavigatingRef = useRef(false);
 
   const isCompletingRef = useRef(false);
   const hasRewrittenSlugRef = useRef(false);
@@ -224,7 +225,7 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     sectionId: string,
     submissionId: string | null = searchParams.get('submission_id'),
   ): void {
-    if (isNavigating) {
+    if (isNavigatingRef.current) {
       return;
     }
 
@@ -233,12 +234,24 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
       step: sectionId,
     });
 
-    startNavigation(() => {
-      router.replace(
-        `${window.location.pathname}?${nextParams.toString()}#top`,
-        { scroll: true },
-      );
-    });
+    const nextUrl = new URL(window.location.href);
+    nextUrl.search = nextParams.toString();
+    nextUrl.hash = 'top';
+    isNavigatingRef.current = true;
+    setIsNavigating(true);
+
+    try {
+      if (nextUrl.search === window.location.search) {
+        window.history.replaceState(null, '', nextUrl.href);
+        window.location.reload();
+      } else {
+        window.location.replace(nextUrl.href);
+      }
+    } catch (error) {
+      isNavigatingRef.current = false;
+      setIsNavigating(false);
+      throw error;
+    }
   }
 
   async function applyFormEffect(
@@ -249,6 +262,10 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
       completedSectionId: string;
     },
   ): Promise<void> {
+    if (isNavigatingRef.current) {
+      return;
+    }
+
     analyticsRef.current?.capture('section_completed', {
       form_id: formId || undefined,
       section_id: runtimeState.completedSectionId,
@@ -262,10 +279,17 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
           runtimeState.data,
           effect.isPartial,
         );
-        changeStep(
-          runtimeState.activeSectionId,
-          submissionId ?? searchParams.get('submission_id'),
-        );
+        const savedSubmissionId =
+          submissionId ?? searchParams.get('submission_id');
+
+        if (
+          typeof savedSubmissionId !== 'string' ||
+          !savedSubmissionId.trim()
+        ) {
+          throw new Error('Saved submission has no usable ID');
+        }
+
+        changeStep(runtimeState.activeSectionId, savedSubmissionId);
 
         return;
       }
