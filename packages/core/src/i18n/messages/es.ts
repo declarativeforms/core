@@ -23,11 +23,18 @@ export const esMessages: TranslationMessages = {
   'dropdown.select_a': 'Selecciona {{label}}',
   'dropdown.search': 'Buscar...',
   'dropdown.no_results': 'No se encontraron resultados.',
+  'selection.close': 'Cerrar',
   'input.placeholder': 'Tu respuesta',
   'long_text.placeholder': 'Tu respuesta',
   'address.placeholder': 'Introduce una dirección',
   'address.loading_suggestions': 'Cargando sugerencias',
   'address.no_results': 'No se encontraron resultados.',
+  'address.loading_details': 'Cargando dirección',
+  'address.search_failed':
+    'No se pudieron cargar las sugerencias. Inténtalo de nuevo.',
+  'address.details_failed':
+    'No se pudo cargar esta dirección. Selecciónala de nuevo para reintentar.',
+  'address.retry': 'Reintentar',
   'email.placeholder_default': 'Tu respuesta',
   'turnstile.loading': 'Cargando verificación...',
   'turnstile.verifying': 'Verificando...',

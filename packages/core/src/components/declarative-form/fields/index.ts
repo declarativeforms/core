@@ -9,6 +9,7 @@ export * from './file-upload/file-upload-field.component';
 export * from './geolocation/geolocation-field.component';
 export * from './hidden-field.component';
 export * from './long-text-field.component';
+export * from './mobile-dropdown.component';
 export * from './multiple-select-field.component';
 export * from './number-field.component';
 export * from './rating-field.component';

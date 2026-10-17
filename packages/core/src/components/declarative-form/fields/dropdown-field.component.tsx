@@ -12,15 +12,18 @@ import {
 import { useI18n } from '@/i18n';
 import {
   HtmlText,
+  useMobileLayout,
   type FieldProps,
 } from '@/components/declarative-form/supporting';
 import { getDropdownOptions } from './dropdown';
 import { SearchableDropdown } from './searchable-dropdown.component';
+import { MobileDropdown } from './mobile-dropdown.component';
 
 export function DropdownField(
   props: FieldProps<IRenderableDropdownField, string>,
 ): React.JSX.Element {
   const i18n = useI18n();
+  const isMobile = useMobileLayout();
   const parentValue = useWatch({
     control: props.form.control,
     name: props.field.dependsOn ?? props.field.id,
@@ -40,6 +43,20 @@ export function DropdownField(
       onChange('');
     }
   }, [dependsOn, onChange, options, value]);
+
+  if (isMobile) {
+    return (
+      <MobileDropdown
+        key={String(disabled)}
+        field={props.field}
+        control={props.control}
+        form={props.form}
+        formId={props.formId}
+        disabled={disabled}
+        options={options}
+      />
+    );
+  }
 
   if (props.field.searchable) {
     return (
@@ -61,6 +78,8 @@ export function DropdownField(
       value={props.control.value}
     >
       <SelectTrigger
+        ref={(element) => props.control.ref(element)}
+        onBlur={props.control.onBlur}
         id={props.control.name}
         className="w-full"
         aria-required={props.field.required}

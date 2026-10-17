@@ -292,6 +292,26 @@
     line-height: 1.5rem;
   }
 
+  .form-selection-sheet {
+    box-shadow: var(--form-shadow-menu);
+  }
+
+  .form-selection-sheet [data-slot='command-input-wrapper'] {
+    flex-shrink: 0;
+    height: 3.5rem;
+    padding-inline: 1rem;
+  }
+
+  .form-selection-option:hover,
+  .form-selection-option:has(:focus-visible) {
+    background: var(--accent);
+  }
+
+  .form-selection-option:has(:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
   [data-slot='skeleton'] {
     border-radius: 0.5rem;
     background: var(--muted);
@@ -332,4 +352,11 @@
   --form-label: #cecfd2;
   --form-placeholder: #85888e;
   --form-success: #75e0a7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-form-theme] :is([data-slot='sheet-overlay'], .form-selection-sheet) {
+    animation: none;
+    transition: none;
+  }
 }
