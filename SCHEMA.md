@@ -445,10 +445,35 @@ value passed in the URL, for example a campaign source. See
 
 | `type` | Renders as | Extra keys |
 | --- | --- | --- |
+| `checkbox` | One boolean checkbox | none |
 | `single_select` | One-of-many (radio style) | `options`, `allow_other` |
 | `multiple_select` | Many-of-many (checkbox style) | `options`, `allow_other` |
 | `dropdown` | Select menu | `options`, `searchable`, `depends_on`, `options_by_parent` |
 | `rating` | 1 to 5 scale | `min_label`, `max_label` |
+
+Use `checkbox` for an agreement or an optional on/off choice. Its `label` appears
+beside the checkbox and supports localization and templates. Answers are boolean
+`true` or `false`, with `false` as the default. A `required` validator means the
+checkbox must be checked; omit it to allow either state. Use `helper_text` for
+additional guidance. This field does not accept `options` or `allow_other`.
+
+```yaml
+- id: search_consent
+  type: checkbox
+  label: "I accept the terms and conditions."
+  validators:
+    - type: required
+      message: "Please accept the terms to continue."
+
+- id: flexible_about_area
+  type: checkbox
+  label: "I'm flexible about the area"
+```
+
+Changing an existing `multiple_select` field to `checkbox` changes its answer
+from an array to a boolean. Update consumers explicitly; existing forms and
+saved responses are not automatically converted. A required checkbox accepts
+only boolean `true`, not a string or an old array value.
 
 ```yaml
 - id: plan
@@ -584,7 +609,7 @@ rule accepts an optional `message` to override the default text.
 
 | Rule | Shape | Applies to | Meaning |
 | --- | --- | --- | --- |
-| Required | `required` or `{ type: required }` | any | The field must have a value. |
+| Required | `required` or `{ type: required }` | any | The field must have a value; a `checkbox` must be `true`. |
 | Pattern | `{ type: pattern, regex }` | text | The value must match the regular expression. |
 | Min length | `{ type: min_length, value }` | text | At least `value` characters. |
 | Max length | `{ type: max_length, value }` | text | At most `value` characters. |
@@ -964,7 +989,7 @@ repository the deployment can read.
 - File uploads hold one uploaded-file object when `max` is absent or `1`, and
   an array when `max` is larger. Camera and signature answers hold one file
   object. Choice answers are a string for `single_select` and an array for
-  `multiple_select`.
+  `multiple_select`, and a boolean for `checkbox`.
 - When editing a form that already has responses, preserve field IDs and option
   values unless intentionally changing the stored-data contract. Recheck both
   existing respondent paths and the changed path.

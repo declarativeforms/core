@@ -4,6 +4,7 @@ export const DECLARATIVE_FIELD_TYPES = [
   'address_locality',
   'address_region',
   'camera',
+  'checkbox',
   'date',
   'date_month',
   'dropdown',

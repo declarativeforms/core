@@ -1,4 +1,4 @@
-import type { ICompiledValidationRule } from '../types';
+import type { DeclarativeFieldType, ICompiledValidationRule } from '../types';
 import { evaluateExpression } from '../compile/expression';
 
 function isValueEmpty(value: unknown): boolean {
@@ -54,12 +54,20 @@ function isValidationRuleSatisfied(
 }
 
 export function validateField(
-  field: { validation: Array<ICompiledValidationRule> },
+  field: {
+    type?: DeclarativeFieldType;
+    validation: Array<ICompiledValidationRule>;
+  },
   value: unknown,
   data: Record<string, unknown>,
 ): string | undefined {
   for (const rule of field.validation) {
-    if (!isValidationRuleSatisfied(rule, value, data)) {
+    const isSatisfied =
+      field.type === 'checkbox' && rule.type === 'required'
+        ? value === true
+        : isValidationRuleSatisfied(rule, value, data);
+
+    if (!isSatisfied) {
       return rule.message;
     }
   }

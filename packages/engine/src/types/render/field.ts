@@ -1,5 +1,6 @@
 import type { IRenderableAddressField } from './address-field';
 import type { IRenderableCameraField } from './camera-field';
+import type { IRenderableCheckboxField } from './checkbox-field';
 import type { IRenderableDateField } from './date-field';
 import type { IRenderableDropdownField } from './dropdown-field';
 import type { IRenderableEmailField } from './email-field';
@@ -17,6 +18,7 @@ import type { IRenderableTextField } from './text-field';
 import type { IRenderableTurnstileField } from './turnstile-field';
 
 export type IRenderableField =
+  | IRenderableCheckboxField
   | IRenderableTextField
   | IRenderableTurnstileField
   | IRenderableNumberField

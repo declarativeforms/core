@@ -2,6 +2,8 @@ import type { ICompiledFormField, ICompiledFormSection } from '../types';
 
 function emptyValueForFieldType(field: ICompiledFormField): unknown {
   switch (field.type) {
+    case 'checkbox':
+      return false;
     case 'file_upload':
     case 'multiple_select':
       return [];

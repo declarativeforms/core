@@ -7,6 +7,7 @@ import {
   assertJsonSchemaCoverage,
   parse,
   toRenderableForm,
+  validateField,
 } from '@declarativeforms/engine';
 import { GET } from './src/app/schema.json/route.ts';
 
@@ -98,6 +99,99 @@ test('authoring schema covers the engine, accepts examples, and rejects mistakes
   ]) {
     assert.equal(validate(invalid), false, JSON.stringify(invalid));
   }
+});
+
+test('checkbox fields preserve booleans and require explicit acceptance', () => {
+  const definition = {
+    sections: [
+      {
+        id: 'agreement',
+        fields: [
+          {
+            id: 'consent',
+            type: 'checkbox',
+            label: {
+              en: 'Accept for {{data.name}}',
+              de: 'Zustimmen für {{data.name}}',
+            },
+            helper_text: { en: 'Read the terms.', de: 'Bedingungen lesen.' },
+            validators: [
+              {
+                type: 'required',
+                message: { en: 'Please accept.', de: 'Bitte zustimmen.' },
+              },
+            ],
+          },
+          { id: 'flexible', type: 'checkbox', label: 'Flexible' },
+          {
+            id: 'conditional',
+            type: 'checkbox',
+            label: 'Conditional',
+            visible_when: 'data.consent === true',
+          },
+        ],
+      },
+    ],
+  };
+  const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);
+  assert.equal(validate(definition), true, JSON.stringify(validate.errors));
+  for (const extra of [{ options: ['Accept'] }, { allow_other: true }]) {
+    const invalid = structuredClone(definition);
+    Object.assign(invalid.sections[0].fields[0], extra);
+    assert.equal(validate(invalid), false);
+  }
+
+  const yaml = JSON.stringify(definition);
+  const form = toRenderableForm(yaml, { locale: 'de', data: { name: 'Ada' } });
+  const consent = form.section.fields[0];
+  assert.equal(consent.type, 'checkbox');
+  assert.equal(consent.label, 'Zustimmen für Ada');
+  assert.equal(consent.helperText, 'Bedingungen lesen.');
+  assert.equal(consent.required, true);
+  assert.equal(form.section.fields[1].required, false);
+  assert.equal(form.section.fields[2].visible, false);
+  assert.deepEqual(form.section.defaultValues, {
+    consent: false,
+    flexible: false,
+    conditional: false,
+  });
+  for (const value of [
+    false,
+    undefined,
+    null,
+    '',
+    'true',
+    'false',
+    [],
+    ['accepted'],
+    1,
+  ]) {
+    assert.equal(
+      validateField(consent, value, { consent: value }),
+      'Bitte zustimmen.',
+    );
+  }
+  assert.equal(validateField(consent, true, { consent: true }), undefined);
+  for (const value of [false, true]) {
+    assert.equal(validateField(form.section.fields[1], value, {}), undefined);
+    const restored = toRenderableForm(yaml, {
+      locale: 'en',
+      data: { consent: value, flexible: value },
+    });
+    assert.equal(restored.section.defaultValues.consent, value);
+    assert.equal(restored.section.defaultValues.flexible, value);
+    assert.equal(restored.section.fields[2].visible, value);
+  }
+  const validation = [{ type: 'required', message: 'Required' }];
+  assert.equal(validateField({ validation }, false, {}), undefined);
+  assert.equal(
+    validateField({ type: 'multiple_select', validation }, ['accepted'], {}),
+    undefined,
+  );
+  assert.equal(
+    validateField({ type: 'multiple_select', validation }, [], {}),
+    'Required',
+  );
 });
 
 test('field helper text is localized and templated', () => {

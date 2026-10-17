@@ -17,6 +17,7 @@ const FIELD_TYPE_GROUPS = {
     'hidden',
   ],
   email: ['email'],
+  checkbox: ['checkbox'],
   dropdown: ['dropdown'],
   select: ['single_select', 'multiple_select'],
   rating: ['rating'],
@@ -88,6 +89,10 @@ const optionsProperty: JsonSchemaNode = {
 };
 
 const fieldBranches: Array<JsonSchemaNode> = [
+  fieldBranch(
+    FIELD_TYPE_GROUPS.checkbox,
+    'A single checkbox with its label beside the control. Stores a boolean, defaulting to false. A required validator accepts only true. Supports shared field properties; options and allow_other are not applicable.',
+  ),
   fieldBranch(
     FIELD_TYPE_GROUPS.textBlock,
     'A content field rendered in place among the questions. It follows the standard field lifecycle and persists an empty-string value. `label` is rendered, `placeholder` is unused, and validators are accepted but ignored. Use a separate required choice field when the respondent must explicitly accept terms.',

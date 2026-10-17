@@ -1,6 +1,7 @@
 'use client';
 export * from './address/address-field.component';
 export * from './camera-field.component';
+export * from './checkbox-field.component';
 export * from './date-field.component';
 export * from './dropdown-field.component';
 export * from './email-field.component';

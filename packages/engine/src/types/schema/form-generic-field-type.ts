@@ -2,6 +2,7 @@ import type { DeclarativeFieldType } from './field-type';
 
 export type IDeclarativeFormGenericFieldType = Extract<
   DeclarativeFieldType,
+  | 'checkbox'
   | 'date'
   | 'date_month'
   | 'hidden'

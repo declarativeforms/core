@@ -1,5 +1,6 @@
 export * from './address-field';
 export * from './camera-field';
+export * from './checkbox-field';
 export * from './date-field';
 export * from './dropdown-field';
 export * from './email-field';

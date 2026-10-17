@@ -7,6 +7,7 @@ import type {
 import {
   AddressField,
   CameraField,
+  CheckboxField,
   DateField,
   DropdownField,
   EmailField,
@@ -42,6 +43,7 @@ export const fieldRegistry: Record<
   address_locality: toFieldRenderer(AddressField),
   address_region: toFieldRenderer(AddressField),
   camera: toFieldRenderer(CameraField),
+  checkbox: toFieldRenderer(CheckboxField),
   date: toFieldRenderer(DateField),
   date_month: toFieldRenderer(DateField),
   dropdown: toFieldRenderer(DropdownField),

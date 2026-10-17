@@ -23,6 +23,8 @@ export function renderFormField(field: ICompiledFormField): IRenderableField {
   };
 
   switch (field.type) {
+    case 'checkbox':
+      return { ...base, type: 'checkbox' };
     case 'text_block':
       return { ...base, type: 'text_block', content: field.content };
     case 'short_text':
