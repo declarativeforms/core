@@ -210,7 +210,7 @@ export function AddressField(
                 className="cursor-pointer items-start"
               >
                 <div className="flex flex-col w-full">
-                  <span className="font-medium break-words">
+                  <span className="break-words">
                     {suggestion.structured_formatting.main_text}
                   </span>
                   {suggestion.structured_formatting.secondary_text && (

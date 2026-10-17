@@ -14,6 +14,7 @@ export function CheckboxField(
     <div className="flex items-start gap-3">
       <Checkbox
         {...bindElement(props.control)}
+        className="mt-0.5"
         checked={props.control.value === true}
         onCheckedChange={(checked) => props.control.onChange(checked === true)}
         aria-required={props.field.required}
@@ -24,7 +25,7 @@ export function CheckboxField(
       />
       <FieldLabel
         htmlFor={props.control.name}
-        className="block cursor-pointer text-sm/5 font-normal"
+        className="form-checkbox-label block cursor-pointer"
       >
         <HtmlText html={props.field.label} />
         {props.field.required && (
