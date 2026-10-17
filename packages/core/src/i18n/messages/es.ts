@@ -3,10 +3,6 @@ import type { TranslationMessages } from './en';
 export const esMessages: TranslationMessages = {
   'base.powered_by': 'Desarrollado por',
   'hero.continue': 'Continuar',
-  'main.restore_failed.title': 'No se pudieron recuperar tus respuestas',
-  'main.restore_failed.description':
-    'No se pudieron cargar tus respuestas guardadas. Inténtalo de nuevo antes de continuar.',
-  'main.retry': 'Reintentar',
   'main.form_not_found.title': 'Formulario no encontrado',
   'main.form_not_found.description':
     'El formulario que buscas no existe o fue eliminado.',

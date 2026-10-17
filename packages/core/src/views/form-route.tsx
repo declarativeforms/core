@@ -40,8 +40,6 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
   const [resumeSubmissionId] = useState(() =>
     searchParams.get('submission_id'),
   );
-  const [isNavigating, setIsNavigating] = useState(false);
-  const isNavigatingRef = useRef(false);
 
   const isCompletingRef = useRef(false);
   const hasRewrittenSlugRef = useRef(false);
@@ -90,23 +88,12 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
         buildApiUrl(`forms/${formId}/submissions/${resumeSubmissionId}`),
       );
       if (!response.ok) {
-        throw new Error(`Could not restore submission: ${response.status}`);
+        return null;
       }
 
-      const submission = (await response.json()) as {
-        data?: Record<string, unknown>;
-      };
-
-      if (!submission.data) {
-        throw new Error('Saved submission has no answers');
-      }
-
-      return submission;
+      return (await response.json()) as { data?: Record<string, unknown> };
     },
     enabled: !!formId && !!resumeSubmissionId,
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
   });
 
   useEffect(() => {
@@ -120,7 +107,9 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     window.history.replaceState(
       null,
       '',
-      `/${formQuery.data.id}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`,
+      nextSearch
+        ? `/${formQuery.data.id}?${nextSearch}`
+        : `/${formQuery.data.id}`,
     );
   }, [isSlugRoute, formQuery.data?.id, searchParams]);
 
@@ -152,10 +141,10 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     };
   }, [formQuery.data?.measurements, formId]);
 
-  function buildProgressParams(progress: {
+  function replaceProgress(progress: {
     submissionId: string | null;
     step: string;
-  }): URLSearchParams {
+  }): void {
     const nextParams = new URLSearchParams(searchParams);
 
     if (progress.submissionId) {
@@ -170,7 +159,7 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
       nextParams.delete('step');
     }
 
-    return nextParams;
+    replaceSearchParams(nextParams);
   }
 
   async function submitForm(
@@ -221,37 +210,11 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     return submissionResponse?.id as string | undefined;
   }
 
-  function changeStep(
-    sectionId: string,
-    submissionId: string | null = searchParams.get('submission_id'),
-  ): void {
-    if (isNavigatingRef.current) {
-      return;
-    }
-
-    const nextParams = buildProgressParams({
-      submissionId,
+  function changeStep(sectionId: string): void {
+    replaceProgress({
+      submissionId: searchParams.get('submission_id'),
       step: sectionId,
     });
-
-    const nextUrl = new URL(window.location.href);
-    nextUrl.search = nextParams.toString();
-    nextUrl.hash = 'top';
-    isNavigatingRef.current = true;
-    setIsNavigating(true);
-
-    try {
-      if (nextUrl.search === window.location.search) {
-        window.history.replaceState(null, '', nextUrl.href);
-        window.location.reload();
-      } else {
-        window.location.replace(nextUrl.href);
-      }
-    } catch (error) {
-      isNavigatingRef.current = false;
-      setIsNavigating(false);
-      throw error;
-    }
   }
 
   async function applyFormEffect(
@@ -262,10 +225,6 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
       completedSectionId: string;
     },
   ): Promise<void> {
-    if (isNavigatingRef.current) {
-      return;
-    }
-
     analyticsRef.current?.capture('section_completed', {
       form_id: formId || undefined,
       section_id: runtimeState.completedSectionId,
@@ -279,17 +238,10 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
           runtimeState.data,
           effect.isPartial,
         );
-        const savedSubmissionId =
-          submissionId ?? searchParams.get('submission_id');
-
-        if (
-          typeof savedSubmissionId !== 'string' ||
-          !savedSubmissionId.trim()
-        ) {
-          throw new Error('Saved submission has no usable ID');
-        }
-
-        changeStep(runtimeState.activeSectionId, savedSubmissionId);
+        replaceProgress({
+          submissionId: submissionId ?? searchParams.get('submission_id'),
+          step: runtimeState.activeSectionId,
+        });
 
         return;
       }
@@ -310,12 +262,10 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
           const finalSubmissionId =
             submissionId ?? searchParams.get('submission_id');
 
-          replaceSearchParams(
-            buildProgressParams({
-              submissionId: finalSubmissionId,
-              step: 'done',
-            }),
-          );
+          replaceProgress({
+            submissionId: finalSubmissionId,
+            step: 'done',
+          });
           const thankYouPath = `/${encodeURIComponent(formId)}/thank-you`;
           router.push(
             i18n.withLang(
@@ -346,12 +296,10 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
             false,
           );
 
-          replaceSearchParams(
-            buildProgressParams({
-              submissionId: submissionId ?? searchParams.get('submission_id'),
-              step: 'done',
-            }),
-          );
+          replaceProgress({
+            submissionId: submissionId ?? searchParams.get('submission_id'),
+            step: 'done',
+          });
           window.location.href = effect.url;
 
           return;
@@ -376,25 +324,8 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     return null;
   }
 
-  if (
-    resumeSubmissionId &&
-    (!savedSubmissionQuery.isFetchedAfterMount ||
-      !savedSubmissionQuery.isSuccess) &&
-    !savedSubmissionQuery.isError
-  ) {
+  if (resumeSubmissionId && savedSubmissionQuery.isLoading) {
     return null;
-  }
-
-  if (resumeSubmissionId && savedSubmissionQuery.isError) {
-    return (
-      <HeroSection
-        title={i18n.t('main.restore_failed.title')}
-        description={i18n.t('main.restore_failed.description')}
-        buttonLabel={i18n.t('main.retry')}
-        onAction={() => void savedSubmissionQuery.refetch()}
-        theme={formQuery.data.theme}
-      />
-    );
   }
 
   if (
@@ -452,7 +383,6 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
         locale={i18n.locale}
         initialData={initialData}
         sectionId={sectionId}
-        disabled={isNavigating}
         onStepChange={changeStep}
         onEffect={applyFormEffect}
       />

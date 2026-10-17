@@ -13,7 +13,6 @@ export function DeclarativeForm(props: {
   locale: string;
   initialData: FieldValues;
   sectionId: string;
-  disabled?: boolean;
   onStepChange: (sectionId: string) => void;
   onEffect: (
     effect: FormEffect,
@@ -25,28 +24,23 @@ export function DeclarativeForm(props: {
   ) => void | Promise<void>;
 }): React.JSX.Element | null {
   const sectionRef = useRef<HTMLFormElement>(null);
-  const previousSectionIdRef = useRef(props.sectionId);
+  const hasMountedRef = useRef(false);
   const declarativeForm = useDeclarativeForm(
     props.form,
     props.locale,
     props.sectionId,
     props.initialData,
   );
-  const isAdaptive = !!declarativeForm.section?.adaptive;
 
   useEffect(() => {
-    if (previousSectionIdRef.current === props.sectionId) {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+
       return;
     }
-
-    previousSectionIdRef.current = props.sectionId;
-
-    if (isAdaptive && props.sectionId) {
-      return;
-    }
-
+    window.scrollTo(0, 0);
     sectionRef.current?.focus({ preventScroll: true });
-  }, [props.sectionId, isAdaptive]);
+  }, [props.sectionId]);
 
   if (!declarativeForm.section) {
     return null;
@@ -56,17 +50,12 @@ export function DeclarativeForm(props: {
     return (
       <DeclarativeFormStart
         start={declarativeForm.start}
-        disabled={props.disabled}
         onBegin={() => props.onStepChange(declarativeForm.section?.id ?? '')}
       />
     );
   }
 
   async function submitSection(sectionData: FieldValues): Promise<void> {
-    if (props.disabled) {
-      return;
-    }
-
     const completedSectionId = declarativeForm.section?.id ?? '';
     const transition = declarativeForm.submitSection(sectionData);
 
@@ -85,7 +74,6 @@ export function DeclarativeForm(props: {
         section={declarativeForm.section}
         locale={props.locale}
         data={declarativeForm.data}
-        disabled={props.disabled}
         onBack={() => props.onStepChange(declarativeForm.goBack())}
         onSubmit={submitSection}
       />
@@ -99,7 +87,6 @@ export function DeclarativeForm(props: {
       formId={props.form.id ?? ''}
       section={declarativeForm.section}
       data={declarativeForm.data}
-      disabled={props.disabled}
       onBack={() => props.onStepChange(declarativeForm.goBack())}
       onSubmit={submitSection}
     />
