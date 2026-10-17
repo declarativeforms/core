@@ -668,6 +668,10 @@ export const FORM_JSON_SCHEMA = {
           'localizedText',
           'Text under the section heading, shown at the top of this page. Supports templating.',
         ),
+        button: ref(
+          'localizedText',
+          'Label on the section call to action. Defaults to a localized "Next". Supports templating.',
+        ),
         adaptive: { $ref: '#/definitions/adaptive' },
         fields: {
           type: 'array',

@@ -106,6 +106,7 @@ export type FormSection<Text> = {
   id?: string;
   title?: Text;
   description?: Text;
+  button?: Text;
   fields?: Array<FormField<Text>>;
   next?: string | Array<IDeclarativeFormNextRule>;
 };

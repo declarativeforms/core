@@ -120,7 +120,7 @@ function browser(t, search = '') {
 
 const form = { sections: [
   { id: 'intro', fields: [{ id: 'name', type: 'short_text' }], next: 'adaptive' },
-  { id: 'adaptive', adaptive: { objectives: ['Understand'], properties: { result: { type: 'string' }, optional: { type: 'string' } }, required: ['result'] }, next: 'after' },
+  { id: 'adaptive', button: 'Continue assessment', adaptive: { objectives: ['Understand'], properties: { result: { type: 'string' }, optional: { type: 'string' } }, required: ['result'] }, next: 'after' },
   { id: 'after', fields: [{ id: 'email', type: 'email' }], next: 'done' },
 ] };
 
@@ -197,6 +197,7 @@ test('adaptive component owns requests, renders standard fields, and retries han
   const questions = findElement(h.current, 'section');
   assert.equal(questions.props.section.fields.length, 2);
   assert.equal(questions.props.section.fields[0].label, 'What do you need?');
+  assert.equal(questions.props.section.button, 'Continue assessment');
   assert.deepEqual(questions.props.data, {});
   assert.equal(submitted.length, 0);
   await questions.props.onSubmit({ need: 'website', cost: 100 });

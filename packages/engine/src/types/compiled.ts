@@ -123,6 +123,7 @@ export type ICompiledFormSection = {
   id: string;
   title: string;
   description?: string;
+  button?: string;
   fields: Array<ICompiledFormField>;
   next?: string;
 };

@@ -13,6 +13,7 @@ export function renderFormSection(
     id: section.id,
     ...(section.title && { title: section.title }),
     ...(section.description && { description: section.description }),
+    ...(section.button && { button: section.button }),
     fields: section.fields.map(renderFormField),
     next: renderNavigation(section.next),
     canGoBack,

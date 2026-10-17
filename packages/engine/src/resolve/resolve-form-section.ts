@@ -23,6 +23,9 @@ export function resolveFormSection(
     ...(section.description !== undefined && {
       description: resolveLocalizedText(section.description, locale),
     }),
+    ...(section.button !== undefined && {
+      button: resolveLocalizedText(section.button, locale),
+    }),
     ...(section.fields !== undefined && {
       fields: section.fields.flatMap((field) => {
         const resolved = resolveFormField(field, locale);

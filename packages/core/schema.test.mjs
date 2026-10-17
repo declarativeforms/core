@@ -123,3 +123,42 @@ sections:
   assert.equal(form.section.fields[0].helperText, 'Hilfe für Ada.');
   assert.equal(form.section.fields[1].helperText, undefined);
 });
+
+test('section buttons accept localized templates and preserve navigation and defaults', () => {
+  const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);
+
+  for (const [button, locale, expected] of [
+    ['Send details', 'en', 'Send details'],
+    ['Continue, {{data.name}}', 'en', 'Continue, Ada'],
+    [{ en: 'Continue', de: 'Weiter, {{data.name}}' }, 'de', 'Weiter, Ada'],
+    [{ en: 'Continue' }, 'de', 'Continue'],
+    ['', 'en', undefined],
+    [{ en: '' }, 'en', undefined],
+    [undefined, 'en', undefined],
+  ]) {
+    const definition = {
+      sections: [
+        { id: 'contact', button, fields: [], next: 'preferences' },
+        { id: 'preferences', fields: [] },
+      ],
+    };
+    assert.equal(validate(definition), true, JSON.stringify(validate.errors));
+    const form = toRenderableForm(JSON.stringify(definition), {
+      locale,
+      data: { name: 'Ada' },
+    });
+
+    assert.equal(form.section.button, expected);
+    assert.deepEqual(form.section.next, {
+      type: 'section',
+      sectionId: 'preferences',
+    });
+  }
+
+  for (const button of [42, null, ['Continue'], { en: 42 }]) {
+    assert.equal(
+      validate({ sections: [{ id: 'contact', button, fields: [] }] }),
+      false,
+    );
+  }
+});

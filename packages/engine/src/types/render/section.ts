@@ -7,6 +7,7 @@ export type IRenderableSection = {
   id: string;
   title?: string;
   description?: string;
+  button?: string;
   fields: Array<IRenderableField>;
   next: IRenderableNavigation;
   canGoBack: boolean;

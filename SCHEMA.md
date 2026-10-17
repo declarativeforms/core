@@ -178,6 +178,7 @@ sections:
   - id: contact
     title: "Your details"
     description: "So we know how to reach you."
+    button: "Send details"
     fields:
       - id: full_name
         type: short_text
@@ -190,6 +191,7 @@ sections:
 | `id` | string | Section identifier. Referenced by `next` rules. |
 | `title` | [localized text](#localized-text) | Section heading, shown at the top of the page. |
 | `description` | [localized text](#localized-text) | Text under the section heading. |
+| `button` | [localized text](#localized-text) | Optional call-to-action label, like `start.button`. Supports templating. Omitted or empty text defaults to a localized "Next". Applies to every question step in an adaptive section. |
 | `fields` | array of [Field](#fields) | The fields on this page. |
 | `adaptive` | object | Objectives and output properties for an adaptive section. Mutually exclusive with `fields`. |
 | `next` | string or array | Where to go after this section. See below. |
@@ -664,7 +666,7 @@ They are supported in:
 
 - the form `title` and `description`
 - the `start` `title`, `description`, and `button`
-- a section `title` and `description`
+- a section `title`, `description`, and `button`
 - a field `label`, `helper_text`, and `placeholder`
 - option labels, and a rating's `min_label` and `max_label`
 - a text block's `content`

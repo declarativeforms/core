@@ -6,6 +6,7 @@ import {
   type IRenderableSection,
 } from '@declarativeforms/engine';
 import { Button, CardContent } from '@/components/ui';
+import { HtmlText } from '@/components/declarative-form/supporting';
 import { useI18n } from '@/i18n';
 import { DeclarativeFormField } from './field.component';
 import { DeclarativeFormHeading } from './heading.component';
@@ -92,7 +93,11 @@ export const DeclarativeFormSection = forwardRef<
               type="submit"
               disabled={props.disabled || form.formState.isSubmitting}
             >
-              {i18n.t('section.next')}
+              {props.section.button ? (
+                <HtmlText html={props.section.button} />
+              ) : (
+                i18n.t('section.next')
+              )}
             </Button>
           </div>
         </form>
