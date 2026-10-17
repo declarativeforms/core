@@ -62,9 +62,7 @@ export function DeclarativeFormField(props: {
                 : undefined
             }
           >
-            {props.field.type !== 'checkbox' && (
-              <FieldLabel field={props.field} />
-            )}
+            <FieldLabel field={props.field} />
             <Renderer
               control={renderProps.field}
               field={props.field}

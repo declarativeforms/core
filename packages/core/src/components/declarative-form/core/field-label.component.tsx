@@ -5,7 +5,14 @@ import { HtmlText } from '@/components/declarative-form/supporting';
 
 export function FieldLabel(props: {
   field: IRenderableField;
-}): React.JSX.Element {
+}): React.JSX.Element | null {
+  if (
+    props.field.type === 'checkbox' ||
+    (props.field.type === 'text_block' && !props.field.label.trim())
+  ) {
+    return null;
+  }
+
   return (
     <BaseFieldLabel className="text-sm/4.5" htmlFor={props.field.id}>
       <HtmlText html={props.field.label} />
