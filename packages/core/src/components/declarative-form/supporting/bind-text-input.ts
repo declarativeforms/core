@@ -1,7 +1,9 @@
 import type { ChangeEvent } from 'react';
 import type { FieldControl } from './field.types';
 
-export type ElementBinding = Pick<FieldControl, 'name' | 'ref' | 'onBlur'>;
+export type ElementBinding = Pick<FieldControl, 'name' | 'ref' | 'onBlur'> & {
+  id: string;
+};
 
 export type TextInputBinding = ElementBinding & {
   value: string;
@@ -14,6 +16,7 @@ export function bindElement(
   control: Pick<FieldControl, 'name' | 'ref' | 'onBlur'>,
 ): ElementBinding {
   return {
+    id: control.name,
     name: control.name,
     ref: control.ref,
     onBlur: control.onBlur,

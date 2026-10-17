@@ -7,7 +7,7 @@ export function FieldLabel(props: {
   field: IRenderableField;
 }): React.JSX.Element {
   return (
-    <BaseFieldLabel className="text-sm/4.5">
+    <BaseFieldLabel className="text-sm/4.5" htmlFor={props.field.id}>
       <HtmlText html={props.field.label} />
       {props.field.required ? (
         <span className="font-medium text-red-500" aria-hidden="true">

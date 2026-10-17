@@ -42,6 +42,8 @@ export function SearchableDropdown(
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={(element) => props.control.ref(element)}
+          id={props.control.name}
           variant="outline"
           role="combobox"
           aria-expanded={open}

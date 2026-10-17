@@ -61,6 +61,7 @@ export function DropdownField(
       value={props.control.value}
     >
       <SelectTrigger
+        id={props.control.name}
         className="w-full text-sm/4"
         aria-required={props.field.required}
       >
