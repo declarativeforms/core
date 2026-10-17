@@ -14,10 +14,10 @@ export function FieldLabel(props: {
   }
 
   return (
-    <BaseFieldLabel className="text-sm/4.5" htmlFor={props.field.id}>
+    <BaseFieldLabel className="text-sm/5" htmlFor={props.field.id}>
       <HtmlText html={props.field.label} />
       {props.field.required ? (
-        <span className="font-medium text-red-500" aria-hidden="true">
+        <span className="font-medium text-destructive" aria-hidden="true">
           *
         </span>
       ) : null}

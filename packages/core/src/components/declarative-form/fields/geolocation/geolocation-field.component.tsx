@@ -172,7 +172,7 @@ export function GeolocationField(
           }}
           className={mergeClassNames(
             mediaFrame({ height: 'sm', interactive: true }),
-            'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring',
           )}
         >
           <MapPin
@@ -206,7 +206,7 @@ export function GeolocationField(
         <div className="space-y-3">
           <Suspense
             fallback={
-              <div className="h-[200px] w-full animate-pulse rounded-md border bg-muted" />
+              <div className="h-[200px] w-full animate-pulse rounded-lg border bg-muted" />
             }
           >
             <GeolocationMapPreview

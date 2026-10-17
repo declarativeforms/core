@@ -221,10 +221,10 @@ export function SignatureField(
           height: 'md',
           layout: 'plain',
           className:
-            'focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring',
+            'focus-within:ring-2 focus-within:ring-ring focus-within:border-ring',
         })}
       >
-        <div className="relative">
+        <div className="relative form-signature-surface">
           <canvas
             ref={canvasRef}
             className="w-full h-[160px] touch-none"
@@ -236,7 +236,7 @@ export function SignatureField(
             aria-label={label}
           />
           {showSavedPreview && (
-            <div className="absolute inset-0 overflow-hidden rounded-md bg-white">
+            <div className="absolute inset-0 overflow-hidden rounded-lg bg-white">
               <img
                 src={savedUrl}
                 alt={label}

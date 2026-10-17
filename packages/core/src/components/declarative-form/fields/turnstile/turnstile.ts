@@ -2,6 +2,7 @@
 
 type TurnstileOptions = {
   sitekey: string;
+  theme: 'light' | 'dark' | 'auto';
   language: string;
   'response-field': false;
   retry: 'never';

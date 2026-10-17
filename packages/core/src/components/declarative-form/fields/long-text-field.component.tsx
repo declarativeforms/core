@@ -15,7 +15,7 @@ export function LongTextField(
   return (
     <Textarea
       {...bindTextInput(props.control)}
-      className="h-32 md:h-50 text-sm/4"
+      className="h-32 md:h-50"
       placeholder={props.field.placeholder || i18n.t('long_text.placeholder')}
       required={props.field.required}
       aria-required={props.field.required}

@@ -189,7 +189,6 @@ export function EmailField(
             input.onChange(event);
             resetChallenge();
           }}
-          className="text-sm/4"
           placeholder={
             props.field.placeholder || i18n.t('email.placeholder_default')
           }
@@ -237,7 +236,6 @@ export function EmailField(
           <Input
             value={code}
             onChange={(event) => setCode(event.target.value)}
-            className="text-sm/4"
             placeholder={i18n.t('email.verification_code_placeholder')}
             inputMode="numeric"
             autoComplete="one-time-code"
@@ -257,7 +255,7 @@ export function EmailField(
       ) : null}
 
       {props.field.otp && isVerified ? (
-        <p className="text-sm text-green-700">
+        <p className="text-sm form-success">
           {i18n.t('email.verification_success')}
         </p>
       ) : message ? (

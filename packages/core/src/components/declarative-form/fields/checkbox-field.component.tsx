@@ -11,10 +11,9 @@ export function CheckboxField(
   props: FieldProps<IRenderableCheckboxField, boolean>,
 ): React.JSX.Element {
   return (
-    <div className="flex items-start gap-2">
+    <div className="flex items-start gap-3">
       <Checkbox
         {...bindElement(props.control)}
-        className="mt-0.5"
         checked={props.control.value === true}
         onCheckedChange={(checked) => props.control.onChange(checked === true)}
         aria-required={props.field.required}
@@ -29,7 +28,10 @@ export function CheckboxField(
       >
         <HtmlText html={props.field.label} />
         {props.field.required && (
-          <span className="ml-1 font-medium text-red-500" aria-hidden="true">
+          <span
+            className="ml-1 font-medium text-destructive"
+            aria-hidden="true"
+          >
             *
           </span>
         )}

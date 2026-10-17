@@ -15,7 +15,6 @@ export function DateField(
   return (
     <Input
       {...bindTextInput(props.control)}
-      className="text-sm/4"
       placeholder={props.field.placeholder || i18n.t('input.placeholder')}
       type={props.field.inputType}
       required={props.field.required}

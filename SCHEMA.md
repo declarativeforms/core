@@ -99,7 +99,7 @@ authentication:    # optional
 | `start_date` | string (`YYYY-MM-DD`) | No | Before this date the form is closed. |
 | `end_date` | string (`YYYY-MM-DD`) | No | After this date the form is closed. |
 | `locale` | string | No | Default language code, for example `en`. |
-| `theme` | object | No | `primary` accent color and an HTTPS `logo` URL. |
+| `theme` | object | No | `mode` (`light`, `dark`, or `auto`), `primary` accent color, and an HTTPS `logo` URL. |
 | `measurements` | object | No | Mixpanel and/or PostHog configuration for analytics. |
 
 `id` is assigned by the server. Do not set it in your YAML.
@@ -891,6 +891,7 @@ Reserved parameters, which are never treated as prefill: `embed`, `lang`,
 
 ```yaml
 theme:
+  mode: auto                               # light (default), dark, or auto
   primary: "#542EBC"                         # accent color
   logo: "https://example.com/logo.svg"       # decorative brand logo
 
@@ -901,7 +902,18 @@ measurements:
     api_host: "https://eu.i.posthog.com"
 ```
 
-`theme.primary` sets the accent color used across the form. `theme.logo` takes
+`theme.mode` selects `light`, `dark`, or `auto`. Omitting it preserves the light
+appearance. Auto follows the visitor’s device/browser color preference and
+updates when that preference changes, without clearing answers. The mode applies
+to the entire form journey, including embedded forms, popup menus, and completion
+screens. There is no visitor-facing theme switch.
+
+Maps, uploaded images, and logos retain their original colors. Signature drawing
+surfaces stay white so drawing and saved output remain consistent in either mode.
+
+`theme.primary` sets the accent color used across the form in either mode. Choose
+a color and logo that remain visible against both light and dark surfaces when
+using auto. `theme.logo` takes
 an absolute HTTPS image URL and displays the decorative brand mark on the start,
 question, status, and completion screens, including embeds. A logo that cannot
 be loaded is hidden without blocking the form.

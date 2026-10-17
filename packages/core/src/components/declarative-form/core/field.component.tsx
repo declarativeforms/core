@@ -56,6 +56,7 @@ export function DeclarativeFormField(props: {
           />
         ) : (
           <Field
+            data-invalid={!!renderProps.fieldState.error}
             aria-describedby={
               props.field.type !== 'text_block' && props.field.helperText
                 ? helperTextId

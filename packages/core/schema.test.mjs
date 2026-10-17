@@ -6,10 +6,45 @@ import {
   FORM_JSON_SCHEMA,
   assertJsonSchemaCoverage,
   parse,
+  serialize,
   toRenderableForm,
   validateField,
 } from '@declarativeforms/engine';
 import { GET } from './src/app/schema.json/route.ts';
+
+test('theme modes validate and survive YAML and the rendering pipeline', () => {
+  const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);
+
+  for (const mode of [undefined, 'light', 'dark', 'auto']) {
+    const theme = {
+      ...(mode === undefined ? {} : { mode }),
+      primary: '#542EBC',
+      logo: 'https://example.com/logo.svg',
+    };
+    const definition = { theme, sections: [{ id: 'details', fields: [] }] };
+    assert.equal(validate(definition), true, JSON.stringify(validate.errors));
+    const yaml = serialize(definition);
+    assert.deepEqual(parse(yaml).theme, theme);
+    assert.deepEqual(toRenderableForm(yaml, { locale: 'en' }).theme, theme);
+  }
+
+  for (const mode of ['system', '', null, true, 1]) {
+    assert.equal(
+      validate({
+        theme: { mode },
+        sections: [{ id: 'details', fields: [] }],
+      }),
+      false,
+    );
+  }
+
+  assert.equal(
+    toRenderableForm('sections: [{id: details, fields: []}]', {
+      locale: 'en',
+    }).theme,
+    undefined,
+  );
+});
 
 test('authoring schema covers the engine, accepts examples, and rejects mistakes', async () => {
   assertJsonSchemaCoverage();

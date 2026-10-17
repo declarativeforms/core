@@ -11,7 +11,7 @@ import {
 } from '@/components/declarative-form/supporting';
 
 const OPTION_ROW_CLASS =
-  'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors';
+  'form-option border border-input cursor-pointer transition-colors';
 
 export function MultipleSelectField(
   props: FieldProps<IRenderableMultipleSelectField, Array<string>>,
@@ -128,7 +128,7 @@ export function MultipleSelectField(
           </FieldLabel>
           {isOtherChecked && (
             <Input
-              className="mt-2 text-sm/4"
+              className="mt-2"
               placeholder={i18n.t('select.other_placeholder')}
               value={otherText}
               onChange={(event) => {

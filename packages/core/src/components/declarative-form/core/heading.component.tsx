@@ -12,14 +12,14 @@ export function DeclarativeFormHeading(props: {
   }
 
   return (
-    <CardHeader className="px-6 !pb-0 border-b border-gray-200">
+    <CardHeader className="px-6 pb-6 border-b border-border">
       {props.title ? (
-        <CardTitle id={props.titleId} className="text-2xl/7.5 font-semibold">
+        <CardTitle id={props.titleId} className="text-2xl/8 font-semibold">
           <HtmlText html={props.title} />
         </CardTitle>
       ) : null}
       {props.description ? (
-        <CardDescription className="mb-3 mt-2 text-sm text-gray-500">
+        <CardDescription className="text-sm/5 text-muted-foreground">
           <HtmlText html={props.description} />
         </CardDescription>
       ) : null}

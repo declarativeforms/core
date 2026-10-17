@@ -15,7 +15,6 @@ export function NumberField(
   return (
     <Input
       {...bindTextInput(props.control)}
-      className="text-sm/4"
       placeholder={props.field.placeholder || i18n.t('input.placeholder')}
       type="text"
       inputMode="numeric"

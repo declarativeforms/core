@@ -1,12 +1,15 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useFormState, useWatch } from 'react-hook-form';
 import {
   getTokenFieldId,
   type IRenderableTurnstileField,
 } from '@declarativeforms/engine';
 import { Button, FieldError } from '@/components/ui';
-import { type FieldProps } from '@/components/declarative-form/supporting';
+import {
+  FormThemeContext,
+  type FieldProps,
+} from '@/components/declarative-form/supporting';
 import { useI18n } from '@/i18n';
 import { buildApiUrl } from '@/lib/api';
 import { getRuntimeConfig } from '@/lib/runtime-config';
@@ -19,6 +22,7 @@ export function TurnstileField(
   props: FieldProps<IRenderableTurnstileField, string>,
 ): React.JSX.Element {
   const i18n = useI18n();
+  const theme = useContext(FormThemeContext);
   const container = useRef<HTMLDivElement>(null);
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<VerificationStatus>('loading');
@@ -131,6 +135,7 @@ export function TurnstileField(
         setStatus('ready');
         const widgetId = turnstile.render(container.current, {
           sitekey: siteKey,
+          theme,
           language: i18n.locale,
           'response-field': false,
           retry: 'never',
@@ -160,6 +165,7 @@ export function TurnstileField(
     props.formId,
     props.field.id,
     tokenFieldId,
+    theme,
     i18n.locale,
     onChange,
     setValue,

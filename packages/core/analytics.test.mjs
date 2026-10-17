@@ -91,7 +91,7 @@ test('builds theme styles only for valid colors', async () => {
 
   assert.deepEqual(themeModule.buildThemeStyle({ primary: '#fff' }), {
     '--primary': '#fff',
-    '--primary-foreground': '#0a0a0a',
+    '--primary-foreground': '#000000',
     '--ring': '#fff',
   });
   assert.equal(themeModule.buildThemeStyle({ primary: 'abc#' }), undefined);

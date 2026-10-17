@@ -46,12 +46,12 @@ export function RatingField(
             <Field key={value}>
               <FieldLabel
                 className={mergeClassNames(
-                  'h-9 min-w-9 w-full rounded-md border border-input px-3 cursor-pointer hover:bg-muted/50 transition-colors inline-flex items-center justify-center',
+                  'form-option form-rating w-full border border-input cursor-pointer transition-colors inline-flex items-center justify-center',
                   { 'border-ring bg-muted/60': isSelected },
                 )}
               >
                 <RadioGroupItem value={value} className="sr-only" />
-                <span className="text-sm/4">{value}</span>
+                <span>{value}</span>
               </FieldLabel>
             </Field>
           );

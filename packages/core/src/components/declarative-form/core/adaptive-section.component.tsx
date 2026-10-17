@@ -134,7 +134,10 @@ export function AdaptiveSection(props: {
     <>
       {busy ? <SectionLoading /> : null}
       {failed ? (
-        <div role="alert" className="px-6 py-4">
+        <div
+          role="alert"
+          className="px-6 py-4 space-y-3 text-sm/5 text-destructive"
+        >
           <p>{i18n.t('adaptive.failed')}</p>
           <Button type="button" disabled={busy} onClick={() => void advance()}>
             {i18n.t('adaptive.retry')}
@@ -159,7 +162,7 @@ export function AdaptiveSection(props: {
           />
         </div>
       ) : !busy && props.section.canGoBack ? (
-        <Button type="button" onClick={props.onBack}>
+        <Button type="button" variant="outline" onClick={props.onBack}>
           {i18n.t('section.back')}
         </Button>
       ) : null}

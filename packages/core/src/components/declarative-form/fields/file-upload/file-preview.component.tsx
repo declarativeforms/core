@@ -75,15 +75,15 @@ export function FilePreview(props: {
     <div
       role="listitem"
       className={mergeClassNames(
-        'rounded-md flex items-center gap-3 p-3 min-h-[48px]',
+        'rounded-lg flex items-center gap-3 p-4 min-h-[48px]',
         isError
           ? 'border border-destructive/60 bg-destructive/10'
-          : 'bg-muted/40 border border-border',
+          : 'bg-background border border-border',
       )}
     >
       {thumbnail ? (
         <div
-          className="w-10 h-10 rounded flex-shrink-0 bg-muted bg-cover bg-center"
+          className="w-10 h-10 rounded-lg flex-shrink-0 bg-muted bg-cover bg-center"
           style={{ backgroundImage: `url("${encodeURI(thumbnail)}")` }}
           role="img"
           aria-label={props.file.name}
@@ -91,7 +91,7 @@ export function FilePreview(props: {
       ) : (
         <div
           className={mergeClassNames(
-            'w-10 h-10 rounded flex-shrink-0 flex items-center justify-center',
+            'w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center',
             isError ? 'bg-destructive/15' : 'bg-muted',
           )}
         >

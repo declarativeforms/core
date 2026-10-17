@@ -163,7 +163,7 @@ export function CameraField(
           className={mergeClassNames(
             'w-full',
             mediaFrame({ height: 'md', interactive: true }),
-            'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring',
           )}
           aria-label={i18n.t('camera.open_camera')}
         >
@@ -185,7 +185,7 @@ export function CameraField(
               autoPlay
               playsInline
               muted
-              className="w-full rounded-md"
+              className="w-full rounded-lg"
               aria-label={label}
             />
           </div>
@@ -211,7 +211,7 @@ export function CameraField(
       {camera.status === 'captured' && camera.url && (
         <div className="space-y-2">
           <div className={mediaFrame({ layout: 'clip' })}>
-            <img src={camera.url} alt={label} className="w-full rounded-md" />
+            <img src={camera.url} alt={label} className="w-full rounded-lg" />
           </div>
           <Button
             type="button"

@@ -1,9 +1,9 @@
 'use client';
 import { useEffect } from 'react';
 import { Button } from '@/components';
-import { HtmlText } from '@/components/declarative-form/supporting';
+import { FormTheme, HtmlText } from '@/components/declarative-form/supporting';
 import { useI18n } from '@/i18n';
-import { buildThemeStyle } from '@/lib/theme';
+import type { IDeclarativeFormTheme } from '@declarativeforms/engine';
 import { stripHtml } from '@/lib/strip-html';
 import { FormLogo } from './form-logo.component';
 
@@ -13,7 +13,7 @@ export function HeroSection(props: {
   onAction?: () => void;
   buttonLabel?: string;
   buttonHref?: string;
-  theme?: { logo?: string; primary?: string };
+  theme?: IDeclarativeFormTheme;
 }): React.JSX.Element {
   const i18n = useI18n();
 
@@ -21,57 +21,50 @@ export function HeroSection(props: {
     document.title = `${stripHtml(props.title)} — Declarative Forms`;
   }, [props.title]);
 
-  const themeStyle = buildThemeStyle(props.theme);
-
   return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen bg-background px-4"
-      style={themeStyle}
-    >
-      <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
-        <FormLogo className="mb-6 px-0 pt-0" url={props.theme?.logo} />
-        <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-          <HtmlText html={props.title} />
-        </h1>
+    <FormTheme theme={props.theme}>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
+        <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
+          <FormLogo className="mb-6 px-0 pt-0" url={props.theme?.logo} />
+          <h1 className="text-2xl/8 font-semibold text-foreground mb-4">
+            <HtmlText html={props.title} />
+          </h1>
 
-        {props.description ? (
-          <p className="text-sm text-gray-500 mb-8">
-            <HtmlText html={props.description} />
+          {props.description ? (
+            <p className="text-sm text-muted-foreground mb-8">
+              <HtmlText html={props.description} />
+            </p>
+          ) : null}
+
+          {props.buttonHref ? (
+            <Button asChild className="w-full">
+              <a href={props.buttonHref}>
+                {props.buttonLabel ? (
+                  <HtmlText html={props.buttonLabel} />
+                ) : (
+                  i18n.t('hero.continue')
+                )}
+              </a>
+            </Button>
+          ) : props.onAction ? (
+            <Button className="w-full" onClick={() => props.onAction?.()}>
+              {i18n.t('hero.continue')}
+            </Button>
+          ) : null}
+        </div>
+
+        <div className="absolute bottom-8 text-center w-full px-4">
+          <p className="text-xs text-muted-foreground">
+            {i18n.t('base.powered_by')}{' '}
+            <a
+              href="https://frms.dev"
+              className="font-medium text-foreground hover:underline underline-offset-4"
+            >
+              Declarative Forms
+            </a>
           </p>
-        ) : null}
-
-        {props.buttonHref ? (
-          <a
-            href={props.buttonHref}
-            className="inline-flex items-center justify-center w-full h-10 px-6 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {props.buttonLabel ? (
-              <HtmlText html={props.buttonLabel} />
-            ) : (
-              i18n.t('hero.continue')
-            )}
-          </a>
-        ) : props.onAction ? (
-          <Button
-            className="w-full h-10 px-6 text-sm font-medium"
-            onClick={() => props.onAction?.()}
-          >
-            {i18n.t('hero.continue')}
-          </Button>
-        ) : null}
+        </div>
       </div>
-
-      <div className="absolute bottom-8 text-center w-full px-4">
-        <p className="text-xs text-gray-500">
-          {i18n.t('base.powered_by')}{' '}
-          <a
-            href="https://frms.dev"
-            className="font-medium text-gray-900 hover:underline underline-offset-4"
-          >
-            Declarative Forms
-          </a>
-        </p>
-      </div>
-    </div>
+    </FormTheme>
   );
 }

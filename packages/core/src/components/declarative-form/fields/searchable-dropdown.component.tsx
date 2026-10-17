@@ -46,20 +46,23 @@ export function SearchableDropdown(
           id={props.control.name}
           variant="outline"
           role="combobox"
+          data-placeholder={selectedOption ? undefined : true}
           aria-expanded={open}
           aria-required={props.field.required}
           disabled={props.disabled}
           className={mergeClassNames(
-            'w-full justify-between text-sm/4 font-normal',
+            'form-combobox w-full justify-between font-normal',
             !props.control.value && 'text-muted-foreground',
           )}
         >
-          {selectedOption ? (
-            <HtmlText html={selectedOption.label} />
-          ) : (
-            props.field.placeholder ||
-            i18n.t('dropdown.select_a', { label: props.field.label })
-          )}
+          <span className="min-w-0 truncate text-left">
+            {selectedOption ? (
+              <HtmlText html={selectedOption.label} />
+            ) : (
+              props.field.placeholder ||
+              i18n.t('dropdown.select_a', { label: props.field.label })
+            )}
+          </span>
           <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

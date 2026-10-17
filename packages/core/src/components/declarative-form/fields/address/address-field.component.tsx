@@ -144,7 +144,6 @@ export function AddressField(
         {...bindElement(props.control)}
         value={toAddressDisplay(props.control.value)}
         onChange={(event) => props.control.onChange(event.target.value)}
-        className="text-sm/4"
         placeholder={props.field.placeholder || i18n.t('address.placeholder')}
         required={props.field.required}
         aria-required={props.field.required}
@@ -164,7 +163,6 @@ export function AddressField(
           <Input
             {...bindElement(props.control)}
             value={search.input}
-            className="text-sm/4"
             onChange={(e) =>
               setSearch((s) => ({
                 ...s,

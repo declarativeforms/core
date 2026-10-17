@@ -65,7 +65,7 @@ export function SingleSelectField(
           <Field key={option.value}>
             <FieldLabel
               className={mergeClassNames(
-                'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
+                'form-option border border-input cursor-pointer transition-colors',
                 { 'border-ring': isSelected },
               )}
             >
@@ -79,7 +79,7 @@ export function SingleSelectField(
         <Field>
           <FieldLabel
             className={mergeClassNames(
-              'border border-input rounded-md px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors',
+              'form-option border border-input cursor-pointer transition-colors',
               { 'border-ring': other.active },
             )}
           >
@@ -88,7 +88,7 @@ export function SingleSelectField(
           </FieldLabel>
           {other.active && (
             <Input
-              className="mt-2 text-sm/4"
+              className="mt-2"
               placeholder={i18n.t('select.other_placeholder')}
               value={other.text}
               onChange={changeOtherText}

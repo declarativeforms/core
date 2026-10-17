@@ -54,7 +54,7 @@ export default function GeolocationMapPreview(
       doubleClickZoom={false}
       zoomControl={false}
       attributionControl={false}
-      className="h-[200px] w-full rounded-md border"
+      className="h-[200px] w-full rounded-lg border"
       aria-label={props.label}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

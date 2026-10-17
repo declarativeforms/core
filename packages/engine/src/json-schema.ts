@@ -800,6 +800,12 @@ export const FORM_JSON_SCHEMA = {
       description: 'Visual customization.',
       additionalProperties: false,
       properties: {
+        mode: {
+          type: 'string',
+          enum: ['light', 'dark', 'auto'],
+          description:
+            'Appearance of the form journey. Defaults to light. Auto follows the visitor’s device color preference, including changes while the form is open.',
+        },
         logo: {
           type: 'string',
           format: 'uri',

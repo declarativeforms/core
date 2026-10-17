@@ -1,6 +1,6 @@
 'use client';
 import { X } from 'lucide-react';
-import { mergeClassNames } from '@/lib/utils';
+import { Button } from '@/components/ui';
 
 export function ClearButton(props: {
   label: string;
@@ -8,18 +8,14 @@ export function ClearButton(props: {
   disabled?: boolean;
 }): React.JSX.Element {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={props.onClick}
       disabled={props.disabled}
-      className={mergeClassNames(
-        'inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
-        'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted',
-        'transition-colors',
-      )}
     >
       <X className="h-4 w-4" aria-hidden="true" />
       {props.label}
-    </button>
+    </Button>
   );
 }

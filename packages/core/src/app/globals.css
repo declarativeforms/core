@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./form-theme.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-form-theme="dark"] *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
