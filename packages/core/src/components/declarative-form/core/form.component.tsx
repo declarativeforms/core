@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import type { IDeclarativeForm } from '@declarativeforms/engine';
+import { focusForm } from '@/lib/focus-form';
 import { AdaptiveSection } from './adaptive-section.component';
 import { DeclarativeFormSection } from './section.component';
 import { DeclarativeFormStart } from './start.component';
@@ -24,23 +25,28 @@ export function DeclarativeForm(props: {
   ) => void | Promise<void>;
 }): React.JSX.Element | null {
   const sectionRef = useRef<HTMLFormElement>(null);
-  const hasMountedRef = useRef(false);
+  const previousSectionIdRef = useRef(props.sectionId);
   const declarativeForm = useDeclarativeForm(
     props.form,
     props.locale,
     props.sectionId,
     props.initialData,
   );
+  const isAdaptive = !!declarativeForm.section?.adaptive;
 
   useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-
+    if (previousSectionIdRef.current === props.sectionId) {
       return;
     }
-    window.scrollTo(0, 0);
-    sectionRef.current?.focus({ preventScroll: true });
-  }, [props.sectionId]);
+
+    previousSectionIdRef.current = props.sectionId;
+
+    if (isAdaptive && props.sectionId) {
+      return;
+    }
+
+    return focusForm(sectionRef.current);
+  }, [props.sectionId, isAdaptive]);
 
   if (!declarativeForm.section) {
     return null;

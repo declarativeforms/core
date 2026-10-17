@@ -10,6 +10,7 @@ import { SectionLoading } from '@/components/declarative-form/supporting';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { assessAdaptiveSection } from '@/lib/adaptive';
+import { focusForm } from '@/lib/focus-form';
 import { DeclarativeFormSection } from './section.component';
 
 export function AdaptiveSection(props: {
@@ -111,10 +112,12 @@ export function AdaptiveSection(props: {
   }, []);
 
   useEffect(() => {
-    if (!busy && assessment && assessment.outputs === undefined) {
-      sectionRef.current?.focus();
+    if (busy || failed || !assessment || assessment.outputs !== undefined) {
+      return;
     }
-  }, [busy, assessment]);
+
+    return focusForm(sectionRef.current);
+  }, [busy, failed, assessment]);
 
   const generated =
     assessment && assessment.outputs === undefined

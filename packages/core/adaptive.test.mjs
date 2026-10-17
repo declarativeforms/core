@@ -113,8 +113,21 @@ function findElement(node, type) {
 }
 
 function browser(t, search = '') {
-  globalThis.window = { location: { pathname: '/form', search }, scrollTo() {}, history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } } };
+  const frames = new Map();
+  let nextFrame = 0;
+  globalThis.window = {
+    location: { pathname: '/form', search },
+    scrollTo() {},
+    requestAnimationFrame(callback) { const id = ++nextFrame; frames.set(id, callback); return id; },
+    cancelAnimationFrame(id) { frames.delete(id); },
+    history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } },
+  };
   t.after(() => { delete globalThis.window; });
+  return () => {
+    const callbacks = [...frames.values()];
+    frames.clear();
+    for (const callback of callbacks) { callback(); }
+  };
 }
 
 
@@ -215,7 +228,8 @@ test('adaptive component owns requests, renders standard fields, and retries han
 });
 
 test('provider failures retain local answers for retry; remount starts fresh without URL changes', async t => {
-  browser(t, '?submission_id=existing&step=adaptive');
+  const paint = browser(t, '?submission_id=existing&step=adaptive');
+  const scroll = t.mock.method(window, 'scrollTo');
   const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');
   const { SectionLoading } = await import('./src/components/declarative-form/supporting/section-loading.component.tsx');
   const calls = [];
@@ -227,6 +241,8 @@ test('provider failures retain local answers for retry; remount starts fresh wit
     return { ok: true, json: async () => ({ fields: [{ id: 'q', type: 'long_text' }] }) };
   });
   const h = await mount(AdaptiveSection, adaptiveProps());
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
   const questions = findElement(h.current, 'section');
   let focusCount = 0;
   questions.props.ref.current = { focus() { focusCount++; } };
@@ -234,12 +250,17 @@ test('provider failures retain local answers for retry; remount starts fresh wit
   const pending = questions.props.onSubmit({ q: 'Keep my answer' });
   await h.flush();
   assert.ok(findElement(h.current, SectionLoading));
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
   assert.equal(findElement(h.current, 'div').props.hidden, true);
   assert.equal(findElement(h.current, 'section').key, questions.key);
   assert.equal(findElement(h.current, 'section').props.disabled, true);
   finish({ ok: false, status: 500 });
   await pending;
   await h.flush();
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
+  assert.equal(focusCount, 0);
   assert.equal(findElement(h.current, SectionLoading), undefined);
   assert.equal(h.current.props.children[2].props.hidden, false);
   assert.equal(findElement(h.current, 'section').key, questions.key);
@@ -250,6 +271,8 @@ test('provider failures retain local answers for retry; remount starts fresh wit
   assert.equal(findElement(h.current, 'section').key, questions.key);
   finish({ ok: true, json: async () => ({ fields: [{ id: 'followup', type: 'short_text' }] }) });
   await h.flush();
+  paint();
+  assert.equal(scroll.mock.callCount(), 2);
   assert.equal(findElement(h.current, SectionLoading), undefined);
   assert.equal(findElement(h.current, 'div').props.hidden, false);
   assert.notEqual(findElement(h.current, 'section').key, questions.key);
@@ -334,4 +357,75 @@ test('conventional forms still use conditional routing and redirects', async t =
   await h.current.props.onSubmit({ count: 2 });
   assert.equal(effects[1].type, 'submit');
   assert.equal(effects[1].activeSectionId, 'last');
+});
+
+test('form focus precedes instant scrolling and scheduled work can be cancelled', async t => {
+  const paint = browser(t);
+  const { focusForm } = await import('./src/lib/focus-form.ts');
+  const events = [];
+  t.mock.method(window, 'scrollTo', options => events.push(['scroll', options]));
+  const element = { focus: options => events.push(['focus', options]) };
+  const cancel = focusForm(element);
+  assert.deepEqual(events, []);
+  cancel();
+  paint();
+  assert.deepEqual(events, []);
+  focusForm(element);
+  paint();
+  assert.deepEqual(events, [
+    ['focus', { preventScroll: true }],
+    ['scroll', { top: 0, left: 0, behavior: 'instant' }],
+  ]);
+});
+
+test('ordinary transitions scroll after render, skip initial mount and failures, and cancel on unmount', async t => {
+  const paint = browser(t);
+  const { DeclarativeForm } = await import('./src/components/declarative-form/core/form.component.tsx');
+  const scroll = t.mock.method(window, 'scrollTo');
+  const definition = { sections: [{ id: 'first', fields: [{ id: 'name', type: 'short_text' }], next: 'last' }, { id: 'last', fields: [], next: 'done' }] };
+  const h = await mount(DeclarativeForm, { form: definition, locale: 'en', sectionId: 'first', initialData: {}, onStepChange() {}, onEffect: async () => { throw new Error('Offline'); } }, true);
+  paint();
+  assert.equal(scroll.mock.callCount(), 0);
+  await assert.rejects(h.current.props.onSubmit({ name: 'Ada' }), /Offline/);
+  await h.flush();
+  paint();
+  assert.equal(scroll.mock.callCount(), 0);
+  let focused = 0;
+  h.current.props.ref.current = { focus(options) { assert.deepEqual(options, { preventScroll: true }); focused++; } };
+  h.render({ sectionId: 'last' });
+  assert.equal(scroll.mock.callCount(), 0);
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
+  assert.equal(focused, 1);
+  h.render();
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
+  h.render({ sectionId: 'first' });
+  h.unmount();
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
+});
+
+test('outer form leaves adaptive scrolling to the newly rendered questions', async t => {
+  const paint = browser(t);
+  const scroll = t.mock.method(window, 'scrollTo');
+  const { DeclarativeForm } = await import('./src/components/declarative-form/core/form.component.tsx');
+  const h = await mount(DeclarativeForm, { form, locale: 'en', sectionId: 'intro', initialData: {}, onStepChange() {}, onEffect() {} });
+  h.render({ sectionId: 'adaptive' });
+  paint();
+  assert.equal(scroll.mock.callCount(), 0);
+  h.render({ sectionId: 'after' });
+  paint();
+  assert.equal(scroll.mock.callCount(), 1);
+});
+
+test('adaptive scrolling is cancelled when questions unmount before the next frame', async t => {
+  const paint = browser(t);
+  const scroll = t.mock.method(window, 'scrollTo');
+  const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');
+  t.mock.method(globalThis, 'fetch', async () => ({ ok: true, json: async () => ({ fields: [{ id: 'question', type: 'short_text' }] }) }));
+  const h = await mount(AdaptiveSection, adaptiveProps());
+  h.unmount();
+  paint();
+  assert.equal(scroll.mock.callCount(), 0);
 });
