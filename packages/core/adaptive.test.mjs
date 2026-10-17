@@ -114,19 +114,33 @@ function findElement(node, type) {
 
 function browser(t, search = '') {
   const frames = new Map();
+  const timers = new Map();
+  const events = new EventTarget();
   let nextFrame = 0;
+  let nextTimer = 0;
   globalThis.window = {
     location: { pathname: '/form', search },
     scrollTo() {},
     requestAnimationFrame(callback) { const id = ++nextFrame; frames.set(id, callback); return id; },
     cancelAnimationFrame(id) { frames.delete(id); },
+    setTimeout(callback) { const id = ++nextTimer; timers.set(id, callback); return id; },
+    clearTimeout(id) { timers.delete(id); },
+    addEventListener: events.addEventListener.bind(events),
+    removeEventListener: events.removeEventListener.bind(events),
+    dispatchEvent: events.dispatchEvent.bind(events),
+    visualViewport: new EventTarget(),
     history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } },
   };
   t.after(() => { delete globalThis.window; });
-  return () => {
+  return (settle = false) => {
     const callbacks = [...frames.values()];
     frames.clear();
     for (const callback of callbacks) { callback(); }
+    if (settle) {
+      const pending = [...timers.values()];
+      timers.clear();
+      for (const callback of pending) { callback(); }
+    }
   };
 }
 
@@ -428,4 +442,44 @@ test('adaptive scrolling is cancelled when questions unmount before the next fra
   h.unmount();
   paint();
   assert.equal(scroll.mock.callCount(), 0);
+});
+
+test('transition scrolling recovers from late viewport movement without refocusing', async t => {
+  const paint = browser(t);
+  const { focusForm } = await import('./src/lib/focus-form.ts');
+  let position = 300;
+  let focusCount = 0;
+  t.mock.method(window, 'scrollTo', () => { position = 0; });
+  focusForm({ focus() { focusCount++; } });
+  paint();
+  assert.equal(position, 0);
+  position = 200;
+  window.visualViewport.dispatchEvent(new Event('resize'));
+  paint();
+  assert.equal(position, 0);
+  position = 100;
+  paint(true);
+  assert.equal(position, 0);
+  assert.equal(focusCount, 1);
+  position = 50;
+  window.visualViewport.dispatchEvent(new Event('resize'));
+  paint(true);
+  assert.equal(position, 50);
+});
+
+test('new user interaction cancels pending viewport corrections', async t => {
+  const paint = browser(t);
+  const { focusForm } = await import('./src/lib/focus-form.ts');
+  const scroll = t.mock.method(window, 'scrollTo');
+  for (const type of ['pointerdown', 'touchstart', 'wheel', 'keydown']) {
+    focusForm(null);
+    paint();
+    const calls = scroll.mock.callCount();
+    window.visualViewport.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event(type));
+    paint(true);
+    window.visualViewport.dispatchEvent(new Event('resize'));
+    paint(true);
+    assert.equal(scroll.mock.callCount(), calls, type);
+  }
 });
