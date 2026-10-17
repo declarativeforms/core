@@ -18,6 +18,7 @@ export function AdaptiveSection(props: {
   section: IRenderableSection;
   locale: string;
   data: Record<string, unknown>;
+  disabled?: boolean;
   onBack: () => void;
   onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
 }): React.JSX.Element {
@@ -39,7 +40,7 @@ export function AdaptiveSection(props: {
   >([]);
 
   async function advance(answers?: Record<string, unknown>): Promise<void> {
-    if (runningRef.current) {
+    if (runningRef.current || props.disabled) {
       return;
     }
 
@@ -142,7 +143,11 @@ export function AdaptiveSection(props: {
           className="px-6 py-4 space-y-3 text-sm/5 text-destructive"
         >
           <p>{i18n.t('adaptive.failed')}</p>
-          <Button type="button" disabled={busy} onClick={() => void advance()}>
+          <Button
+            type="button"
+            disabled={busy || props.disabled}
+            onClick={() => void advance()}
+          >
             {i18n.t('adaptive.retry')}
           </Button>
         </div>
@@ -159,13 +164,18 @@ export function AdaptiveSection(props: {
               defaultValues: generated.defaultValues,
             }}
             data={{}}
-            disabled={busy || failed}
+            disabled={busy || failed || props.disabled}
             onBack={props.onBack}
             onSubmit={advance}
           />
         </div>
       ) : !busy && props.section.canGoBack ? (
-        <Button type="button" variant="outline" onClick={props.onBack}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={props.disabled}
+          onClick={props.onBack}
+        >
           {i18n.t('section.back')}
         </Button>
       ) : null}

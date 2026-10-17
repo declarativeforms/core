@@ -7,6 +7,7 @@ import { DeclarativeFormHeading } from './heading.component';
 
 export function DeclarativeFormStart(props: {
   start: IRenderableStart;
+  disabled?: boolean;
   onBegin: () => void;
 }): React.JSX.Element {
   const i18n = useI18n();
@@ -20,7 +21,11 @@ export function DeclarativeFormStart(props: {
 
       <CardContent className="px-6">
         <div className="mt-2 flex justify-end">
-          <Button type="button" onClick={props.onBegin}>
+          <Button
+            type="button"
+            disabled={props.disabled}
+            onClick={props.onBegin}
+          >
             {props.start.button ? (
               <HtmlText html={props.start.button} />
             ) : (

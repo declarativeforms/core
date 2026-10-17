@@ -48,7 +48,11 @@ export function HeroSection(props: {
             </Button>
           ) : props.onAction ? (
             <Button className="w-full" onClick={() => props.onAction?.()}>
-              {i18n.t('hero.continue')}
+              {props.buttonLabel ? (
+                <HtmlText html={props.buttonLabel} />
+              ) : (
+                i18n.t('hero.continue')
+              )}
             </Button>
           ) : null}
         </div>

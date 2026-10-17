@@ -2,7 +2,6 @@
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import type { IDeclarativeForm } from '@declarativeforms/engine';
-import { focusForm } from '@/lib/focus-form';
 import { AdaptiveSection } from './adaptive-section.component';
 import { DeclarativeFormSection } from './section.component';
 import { DeclarativeFormStart } from './start.component';
@@ -14,6 +13,7 @@ export function DeclarativeForm(props: {
   locale: string;
   initialData: FieldValues;
   sectionId: string;
+  disabled?: boolean;
   onStepChange: (sectionId: string) => void;
   onEffect: (
     effect: FormEffect,
@@ -45,7 +45,7 @@ export function DeclarativeForm(props: {
       return;
     }
 
-    return focusForm(sectionRef.current);
+    sectionRef.current?.focus({ preventScroll: true });
   }, [props.sectionId, isAdaptive]);
 
   if (!declarativeForm.section) {
@@ -56,12 +56,17 @@ export function DeclarativeForm(props: {
     return (
       <DeclarativeFormStart
         start={declarativeForm.start}
+        disabled={props.disabled}
         onBegin={() => props.onStepChange(declarativeForm.section?.id ?? '')}
       />
     );
   }
 
   async function submitSection(sectionData: FieldValues): Promise<void> {
+    if (props.disabled) {
+      return;
+    }
+
     const completedSectionId = declarativeForm.section?.id ?? '';
     const transition = declarativeForm.submitSection(sectionData);
 
@@ -80,6 +85,7 @@ export function DeclarativeForm(props: {
         section={declarativeForm.section}
         locale={props.locale}
         data={declarativeForm.data}
+        disabled={props.disabled}
         onBack={() => props.onStepChange(declarativeForm.goBack())}
         onSubmit={submitSection}
       />
@@ -93,6 +99,7 @@ export function DeclarativeForm(props: {
       formId={props.form.id ?? ''}
       section={declarativeForm.section}
       data={declarativeForm.data}
+      disabled={props.disabled}
       onBack={() => props.onStepChange(declarativeForm.goBack())}
       onSubmit={submitSection}
     />

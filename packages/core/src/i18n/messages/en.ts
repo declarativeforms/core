@@ -1,6 +1,10 @@
 const enMessageSource = {
   'base.powered_by': 'Powered by',
   'hero.continue': 'Continue',
+  'main.restore_failed.title': 'Could not restore your answers',
+  'main.restore_failed.description':
+    'Your saved answers could not be loaded. Please retry before continuing.',
+  'main.retry': 'Retry',
   'main.form_not_found.title': 'Form Not Found',
   'main.form_not_found.description':
     "The form you're looking for doesn't exist or has been removed.",

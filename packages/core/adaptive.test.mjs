@@ -10,7 +10,7 @@ const ts = createRequire(new URL('../api/package.json', import.meta.url))('types
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    const source = context.parentURL?.includes('/declarative-form/');
+    const source = context.parentURL?.includes('/declarative-form/') || context.parentURL?.endsWith('/views/form-route.tsx');
     if (specifier === 'react' && source) {
       return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(`
         const equal = (a, b) => a && b && a.length === b.length && a.every((value, index) => Object.is(value, b[index]));
@@ -21,6 +21,10 @@ registerHooks({
           return [slot.value, value => { slot.value = typeof value === 'function' ? value(slot.value) : value; h.dirty = true; }];
         }
         export function useRef(initial) { return useState({ current: initial })[0]; }
+        export function useTransition() {
+          const h = globalThis.hookHarness;
+          return [!!h.navigationPending, fn => { h.navigationPending = true; h.dirty = true; fn(); }];
+        }
         export function useCallback(fn) { return fn; }
         export function useMemo(fn, deps) {
           const slot = useRef({});
@@ -44,7 +48,12 @@ registerHooks({
     }
     const stubs = {
       '@/components/ui': "export const Button = 'button'; export const CardContent = 'div'; export const Skeleton = 'div';",
-      '@/i18n': "export function useI18n() { return { t: key => key }; }",
+      '@/i18n': "export function useI18n() { return { locale: 'en', t: key => key, withLang: path => path }; } export function useSyncLangParam() {}",
+      '@/components': "export const DeclarativeForm = 'form'; export const HeroSection = 'hero';",
+      './base.page': "export const BasePage = 'page';",
+      'next/navigation': "export function useRouter() { return globalThis.routeTest.router; } export function useSearchParams() { return new URLSearchParams(window.location.search); }",
+      '@tanstack/react-query': "export function useQuery(options) { globalThis.routeTest.queries.push(options); return options.queryKey[0] === 'form' ? globalThis.routeTest.formQuery : globalThis.routeTest.savedQuery; }",
+      '@/lib/analytics': "export function createAnalytics() { return { capture() {}, shutdown() {} }; }",
       './section.component': "export const DeclarativeFormSection = 'section';",
       './start.component': "export const DeclarativeFormStart = 'start';",
     };
@@ -66,7 +75,7 @@ registerHooks({
     return nextResolve(specifier, context);
   },
   load(url, context, nextLoad) {
-    if (url.endsWith('/adaptive-section.component.tsx') || url.endsWith('/form.component.tsx') || url.endsWith('/section-loading.component.tsx')) {
+    if (url.endsWith('/adaptive-section.component.tsx') || url.endsWith('/form.component.tsx') || url.endsWith('/section-loading.component.tsx') || url.endsWith('/views/form-route.tsx')) {
       return { shortCircuit: true, format: 'module', source: ts.transpileModule(readFileSync(new URL(url), 'utf8'), { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText };
     }
     return nextLoad(url, context);
@@ -119,7 +128,7 @@ function browser(t, search = '') {
   let nextFrame = 0;
   let nextTimer = 0;
   globalThis.window = {
-    location: { pathname: '/form', search },
+    location: { pathname: '/form', search, hash: '' },
     scrollTo() {},
     requestAnimationFrame(callback) { const id = ++nextFrame; frames.set(id, callback); return id; },
     cancelAnimationFrame(id) { frames.delete(id); },
@@ -290,7 +299,7 @@ test('provider failures retain local answers for retry; remount starts fresh wit
   assert.equal(findElement(h.current, SectionLoading), undefined);
   assert.equal(findElement(h.current, 'div').props.hidden, false);
   assert.notEqual(findElement(h.current, 'section').key, questions.key);
-  assert.equal(findElement(h.current, 'section').props.disabled, false);
+  assert.ok(!findElement(h.current, 'section').props.disabled);
   assert.ok(focusCount > 0);
   assert.deepEqual(calls[1], calls[2]);
   assert.deepEqual(calls[2].history, [{ fields: [{ id: 'q', type: 'long_text' }], answers: { q: 'Keep my answer' } }]);
@@ -392,7 +401,7 @@ test('form focus precedes instant scrolling and scheduled work can be cancelled'
   ]);
 });
 
-test('ordinary transitions scroll after render, skip initial mount and failures, and cancel on unmount', async t => {
+test('ordinary transitions transfer focus without competing with router scrolling', async t => {
   const paint = browser(t);
   const { DeclarativeForm } = await import('./src/components/declarative-form/core/form.component.tsx');
   const scroll = t.mock.method(window, 'scrollTo');
@@ -409,15 +418,15 @@ test('ordinary transitions scroll after render, skip initial mount and failures,
   h.render({ sectionId: 'last' });
   assert.equal(scroll.mock.callCount(), 0);
   paint();
-  assert.equal(scroll.mock.callCount(), 1);
+  assert.equal(scroll.mock.callCount(), 0);
   assert.equal(focused, 1);
   h.render();
   paint();
-  assert.equal(scroll.mock.callCount(), 1);
+  assert.equal(scroll.mock.callCount(), 0);
   h.render({ sectionId: 'first' });
   h.unmount();
   paint();
-  assert.equal(scroll.mock.callCount(), 1);
+  assert.equal(scroll.mock.callCount(), 0);
 });
 
 test('outer form leaves adaptive scrolling to the newly rendered questions', async t => {
@@ -430,7 +439,7 @@ test('outer form leaves adaptive scrolling to the newly rendered questions', asy
   assert.equal(scroll.mock.callCount(), 0);
   h.render({ sectionId: 'after' });
   paint();
-  assert.equal(scroll.mock.callCount(), 1);
+  assert.equal(scroll.mock.callCount(), 0);
 });
 
 test('adaptive scrolling is cancelled when questions unmount before the next frame', async t => {
@@ -482,4 +491,121 @@ test('new user interaction cancels pending viewport corrections', async t => {
     paint(true);
     assert.equal(scroll.mock.callCount(), calls, type);
   }
+});
+
+function routeEnvironment(t, search = '?step=intro') {
+  browser(t, search);
+  const navigation = [];
+  globalThis.routeTest = {
+    queries: [],
+    formQuery: { data: { ...form, id: 'form' } },
+    savedQuery: { isFetchedAfterMount: true, data: { data: { name: 'Saved name' } }, refetch() {} },
+    router: {
+      replace(url, options) { navigation.push(['replace', url, options]); },
+      push(url) { navigation.push(['push', url]); },
+    },
+  };
+  t.after(() => { delete globalThis.routeTest; });
+  return navigation;
+}
+
+test('section navigation waits for saving, preserves parameters, and requests the top anchor', async t => {
+  const navigation = routeEnvironment(t, '?step=intro&lang=es&embed=true&branch=preview&name=Prefilled');
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  let finish;
+  const requests = [];
+  t.mock.method(globalThis, 'fetch', (url, options) => {
+    requests.push([String(url), JSON.parse(options.body)]);
+    return new Promise(resolve => { finish = resolve; });
+  });
+  const h = await mount(FormRoute, { id: 'form' });
+  const current = findElement(h.current, 'form');
+  const state = { data: { name: 'Ada' }, completedSectionId: 'intro', activeSectionId: 'after' };
+  window.location.origin = 'https://example.com';
+  const pending = current.props.onEffect({ type: 'submit', isPartial: true, data: state.data }, state);
+  assert.deepEqual(navigation, []);
+  assert.equal(new URL(requests[0][0]).searchParams.get('section_id'), 'intro');
+  finish({ ok: true, json: async () => ({ id: 'saved' }) });
+  await pending;
+  await h.flush();
+  const destination = new URL(navigation[0][1], 'https://example.com');
+  assert.deepEqual(navigation[0][2], { scroll: true });
+  assert.equal(destination.hash, '#top');
+  assert.deepEqual(Object.fromEntries(destination.searchParams), { step: 'after', lang: 'es', embed: 'true', branch: 'preview', name: 'Prefilled', submission_id: 'saved' });
+  assert.equal(findElement(h.current, 'form').props.disabled, true);
+  findElement(h.current, 'form').props.onStepChange('intro');
+  assert.equal(navigation.length, 1);
+  h.navigationPending = false;
+  window.location.search = destination.search;
+  h.render();
+  findElement(h.current, 'form').props.onStepChange('intro');
+  assert.equal(new URL(navigation[1][1], 'https://example.com').searchParams.get('submission_id'), 'saved');
+  assert.equal(new URL(navigation[1][1], 'https://example.com').hash, '#top');
+});
+
+test('failed saves do not navigate and completion does not issue a competing replacement', async t => {
+  const navigation = routeEnvironment(t);
+  window.location.origin = 'https://example.com';
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  let fail = true;
+  t.mock.method(globalThis, 'fetch', async () => fail ? { ok: false, status: 500 } : { ok: true, json: async () => ({ id: 'saved' }) });
+  const h = await mount(FormRoute, { id: 'form' });
+  const state = { data: { name: 'Ada' }, completedSectionId: 'intro', activeSectionId: 'after' };
+  await assert.rejects(findElement(h.current, 'form').props.onEffect({ type: 'submit', isPartial: true }, state), /Submission failed/);
+  assert.deepEqual(navigation, []);
+  assert.equal(findElement(h.current, 'form').props.disabled, false);
+  fail = false;
+  await findElement(h.current, 'form').props.onEffect({ type: 'complete' }, state);
+  assert.deepEqual(navigation, [['push', '/form/thank-you?submission_id=saved']]);
+});
+
+test('restoration gates editable fields, exposes retry, and initializes from saved answers', async t => {
+  routeEnvironment(t, '?step=after&submission_id=saved&name=Prefilled');
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  routeTest.savedQuery = { isFetchedAfterMount: false, isError: false, data: { data: { name: 'Stale cached name' } } };
+  const h = await mount(FormRoute, { id: 'form' });
+  assert.equal(h.current, null);
+  let retries = 0;
+  routeTest.savedQuery = { isFetchedAfterMount: true, isError: true, refetch() { retries++; } };
+  h.render();
+  assert.equal(h.current.type, 'hero');
+  assert.equal(h.current.props.buttonLabel, 'main.retry');
+  assert.equal(findElement(h.current, 'form'), undefined);
+  h.current.props.onAction();
+  assert.equal(retries, 1);
+  routeTest.savedQuery = { isFetchedAfterMount: true, isError: false, isSuccess: false };
+  h.render();
+  assert.equal(h.current, null);
+  routeTest.savedQuery = { isFetchedAfterMount: true, isSuccess: true, data: { data: { name: 'Saved name' } } };
+  h.render();
+  assert.equal(findElement(h.current, 'form').props.initialData.name, 'Saved name');
+  const query = routeTest.queries.find(query => query.queryKey[0] === 'submission');
+  t.mock.method(globalThis, 'fetch', async () => ({ ok: false, status: 503 }));
+  await assert.rejects(query.queryFn(), /Could not restore submission/);
+});
+
+test('locale and canonical URL rewrites preserve the navigation anchor', async t => {
+  routeEnvironment(t, '?step=intro&lang=en');
+  window.location.hash = '#top';
+  const replace = t.mock.method(window.history, 'replaceState');
+  const { replaceSearchParams } = await import('./src/lib/url-state.ts');
+  replaceSearchParams(new URLSearchParams('step=intro&lang=es'));
+  assert.equal(replace.mock.calls[0].arguments[2], '/form?step=intro&lang=es#top');
+  const { FormRoute } = await import('./src/views/form-route.tsx');
+  await mount(FormRoute, { owner: 'owner', repository: 'repo', slugPath: 'form' });
+  assert.ok(replace.mock.calls.at(-1).arguments[2].endsWith('#top'));
+});
+
+test('navigation pending disables both ordinary and adaptive section submission', async t => {
+  browser(t);
+  const { DeclarativeForm } = await import('./src/components/declarative-form/core/form.component.tsx');
+  let submissions = 0;
+  const h = await mount(DeclarativeForm, { form, locale: 'en', sectionId: 'intro', initialData: {}, disabled: true, onStepChange() {}, onEffect() { submissions++; } });
+  assert.equal(h.current.props.disabled, true);
+  await h.current.props.onSubmit({ name: 'Ada' });
+  assert.equal(submissions, 0);
+  h.render({ sectionId: 'adaptive' });
+  assert.equal(h.current.props.disabled, true);
+  await h.current.props.onSubmit({ result: 'value' });
+  assert.equal(submissions, 0);
 });

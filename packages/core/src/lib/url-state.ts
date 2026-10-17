@@ -6,6 +6,6 @@ export function replaceSearchParams(searchParams: URLSearchParams): void {
   window.history.replaceState(
     null,
     '',
-    query ? `${window.location.pathname}?${query}` : window.location.pathname,
+    `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`,
   );
 }
