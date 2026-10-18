@@ -6,11 +6,83 @@ import {
   FORM_JSON_SCHEMA,
   assertJsonSchemaCoverage,
   parse,
+  resolve,
   serialize,
   toRenderableForm,
   validateField,
 } from '@declarativeforms/engine';
 import { GET } from './src/app/schema.json/route.ts';
+
+test('favicon and social preview URLs validate and survive YAML and resolution', () => {
+  const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);
+
+  for (const theme of [
+    undefined,
+    {},
+    { icon: 'https://example.com/favicon.png' },
+  ]) {
+    for (const open_graph of [
+      undefined,
+      {},
+      { image: 'https://example.com/social-preview.png' },
+    ]) {
+      const definition = {
+        theme,
+        open_graph,
+        sections: [{ id: 'details', fields: [] }],
+      };
+      assert.equal(validate(definition), true, JSON.stringify(validate.errors));
+      const parsed = parse(serialize(definition));
+      const resolved = resolve(parsed, 'en');
+      assert.deepEqual(parsed.theme, theme);
+      assert.deepEqual(parsed.open_graph, open_graph);
+      assert.deepEqual(resolved.theme, theme);
+      assert.deepEqual(resolved.open_graph, open_graph);
+      assert.deepEqual(
+        toRenderableForm(serialize(definition), { locale: 'en' }).theme,
+        theme,
+      );
+    }
+  }
+
+  for (const url of [
+    '',
+    '/image.png',
+    'http://example.com/image.png',
+    'https://',
+    'https://example.com/bad path',
+    'data:image/png;base64,a',
+    'javascript:alert(1)',
+    null,
+    42,
+    { en: 'https://example.com/image.png' },
+  ]) {
+    for (const settings of [
+      { theme: { icon: url } },
+      { open_graph: { image: url } },
+    ]) {
+      assert.equal(
+        validate({ ...settings, sections: [{ id: 'details', fields: [] }] }),
+        false,
+        JSON.stringify(settings),
+      );
+    }
+  }
+
+  for (const settings of [
+    { openGraph: { image: 'https://example.com/image.png' } },
+    { open_graph: { unknown: true } },
+    { theme: { unknown: true } },
+    { open_graph: null },
+    { open_graph: 'https://example.com/image.png' },
+  ]) {
+    assert.equal(
+      validate({ ...settings, sections: [{ id: 'details', fields: [] }] }),
+      false,
+      JSON.stringify(settings),
+    );
+  }
+});
 
 test('theme modes validate and survive YAML and the rendering pipeline', () => {
   const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);

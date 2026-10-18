@@ -441,6 +441,7 @@ export const FORM_JSON_SCHEMA = {
       'After this date the form is closed and shows a closed notice. Enforced in the browser only: a direct API submission is not blocked.',
     ),
     theme: { $ref: '#/definitions/theme' },
+    open_graph: { $ref: '#/definitions/openGraph' },
     measurements: { $ref: '#/definitions/measurements' },
     authentication: { $ref: '#/definitions/authentication' },
     sections: {
@@ -795,6 +796,21 @@ export const FORM_JSON_SCHEMA = {
         },
       },
     },
+    openGraph: {
+      type: 'object',
+      description: 'Social sharing metadata.',
+      additionalProperties: false,
+      properties: {
+        image: {
+          type: 'string',
+          format: 'uri',
+          pattern: '^https://[^/?#\\s]+',
+          description:
+            'Absolute HTTPS URL for the Open Graph and Twitter/X preview image. Omit it to use the generated form preview.',
+          examples: ['https://example.com/social-preview.png'],
+        },
+      },
+    },
     theme: {
       type: 'object',
       description: 'Visual customization.',
@@ -813,6 +829,14 @@ export const FORM_JSON_SCHEMA = {
           description:
             'Absolute HTTPS URL for a decorative brand logo shown throughout the form journey. The image is hidden if it cannot be loaded.',
           examples: ['https://example.com/logo.svg'],
+        },
+        icon: {
+          type: 'string',
+          format: 'uri',
+          pattern: '^https://[^/?#\\s]+',
+          description:
+            'Absolute HTTPS URL for the browser favicon. Omit it to keep the default favicon. Does not change the visible brand logo.',
+          examples: ['https://example.com/favicon.png'],
         },
         primary: {
           type: 'string',

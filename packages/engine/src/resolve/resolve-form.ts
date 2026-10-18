@@ -116,5 +116,6 @@ export function resolve(
       measurements: schema.measurements,
     }),
     ...(schema.theme !== undefined && { theme: schema.theme }),
+    ...(schema.open_graph !== undefined && { open_graph: schema.open_graph }),
   };
 }

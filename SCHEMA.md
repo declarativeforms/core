@@ -99,7 +99,8 @@ authentication:    # optional
 | `start_date` | string (`YYYY-MM-DD`) | No | Before this date the form is closed. |
 | `end_date` | string (`YYYY-MM-DD`) | No | After this date the form is closed. |
 | `locale` | string | No | Default language code, for example `en`. |
-| `theme` | object | No | `mode` (`light`, `dark`, or `auto`), `primary` accent color, and an HTTPS `logo` URL. |
+| `theme` | object | No | `mode` (`light`, `dark`, or `auto`), `primary` accent color, and HTTPS `logo` and `icon` URLs. |
+| `open_graph` | object | No | An HTTPS `image` URL for Open Graph and Twitter/X previews. Defaults to the generated form preview. |
 | `measurements` | object | No | Mixpanel and/or PostHog configuration for analytics. |
 
 `id` is assigned by the server. Do not set it in your YAML.
@@ -894,6 +895,10 @@ theme:
   mode: auto                               # light (default), dark, or auto
   primary: "#542EBC"                         # accent color
   logo: "https://example.com/logo.svg"       # decorative brand logo
+  icon: "https://example.com/favicon.png"   # browser favicon
+
+open_graph:
+  image: "https://example.com/social-preview.png"
 
 measurements:
   mixpanel: "your-token"   # optional shorthand
@@ -917,6 +922,17 @@ using auto. `theme.logo` takes
 an absolute HTTPS image URL and displays the decorative brand mark on the start,
 question, status, and completion screens, including embeds. A logo that cannot
 be loaded is hidden without blocking the form.
+
+`theme.icon` optionally replaces the browser favicon, independently of the visible
+`theme.logo`. `open_graph.image` optionally replaces the Open Graph and Twitter/X
+preview image. These settings apply to both form-ID and repository-path pages.
+Omitting either setting preserves its default: the site favicon or the generated
+form preview. An empty `open_graph: {}` also keeps the generated preview.
+
+Both values must be publicly accessible, absolute HTTPS image URLs. They are
+plain strings, not localized text or templates. Uploads and relative repository
+paths are not supported. Images are used directly; an unavailable configured
+image does not automatically fall back to the default.
 
 Configure either or both analytics providers under `measurements`. A provider
 can be a project token string, or an object with these keys:

@@ -171,4 +171,7 @@ export type Form<Text> = {
     verifier: string;
   };
   theme?: IDeclarativeFormTheme;
+  open_graph?: {
+    image?: string;
+  };
 };

@@ -112,7 +112,10 @@ export async function buildFormMetadata(
   const form = await findForm(target);
 
   const cardId = 'id' in target ? target.id : form?.id;
-  const images = cardId ? [`/${cardId}/opengraph-image`] : undefined;
+  const image =
+    form?.open_graph?.image ??
+    (cardId ? `/${cardId}/opengraph-image` : undefined);
+  const images = image ? [image] : undefined;
 
   if (!form) {
     return images ? { openGraph: { images } } : {};
@@ -122,13 +125,10 @@ export async function buildFormMetadata(
   const title = resolveFormText(form.title, locale) || form.id;
   const description = resolveFormText(form.description, locale) || undefined;
 
-  if (!title) {
-    return images ? { openGraph: { images } } : {};
-  }
-
   return {
     title,
     description,
+    ...(form.theme?.icon !== undefined && { icons: { icon: form.theme.icon } }),
     openGraph: {
       title,
       description,
