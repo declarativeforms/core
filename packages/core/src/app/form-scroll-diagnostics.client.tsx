@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { readFormScrollSnapshot } from '@/lib/scroll-diagnostics';
 
 const MAX_TRACE_ENTRIES = 300;
@@ -8,7 +9,9 @@ const MAX_TRACE_ENTRIES = 300;
 export function FormScrollDiagnostics(): React.JSX.Element | null {
   const traceRef = useRef<Array<string>>([]);
   const [stopped, setStopped] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<
+    'idle' | 'copying' | 'copied' | 'manual'
+  >('idle');
   const [report, setReport] = useState('');
 
   useEffect(() => {
@@ -115,15 +118,11 @@ export function FormScrollDiagnostics(): React.JSX.Element | null {
       ...traceRef.current,
       `current ${readFormScrollSnapshot()}`,
     ].join('\n');
-    setCopied(false);
-    setReport('');
+    setReport(trace);
+    setCopyStatus('copying');
 
-    try {
-      await navigator.clipboard.writeText(trace);
-      setCopied(true);
-    } catch {
-      setReport(trace);
-    }
+    const copied = await copyTextToClipboard(trace);
+    setCopyStatus(copied ? 'copied' : 'manual');
   }
 
   if (stopped) {
@@ -136,7 +135,12 @@ export function FormScrollDiagnostics(): React.JSX.Element | null {
       className="fixed right-2 top-2 z-[100] max-w-[calc(100vw-1rem)] rounded-lg border bg-background p-2 shadow-md"
     >
       <div className="flex items-center gap-2">
-        <Button type="button" size="sm" onClick={() => void copyTrace()}>
+        <Button
+          type="button"
+          size="sm"
+          disabled={copyStatus === 'copying'}
+          onClick={() => void copyTrace()}
+        >
           Copy scroll trace
         </Button>
         <Button
@@ -147,8 +151,16 @@ export function FormScrollDiagnostics(): React.JSX.Element | null {
         >
           Stop
         </Button>
-        <span role="status">{copied ? 'Copied' : ''}</span>
       </div>
+      <p role="status" className="text-sm">
+        {copyStatus === 'copying'
+          ? 'Copying…'
+          : copyStatus === 'copied'
+            ? 'Copied'
+            : copyStatus === 'manual'
+              ? 'Select the trace below and choose Copy.'
+              : ''}
+      </p>
       {report ? (
         <textarea
           aria-label="Scroll trace — select and copy"
