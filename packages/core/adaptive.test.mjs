@@ -113,7 +113,7 @@ function findElement(node, type) {
 }
 
 function browser(t, search = '') {
-  globalThis.window = { location: { pathname: '/form', search }, scrollTo() {}, history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } } };
+  globalThis.window = Object.assign(new EventTarget(), { location: { pathname: '/form', search }, scrollX: 0, scrollY: 0, scrollTo(options) { this.scrollX = options.left; this.scrollY = options.top; }, history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } } });
   t.after(() => { delete globalThis.window; });
 }
 
@@ -334,4 +334,33 @@ test('conventional forms still use conditional routing and redirects', async t =
   await h.current.props.onSubmit({ count: 2 });
   assert.equal(effects[1].type, 'submit');
   assert.equal(effects[1].activeSectionId, 'last');
+});
+
+test('section changes reset scrolling without moving an initial or unchanged section', async t => {
+  browser(t);
+  const { DeclarativeForm } = await import('./src/components/declarative-form/core/form.component.tsx');
+  const scroll = t.mock.method(window, 'scrollTo');
+  const definition = { sections: [{ id: 'first', fields: [], next: 'last' }, { id: 'last', fields: [], next: 'done' }] };
+  window.scrollY = 108;
+  const h = await mount(DeclarativeForm, { form: definition, locale: 'en', sectionId: 'first', initialData: {}, onStepChange() {}, onEffect() {} }, true);
+  t.after(() => h.unmount());
+  assert.equal(scroll.mock.callCount(), 0);
+  assert.equal(window.scrollY, 108);
+
+  h.current.props.ref.current = { focus(options) {
+    assert.equal(options.preventScroll, true);
+    window.dispatchEvent(new Event('focusin'));
+  } };
+  h.render({ sectionId: 'last' });
+  assert.equal(window.scrollY, 0);
+  window.scrollY = 108;
+  window.dispatchEvent(new Event('scroll'));
+  assert.equal(window.scrollY, 0);
+
+  h.render({ initialData: { unchangedSection: true } });
+  assert.equal(scroll.mock.callCount(), 2);
+  h.unmount();
+  window.scrollY = 108;
+  window.dispatchEvent(new Event('scroll'));
+  assert.equal(window.scrollY, 108);
 });

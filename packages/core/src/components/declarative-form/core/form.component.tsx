@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import type { FieldValues } from 'react-hook-form';
 import type { IDeclarativeForm } from '@declarativeforms/engine';
+import { resetWindowScroll } from '@/lib/scroll-reset';
 import { AdaptiveSection } from './adaptive-section.component';
 import { DeclarativeFormSection } from './section.component';
 import { DeclarativeFormStart } from './start.component';
@@ -24,7 +25,7 @@ export function DeclarativeForm(props: {
   ) => void | Promise<void>;
 }): React.JSX.Element | null {
   const sectionRef = useRef<HTMLFormElement>(null);
-  const hasMountedRef = useRef(false);
+  const previousSectionIdRef = useRef(props.sectionId);
   const declarativeForm = useDeclarativeForm(
     props.form,
     props.locale,
@@ -33,13 +34,14 @@ export function DeclarativeForm(props: {
   );
 
   useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-
+    if (previousSectionIdRef.current === props.sectionId) {
       return;
     }
-    window.scrollTo(0, 0);
+
+    previousSectionIdRef.current = props.sectionId;
     sectionRef.current?.focus({ preventScroll: true });
+
+    return resetWindowScroll();
   }, [props.sectionId]);
 
   if (!declarativeForm.section) {
