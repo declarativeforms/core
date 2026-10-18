@@ -134,6 +134,27 @@ export function FormScrollDiagnostics(props: {
     setCopyStatus(copied ? 'copied' : 'manual');
   }
 
+  function scrollToPageTop(): void {
+    traceRef.current = [
+      ...traceRef.current,
+      `manual page top ${readFormScrollSnapshot()}`,
+    ].slice(-MAX_TRACE_ENTRIES);
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+  }
+
+  function scrollToSectionHeading(): void {
+    const headingId = document
+      .querySelector('form')
+      ?.getAttribute('aria-labelledby');
+    const heading = headingId ? document.getElementById(headingId) : null;
+
+    traceRef.current = [
+      ...traceRef.current,
+      `manual section heading ${readFormScrollSnapshot()}`,
+    ].slice(-MAX_TRACE_ENTRIES);
+    heading?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }
+
   if (stopped) {
     return null;
   }
@@ -141,7 +162,7 @@ export function FormScrollDiagnostics(props: {
   return (
     <aside
       aria-label="Scroll diagnostics"
-      className="fixed right-2 top-2 z-[100] max-w-[calc(100vw-1rem)] rounded-lg border bg-background p-2 shadow-md"
+      className="fixed right-2 bottom-2 z-[100] max-w-[calc(100vw-1rem)] rounded-lg border bg-background p-2 shadow-md"
     >
       {props.disableSectionFocus ? (
         <p className="text-sm">Section focus disabled</p>
@@ -162,6 +183,24 @@ export function FormScrollDiagnostics(props: {
           onClick={() => setStopped(true)}
         >
           Stop
+        </Button>
+      </div>
+      <div className="mt-2 flex items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={scrollToPageTop}
+        >
+          Page top
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={scrollToSectionHeading}
+        >
+          Section heading
         </Button>
       </div>
       <p role="status" className="text-sm">
