@@ -7,7 +7,7 @@ import { readFormScrollSnapshot } from '@/lib/scroll-diagnostics';
 const MAX_TRACE_ENTRIES = 300;
 
 export function FormScrollDiagnostics(props: {
-  disableSectionFocus: boolean;
+  mode: '1' | 'no_focus' | 'force_scroll';
 }): React.JSX.Element | null {
   const traceRef = useRef<Array<string>>([]);
   const [stopped, setStopped] = useState(false);
@@ -50,13 +50,28 @@ export function FormScrollDiagnostics(props: {
     function traceScrollTo(
       ...coordinates: [options?: ScrollToOptions] | [x: number, y: number]
     ): void {
-      record(`scrollTo ${JSON.stringify(coordinates)}`);
-      Reflect.apply(originalScrollTo, window, coordinates);
+      const options =
+        typeof coordinates[0] === 'number'
+          ? { left: coordinates[0], top: coordinates[1] }
+          : coordinates[0];
+      record(
+        `scrollTo ${JSON.stringify(coordinates)} from y=${window.scrollY}`,
+      );
+      if (
+        props.mode === 'force_scroll' &&
+        options?.top === 0 &&
+        (options.left ?? window.scrollX) === 0
+      ) {
+        record('forced scroll request top=-1');
+        Reflect.apply(originalScrollTo, window, [{ ...options, top: -1 }]);
+      } else {
+        Reflect.apply(originalScrollTo, window, coordinates);
+      }
       sample('scrollTo');
     }
 
     function traceFocus(this: HTMLElement, options?: FocusOptions): void {
-      if (props.disableSectionFocus && this.tagName === 'FORM') {
+      if (props.mode === 'no_focus' && this.tagName === 'FORM') {
         record('focus skipped FORM');
 
         return;
@@ -118,12 +133,13 @@ export function FormScrollDiagnostics(props: {
         HTMLElement.prototype.focus = originalFocus;
       }
     };
-  }, [stopped, props.disableSectionFocus]);
+  }, [stopped, props.mode]);
 
   async function copyTrace(): Promise<void> {
     const trace = [
       navigator.userAgent,
-      `section focus: ${props.disableSectionFocus ? 'disabled' : 'enabled'}`,
+      `section focus: ${props.mode === 'no_focus' ? 'disabled' : 'enabled'}`,
+      `scroll request: ${props.mode === 'force_scroll' ? 'forced' : 'standard'}`,
       ...traceRef.current,
       `current ${readFormScrollSnapshot()}`,
     ].join('\n');
@@ -164,8 +180,11 @@ export function FormScrollDiagnostics(props: {
       aria-label="Scroll diagnostics"
       className="fixed right-2 bottom-2 z-[100] max-w-[calc(100vw-1rem)] rounded-lg border bg-background p-2 shadow-md"
     >
-      {props.disableSectionFocus ? (
+      {props.mode === 'no_focus' ? (
         <p className="text-sm">Section focus disabled</p>
+      ) : null}
+      {props.mode === 'force_scroll' ? (
+        <p className="text-sm">Forced scroll request</p>
       ) : null}
       <div className="flex items-center gap-2">
         <Button
