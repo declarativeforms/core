@@ -20,6 +20,7 @@ const RESERVED_QUERY_KEYS = new Set([
   'submission_id',
   'step',
   'branch',
+  'debug_scroll',
 ]);
 
 export type FormRouteProps = {

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { buildFormMetadata } from '@/lib/form-metadata';
 import { FormRoute } from '@/views/form-route';
 import { PageShell } from '@/app/page-shell';
+import { FormScrollDiagnostics } from '@/app/form-scroll-diagnostics.client';
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
@@ -29,6 +30,7 @@ export default async function Page(props: {
 
   return (
     <PageShell embed={query.embed === 'true'}>
+      {query.debug_scroll === '1' ? <FormScrollDiagnostics /> : null}
       <FormRoute id={params.slug} />
     </PageShell>
   );
