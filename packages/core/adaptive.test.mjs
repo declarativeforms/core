@@ -113,7 +113,7 @@ function findElement(node, type) {
 }
 
 function browser(t, search = '') {
-  globalThis.window = Object.assign(new EventTarget(), { location: { pathname: '/form', search }, scrollX: 0, scrollY: 0, scrollTo(options) { this.scrollX = options.left; this.scrollY = options.top; }, history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } } });
+  globalThis.window = Object.assign(new EventTarget(), { location: { pathname: '/form', search }, scrollX: 0, scrollY: 0, scrollTo(options) { this.scrollX = options.left; this.scrollY = Math.max(0, options.top); }, history: { replaceState(_data, _title, url) { window.location.search = new URL(url, 'https://example.com').search; } } });
   t.after(() => { delete globalThis.window; });
 }
 

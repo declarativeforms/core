@@ -6,9 +6,7 @@ import { readFormScrollSnapshot } from '@/lib/scroll-diagnostics';
 
 const MAX_TRACE_ENTRIES = 300;
 
-export function FormScrollDiagnostics(props: {
-  mode: '1' | 'no_focus' | 'force_scroll';
-}): React.JSX.Element | null {
+export function FormScrollDiagnostics(): React.JSX.Element | null {
   const traceRef = useRef<Array<string>>([]);
   const [stopped, setStopped] = useState(false);
   const [copyStatus, setCopyStatus] = useState<
@@ -50,33 +48,14 @@ export function FormScrollDiagnostics(props: {
     function traceScrollTo(
       ...coordinates: [options?: ScrollToOptions] | [x: number, y: number]
     ): void {
-      const options =
-        typeof coordinates[0] === 'number'
-          ? { left: coordinates[0], top: coordinates[1] }
-          : coordinates[0];
       record(
         `scrollTo ${JSON.stringify(coordinates)} from y=${window.scrollY}`,
       );
-      if (
-        props.mode === 'force_scroll' &&
-        options?.top === 0 &&
-        (options.left ?? window.scrollX) === 0
-      ) {
-        record('forced scroll request top=-1');
-        Reflect.apply(originalScrollTo, window, [{ ...options, top: -1 }]);
-      } else {
-        Reflect.apply(originalScrollTo, window, coordinates);
-      }
+      Reflect.apply(originalScrollTo, window, coordinates);
       sample('scrollTo');
     }
 
     function traceFocus(this: HTMLElement, options?: FocusOptions): void {
-      if (props.mode === 'no_focus' && this.tagName === 'FORM') {
-        record('focus skipped FORM');
-
-        return;
-      }
-
       record(
         `focus ${this.tagName} preventScroll=${options?.preventScroll ?? false}`,
       );
@@ -133,13 +112,11 @@ export function FormScrollDiagnostics(props: {
         HTMLElement.prototype.focus = originalFocus;
       }
     };
-  }, [stopped, props.mode]);
+  }, [stopped]);
 
   async function copyTrace(): Promise<void> {
     const trace = [
       navigator.userAgent,
-      `section focus: ${props.mode === 'no_focus' ? 'disabled' : 'enabled'}`,
-      `scroll request: ${props.mode === 'force_scroll' ? 'forced' : 'standard'}`,
       ...traceRef.current,
       `current ${readFormScrollSnapshot()}`,
     ].join('\n');
@@ -148,27 +125,6 @@ export function FormScrollDiagnostics(props: {
 
     const copied = await copyTextToClipboard(trace);
     setCopyStatus(copied ? 'copied' : 'manual');
-  }
-
-  function scrollToPageTop(): void {
-    traceRef.current = [
-      ...traceRef.current,
-      `manual page top ${readFormScrollSnapshot()}`,
-    ].slice(-MAX_TRACE_ENTRIES);
-    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
-  function scrollToSectionHeading(): void {
-    const headingId = document
-      .querySelector('form')
-      ?.getAttribute('aria-labelledby');
-    const heading = headingId ? document.getElementById(headingId) : null;
-
-    traceRef.current = [
-      ...traceRef.current,
-      `manual section heading ${readFormScrollSnapshot()}`,
-    ].slice(-MAX_TRACE_ENTRIES);
-    heading?.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
 
   if (stopped) {
@@ -180,12 +136,6 @@ export function FormScrollDiagnostics(props: {
       aria-label="Scroll diagnostics"
       className="fixed right-2 bottom-2 z-[100] max-w-[calc(100vw-1rem)] rounded-lg border bg-background p-2 shadow-md"
     >
-      {props.mode === 'no_focus' ? (
-        <p className="text-sm">Section focus disabled</p>
-      ) : null}
-      {props.mode === 'force_scroll' ? (
-        <p className="text-sm">Forced scroll request</p>
-      ) : null}
       <div className="flex items-center gap-2">
         <Button
           type="button"
@@ -202,24 +152,6 @@ export function FormScrollDiagnostics(props: {
           onClick={() => setStopped(true)}
         >
           Stop
-        </Button>
-      </div>
-      <div className="mt-2 flex items-center gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={scrollToPageTop}
-        >
-          Page top
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={scrollToSectionHeading}
-        >
-          Section heading
         </Button>
       </div>
       <p role="status" className="text-sm">

@@ -1,3 +1,5 @@
+const FORCED_TOP_SCROLL_TARGET = -1;
+
 export function resetWindowScroll(): () => void {
   const controller = new AbortController();
   const listenerOptions = {
@@ -14,7 +16,11 @@ export function resetWindowScroll(): () => void {
 
   function correctScroll(): void {
     if (window.scrollX !== 0 || window.scrollY !== 0) {
-      window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      window.scrollTo({
+        left: 0,
+        top: FORCED_TOP_SCROLL_TARGET,
+        behavior: 'instant',
+      });
     }
   }
 
@@ -28,7 +34,11 @@ export function resetWindowScroll(): () => void {
   ]) {
     window.addEventListener(event, stopResettingScroll, listenerOptions);
   }
-  window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+  window.scrollTo({
+    left: 0,
+    top: FORCED_TOP_SCROLL_TARGET,
+    behavior: 'instant',
+  });
 
   return stopResettingScroll;
 }

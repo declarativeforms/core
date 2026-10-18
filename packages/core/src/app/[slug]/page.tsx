@@ -30,11 +30,7 @@ export default async function Page(props: {
 
   return (
     <PageShell embed={query.embed === 'true'}>
-      {query.debug_scroll === '1' ||
-      query.debug_scroll === 'no_focus' ||
-      query.debug_scroll === 'force_scroll' ? (
-        <FormScrollDiagnostics mode={query.debug_scroll} />
-      ) : null}
+      {query.debug_scroll === '1' ? <FormScrollDiagnostics /> : null}
       <FormRoute id={params.slug} />
     </PageShell>
   );

@@ -11,7 +11,7 @@ function browser(t, initialY = 128) {
     scrollTo(options) {
       calls.push(options);
       this.scrollX = options.left;
-      this.scrollY = options.top;
+      this.scrollY = Math.max(0, options.top);
       this.dispatchEvent(new Event('scroll'));
     },
   });
@@ -30,6 +30,26 @@ function assertNoListeners() {
     assert.equal(getEventListeners(window, event).length, 0, event);
   }
 }
+
+test('forces a clamped browser request even when the reported scroll position is already zero', t => {
+  browser(t, 0);
+  let displayedY = 108;
+  const scrollTo = window.scrollTo;
+  window.scrollTo = options => {
+    if (options.left === 0 && options.top === 0 && window.scrollY === 0) {
+      return;
+    }
+
+    scrollTo.call(window, options);
+    displayedY = window.scrollY;
+  };
+
+  const cleanup = resetWindowScroll();
+  assert.equal(window.scrollY, 0);
+  assert.equal(displayedY, 0);
+  cleanup();
+  assertNoListeners();
+});
 
 test('corrects the recorded native rebound after the initial scroll already succeeded', t => {
   const calls = browser(t);
