@@ -6,7 +6,9 @@ import { readFormScrollSnapshot } from '@/lib/scroll-diagnostics';
 
 const MAX_TRACE_ENTRIES = 300;
 
-export function FormScrollDiagnostics(): React.JSX.Element | null {
+export function FormScrollDiagnostics(props: {
+  disableSectionFocus: boolean;
+}): React.JSX.Element | null {
   const traceRef = useRef<Array<string>>([]);
   const [stopped, setStopped] = useState(false);
   const [copyStatus, setCopyStatus] = useState<
@@ -54,6 +56,12 @@ export function FormScrollDiagnostics(): React.JSX.Element | null {
     }
 
     function traceFocus(this: HTMLElement, options?: FocusOptions): void {
+      if (props.disableSectionFocus && this.tagName === 'FORM') {
+        record('focus skipped FORM');
+
+        return;
+      }
+
       record(
         `focus ${this.tagName} preventScroll=${options?.preventScroll ?? false}`,
       );
@@ -110,11 +118,12 @@ export function FormScrollDiagnostics(): React.JSX.Element | null {
         HTMLElement.prototype.focus = originalFocus;
       }
     };
-  }, [stopped]);
+  }, [stopped, props.disableSectionFocus]);
 
   async function copyTrace(): Promise<void> {
     const trace = [
       navigator.userAgent,
+      `section focus: ${props.disableSectionFocus ? 'disabled' : 'enabled'}`,
       ...traceRef.current,
       `current ${readFormScrollSnapshot()}`,
     ].join('\n');
@@ -134,6 +143,9 @@ export function FormScrollDiagnostics(): React.JSX.Element | null {
       aria-label="Scroll diagnostics"
       className="fixed right-2 top-2 z-[100] max-w-[calc(100vw-1rem)] rounded-lg border bg-background p-2 shadow-md"
     >
+      {props.disableSectionFocus ? (
+        <p className="text-sm">Section focus disabled</p>
+      ) : null}
       <div className="flex items-center gap-2">
         <Button
           type="button"
