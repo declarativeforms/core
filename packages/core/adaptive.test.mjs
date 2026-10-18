@@ -214,6 +214,43 @@ test('adaptive component owns requests, renders standard fields, and retries han
   assert.equal(findElement(h.current, SectionLoading), undefined);
 });
 
+for (const embed of [true, false, undefined]) {
+  test(`adaptive focus prevents scrolling only in embed mode (${embed})`, async t => {
+    browser(t);
+    const { DeclarativeForm } = await import('./src/components/declarative-form/core/form.component.tsx');
+    const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');
+    t.mock.method(globalThis, 'fetch', async () => ({ ok: true, json: async () => ({ fields: [{ id: 'need', type: 'short_text' }] }) }));
+    const parent = await mount(DeclarativeForm, {
+      form, locale: 'en', sectionId: 'adaptive', initialData: {}, embed,
+      onStepChange() {}, onEffect() {},
+    });
+    t.after(() => parent.unmount());
+    assert.equal(parent.current.props.embed, embed);
+
+    const focus = t.mock.fn();
+    const h = await mount(props => {
+      const element = AdaptiveSection(props);
+      const section = findElement(element, 'section');
+      if (section) {
+        section.props.ref.current = { focus };
+      }
+
+      return element;
+    }, parent.current.props, true);
+    t.after(() => h.unmount());
+    assert.equal(focus.mock.callCount(), 1);
+    assert.deepEqual(focus.mock.calls[0].arguments, [{ preventScroll: embed === true }]);
+
+    await findElement(h.current, 'section').props.onSubmit({ need: 'A new feature' });
+    await h.flush();
+    assert.equal(focus.mock.callCount(), 2);
+    assert.deepEqual(focus.mock.calls[1].arguments, [{ preventScroll: embed === true }]);
+
+    h.render();
+    assert.equal(focus.mock.callCount(), 2);
+  });
+}
+
 test('provider failures retain local answers for retry; remount starts fresh without URL changes', async t => {
   browser(t, '?submission_id=existing&step=adaptive');
   const { AdaptiveSection } = await import('./src/components/declarative-form/core/adaptive-section.component.tsx');

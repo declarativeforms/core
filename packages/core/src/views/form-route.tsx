@@ -381,6 +381,7 @@ export function FormRoute(props: FormRouteProps): React.JSX.Element | null {
     >
       <DeclarativeForm
         form={formQuery.data}
+        embed={searchParams.get('embed') === 'true'}
         locale={i18n.locale}
         initialData={initialData}
         sectionId={sectionId}

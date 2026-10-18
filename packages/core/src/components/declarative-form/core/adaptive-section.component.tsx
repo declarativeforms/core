@@ -19,6 +19,7 @@ export function AdaptiveSection(props: {
   data: Record<string, unknown>;
   onBack: () => void;
   onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
+  embed?: boolean;
 }): React.JSX.Element {
   const i18n = useI18n();
   const [context] = useState(props.data);
@@ -112,9 +113,9 @@ export function AdaptiveSection(props: {
 
   useEffect(() => {
     if (!busy && assessment && assessment.outputs === undefined) {
-      sectionRef.current?.focus();
+      sectionRef.current?.focus({ preventScroll: props.embed === true });
     }
-  }, [busy, assessment]);
+  }, [busy, assessment, props.embed]);
 
   const generated =
     assessment && assessment.outputs === undefined

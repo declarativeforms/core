@@ -23,6 +23,7 @@ export function DeclarativeForm(props: {
       completedSectionId: string;
     },
   ) => void | Promise<void>;
+  embed?: boolean;
 }): React.JSX.Element | null {
   const sectionRef = useRef<HTMLFormElement>(null);
   const previousSectionIdRef = useRef(props.sectionId);
@@ -76,6 +77,7 @@ export function DeclarativeForm(props: {
         section={declarativeForm.section}
         locale={props.locale}
         data={declarativeForm.data}
+        embed={props.embed}
         onBack={() => props.onStepChange(declarativeForm.goBack())}
         onSubmit={submitSection}
       />
