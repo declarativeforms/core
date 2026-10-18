@@ -99,7 +99,7 @@ authentication:    # optional
 | `start_date` | string (`YYYY-MM-DD`) | No | Before this date the form is closed. |
 | `end_date` | string (`YYYY-MM-DD`) | No | After this date the form is closed. |
 | `locale` | string | No | Default language code, for example `en`. |
-| `theme` | object | No | `mode` (`light`, `dark`, or `auto`), `primary` accent color, and HTTPS `logo` and `icon` URLs. |
+| `theme` | object | No | `mode` (`light`, `dark`, or `auto`), `primary` accent color, HTTPS `icon` URL, and `logo` as an HTTPS URL or an object with `image` and optional `height`. |
 | `open_graph` | object | No | An HTTPS `image` URL for Open Graph and Twitter/X previews. Defaults to the generated form preview. |
 | `measurements` | object | No | Mixpanel and/or PostHog configuration for analytics. |
 
@@ -894,7 +894,9 @@ Reserved parameters, which are never treated as prefill: `embed`, `lang`,
 theme:
   mode: auto                               # light (default), dark, or auto
   primary: "#542EBC"                         # accent color
-  logo: "https://example.com/logo.svg"       # decorative brand logo
+  logo:
+    image: "https://example.com/logo.svg"    # decorative brand logo
+    height: 80                             # optional pixels, 32–120; default 56
   icon: "https://example.com/favicon.png"   # browser favicon
 
 open_graph:
@@ -919,9 +921,15 @@ surfaces stay white so drawing and saved output remain consistent in either mode
 `theme.primary` sets the accent color used across the form in either mode. Choose
 a color and logo that remain visible against both light and dark surfaces when
 using auto. `theme.logo` takes
-an absolute HTTPS image URL and displays the decorative brand mark on the start,
+an absolute HTTPS image URL or an object with an HTTPS `image` URL and displays the decorative brand mark on the start,
 question, status, and completion screens, including embeds. A logo that cannot
-be loaded is hidden without blocking the form.
+be loaded is hidden without blocking the form. `theme.logo.height` optionally
+sets the logo area height to an integer from 32 to 120 pixels. Omitting it
+preserves the existing 56-pixel height and spacing. The string URL form also retains
+that default, so existing forms need no changes. Logos remain centered and
+preserve their aspect ratio within a maximum width of 224 pixels; wide logos
+may therefore appear shorter than the configured height. Invalid runtime values
+fall back to 56 pixels.
 
 `theme.icon` optionally replaces the browser favicon, independently of the visible
 `theme.logo`. `open_graph.image` optionally replaces the Open Graph and Twitter/X

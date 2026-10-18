@@ -823,12 +823,38 @@ export const FORM_JSON_SCHEMA = {
             'Appearance of the form journey. Defaults to light. Auto follows the visitor’s device color preference, including changes while the form is open.',
         },
         logo: {
-          type: 'string',
-          format: 'uri',
-          pattern: '^https://',
           description:
-            'Absolute HTTPS URL for a decorative brand logo shown throughout the form journey. The image is hidden if it cannot be loaded.',
-          examples: ['https://example.com/logo.svg'],
+            'Decorative brand logo shown throughout the form journey. Use an HTTPS image URL, or an object with image and optional height. The logo is hidden if it cannot be loaded.',
+          oneOf: [
+            {
+              type: 'string',
+              format: 'uri',
+              pattern: '^https://',
+              examples: ['https://example.com/logo.svg'],
+            },
+            {
+              type: 'object',
+              additionalProperties: false,
+              required: ['image'],
+              properties: {
+                image: {
+                  type: 'string',
+                  format: 'uri',
+                  pattern: '^https://',
+                  description: 'Absolute HTTPS URL for the logo image.',
+                },
+                height: {
+                  type: 'integer',
+                  minimum: 32,
+                  maximum: 120,
+                  default: 56,
+                  description:
+                    'Logo area height in pixels. Defaults to 56. The logo stays centered, preserves its aspect ratio, and is limited to 224 pixels wide.',
+                  examples: [80],
+                },
+              },
+            },
+          ],
         },
         icon: {
           type: 'string',

@@ -363,3 +363,26 @@ test('section buttons accept localized templates and preserve navigation and def
     );
   }
 });
+
+
+test('logo objects validate bounds and survive the rendering pipeline', () => {
+  const validate = new Ajv({ allErrors: true }).compile(FORM_JSON_SCHEMA);
+  for (const logo of [
+    'https://example.com/logo.png',
+    ...[undefined, 32, 56, 80, 120].map(height => ({ image: 'https://example.com/logo.png', ...(height === undefined ? {} : { height }) })),
+  ]) {
+    const theme = { logo };
+    const definition = { theme, sections: [{ id: 'details', fields: [] }] };
+    assert.equal(validate(definition), true, JSON.stringify(validate.errors));
+    assert.deepEqual(toRenderableForm(serialize(definition), { locale: 'en' }).theme, theme);
+  }
+  for (const logo of [
+    {}, null,
+    { image: '/logo.png' }, { image: 'http://example.com/logo.png' },
+    { image: 'https://example.com/logo.png', unknown: true },
+    ...[31, 121, 80.5, '80', null, true].map(height => ({ image: 'https://example.com/logo.png', height })),
+  ]) {
+    assert.equal(validate({ theme: { logo }, sections: [{ id: 'details', fields: [] }] }), false);
+  }
+  assert.equal(validate({ theme: { logo_height: 80 }, sections: [{ id: 'details', fields: [] }] }), false);
+});

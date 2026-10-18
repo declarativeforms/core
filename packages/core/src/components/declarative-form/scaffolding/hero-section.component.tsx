@@ -25,7 +25,7 @@ export function HeroSection(props: {
     <FormTheme theme={props.theme}>
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
         <div className="w-full max-w-2xl mx-auto text-center px-6 md:px-0">
-          <FormLogo className="mb-6 px-0 pt-0" url={props.theme?.logo} />
+          <FormLogo className="mb-6 px-0 pt-0" logo={props.theme?.logo} />
           <h1 className="text-2xl/8 font-semibold text-foreground mb-4">
             <HtmlText html={props.title} />
           </h1>

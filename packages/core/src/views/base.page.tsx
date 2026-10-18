@@ -23,7 +23,7 @@ export function BasePage(props: {
     return (
       <FormTheme theme={props.theme}>
         <Card className="form-embed w-full border-0 shadow-none rounded-none">
-          <FormLogo url={props.theme?.logo} />
+          <FormLogo logo={props.theme?.logo} />
           {props.children}
         </Card>
       </FormTheme>
@@ -34,7 +34,7 @@ export function BasePage(props: {
     <FormTheme theme={props.theme}>
       <div className="max-w-lg mx-auto px-4 py-12 md:py-16">
         <Card className="mb-10 w-full bg-card border-border shadow-sm rounded-xl overflow-hidden">
-          <FormLogo url={props.theme?.logo} />
+          <FormLogo logo={props.theme?.logo} />
           {props.children}
         </Card>
 

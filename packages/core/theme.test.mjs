@@ -102,3 +102,8 @@ test('form appearance follows auto only and restores document state on cleanup',
     else globalThis.window = originalWindow;
   }
 });
+
+
+test('RE/MAX red uses white button text', () => {
+  assert.equal(buildThemeStyle({ primary: '#dc1b2e' })['--primary-foreground'], '#ffffff');
+});
