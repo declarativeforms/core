@@ -41,16 +41,12 @@ function MobileSelectionContent(
         event.preventDefault();
         const target =
           contentRef.current?.querySelector<HTMLElement>(
-            '[data-selection-autofocus], [role="radio"][data-state="checked"]',
+            '[data-selection-autofocus]',
           ) ??
-          contentRef.current?.querySelector<HTMLElement>('[role="radio"]') ??
           contentRef.current?.querySelector<HTMLElement>(
             '[data-selection-title]',
           );
         target?.focus({ preventScroll: true });
-        if (target?.getAttribute('role') === 'radio') {
-          target.closest('label')?.scrollIntoView({ block: 'nearest' });
-        }
       }}
     >
       <SheetHeader className="shrink-0 flex-row items-center justify-between gap-3 border-b p-4">

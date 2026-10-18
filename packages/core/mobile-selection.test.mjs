@@ -33,20 +33,22 @@ registerHooks({
             return snapshot();
           }
         `,
-        '@/components/ui': ['Button','Command','CommandEmpty','CommandGroup','CommandInput','CommandItem','CommandList','Input','Popover','PopoverContent','PopoverTrigger'].map(name => `export const ${name} = '${name}';`).join(''),
+        '@/components/ui': ['Button','Command','CommandEmpty','CommandGroup','CommandInput','CommandItem','CommandList','Input','Popover','PopoverContent','PopoverTrigger','Sheet','SheetClose','SheetContent','SheetHeader','SheetTitle','SheetTrigger'].map(name => `export const ${name} = '${name}';`).join(''),
         '@/components/declarative-form/supporting': `export const MobileSelectionSheet = 'Sheet'; export function useMobileLayout() { return true; } export function bindElement(control) { return {id:control.name,ref:control.ref,onBlur:control.onBlur}; }`,
         '@/i18n': `export function useI18n() { return {locale:'en',t:key=>key}; }`,
+        './html-text': `export const HtmlText = 'HtmlText';`,
         './use-google-places-ready': `export function useGooglePlacesReady() { return globalThis.places.ready !== false; }`,
         './use-debounce': `export function useDebounce(value) { return value; }`,
         './google-places': `export function getPlacePredictions(...args) { return globalThis.places.predictions(...args); } export function getPlaceDetails(id) { return globalThis.places.details(id); } export function formatAddressString(place) { return place.formatted_address; } export function formatStructuredAddress(place) { return {formatted_address:place.formatted_address,place_id:place.place_id}; }`,
       };
       if (stubs[specifier]) return {shortCircuit:true,url:moduleUrl(stubs[specifier])};
+      if (specifier === './use-selection-viewport') return nextResolve(`${specifier}.ts`,context);
       if (specifier === '@/lib/strip-html') return {shortCircuit:true,url:new URL('./src/lib/strip-html.ts',import.meta.url).href};
     }
     return nextResolve(specifier,context);
   },
   load(url, context, nextLoad) {
-    if (url.endsWith('/address-field.component.tsx')) {
+    if (url.endsWith('/address-field.component.tsx') || url.endsWith('/mobile-selection-sheet.component.tsx')) {
       return {shortCircuit:true,format:'module',source:ts.transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText};
     }
     return nextLoad(url,context);
@@ -120,6 +122,58 @@ test('selection viewport follows keyboard resize and viewport panning, with clea
   const fallback = await mount(useSelectionViewport);
   assert.deepEqual(fallback.current,{maxHeight:640,bottom:0});
   fallback.unmount(); assert.equal(window.count(),0);
+});
+
+test('mobile sheets focus the heading on each opening and preserve explicit search autofocus', async t => {
+  globalThis.window = {...eventSource(), innerHeight:800};
+  t.after(() => { delete globalThis.window; });
+  const sheet = await import('./src/components/declarative-form/supporting/mobile-selection-sheet.component.tsx');
+
+  for (const scenario of ['unselected', 'selected', 'search']) {
+    await t.test(scenario, async t => {
+      const props = {open:true, onOpenChange() {}, title:'Province', trigger:null, children:null};
+      const outer = await mount(sheet.MobileSelectionSheet, props);
+      const heading = {focus:t.mock.fn(), getAttribute:() => null};
+      const search = {focus:t.mock.fn(), getAttribute:() => null};
+      const option = {
+        focus:t.mock.fn(),
+        getAttribute:() => 'radio',
+        closest:() => ({scrollIntoView:t.mock.fn()}),
+      };
+      const targets = {
+        '[data-selection-title]': heading,
+        '[data-selection-autofocus]': scenario === 'search' ? search : null,
+        '[role="radio"][data-state="checked"]': scenario === 'selected' ? option : null,
+        '[role="radio"]': option,
+      };
+
+      for (let opening = 0; opening < 2; opening++) {
+        props.open = true;
+        outer.render();
+        const content = outer.current.props.children[1];
+        const h = await mount(content.type, content.props);
+        const title = find(h.current, 'SheetTitle');
+        assert.equal(title.props.tabIndex, -1);
+        assert.equal(title.props['data-selection-title'], true);
+        h.current.props.ref.current = {
+          querySelector:selector => selector.split(', ').map(part => targets[part]).find(Boolean) ?? null,
+        };
+        const event = new Event('openAutoFocus', {cancelable:true});
+        h.current.props.onOpenAutoFocus(event);
+        assert.equal(event.defaultPrevented, true);
+        const focus = scenario === 'search' ? search.focus : heading.focus;
+        assert.equal(focus.mock.callCount(), opening + 1);
+        assert.deepEqual(focus.mock.calls[opening].arguments, [{preventScroll:true}]);
+        assert.equal(option.focus.mock.callCount(), 0);
+        assert.equal((scenario === 'search' ? heading.focus : search.focus).mock.callCount(), 0);
+        h.unmount();
+        props.open = false;
+        outer.render();
+        assert.equal(outer.current.props.children[1], false);
+      }
+      outer.unmount();
+    });
+  }
 });
 
 async function address(t, overrides = {}) {
