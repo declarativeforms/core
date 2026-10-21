@@ -51,12 +51,16 @@ export class EmailConnectionStrategy {
       html += this.buildResponsesHtml(form, submission.data);
     }
 
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'noreply@example.com',
       to,
       subject,
       html: html || subject,
     });
+
+    if (error) {
+      throw new Error(`Resend email failed: ${error.name}: ${error.message}`);
+    }
   }
 
   private buildResponsesHtml(
