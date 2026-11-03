@@ -64,7 +64,6 @@ export function registerOAuth(
   }>(
     '/oauth/authorize',
     {
-      config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
       schema: {
         querystring: {
           type: 'object',
@@ -131,25 +130,19 @@ export function registerOAuth(
         'Set-Cookie',
         `__Host-mcp=${browser}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
       );
-      reply.header(
-        'Content-Security-Policy',
-        `default-src 'none'; form-action 'self' https://github.com ${REDIRECT_URI}; frame-ancestors 'none'`,
-      );
       reply.header('Cache-Control', 'no-store');
       reply.header('Referrer-Policy', 'same-origin');
 
-      return reply
-        .type('text/html')
-        .send(
-          `<!doctype html><html lang="en"><meta charset="utf-8"><title>Connect Declarative Forms</title><h1>Connect ChatGPT to Declarative Forms</h1><p>ChatGPT can list, read, create, and update your forms. Created forms are published immediately and anyone with the link can fill them out.</p><p>GitHub is used only to sign you in. Repository access is not requested.</p><form method="post" action="/oauth/authorize"><input type="hidden" name="consent" value="${consent}"><button>Continue with GitHub</button></form></html>`,
-        );
+      return reply.redirect(
+        `${config.origin}/connect/authorize?consent=${consent}`,
+        303,
+      );
     },
   );
 
   server.post<{ Body: { consent: string } }>(
     '/oauth/authorize',
     {
-      config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
       schema: {
         body: {
           type: 'object',
@@ -170,8 +163,14 @@ export function registerOAuth(
         browserHash(request),
       );
       if (!grant) {
-        return reply.code(400).send({ error: 'invalid_request' });
+        return reply
+          .header('Cache-Control', 'no-store')
+          .redirect(
+            `${config.origin}/connect/authorize?error=invalid_request`,
+            303,
+          );
       }
+
       const verifier = createToken();
       const state = await store.insertGrant(
         'github',
@@ -195,7 +194,6 @@ export function registerOAuth(
   server.get<{ Querystring: { state: string; code?: string; error?: string } }>(
     '/oauth/github/callback',
     {
-      config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
       schema: {
         querystring: {
           type: 'object',
@@ -298,7 +296,6 @@ export function registerOAuth(
   }>(
     '/oauth/token',
     {
-      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
       schema: {
         body: {
           type: 'object',
@@ -363,7 +360,6 @@ export function registerOAuth(
   server.post<{ Body: { token: string; client_id: string } }>(
     '/oauth/revoke',
     {
-      config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
       schema: {
         body: {
           type: 'object',

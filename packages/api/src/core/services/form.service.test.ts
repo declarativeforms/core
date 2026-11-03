@@ -1,10 +1,9 @@
-import { OwnedFormRepository } from '../../mcp/forms';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { toRenderableForm } from '@declarativeforms/engine';
 import type { Db } from 'mongodb';
 import { GitHubGateway } from '../gateways';
-import { GitHubFileRepository } from '../repositories';
+import { FormRepository, GitHubFileRepository } from '../repositories';
 import type { IGitHubFile } from '../types';
 import { FormService } from './form.service';
 
@@ -30,7 +29,7 @@ test('resolves GitHub YAML and preserves branch identity through ID lookup', asy
   const service = new FormService(
     repository,
     gateway,
-    new OwnedFormRepository({} as Db),
+    new FormRepository({} as Db),
   );
   const slug = 'forms/team/project/forms/events/lunch-rsvp';
 
@@ -104,4 +103,32 @@ test('resolves GitHub YAML and preserves branch identity through ID lookup', asy
       .filter((field) => field.visible)
       .map((field) => field.id),
   ).toEqual(['full_name', 'email', 'attendance']);
+});
+
+test('retries short-ID collisions without hiding storage failures', async () => {
+  const repository = new FormRepository({} as Db);
+  const service = new FormService(
+    new GitHubFileRepository({} as Db),
+    new GitHubGateway(),
+    repository,
+  );
+  const insert = jest
+    .spyOn(repository, 'insert')
+    .mockResolvedValueOnce(null)
+    .mockImplementationOnce(async (form) => form);
+  const definition = { sections: [] };
+  const created = await service.create('alice', definition);
+
+  expect(created.id).toMatch(/^b[a-f0-9]{8}$/);
+  expect(insert).toHaveBeenCalledTimes(2);
+  expect(insert.mock.calls[0][0].id).not.toBe(created.id);
+  insert.mockRejectedValueOnce(new Error('Database unavailable'));
+  await expect(service.create('alice', definition)).rejects.toThrow(
+    'Database unavailable',
+  );
+  insert.mockClear().mockResolvedValue(null);
+  await expect(service.create('alice', definition)).rejects.toThrow(
+    'Unable to allocate a unique form ID',
+  );
+  expect(insert).toHaveBeenCalledTimes(5);
 });

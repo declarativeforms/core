@@ -1,16 +1,18 @@
-import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa6';
-import { mergeClassNames } from '@/lib/utils';
+import {
+  ActionButton,
+  BrandMark,
+  FONT_HREF,
+  McpEndpoint,
+} from '@/components/marketing';
 
 const GITHUB_URL = 'https://github.com/declarativeforms/core';
 const LINKEDIN_URL = 'https://www.linkedin.com/company/declarativeforms';
 const GET_STARTED_URL = `${GITHUB_URL}#get-started`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
-const FONT_HREF =
-  'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap';
 
 const HERO_YAML = `# forms/beta-access.yaml
 version: 1
@@ -40,13 +42,13 @@ const STEPS: Array<{ index: string; title: string; body: string }> = [
   },
   {
     index: '02',
-    title: 'Push the definition',
-    body: 'Commit the file to GitHub. Form changes become ordinary versioned changes you can inspect, review, compare, and revert alongside the work they support.',
+    title: 'Publish the definition',
+    body: 'Commit your YAML to GitHub for versioned changes you can review and revert. Or connect ChatGPT and ask it to create a hosted form directly, without a repository.',
   },
   {
     index: '03',
     title: 'Open the form',
-    body: 'Open the matching path on frms.dev and share it. Want to review a change first? Point the URL at another pushed branch and walk through the working form before you merge.',
+    body: 'Share the live frms.dev link. Ask ChatGPT to update a hosted form, or push changes to your GitHub definition. With GitHub, you can preview a pushed branch before merging.',
   },
 ];
 
@@ -69,6 +71,7 @@ const FOOTER_COLUMNS: Array<{
     links: [
       { href: `${GITHUB_URL}/blob/main/SCHEMA.md`, label: 'YAML reference' },
       { href: GITHUB_URL, label: 'Source code' },
+      { href: '#connect-chatgpt', label: 'Connect ChatGPT' },
     ],
   },
   {
@@ -118,58 +121,6 @@ function tokenizeYamlLine(line: string): Array<YamlToken> {
   return tokens;
 }
 
-const BUTTON_VARIANT_CLASS: Record<string, string> = {
-  primary: 'bg-brand-yellow',
-  secondary: 'bg-white',
-};
-
-const BUTTON_SIZE_CLASS: Record<string, string> = {
-  md: 'px-5 py-2.5 text-sm',
-  lg: 'px-7 py-3.5 text-base',
-};
-
-function ActionButton(props: {
-  href: string;
-  children: ReactNode;
-  variant?: 'primary' | 'secondary';
-  size?: 'md' | 'lg';
-}): React.JSX.Element {
-  const variant = props.variant ?? 'primary';
-  const size = props.size ?? 'md';
-
-  return (
-    <a
-      className={mergeClassNames(
-        'inline-flex items-center justify-center gap-2 rounded-md border-2 border-ink font-semibold text-ink shadow-hard transition-all duration-150',
-        'hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg',
-        'active:translate-x-0 active:translate-y-0 active:shadow-hard',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
-        BUTTON_VARIANT_CLASS[variant],
-        BUTTON_SIZE_CLASS[size],
-      )}
-      href={props.href}
-      rel="noreferrer"
-    >
-      {props.children}
-    </a>
-  );
-}
-
-function BrandMark(): React.JSX.Element {
-  return (
-    <span className="inline-flex items-center gap-2.5">
-      <img
-        alt=""
-        className="size-8 rounded-md border-2 border-ink"
-        src="/android-chrome-192x192.png"
-      />
-      <span className="font-display text-lg font-semibold tracking-[-0.02em]">
-        Declarative Forms
-      </span>
-    </span>
-  );
-}
-
 function SiteNav(): React.JSX.Element {
   return (
     <header className="border-b-2 border-ink bg-paper">
@@ -188,9 +139,7 @@ function SiteNav(): React.JSX.Element {
           >
             View source
           </a>
-          <ActionButton href={GET_STARTED_URL}>
-            Create your first form
-          </ActionButton>
+          <ActionButton href={GET_STARTED_URL}>Build with GitHub</ActionButton>
         </div>
       </nav>
     </header>
@@ -210,19 +159,26 @@ function Hero(): React.JSX.Element {
           </h1>
           <div className="flex max-w-[52ch] flex-col gap-4 text-lg leading-relaxed text-ink-muted">
             <p>
-              Define your form in YAML and keep it in GitHub. Declarative Forms
-              turns that definition into the working form — rendering questions,
-              validating answers, and storing submissions.
+              Write a definition in GitHub or create one with ChatGPT.
+              Declarative Forms turns it into a working form — rendering
+              questions, validating answers, and storing submissions.
             </p>
             <p>
-              Edit it yourself or with an AI agent. The source stays readable,
-              versioned, and under your control.
+              Keep versioned YAML in your repository, or ask ChatGPT to create
+              and update a hosted form. Both start with a structured definition
+              you can inspect.
             </p>
           </div>
-          <ActionButton href={GET_STARTED_URL} size="lg">
-            Create your first form
-            <ArrowRight className="size-4" />
-          </ActionButton>
+          <div className="flex flex-wrap gap-4">
+            <ActionButton href="#connect-chatgpt" size="lg">
+              Build with ChatGPT
+              <ArrowRight className="size-4" />
+            </ActionButton>
+            <ActionButton href={GET_STARTED_URL} size="lg" variant="secondary">
+              Build with GitHub
+              <ArrowRight className="size-4" />
+            </ActionButton>
+          </div>
         </div>
         <div className="overflow-hidden rounded-lg border-2 border-ink bg-white shadow-hard-lg rotate-[0.6deg]">
           <div className="flex items-center gap-2 border-b-2 border-ink bg-paper-alt px-4 py-2.5">
@@ -262,7 +218,7 @@ function HowItWorks(): React.JSX.Element {
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex flex-col gap-4">
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            One file. Three steps. A working form.
+            One definition. Two ways to build.
           </h2>
           <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
             You define what the form should do. Declarative Forms supplies the
@@ -304,7 +260,10 @@ function HowItWorks(): React.JSX.Element {
             </li>
           ))}
         </ol>
-        <div className="mt-8 overflow-x-auto rounded-lg border-2 border-ink bg-brand-purple-soft p-6 shadow-hard">
+        <p className="mt-8 text-sm text-ink-muted">
+          For GitHub-backed forms, the URL points to your definition:
+        </p>
+        <div className="mt-4 overflow-x-auto rounded-lg border-2 border-ink bg-brand-purple-soft p-6 shadow-hard">
           <div className="flex min-w-max items-start font-mono text-sm">
             {URL_PARTS.map((part) => (
               <span className="flex flex-col items-center" key={part.text}>
@@ -322,6 +281,86 @@ function HowItWorks(): React.JSX.Element {
                 </span>
               </span>
             ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ChatGptSetup(): React.JSX.Element {
+  return (
+    <section
+      id="connect-chatgpt"
+      className="scroll-mt-8 border-t-2 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 lg:px-16"
+    >
+      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2">
+        <div className="space-y-6">
+          <h2 className="font-display text-3xl font-semibold sm:text-4xl">
+            Describe your form. Build it with ChatGPT.
+          </h2>
+          <p className="text-lg text-ink-muted">
+            Connect Declarative Forms through MCP. ChatGPT can read the form
+            schema, create a form, list your forms, and inspect or update their
+            definitions.
+          </p>
+          <p className="text-ink-muted">
+            Sign in with GitHub to identify your account. No repository access
+            is requested. Forms created this way are hosted on frms.dev and
+            published immediately; anyone with the link can fill them out.
+          </p>
+          <McpEndpoint />
+          <p className="text-sm text-ink-muted">
+            This first integration supports ChatGPT. Claude and other MCP
+            clients are not yet supported.
+          </p>
+        </div>
+        <div className="space-y-6 rounded-lg border-2 border-ink bg-white p-6 shadow-hard">
+          <h3 className="font-display text-xl font-semibold">
+            Connect once, then start a conversation
+          </h3>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>
+              Open ChatGPT’s Plugins page. Choose +, then Add custom MCP server.
+            </li>
+            <li>
+              Name it Declarative Forms, paste the server URL, and select OAuth
+              with CIMD.
+            </li>
+            <li>
+              Acknowledge the custom-server notice, choose Create as a plugin,
+              and install it. Continue with GitHub when asked to connect.
+            </li>
+            <li>
+              Select Declarative Forms with @ in your conversation, then
+              describe your form.
+            </li>
+          </ol>
+          <p className="text-sm text-ink-muted">
+            Custom plugins depend on your ChatGPT account and workspace
+            permissions.{' '}
+            <a
+              className="underline"
+              href="https://developers.openai.com/api/docs/guides/custom-mcp-server"
+            >
+              Read the official setup guide
+            </a>
+            .
+          </p>
+          <ActionButton href="https://chatgpt.com/plugins">
+            Open ChatGPT
+            <ArrowRight className="size-4" />
+          </ActionButton>
+          <div className="space-y-3 border-t-2 border-ink pt-5">
+            <p className="font-semibold">Try this prompt</p>
+            <blockquote className="text-ink-muted">
+              Create a workshop registration form with name, required email, and
+              a choice of morning or afternoon session. Include a thank-you
+              screen and give me the live link.
+            </blockquote>
+            <p className="text-sm text-ink-muted">
+              Then: “Add an optional dietary requirements field to that form.”
+            </p>
           </div>
         </div>
       </div>
@@ -356,7 +395,8 @@ function Tradeoff(): React.JSX.Element {
           </p>
           <p className="text-lg leading-relaxed text-white/85">
             Either way, the form remains an explicit artifact you can inspect,
-            version, reuse, and automate.
+            reuse, and automate. GitHub-backed definitions also keep their
+            version history in your repository.
           </p>
         </div>
       </div>
@@ -436,21 +476,26 @@ function FinalCta(): React.JSX.Element {
     <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
         <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-          Your next form can start as a file.
+          Your next form starts with a definition.
         </h2>
         <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
-          Copy an example or ask your AI agent to draft the definition. Push it
-          to GitHub, open the matching frms.dev URL, and you have a form you can
-          continue to review, reuse, and automate.
+          Copy an example into GitHub or describe your form to ChatGPT. Get a
+          working form you can continue to inspect, update, and reuse.
         </p>
         <p className="max-w-[48ch] text-base leading-relaxed text-ink-muted">
           No separate form-building workflow. No custom form application to
           maintain.
         </p>
-        <ActionButton href={GET_STARTED_URL} size="lg">
-          Create your first form
-          <ArrowRight className="size-4" />
-        </ActionButton>
+        <div className="flex flex-wrap gap-4">
+          <ActionButton href="#connect-chatgpt" size="lg">
+            Build with ChatGPT
+            <ArrowRight className="size-4" />
+          </ActionButton>
+          <ActionButton href={GET_STARTED_URL} size="lg" variant="secondary">
+            Build with GitHub
+            <ArrowRight className="size-4" />
+          </ActionButton>
+        </div>
       </div>
     </section>
   );
@@ -522,6 +567,7 @@ export function LandingPage(): React.JSX.Element {
       <main className="flex-1">
         <Hero />
         <HowItWorks />
+        <ChatGptSetup />
         <Tradeoff />
         <FeatureRequests />
         <FinalCta />

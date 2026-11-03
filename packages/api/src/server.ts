@@ -22,19 +22,7 @@ import {
 export async function startServer(): Promise<void> {
   const server = fastify({
     bodyLimit: 10 * 1048576,
-    logger: {
-      redact: [
-        'req.headers.authorization',
-        'req.headers.cookie',
-        'res.headers["set-cookie"]',
-      ],
-      serializers: {
-        req: (request) => ({
-          method: request.method,
-          url: request.url?.split('?')[0],
-        }),
-      },
-    },
+    logger: true,
     routerOptions: {
       caseSensitive: false,
       ignoreDuplicateSlashes: true,
@@ -91,9 +79,12 @@ export async function startServer(): Promise<void> {
 
   const container = await getContainer();
   await container.gitHubFileRepository.ensureIndexes();
+  await container.formRepository.ensureIndexes();
   await container.submissionRepository.ensureIndexes();
 
-  await server.register(async (mcp) => registerMcp(mcp, container.db));
+  await server.register(async (mcp) =>
+    registerMcp(mcp, container.db, container.formService),
+  );
 
   server.route(FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST);
   server.route(FILES_KEY_GET);

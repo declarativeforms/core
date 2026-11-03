@@ -1,4 +1,3 @@
-import { OwnedFormRepository } from '../mcp/forms';
 import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
 import {
@@ -8,6 +7,7 @@ import {
   TurnstileGateway,
 } from './gateways';
 import {
+  FormRepository,
   GitHubFileRepository,
   JobRepository,
   SubmissionRepository,
@@ -35,6 +35,7 @@ export type Container = {
   gitHubGateway: GitHubGateway;
   turnstileGateway: TurnstileGateway;
   gitHubFileRepository: GitHubFileRepository;
+  formRepository: FormRepository;
   submissionRepository: SubmissionRepository;
   jobRepository: JobRepository;
   fileService: FileService;
@@ -68,6 +69,7 @@ export async function getContainer(): Promise<Container> {
   const db = mongoClient.db(process.env.MONGODB_DATABASE_NAME as string);
   const gitHubGateway = new GitHubGateway();
   const turnstileGateway = new TurnstileGateway();
+  const formRepository = new FormRepository(db);
   const gitHubFileRepository = new GitHubFileRepository(db);
   const submissionRepository = new SubmissionRepository(db);
   const jobRepository = new JobRepository(db);
@@ -80,7 +82,7 @@ export async function getContainer(): Promise<Container> {
   const formService = new FormService(
     gitHubFileRepository,
     gitHubGateway,
-    new OwnedFormRepository(db),
+    formRepository,
   );
   const emailVerificationService = new EmailVerificationService(
     verificationTokenService,
@@ -121,6 +123,7 @@ export async function getContainer(): Promise<Container> {
     emailVerificationService,
     fileService,
     formService,
+    formRepository,
     gitHubFileRepository,
     gitHubGateway,
     jobRepository,

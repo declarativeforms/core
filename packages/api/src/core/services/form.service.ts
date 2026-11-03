@@ -1,8 +1,9 @@
 import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
 import md5 from 'md5';
-import type { OwnedFormRepository } from '../../mcp/forms';
+import { randomBytes } from 'node:crypto';
+import type { IStoredForm } from '../types';
 import type { GitHubGateway } from '../gateways';
-import type { GitHubFileRepository } from '../repositories';
+import type { FormRepository, GitHubFileRepository } from '../repositories';
 
 const GITHUB_FORM_PREFIX = process.env.GITHUB_FORM_PREFIX || 'a';
 const DEFAULT_BRANCH = process.env.GITHUB_DEFAULT_BRANCH || 'main';
@@ -11,12 +12,49 @@ export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
     private gitHubGateway: GitHubGateway,
-    private ownedFormRepository: OwnedFormRepository,
+    private formRepository: FormRepository,
   ) {}
 
+  public async create(
+    ownerId: string,
+    definition: IDeclarativeForm,
+  ): Promise<IStoredForm> {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const form = await this.formRepository.insert({
+        id: `b${randomBytes(4).toString('hex')}`,
+        ownerId,
+        definition,
+      });
+      if (form) {
+        return form;
+      }
+    }
+
+    throw new Error('Unable to allocate a unique form ID');
+  }
+
+  public listByOwner(ownerId: string): Promise<Array<IStoredForm>> {
+    return this.formRepository.findAllByOwner(ownerId);
+  }
+
+  public findByOwnerAndId(
+    ownerId: string,
+    id: string,
+  ): Promise<IStoredForm | null> {
+    return this.formRepository.findByOwnerAndId(ownerId, id);
+  }
+
+  public update(
+    ownerId: string,
+    id: string,
+    definition: IDeclarativeForm,
+  ): Promise<IStoredForm | null> {
+    return this.formRepository.setDefinition(ownerId, id, definition);
+  }
+
   public async findById(id: string): Promise<IDeclarativeForm | null> {
-    if (id.startsWith('m_')) {
-      const form = await this.ownedFormRepository.findById(id);
+    if (id.startsWith('b')) {
+      const form = await this.formRepository.findById(id);
 
       return form ? { ...form.definition, id: form.id } : null;
     }

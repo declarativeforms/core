@@ -7,7 +7,7 @@ import type { Db } from 'mongodb';
 import { OAuthStore, createToken, hashToken } from './oauth-store';
 import { registerOAuth } from './oauth';
 
-for (const outcome of ['success', 'denied']) {
+for (const outcome of ['success', 'denied', 'expired', 'reused', 'missing']) {
   test(`browser completes the ${outcome} GitHub callback to ChatGPT`, async () => {
     const server = Fastify();
     const store = new OAuthStore({} as Db);
@@ -120,6 +120,41 @@ for (const outcome of ['success', 'denied']) {
 
           return;
         }
+        if (
+          url.hostname === 'forms.test' &&
+          !url.pathname.startsWith('/oauth/')
+        ) {
+          const response = await originalFetch(
+            `${process.env.MCP_TEST_FRONTEND_ORIGIN ?? 'http://localhost:3100'}${url.pathname}${url.search}`,
+          );
+          await cdp.send('Fetch.fulfillRequest', {
+            requestId: event.requestId,
+            responseCode: response.status,
+            responseHeaders: Array.from(response.headers.entries())
+              .filter(
+                ([name]) =>
+                  ![
+                    'content-length',
+                    'content-encoding',
+                    'transfer-encoding',
+                    'connection',
+                  ].includes(name),
+              )
+              .map(([name, value]) => ({ name, value })),
+            body: Buffer.from(await response.arrayBuffer()).toString('base64'),
+          });
+
+          return;
+        }
+        if (url.hostname !== 'forms.test') {
+          await cdp.send('Fetch.fulfillRequest', {
+            requestId: event.requestId,
+            responseCode: 200,
+            body: '',
+          });
+
+          return;
+        }
         const method = event.request.method === 'POST' ? 'POST' : 'GET';
         const response = await server.inject({
           method,
@@ -153,8 +188,56 @@ for (const outcome of ['success', 'denied']) {
           body: Buffer.from(response.body).toString('base64'),
         });
       });
+      if (outcome === 'missing') {
+        await page.goto('https://forms.test/connect/authorize');
+        await page
+          .getByRole('heading', { name: 'Start a new connection' })
+          .waitFor();
+        await page.waitForLoadState('networkidle');
+        assert.equal(
+          await page
+            .getByRole('button', { name: 'Continue with GitHub' })
+            .count(),
+          0,
+        );
+
+        return;
+      }
       await page.goto('https://forms.test/oauth/authorize?' + query);
+      assert.equal(new URL(page.url()).pathname, '/connect/authorize');
+      if (outcome === 'expired') {
+        grants.clear();
+      }
+      if (outcome === 'reused') {
+        const token = new URL(page.url()).searchParams.get('consent')!;
+        const cookies = await page.context().cookies();
+        await server.inject({
+          method: 'POST',
+          url: '/oauth/authorize',
+          headers: {
+            origin: 'https://forms.test',
+            cookie: cookies
+              .map((cookie) => `${cookie.name}=${cookie.value}`)
+              .join('; '),
+          },
+          payload: { consent: token },
+        });
+      }
       await page.getByRole('button', { name: 'Continue with GitHub' }).click();
+      if (outcome === 'expired' || outcome === 'reused') {
+        await page
+          .getByRole('heading', { name: 'Start a new connection' })
+          .waitFor();
+        await page.waitForLoadState('networkidle');
+        assert.equal(
+          new URL(page.url()).searchParams.get('error'),
+          'invalid_request',
+        );
+        assert.equal(postedOrigin, 'https://forms.test');
+        assert.equal(postStatus, 303);
+
+        return;
+      }
       await page.waitForURL('https://chatgpt.com/**', {
         timeout: 3000,
         waitUntil: 'commit',

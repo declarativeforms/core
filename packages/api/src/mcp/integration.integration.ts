@@ -1,3 +1,4 @@
+import { serialize, toRenderableForm } from '@declarativeforms/engine';
 import {
   describe,
   test,
@@ -12,9 +13,8 @@ import { MongoClient, type Db } from 'mongodb';
 import Fastify from 'fastify';
 import formBody from '@fastify/formbody';
 import { createFormServer, registerMcp } from './server';
-import rateLimit from '@fastify/rate-limit';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { OwnedFormRepository } from './forms';
+import { FormRepository } from '../core/repositories';
 import { OAuthStore, createToken, hashToken } from './oauth-store';
 import { registerOAuth } from './oauth';
 import { FormService } from '../core/services/form.service';
@@ -26,8 +26,9 @@ const integration = process.env.MCP_TEST_MONGODB_URI ? describe : describe.skip;
 integration('MCP with MongoDB', () => {
   let mongo: MongoClient;
   let db: Db;
-  let repository: OwnedFormRepository;
+  let repository: FormRepository;
   let store: OAuthStore;
+  let forms: FormService;
   const origin = 'https://forms.example.com';
   const clientId = 'https://chatgpt.com/oauth/client.json';
   const redirectUri = 'https://chatgpt.com/connector_platform_oauth_redirect';
@@ -37,7 +38,12 @@ integration('MCP with MongoDB', () => {
       serverSelectionTimeoutMS: 2000,
     });
     db = mongo.db(`mcp_test_${randomUUID().replaceAll('-', '')}`);
-    repository = new OwnedFormRepository(db);
+    repository = new FormRepository(db);
+    forms = new FormService(
+      new GitHubFileRepository(db),
+      new GitHubGateway(),
+      repository,
+    );
     store = new OAuthStore(db);
     await repository.ensureIndexes();
     await store.ensureIndexes();
@@ -51,25 +57,25 @@ integration('MCP with MongoDB', () => {
     }
   });
 
-  test('authors through the MCP protocol, rejects invalid forms, and protects owners and revisions', async () => {
+  test('authors short-ID forms, lists all owned forms, and replaces definitions', async () => {
     const transports = InMemoryTransport.createLinkedPair();
-    const server = createFormServer(repository, 'alice', origin);
+    const server = createFormServer(forms, 'alice', origin);
     const client = new Client({ name: 'test', version: '1' });
     await server.connect(transports[0]);
     await client.connect(transports[1]);
     try {
-      expect((await client.listTools()).tools).toHaveLength(6);
+      const tools = (await client.listTools()).tools;
+      expect(tools).toHaveLength(6);
+      expect(
+        tools.find((tool) => tool.name === 'create_form')?.annotations
+          ?.idempotentHint,
+      ).toBe(false);
       const invalid = await client.callTool({
         name: 'create_form',
-        arguments: {
-          creationKey: 'invalid',
-          definition: { sections: 'invalid' },
-        },
+        arguments: { definition: { sections: 'invalid' } },
       });
       expect(invalid.isError).toBe(true);
-      expect(await repository.findAllByOwnerAfterId('alice', '', 100)).toEqual(
-        [],
-      );
+      expect(await forms.listByOwner('alice')).toEqual([]);
       const definition = {
         title: 'Contact',
         sections: [
@@ -81,49 +87,68 @@ integration('MCP with MongoDB', () => {
       };
       const created = await client.callTool({
         name: 'create_form',
-        arguments: { creationKey: 'one', definition },
+        arguments: { definition },
       });
       expect(created.isError).toBe(false);
-      const [form] = await repository.findAllByOwnerAfterId('alice', '', 100);
-      expect(await repository.findByOwnerAndId('bob', form.id)).toBeNull();
-      expect(
-        await repository.setDefinition('bob', form.id, definition, 1),
-      ).toBeNull();
+      const [form] = await forms.listByOwner('alice');
+      expect(form.id).toMatch(/^b[a-f0-9]{8}$/);
+      expect(Object.keys(form).sort()).toEqual(['definition', 'id', 'ownerId']);
+      expect(await forms.findByOwnerAndId('bob', form.id)).toBeNull();
+      expect(await forms.update('bob', form.id, definition)).toBeNull();
+      expect(await forms.listByOwner('bob')).toEqual([]);
+      const read = await client.callTool({
+        name: 'get_form',
+        arguments: { id: form.id },
+      });
+      expect(read.isError).toBe(false);
       const repeated = await client.callTool({
         name: 'create_form',
-        arguments: { creationKey: 'one', definition },
+        arguments: { definition },
       });
-      expect(repeated).toEqual(created);
-      const updated = await client.callTool({
-        name: 'update_form',
-        arguments: {
-          id: form.id,
-          revision: 1,
-          definition: { ...definition, title: 'Updated' },
-        },
-      });
-      expect(updated.isError).toBe(false);
-      const stale = await client.callTool({
-        name: 'update_form',
-        arguments: { id: form.id, revision: 1, definition },
-      });
-      expect(stale.isError).toBe(true);
-      const forms = new FormService(
-        new GitHubFileRepository(db),
-        new GitHubGateway(),
-        repository,
-      );
+      expect(repeated.isError).toBe(false);
+      expect(await forms.listByOwner('alice')).toHaveLength(2);
+      for (const title of ['Updated', 'Latest']) {
+        const updated = await client.callTool({
+          name: 'update_form',
+          arguments: { id: form.id, definition: { ...definition, title } },
+        });
+        expect(updated.isError).toBe(false);
+      }
       expect(await forms.findById(form.id)).toEqual({
         ...definition,
         id: form.id,
-        title: 'Updated',
+        title: 'Latest',
       });
-      const concurrent = await Promise.all(
-        Array.from({ length: 5 }, () =>
-          repository.insertOnce('alice', definition, 'concurrent'),
+      const collision = await repository.insert({
+        id: form.id,
+        ownerId: 'bob',
+        definition,
+      });
+      expect(collision).toBeNull();
+      expect(
+        (await forms.findByOwnerAndId('alice', form.id))?.definition.title,
+      ).toBe('Latest');
+      await Promise.all(
+        Array.from({ length: 23 }, () => forms.create('alice', definition)),
+      );
+      const listed = await client.callTool({
+        name: 'list_forms',
+        arguments: {},
+      });
+      const content = listed.content as Array<{ type: string; text: string }>;
+      expect(JSON.parse(content[0].text)).toHaveLength(25);
+      expect(await forms.findById('m_legacy')).toBeNull();
+      const publicForm = await forms.findById(form.id);
+      expect(
+        toRenderableForm(serialize(publicForm!), { locale: 'en' }).section
+          .fields[0].id,
+      ).toBe('name');
+      const collisions = await Promise.all(
+        ['alice', 'bob'].map((ownerId) =>
+          repository.insert({ id: 'b00000000', ownerId, definition }),
         ),
       );
-      expect(new Set(concurrent.map((entry) => entry.id)).size).toBe(1);
+      expect(collisions.filter(Boolean)).toHaveLength(1);
     } finally {
       await client.close();
       await server.close();
@@ -136,8 +161,7 @@ integration('MCP with MongoDB', () => {
     process.env.GITHUB_OAUTH_CLIENT_ID = 'client';
     process.env.GITHUB_OAUTH_CLIENT_SECRET = 'secret';
     const http = Fastify();
-    await http.register(rateLimit, { global: false });
-    await http.register(async (instance) => registerMcp(instance, db));
+    await http.register(async (instance) => registerMcp(instance, db, forms));
     await http.listen({ port: 0, host: '127.0.0.1' });
     const address = http.server.address();
     if (!address || typeof address === 'string') {
@@ -316,11 +340,11 @@ integration('MCP with MongoDB', () => {
         state: 'chatgpt-state',
       });
       const consent = await server.inject(`/oauth/authorize?${query}`);
-      expect(consent.statusCode).toBe(200);
+      expect(consent.statusCode).toBe(303);
       const cookie = String(consent.headers['set-cookie']).split(';')[0];
-      const consentToken = /name="consent" value="([^"]+)"/.exec(
-        consent.body,
-      )![1];
+      const consentToken = new URL(consent.headers.location!).searchParams.get(
+        'consent',
+      )!;
       const denied = await server.inject({
         method: 'POST',
         url: '/oauth/authorize',

@@ -2,7 +2,8 @@
 
 The API provides a Streamable HTTP MCP server at `/mcp`. GitHub authenticates
 form authors; it does not store the new definitions or grant repository access.
-MongoDB stores these definitions, ownership, revisions, and OAuth grants.
+MongoDB stores form definitions and ownership in `forms`, alongside the OAuth
+collections.
 Existing GitHub forms retain their current URLs and behavior.
 
 ## Deployment
@@ -17,17 +18,13 @@ Existing GitHub forms retain their current URLs and behavior.
    `GITHUB_OAUTH_CLIENT_ID`, and `GITHUB_OAUTH_CLIENT_SECRET` in the deployment
    environment. Restart the API. These are operator credentials, never values
    to put into form definitions or ChatGPT prompts.
-4. If using webhooks, set `MCP_WEBHOOK_URLS` to comma-separated exact HTTPS URLs
-   that you trust, on **both API and scheduler**. Defaults deny webhook authoring
-   for MongoDB forms. Redirects are rejected when these webhooks execute. Do not
-   approve endpoints that resolve to private infrastructure or redirect requests.
-5. In a ChatGPT account/workspace with custom MCP connections enabled, create a
+4. In a ChatGPT account/workspace with custom MCP connections enabled, create a
    custom connection to `https://YOUR_HOST/mcp`, using OAuth. This implementation
    supports ChatGPT's client metadata identity
    `https://chatgpt.com/oauth/client.json` and its stable callback
    `https://chatgpt.com/connector_platform_oauth_redirect`. It advertises issuer
    identification and returns `iss`. No static MCP client secret is needed.
-6. Connect, review the form-authoring permissions, and sign in with GitHub.
+5. Connect, review the form-authoring permissions, and sign in with GitHub.
    GitHub repository or email scopes are not requested. Every GitHub user can
    join. The immutable GitHub numeric ID is the ownership identity.
 
@@ -43,15 +40,20 @@ Official references: [OpenAI authentication](https://developers.openai.com/plugi
 ## Authoring contract
 
 - `get_form_schema`: engine JSON Schema, example and configured capabilities.
-- `list_forms`: owned MongoDB forms, bounded to 20 by default and 100 maximum;
-  use the last returned ID as `afterId` until a page is empty.
-- `get_form`: definition, revision, and public URL of an owned form.
-- `validate_form`: schema/configuration issues with JSON paths; no writes.
-- `create_form`: complete `definition` and a unique `creationKey`. Reuse the key
-  when retrying the same creation; a reused key returns the existing form and
-  never replaces it. Use another key for an intentionally different form.
-- `update_form`: complete replacement `definition`, `id`, and expected
-  `revision`. Reread and reconcile a stale revision before retrying.
+- `list_forms`: all forms owned by the authenticated GitHub user.
+- `get_form`: definition and public URL of an owned form.
+- `validate_form`: engine schema issues with JSON paths; no writes.
+- `create_form`: complete `definition`. Each call creates a new form.
+- `update_form`: `id` and complete replacement `definition`. The latest update wins.
+
+Stored-form IDs use `b` followed by eight hexadecimal characters, such as
+`b7e4a192c`. GitHub-backed IDs keep their existing `a` format. The repository
+rejects ID collisions and creation retries with a new ID.
+
+There is no migration or compatibility layer for the earlier experimental
+`m_` IDs or `owned_forms` collection. Those records and their indexes are not
+used by this version; any cleanup is a separate operator action. OAuth sessions
+are unchanged.
 
 The tool returns a live `https://YOUR_HOST/<id>` URL. Publishing is immediate.
 The existing frontend renders the definition and submissions follow the existing
@@ -60,7 +62,8 @@ visible to respondents**. Never embed private tokens in them.
 
 The full engine format remains available. Email, uploads, verification,
 Turnstile, and adaptive sections require the same deployment configuration as
-existing forms. Schema validation does not prove every conditional answer path
+existing forms. Webhooks use the existing delivery behavior without an
+MCP-specific allowlist. Schema validation does not prove every conditional answer path
 works; test representative paths for complex forms. No submissions-reading,
 GitHub-form management, sharing, or deletion tools are provided.
 
@@ -80,9 +83,6 @@ Redirects and client identities are explicitly restricted to ChatGPT, and remote
 client metadata redirects are refused. Anonymous MCP requests receive a bearer
 challenge with resource metadata. All tool requests require authentication.
 
-Authoring is limited to 60 MCP requests per minute per GitHub user across API
-instances, plus 120 per minute per source IP per instance. OAuth endpoints also
-have rate limits. Request logging omits query strings and redacts credentials.
 MongoDB must be backed up for both definitions and authentication state. Removing
 an owner's `oauth_sessions` revokes their existing connections; it does not block
 future GitHub sign-in. ChatGPT may request confirmation for writes; tool metadata
@@ -98,7 +98,8 @@ MCP_TEST_MONGODB_URI=mongodb://127.0.0.1:27017 npm run test:mcp -w @declarativef
 ```
 
 Without this variable the database suite is skipped. The suite exercises actual
-MongoDB ownership, atomic revision writes, idempotency, OAuth code consumption,
+MongoDB ownership, short-ID uniqueness, complete listing, replacement updates,
+OAuth code consumption,
 rotation/replay/revocation, and a mocked GitHub callback through Fastify, plus MCP
 client/server communication. No real GitHub credentials are used by these tests.
 
@@ -113,4 +114,4 @@ Before production acceptance, connect a real ChatGPT account to the deployment:
 This live test requires operator-provided GitHub credentials, public hosting,
 and an eligible ChatGPT account; protocol tests do not replace it.
 
-The browser consent regression runs separately with `npm run test:mcp-browser -w @declarativeforms/api`. Install Chromium with `npx playwright install chromium`, or set `MCP_TEST_BROWSER_PATH` to an existing Chrome executable. It verifies browser-generated Origin headers, the secure consent cookie, and the complete GitHub-to-ChatGPT redirect chain for successful and denied authorization without real credentials or external browser requests.
+Start the React frontend with `npm run dev -w @declarativeforms/core -- --port 3100`. The browser consent regression uses that frontend (`MCP_TEST_FRONTEND_ORIGIN` overrides the URL) and runs separately with `npm run test:mcp-browser -w @declarativeforms/api`. Install Chromium with `npx playwright install chromium`, or set `MCP_TEST_BROWSER_PATH` to an existing Chrome executable. It verifies browser-generated Origin headers, the secure consent cookie, and the complete GitHub-to-ChatGPT redirect chain for successful and denied authorization, plus missing, expired, and reused consent, without real credentials or external browser requests. The API validates authorization requests and redirects to the React `/connect/authorize` page; that page posts consent back to `/oauth/authorize`.

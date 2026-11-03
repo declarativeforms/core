@@ -43,6 +43,18 @@ const nextConfig: NextConfig = {
   // Note this destination is baked into `routes-manifest.json` at build time.
   // The Compose service name is fixed, so that is fine, but it is not a
   // runtime-configurable value.
+  async headers() {
+    return [{
+      source: '/connect/authorize',
+      headers: [
+        { key: 'Cache-Control', value: 'no-store' },
+        { key: 'Referrer-Policy', value: 'same-origin' },
+        { key: 'Content-Security-Policy', value: "form-action 'self' https://github.com https://chatgpt.com/connector_platform_oauth_redirect; frame-ancestors 'none'" },
+        { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+      ],
+    }];
+  },
+
   async rewrites(): Promise<Array<{ source: string; destination: string }>> {
     return [
       ...[

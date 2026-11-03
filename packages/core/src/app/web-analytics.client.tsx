@@ -44,7 +44,7 @@ async function createWebAnalytics(): Promise<PostHog | null> {
 
 export function WebAnalytics(): null {
   useEffect(() => {
-    if (posthogPromise) {
+    if (window.location.pathname === '/connect/authorize' || posthogPromise) {
       return;
     }
 

@@ -1,9 +1,9 @@
-import { OwnedFormRepository } from '../../mcp/forms';
 import type { ISubmission } from '@declarativeforms/engine';
 import type { Db } from 'mongodb';
 import { createHmac } from 'node:crypto';
 import { GitHubGateway } from '../gateways';
 import {
+  FormRepository,
   GitHubFileRepository,
   JobRepository,
   SubmissionRepository,
@@ -38,7 +38,7 @@ test('lists completed submissions only with a valid access key', async () => {
   const formService = new FormService(
     new GitHubFileRepository(db),
     new GitHubGateway(),
-    new OwnedFormRepository({} as Db),
+    new FormRepository({} as Db),
   );
   const repository = new SubmissionRepository(db);
   const findForm = jest.spyOn(formService, 'findById');
@@ -99,7 +99,7 @@ test('schedules each save with its supplied section without changing stored subm
   const formService = new FormService(
     new GitHubFileRepository(db),
     new GitHubGateway(),
-    new OwnedFormRepository({} as Db),
+    new FormRepository({} as Db),
   );
   const repository = new SubmissionRepository(db);
   const jobService = new JobService(new JobRepository(db), {});
