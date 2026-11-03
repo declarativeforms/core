@@ -13,7 +13,8 @@
     "lint": "prettier --write --config prettier.config.cjs --list-different \"src/**/*.ts\"",
     "start": "node dist/main.js",
     "scheduler": "node dist/scheduler.js",
-    "test": "jest"
+    "test": "jest",
+    "test:mcp": "tsx --test src/mcp/integration.integration.ts"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.5",
@@ -31,10 +32,13 @@
     "@aws-sdk/client-s3": "^3.1161.0",
     "@declarativeforms/engine": "*",
     "@fastify/cors": "^11.4.0",
+    "@fastify/formbody": "^8.0.2",
     "@fastify/multipart": "^10.1.7",
     "@fastify/rate-limit": "^11.2.2",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/md5": "^2.3.6",
     "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "dotenv": "^18.0.9",
     "fastify": "^5.12.8",
     "md5": "^2.3.0",

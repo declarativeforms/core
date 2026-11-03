@@ -43,8 +43,18 @@ const nextConfig: NextConfig = {
   // Note this destination is baked into `routes-manifest.json` at build time.
   // The Compose service name is fixed, so that is fine, but it is not a
   // runtime-configurable value.
-  async rewrites() {
+  async rewrites(): Promise<Array<{ source: string; destination: string }>> {
     return [
+      ...[
+        '/mcp',
+        '/oauth/:path*',
+        '/.well-known/oauth-protected-resource',
+        '/.well-known/oauth-protected-resource/mcp',
+        '/.well-known/oauth-authorization-server',
+      ].map((source) => ({
+        source,
+        destination: `${process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080'}${source}`,
+      })),
       {
         source: '/api/:path*',
         destination: `${process.env.API_INTERNAL_ORIGIN ?? 'http://api:8080'}/api/:path*`,

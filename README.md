@@ -120,3 +120,9 @@ and inspect [the definition behind it](./examples/feature-request.yaml).
 
 Open source under the
 [GNU Affero General Public License v3.0](./LICENSE).
+## ChatGPT integration
+
+Create and update MongoDB-backed forms through the authenticated MCP server.
+See [MCP setup and acceptance checks](docs/MCP.md) for GitHub OAuth registration,
+deployment configuration, and connecting ChatGPT. Existing GitHub-backed forms
+continue to work.

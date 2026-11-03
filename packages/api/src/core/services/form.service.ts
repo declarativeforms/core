@@ -1,5 +1,6 @@
 import { parse, type IDeclarativeForm } from '@declarativeforms/engine';
 import md5 from 'md5';
+import type { OwnedFormRepository } from '../../mcp/forms';
 import type { GitHubGateway } from '../gateways';
 import type { GitHubFileRepository } from '../repositories';
 
@@ -10,9 +11,16 @@ export class FormService {
   constructor(
     private gitHubFileRepository: GitHubFileRepository,
     private gitHubGateway: GitHubGateway,
+    private ownedFormRepository: OwnedFormRepository,
   ) {}
 
   public async findById(id: string): Promise<IDeclarativeForm | null> {
+    if (id.startsWith('m_')) {
+      const form = await this.ownedFormRepository.findById(id);
+
+      return form ? { ...form.definition, id: form.id } : null;
+    }
+
     if (!id.startsWith(GITHUB_FORM_PREFIX)) {
       return null;
     }

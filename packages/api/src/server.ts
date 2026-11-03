@@ -1,3 +1,4 @@
+import { registerMcp } from './mcp/server';
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyRateLimit from '@fastify/rate-limit';
@@ -21,7 +22,19 @@ import {
 export async function startServer(): Promise<void> {
   const server = fastify({
     bodyLimit: 10 * 1048576,
-    logger: true,
+    logger: {
+      redact: [
+        'req.headers.authorization',
+        'req.headers.cookie',
+        'res.headers["set-cookie"]',
+      ],
+      serializers: {
+        req: (request) => ({
+          method: request.method,
+          url: request.url?.split('?')[0],
+        }),
+      },
+    },
     routerOptions: {
       caseSensitive: false,
       ignoreDuplicateSlashes: true,
@@ -79,6 +92,8 @@ export async function startServer(): Promise<void> {
   const container = await getContainer();
   await container.gitHubFileRepository.ensureIndexes();
   await container.submissionRepository.ensureIndexes();
+
+  await server.register(async (mcp) => registerMcp(mcp, container.db));
 
   server.route(FORMS_ID_SECTIONS_SECTION_ID_ADAPTIVE_POST);
   server.route(FILES_KEY_GET);

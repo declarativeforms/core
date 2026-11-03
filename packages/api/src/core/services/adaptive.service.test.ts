@@ -1,3 +1,4 @@
+import { OwnedFormRepository } from '../../mcp/forms';
 import {
   compile,
   render,
@@ -70,6 +71,7 @@ function createHarness(): {
   const forms = new FormService(
     new GitHubFileRepository(db),
     new GitHubGateway(),
+    new OwnedFormRepository({} as Db),
   );
   jest.spyOn(forms, 'findById').mockResolvedValue(form);
   const repository = new SubmissionRepository(db);

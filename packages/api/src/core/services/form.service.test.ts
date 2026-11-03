@@ -1,3 +1,4 @@
+import { OwnedFormRepository } from '../../mcp/forms';
 import { readFileSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { toRenderableForm } from '@declarativeforms/engine';
@@ -26,7 +27,11 @@ test('resolves GitHub YAML and preserves branch identity through ID lookup', asy
   const findYamlFile = jest
     .spyOn(gateway, 'findYamlFile')
     .mockResolvedValue(yaml);
-  const service = new FormService(repository, gateway);
+  const service = new FormService(
+    repository,
+    gateway,
+    new OwnedFormRepository({} as Db),
+  );
   const slug = 'forms/team/project/forms/events/lunch-rsvp';
 
   const main = await service.findBySlug(slug);

@@ -1,3 +1,4 @@
+import { OwnedFormRepository } from '../mcp/forms';
 import { S3Client } from '@aws-sdk/client-s3';
 import { Db, MongoClient } from 'mongodb';
 import {
@@ -76,7 +77,11 @@ export async function getContainer(): Promise<Container> {
   );
   const emailGateway = new EmailGateway();
   const fileService = new FileService(s3Client);
-  const formService = new FormService(gitHubFileRepository, gitHubGateway);
+  const formService = new FormService(
+    gitHubFileRepository,
+    gitHubGateway,
+    new OwnedFormRepository(db),
+  );
   const emailVerificationService = new EmailVerificationService(
     verificationTokenService,
     emailGateway,
