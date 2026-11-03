@@ -45,6 +45,9 @@ integration('MCP with MongoDB', () => {
       repository,
     );
     store = new OAuthStore(db);
+    await db
+      .collection('forms')
+      .insertMany([{ legacy: true }, { legacy: true }]);
     await repository.ensureIndexes();
     await store.ensureIndexes();
   });
