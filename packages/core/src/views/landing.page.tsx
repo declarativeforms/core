@@ -13,7 +13,6 @@ const LINKEDIN_URL = 'https://www.linkedin.com/company/declarativeforms';
 const GET_STARTED_URL = `${GITHUB_URL}#get-started`;
 const FEATURE_REQUEST_URL =
   'https://frms.dev/declarativeforms/core/examples/feature-request';
-
 const HERO_YAML = `# forms/beta-access.yaml
 version: 1
 title: "Request beta access"
@@ -26,6 +25,11 @@ sections:
         label: "Email address"
         validators: [required]
 
+      - id: project
+        type: long_text
+        label: "What are you working on?"
+        validators: [required]
+
     next: done
 `;
 
@@ -33,17 +37,17 @@ const STEPS: Array<{ index: string; title: string; body: string }> = [
   {
     index: '01',
     title: 'Describe the form',
-    body: 'Write a definition or describe it to ChatGPT. Set the questions, validation, and what happens next.',
+    body: 'Start from an example, write the YAML yourself, or ask your coding agent to draft it against the published JSON Schema. Define the questions, validation, logic, and what should happen when the form is complete.',
   },
   {
     index: '02',
-    title: 'Publish the definition',
-    body: 'Push your file to GitHub, or let ChatGPT create a hosted form. The same runtime brings either definition to life.',
+    title: 'Push the definition',
+    body: 'Commit the file to GitHub. Form changes become ordinary versioned changes you can inspect, review, compare, and revert alongside the work they support.',
   },
   {
     index: '03',
     title: 'Open the form',
-    body: 'Share the live link. Update the definition whenever you need to change the form.',
+    body: 'Open the matching path on frms.dev and share it. Want to review a change first? Point the URL at another pushed branch and walk through the working form before you merge.',
   },
 ];
 
@@ -116,39 +120,28 @@ function tokenizeYamlLine(line: string): Array<YamlToken> {
   return tokens;
 }
 
-function AuthoringActions(): React.JSX.Element {
-  return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-      <ActionButton href="#connect-chatgpt">Build with ChatGPT</ActionButton>
-      <a
-        className="inline-flex min-h-11 items-center text-sm font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4"
-        href={GET_STARTED_URL}
-      >
-        Use GitHub
-      </a>
-    </div>
-  );
-}
-
 function SiteNav(): React.JSX.Element {
   return (
     <header className="border-b-2 border-ink bg-paper">
-      <nav
-        aria-label="Main navigation"
-        className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-4 sm:px-5 md:px-10 lg:px-0"
-      >
+      <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4 md:px-10 lg:px-16">
         <Link
           className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
           href="/"
         >
           <BrandMark />
         </Link>
-        <a
-          className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold underline underline-offset-4 hover:text-brand-purple focus-visible:outline-2 focus-visible:outline-offset-4"
-          href="#connect-chatgpt"
-        >
-          Get started
-        </a>
+        <div className="flex items-center gap-6">
+          <a
+            className="hidden text-sm font-semibold text-ink underline-offset-4 hover:underline md:inline"
+            href={GITHUB_URL}
+            rel="noreferrer"
+          >
+            View source
+          </a>
+          <ActionButton href={GET_STARTED_URL}>
+            Create your first form
+          </ActionButton>
+        </div>
       </nav>
     </header>
   );
@@ -156,20 +149,30 @@ function SiteNav(): React.JSX.Element {
 
 function Hero(): React.JSX.Element {
   return (
-    <section className="border-b-2 border-ink bg-paper-alt px-5 py-10 sm:px-6 md:px-10 md:py-16 lg:px-16">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-16">
-        <div className="flex flex-col items-start gap-5">
+    <section className="border-b-2 border-ink bg-paper-alt px-6 py-20 md:px-10 md:py-24 lg:px-16">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-16">
+        <div className="flex flex-col items-start gap-7">
           <span className="-rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
             Open-source Forms as Code
           </span>
           <h1 className="font-display text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance sm:text-5xl lg:text-6xl">
             A live form from a file you own.
           </h1>
-          <p className="max-w-[44ch] text-base leading-relaxed text-ink-muted sm:text-lg">
-            Define your form in GitHub or with ChatGPT. Get a working form you
-            can share, inspect, and change—without building the application.
-          </p>
-          <AuthoringActions />
+          <div className="flex max-w-[52ch] flex-col gap-4 text-lg leading-relaxed text-ink-muted">
+            <p>
+              Define your form in YAML and keep it in GitHub. Declarative Forms
+              turns that definition into the working form — rendering questions,
+              validating answers, and storing submissions.
+            </p>
+            <p>
+              Edit it yourself or with an AI agent. The source stays readable,
+              versioned, and under your control.
+            </p>
+          </div>
+          <ActionButton href={GET_STARTED_URL} size="lg">
+            Create your first form
+            <ArrowRight className="size-4" />
+          </ActionButton>
         </div>
         <div className="overflow-hidden rounded-lg border-2 border-ink bg-white shadow-hard-lg rotate-[0.6deg]">
           <div className="flex items-center gap-2 border-b-2 border-ink bg-paper-alt px-4 py-2.5">
@@ -205,18 +208,35 @@ function Hero(): React.JSX.Element {
 
 function HowItWorks(): React.JSX.Element {
   return (
-    <section className="bg-paper px-5 py-12 sm:px-6 md:px-10 md:py-16 lg:px-16">
+    <section className="bg-paper px-6 py-20 md:px-10 md:py-24 lg:px-16">
       <div className="mx-auto w-full max-w-6xl">
         <div className="flex flex-col gap-4">
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            From definition to live form.
+            One file. Three steps. A working form.
           </h2>
           <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
             You define what the form should do. Declarative Forms supplies the
             runtime that makes it work.
           </p>
         </div>
-        <ol className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="mt-8 max-w-2xl">
+          <h3 className="font-display text-xl font-semibold">
+            Define the outcome. Let the questions adapt.
+          </h3>
+          <p className="mt-3 text-base leading-relaxed text-ink-muted">
+            Adaptive sections use AI to refine questions around your objectives,
+            reuse earlier answers, and produce validated, structured outputs.
+            Completed outputs flow into the same submissions and connections as
+            any other section.
+          </p>
+          <Link
+            className="mt-3 inline-block underline"
+            href={`${GITHUB_URL}/blob/main/examples/adaptive.yaml`}
+          >
+            Explore an adaptive form definition
+          </Link>
+        </div>
+        <ol className="mt-12 grid gap-6 md:grid-cols-3">
           {STEPS.map((step) => (
             <li
               className="flex flex-col gap-3 rounded-lg border-2 border-ink bg-white p-6 shadow-hard"
@@ -234,75 +254,40 @@ function HowItWorks(): React.JSX.Element {
             </li>
           ))}
         </ol>
-        <details className="mt-6">
-          <summary className="w-fit cursor-pointer py-3 text-sm font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4">
-            How GitHub form URLs work
-          </summary>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
-            The URL points to your definition. Use a branch to preview changes
-            before merging.
-          </p>
-          <div className="mt-4 overflow-x-auto rounded-lg border-2 border-ink bg-brand-purple-soft p-6 shadow-hard">
-            <div className="flex min-w-max items-start font-mono text-sm">
-              {URL_PARTS.map((part) => (
-                <span className="flex flex-col items-center" key={part.text}>
-                  <span
-                    className={
-                      part.label === null
-                        ? 'px-0.5 py-1 text-ink-muted'
-                        : 'rounded-sm border-2 border-ink bg-white px-2 py-1 font-medium text-ink'
-                    }
-                  >
-                    {part.text}
-                  </span>
-                  <span className="mt-2 text-[11px] tracking-wide text-ink-muted uppercase">
-                    {part.label ?? ''}
-                  </span>
+        <div className="mt-8 overflow-x-auto rounded-lg border-2 border-ink bg-brand-purple-soft p-6 shadow-hard">
+          <div className="flex min-w-max items-start font-mono text-sm">
+            {URL_PARTS.map((part) => (
+              <span className="flex flex-col items-center" key={part.text}>
+                <span
+                  className={
+                    part.label === null
+                      ? 'px-0.5 py-1 text-ink-muted'
+                      : 'rounded-sm border-2 border-ink bg-white px-2 py-1 font-medium text-ink'
+                  }
+                >
+                  {part.text}
                 </span>
-              ))}
-            </div>
+                <span className="mt-2 text-[11px] tracking-wide text-ink-muted uppercase">
+                  {part.label ?? ''}
+                </span>
+              </span>
+            ))}
           </div>
-        </details>
-      </div>
-    </section>
-  );
-}
-
-function ChatGptSetup(): React.JSX.Element {
-  return (
-    <section
-      id="connect-chatgpt"
-      className="scroll-mt-6 border-y-2 border-ink bg-brand-yellow-soft px-5 py-12 sm:px-6 md:px-10 md:py-16 lg:px-16"
-    >
-      <div className="mx-auto grid max-w-6xl items-start gap-8 lg:grid-cols-2 lg:gap-16">
-        <div className="space-y-4">
-          <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
-            Your next form can start with a conversation.
-          </h2>
-          <p className="max-w-[45ch] text-base leading-relaxed text-ink-muted">
-            Connect ChatGPT to create, inspect, and update your forms. It can
-            read the schema, so you can focus on what you need.
-          </p>
-          <blockquote className="max-w-[45ch] border-l-4 border-brand-purple pl-4 text-base leading-relaxed">
-            “Create a workshop sign-up form with name, email, and a choice of
-            session. Give me the live link.”
-          </blockquote>
         </div>
-        <div className="rounded-lg border-2 border-ink bg-white p-5 shadow-hard sm:p-6">
-          <McpEndpoint />
-          <div className="mt-2">
-            <ActionButton href="https://chatgpt.com/plugins">
-              Open ChatGPT
-              <ArrowRight className="size-4" />
-            </ActionButton>
-          </div>
-          <details className="mt-5 border-t-2 border-ink pt-2">
-            <summary className="cursor-pointer py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
-              Connection instructions
-            </summary>
-            <ol className="mt-2 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-ink-muted">
+        <details id="connect-chatgpt" className="mt-6 scroll-mt-6">
+          <summary className="w-fit cursor-pointer py-3 text-sm font-medium text-ink-muted underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink">
+            Also available: connect ChatGPT via MCP
+          </summary>
+          <div className="mt-4 max-w-2xl space-y-5 text-sm leading-relaxed text-ink-muted">
+            <p>
+              ChatGPT can read the form schema, create forms, list your forms,
+              and inspect or update their definitions through MCP.
+            </p>
+            <McpEndpoint />
+            <ol className="list-decimal space-y-3 pl-5">
               <li>
-                In ChatGPT’s Plugins page, choose +, then Add custom MCP server.
+                Open ChatGPT’s Plugins page. Choose +, then Add custom MCP
+                server.
               </li>
               <li>
                 Name it Declarative Forms, paste the URL above, and select OAuth
@@ -314,15 +299,26 @@ function ChatGptSetup(): React.JSX.Element {
                 requested.
               </li>
               <li>
-                Select Declarative Forms with @ in your conversation and
-                describe your form. Later, ask it to update the same form.
+                Select Declarative Forms with @ in your conversation, then
+                describe your form.
               </li>
             </ol>
-            <p className="mt-4 text-sm leading-relaxed text-ink-muted">
-              Forms are hosted on frms.dev and published immediately. Anyone
-              with the link can fill them out.
+            <a
+              className="inline-block font-semibold text-ink underline underline-offset-4"
+              href="https://chatgpt.com/plugins"
+            >
+              Open ChatGPT
+            </a>
+            <blockquote className="border-l-2 border-ink pl-4">
+              “Create a workshop sign-up form with name, email, and a choice of
+              session. Give me the live link.”
+            </blockquote>
+            <p>
+              Forms created through MCP are hosted separately on frms.dev,
+              published immediately, and do not automatically have GitHub
+              version history. Anyone with the link can fill them out.
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+            <p>
               Custom plugins depend on your account and workspace permissions.{' '}
               <a
                 className="underline"
@@ -330,10 +326,10 @@ function ChatGptSetup(): React.JSX.Element {
               >
                 Official setup guide
               </a>
-              . Claude and other clients are not yet supported.
+              . Claude and other MCP clients are not yet supported.
             </p>
-          </details>
-        </div>
+          </div>
+        </details>
       </div>
     </section>
   );
@@ -341,55 +337,33 @@ function ChatGptSetup(): React.JSX.Element {
 
 function Tradeoff(): React.JSX.Element {
   return (
-    <section className="border-y-2 border-ink bg-brand-purple px-5 py-12 text-white sm:px-6 md:px-10 md:py-16 lg:px-16">
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2 lg:gap-16">
-        <div className="space-y-5">
-          <span className="inline-block -rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
-            You own the definition. We run it.
+    <section className="border-y-2 border-ink bg-brand-purple px-6 py-20 text-white md:px-10 md:py-24 lg:px-16">
+      <div className="mx-auto w-full max-w-6xl">
+        <div className="flex max-w-[58ch] flex-col gap-6">
+          <span className="inline-block w-fit -rotate-1 border-2 border-ink bg-brand-yellow px-3 py-1 text-sm font-semibold text-ink">
+            You own the definition. Declarative Forms runs it.
           </span>
-          <h2 className="max-w-[19ch] font-display text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
+          <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
             Keep the control. Skip building the form system.
           </h2>
-          <p className="max-w-[44ch] text-base leading-relaxed text-white/85">
-            Use frms.dev for hosting, or self-host the open-source stack. Your
-            form stays an explicit definition you can inspect and reuse.
+          <p className="text-lg leading-relaxed text-white/85">
+            Your definition can describe multi-step flows, conditional
+            questions, validation, uploads, localized content, completion
+            screens, and email or webhook connections.
           </p>
-        </div>
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-display text-xl font-semibold">
-              A definition you can work with
-            </h3>
-            <p className="mt-2 text-base leading-relaxed text-white/85">
-              Inspect and update hosted forms through ChatGPT. Keep definitions
-              in GitHub when you want review, branches, and version history.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-display text-xl font-semibold">
-              The form behavior, already built
-            </h3>
-            <p className="mt-2 text-base leading-relaxed text-white/85">
-              Multi-step flows, conditional questions, validation, uploads, and
-              localized content. Answers are stored and can flow to email or
-              webhooks.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-display text-xl font-semibold">
-              Questions that can adapt
-            </h3>
-            <p className="mt-2 text-base leading-relaxed text-white/85">
-              Adaptive sections use AI to ask follow-up questions around your
-              objectives and return structured outputs.
-            </p>
-            <a
-              className="mt-2 inline-block text-sm underline underline-offset-4"
-              href={`${GITHUB_URL}/blob/main/examples/adaptive.yaml`}
-            >
-              Explore an adaptive definition
-            </a>
-          </div>
+          <p className="text-lg leading-relaxed text-white/85">
+            Declarative Forms turns it into the experience respondents use,
+            validates their answers, and stores submissions separately from your
+            repository.
+          </p>
+          <p className="text-lg leading-relaxed text-white/85">
+            Use frms.dev when you want the hosted service. Self-host the
+            open-source stack when control over the infrastructure matters.
+          </p>
+          <p className="text-lg leading-relaxed text-white/85">
+            Either way, the form remains an explicit artifact you can inspect,
+            version, reuse, and automate.
+          </p>
         </div>
       </div>
     </section>
@@ -399,17 +373,24 @@ function Tradeoff(): React.JSX.Element {
 function FeatureRequests(): React.JSX.Element {
   return (
     <section
-      className="bg-paper-alt px-5 py-12 sm:px-6 md:px-10 md:py-16 lg:px-16"
+      className="bg-paper-alt px-6 py-20 md:px-10 md:py-24 lg:px-16"
       id="feature-requests"
     >
       <div className="mx-auto grid w-full max-w-6xl items-start gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col items-start gap-6">
           <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
-            See the definition at work.
+            This form is running on Declarative Forms.
           </h2>
-          <p className="max-w-[48ch] text-base leading-relaxed text-ink-muted">
-            Try the live feature-request form, then inspect the YAML behind it.
-            It stores submissions and sends requests to our inbox.
+          <p className="max-w-[46ch] text-lg leading-relaxed text-ink-muted">
+            The feature-request form beside this copy is not a mockup.
+          </p>
+          <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
+            Its YAML definition lives in the public repository. Declarative
+            Forms renders it here, stores its submissions, and a configured
+            email connection sends requests to our inbox.
+          </p>
+          <p className="max-w-[52ch] text-base leading-relaxed text-ink-muted">
+            Open the form or inspect the definition that powers it.
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium">
             <a
@@ -458,12 +439,24 @@ function FeatureRequests(): React.JSX.Element {
 
 function FinalCta(): React.JSX.Element {
   return (
-    <section className="bg-paper px-5 py-12 sm:px-6 md:px-10 md:py-16 lg:px-16">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-        <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
-          Make your next form.
+    <section className="border-t-4 border-ink bg-brand-yellow-soft px-6 py-20 md:px-10 md:py-24 lg:px-16">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-7 text-center">
+        <h2 className="font-display text-3xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.5rem]">
+          Your next form can start as a file.
         </h2>
-        <AuthoringActions />
+        <p className="max-w-[48ch] text-lg leading-relaxed text-ink-muted">
+          Copy an example or ask your AI agent to draft the definition. Push it
+          to GitHub, open the matching frms.dev URL, and you have a form you can
+          continue to review, reuse, and automate.
+        </p>
+        <p className="max-w-[48ch] text-base leading-relaxed text-ink-muted">
+          No separate form-building workflow. No custom form application to
+          maintain.
+        </p>
+        <ActionButton href={GET_STARTED_URL} size="lg">
+          Create your first form
+          <ArrowRight className="size-4" />
+        </ActionButton>
       </div>
     </section>
   );
@@ -537,7 +530,6 @@ export function LandingPage(): React.JSX.Element {
         <HowItWorks />
         <Tradeoff />
         <FeatureRequests />
-        <ChatGptSetup />
         <FinalCta />
       </main>
       <SiteFooter />
