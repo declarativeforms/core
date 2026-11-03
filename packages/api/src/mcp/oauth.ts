@@ -133,10 +133,10 @@ export function registerOAuth(
       );
       reply.header(
         'Content-Security-Policy',
-        "default-src 'none'; form-action 'self'; frame-ancestors 'none'",
+        "default-src 'none'; form-action 'self' https://github.com; frame-ancestors 'none'",
       );
       reply.header('Cache-Control', 'no-store');
-      reply.header('Referrer-Policy', 'no-referrer');
+      reply.header('Referrer-Policy', 'same-origin');
 
       return reply
         .type('text/html')
