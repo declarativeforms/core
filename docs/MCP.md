@@ -113,4 +113,4 @@ Before production acceptance, connect a real ChatGPT account to the deployment:
 This live test requires operator-provided GitHub credentials, public hosting,
 and an eligible ChatGPT account; protocol tests do not replace it.
 
-The browser consent regression runs separately with `npm run test:mcp-browser -w @declarativeforms/api`. Install Chromium with `npx playwright install chromium`, or set `MCP_TEST_BROWSER_PATH` to an existing Chrome executable. It verifies browser-generated Origin headers, the secure consent cookie, and the permitted GitHub redirect without real credentials.
+The browser consent regression runs separately with `npm run test:mcp-browser -w @declarativeforms/api`. Install Chromium with `npx playwright install chromium`, or set `MCP_TEST_BROWSER_PATH` to an existing Chrome executable. It verifies browser-generated Origin headers, the secure consent cookie, and the complete GitHub-to-ChatGPT redirect chain for successful and denied authorization without real credentials or external browser requests.
